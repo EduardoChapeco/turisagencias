@@ -47,9 +47,16 @@ export function useCreateQuotation() {
 
   return useMutation({
     mutationFn: async (data: QuotationFormValues) => {
+      const { installments, ...rest } = data;
+      const payload = {
+        ...rest,
+        installments: installments ? JSON.parse(JSON.stringify(installments)) : null,
+        org_id: organization!.id,
+        agent_id: user!.id,
+      };
       const { data: quotation, error } = await supabase
         .from('quotations')
-        .insert({ ...data, org_id: organization!.id, agent_id: user!.id })
+        .insert(payload)
         .select()
         .single();
       if (error) throw error;

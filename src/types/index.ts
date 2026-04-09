@@ -20,7 +20,7 @@ export type TravelerFormValues = Omit<
 
 export type QuotationFormValues = Omit<
   TablesInsert<'quotations'>,
-  'id' | 'org_id' | 'agent_id' | 'created_at' | 'updated_at' | 'share_token' | 'viewed_at'
+  'id' | 'org_id' | 'agent_id' | 'created_at' | 'updated_at' | 'share_token' | 'viewed_at' | 'installments'
 > & {
   installments?: InstallmentOption[] | null;
 };

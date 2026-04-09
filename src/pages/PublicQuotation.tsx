@@ -27,7 +27,7 @@ export default function PublicQuotation() {
       if (error || !row) {
         setNotFound(true);
       } else {
-        setData(row);
+        setData({ ...row, installments: parseInstallments(row.installments) });
       }
     });
   }, [token]);

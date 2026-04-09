@@ -29,7 +29,7 @@ export default function PublicChecklist() {
               data.map((item) => (
                 <label key={item.item_id} className="flex items-start gap-3 rounded-lg border bg-background p-4">
                   <Checkbox
-                    checked={item.is_completed}
+                    checked={item.is_checked}
                     onCheckedChange={(checked) =>
                       toggleItem.mutate({
                         token: token!,

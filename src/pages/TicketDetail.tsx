@@ -80,7 +80,7 @@ export default function TicketDetail() {
                     {new Date(item.created_at).toLocaleString('pt-BR')}
                   </p>
                 </div>
-                <p className="mt-2 text-sm text-muted-foreground">{item.content}</p>
+                <p className="mt-2 text-sm text-muted-foreground">{item.body}</p>
               </div>
             ))}
 

@@ -30,11 +30,10 @@ export default function PublicChecklist() {
                 <label key={item.item_id} className="flex items-start gap-3 rounded-lg border bg-background p-4">
                   <Checkbox
                     checked={item.is_checked}
-                    onCheckedChange={(checked) =>
+                    onCheckedChange={() =>
                       toggleItem.mutate({
                         token: token!,
                         itemId: item.item_id,
-                        isCompleted: checked === true,
                       })
                     }
                   />

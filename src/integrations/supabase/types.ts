@@ -168,6 +168,105 @@ export type Database = {
           },
         ]
       }
+      quotations: {
+        Row: {
+          agent_id: string | null
+          ai_extracted: boolean | null
+          ai_raw_response: Json | null
+          check_in: string | null
+          check_out: string | null
+          client_id: string | null
+          created_at: string
+          currency: string | null
+          destination: string | null
+          hotel_name: string | null
+          hotel_photo_url: string | null
+          hotel_stars: number | null
+          id: string
+          installments: Json | null
+          meal_plan: string | null
+          num_nights: number | null
+          org_id: string
+          room_type: string | null
+          share_token: string | null
+          source_file_url: string | null
+          status: string
+          total_value: number | null
+          updated_at: string
+          viewed_at: string | null
+          whatsapp_text: string | null
+        }
+        Insert: {
+          agent_id?: string | null
+          ai_extracted?: boolean | null
+          ai_raw_response?: Json | null
+          check_in?: string | null
+          check_out?: string | null
+          client_id?: string | null
+          created_at?: string
+          currency?: string | null
+          destination?: string | null
+          hotel_name?: string | null
+          hotel_photo_url?: string | null
+          hotel_stars?: number | null
+          id?: string
+          installments?: Json | null
+          meal_plan?: string | null
+          num_nights?: number | null
+          org_id: string
+          room_type?: string | null
+          share_token?: string | null
+          source_file_url?: string | null
+          status?: string
+          total_value?: number | null
+          updated_at?: string
+          viewed_at?: string | null
+          whatsapp_text?: string | null
+        }
+        Update: {
+          agent_id?: string | null
+          ai_extracted?: boolean | null
+          ai_raw_response?: Json | null
+          check_in?: string | null
+          check_out?: string | null
+          client_id?: string | null
+          created_at?: string
+          currency?: string | null
+          destination?: string | null
+          hotel_name?: string | null
+          hotel_photo_url?: string | null
+          hotel_stars?: number | null
+          id?: string
+          installments?: Json | null
+          meal_plan?: string | null
+          num_nights?: number | null
+          org_id?: string
+          room_type?: string | null
+          share_token?: string | null
+          source_file_url?: string | null
+          status?: string
+          total_value?: number | null
+          updated_at?: string
+          viewed_at?: string | null
+          whatsapp_text?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quotations_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quotations_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       travel_group_members: {
         Row: {
           group_id: string
@@ -397,6 +496,27 @@ export type Database = {
     Functions: {
       assign_org_admin_role: { Args: { _user_id: string }; Returns: undefined }
       get_my_org_id: { Args: never; Returns: string }
+      get_public_quotation: {
+        Args: { _token: string }
+        Returns: {
+          check_in: string
+          check_out: string
+          currency: string
+          destination: string
+          hotel_name: string
+          hotel_photo_url: string
+          hotel_stars: number
+          installments: Json
+          meal_plan: string
+          num_nights: number
+          org_logo: string
+          org_name: string
+          org_primary_color: string
+          org_whatsapp: string
+          room_type: string
+          total_value: number
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

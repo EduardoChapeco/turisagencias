@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthStore } from '@/stores/authStore';
 import { Button } from '@/components/ui/button';
@@ -15,53 +15,87 @@ export default function Onboarding() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { user, setOrganization, setProfile, setRoles } = useAuthStore();
+  const { user, organization, setOrganization, setProfile, setRoles } = useAuthStore();
+
+  if (organization) {
+    return <Navigate to="/" replace />;
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
-    setLoading(true);
+    if (!user || loading) return;
 
-    const slug = name
+    const agencyName = name.trim();
+    const sanitizedWhatsapp = whatsapp.replace(/\D/g, '');
+    const slug = agencyName
       .toLowerCase()
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '')
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-|-$/g, '');
 
-    // Create org
-    const { data: org, error: orgError } = await supabase
-      .from('organizations')
-      .insert({ name, slug, whatsapp: whatsapp || null })
-      .select()
-      .single();
+    if (!agencyName || !slug) {
+      toast({ title: 'Dados inválidos', description: 'Informe um nome válido para a agência.', variant: 'destructive' });
+      return;
+    }
 
-    if (orgError || !org) {
-      toast({ title: 'Erro', description: orgError?.message || 'Erro ao criar agência', variant: 'destructive' });
+    setLoading(true);
+
+    const orgId = crypto.randomUUID();
+
+    const { error: orgError } = await supabase
+      .from('organizations')
+      .insert({ id: orgId, name: agencyName, slug, whatsapp: sanitizedWhatsapp || null });
+
+    if (orgError) {
+      const description = orgError.code === '23505'
+        ? 'Já existe uma agência com esse identificador. Tente outro nome.'
+        : orgError.message || 'Erro ao criar agência';
+
+      toast({ title: 'Erro', description, variant: 'destructive' });
       setLoading(false);
       return;
     }
 
-    // Link profile to org
-    const { data: profile } = await supabase
+    const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .update({ org_id: org.id })
+      .update({ org_id: orgId })
       .eq('user_id', user.id)
       .select()
       .single();
 
-    // Add org_admin role via SECURITY DEFINER function
-    await supabase.rpc('assign_org_admin_role', { _user_id: user.id });
+    if (profileError || !profile) {
+      toast({ title: 'Erro', description: profileError?.message || 'Erro ao vincular usuário à agência', variant: 'destructive' });
+      setLoading(false);
+      return;
+    }
 
-    // Refetch roles from DB to get actual state
-    const { data: rolesData } = await supabase.from('user_roles').select('role').eq('user_id', user.id);
-    const freshRoles = rolesData?.map((r) => r.role as any) || [];
+    const { error: roleError } = await supabase.rpc('assign_org_admin_role', { _user_id: user.id });
 
-    setOrganization(org as any);
-    if (profile) setProfile(profile as any);
-    setRoles(freshRoles);
+    if (roleError) {
+      toast({ title: 'Aviso', description: 'Agência criada, mas houve uma falha ao atualizar permissões. Recarregue a página.', variant: 'destructive' });
+    }
 
-    toast({ title: 'Agência criada!', description: `${name} está pronta para uso.` });
+    const [{ data: org, error: orgFetchError }, { data: rolesData, error: rolesError }] = await Promise.all([
+      supabase.from('organizations').select('*').eq('id', orgId).single(),
+      supabase.from('user_roles').select('role').eq('user_id', user.id),
+    ]);
+
+    if (orgFetchError || !org) {
+      toast({ title: 'Aviso', description: 'Agência criada, mas o carregamento final falhou. Recarregue a página.', variant: 'destructive' });
+      setLoading(false);
+      return;
+    }
+
+    if (rolesError) {
+      toast({ title: 'Aviso', description: 'Agência criada, mas os papéis não puderam ser recarregados.', variant: 'destructive' });
+    }
+
+    setOrganization(org);
+    setProfile(profile);
+    setRoles((rolesData ?? []).map((item) => item.role));
+
+    toast({ title: 'Agência criada!', description: `${agencyName} está pronta para uso.` });
     setLoading(false);
     navigate('/');
   };

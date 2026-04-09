@@ -12,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, Upload, Sparkles, Loader2 } from 'lucide-react';
+import type { InstallmentOption, QuotationFormValues } from '@/types';
 
 export default function QuotationNew() {
   const navigate = useNavigate();
@@ -19,20 +20,26 @@ export default function QuotationNew() {
   const { data: clients } = useClients();
   const { toast } = useToast();
   const [extracting, setExtracting] = useState(false);
+  const [aiExtracted, setAiExtracted] = useState(false);
+  const [aiRawResponse, setAiRawResponse] = useState<QuotationFormValues['ai_raw_response']>(null);
   const [form, setForm] = useState({
     destination: '', hotel_name: '', hotel_stars: '',
     check_in: '', check_out: '', num_nights: '',
     meal_plan: '', room_type: '', total_value: '',
     currency: 'BRL', client_id: '', whatsapp_text: '',
   });
-  const [installments, setInstallments] = useState<any[]>([]);
+  const [installments, setInstallments] = useState<InstallmentOption[]>([]);
 
   const update = (field: string, value: string) => setForm(p => ({ ...p, [field]: value }));
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
     setExtracting(true);
+    setAiExtracted(false);
+    setAiRawResponse(null);
+    setInstallments([]);
 
     try {
       // Convert to base64
@@ -52,7 +59,8 @@ export default function QuotationNew() {
 
       if (error) throw error;
       if (data?.data) {
-        const d = data.data;
+        const d = data.data as Partial<QuotationFormValues>;
+
         setForm(p => ({
           ...p,
           destination: d.destination || '',
@@ -67,11 +75,15 @@ export default function QuotationNew() {
           currency: d.currency || 'BRL',
           whatsapp_text: d.whatsapp_text || '',
         }));
-        if (d.installments) setInstallments(d.installments);
+
+        setInstallments(d.installments ?? []);
+        setAiExtracted(true);
+        setAiRawResponse(d);
         toast({ title: '✨ Dados extraídos com IA!', description: 'Revise os campos antes de salvar.' });
       }
-    } catch (err: any) {
-      toast({ title: 'Erro na extração', description: err.message, variant: 'destructive' });
+    } catch (error: unknown) {
+      const description = error instanceof Error ? error.message : 'Não foi possível extrair os dados da cotação.';
+      toast({ title: 'Erro na extração', description, variant: 'destructive' });
     } finally {
       setExtracting(false);
     }
@@ -93,7 +105,8 @@ export default function QuotationNew() {
       installments: installments.length > 0 ? installments : undefined,
       whatsapp_text: form.whatsapp_text || undefined,
       client_id: form.client_id || undefined,
-      ai_extracted: extracting || installments.length > 0,
+      ai_extracted: aiExtracted,
+      ai_raw_response: aiRawResponse,
     });
     if (result) navigate(`/quotations/${result.id}`);
   };
@@ -218,7 +231,7 @@ export default function QuotationNew() {
                 <div className="space-y-2">
                   <Label>Parcelas (extraídas por IA)</Label>
                   <div className="text-sm space-y-1">
-                    {installments.map((inst: any, i: number) => (
+                      {installments.map((inst, i) => (
                       <p key={i} className="text-muted-foreground">
                         {inst.type}: {inst.installment_count}x de R$ {inst.value?.toFixed(2)}
                       </p>

@@ -4,46 +4,30 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import { MapPin, Hotel, Calendar, DollarSign, Loader2 } from 'lucide-react';
+import { parseInstallments } from '@/lib/utils';
+import type { PublicQuotationData } from '@/types';
 
 const mealLabels: Record<string, string> = {
   all_inclusive: 'All Inclusive', half_board: 'Meia Pensão', bed_breakfast: 'Café da Manhã', room_only: 'Só Hospedagem',
 };
 
-interface QuotationData {
-  destination: string | null;
-  hotel_name: string | null;
-  hotel_stars: number | null;
-  hotel_photo_url: string | null;
-  check_in: string | null;
-  check_out: string | null;
-  num_nights: number | null;
-  meal_plan: string | null;
-  room_type: string | null;
-  total_value: number | null;
-  currency: string | null;
-  installments: any;
-  org_name: string | null;
-  org_logo: string | null;
-  org_whatsapp: string | null;
-  org_primary_color: string | null;
-}
-
 export default function PublicQuotation() {
   const { token } = useParams<{ token: string }>();
-  const [data, setData] = useState<QuotationData | null>(null);
+  const [data, setData] = useState<PublicQuotationData | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
     if (!token) return;
     supabase.rpc('get_public_quotation', { _token: token }).then(({ data: rows, error }) => {
+      const row = rows?.[0] ?? null;
+
       setLoading(false);
-      if (error || !rows || (rows as any[]).length === 0) {
+      if (error || !row) {
         setNotFound(true);
       } else {
-        setData((rows as any[])[0]);
+        setData(row);
       }
     });
   }, [token]);
@@ -77,6 +61,7 @@ export default function PublicQuotation() {
   const whatsappUrl = data.org_whatsapp
     ? `https://wa.me/55${data.org_whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(`Olá! Tenho interesse na cotação para ${data.destination || 'a viagem'}.`)}`
     : null;
+  const installments = parseInstallments(data.installments);
 
   return (
     <div className="min-h-screen bg-muted/30">
@@ -124,9 +109,9 @@ export default function PublicQuotation() {
               <p className="text-3xl font-bold font-heading text-primary flex items-center gap-2">
                 <DollarSign className="h-6 w-6" /> {formatCurrency(data.total_value, data.currency || 'BRL')}
               </p>
-              {data.installments && Array.isArray(data.installments) && (data.installments as any[]).length > 0 && (
+              {installments.length > 0 && (
                 <div className="mt-2 space-y-1 text-sm text-muted-foreground">
-                  {(data.installments as any[]).map((inst: any, i: number) => (
+                  {installments.map((inst, i) => (
                     <p key={i}>💳 {inst.type}: {inst.installment_count}x de R$ {inst.value?.toFixed(2)}</p>
                   ))}
                 </div>
@@ -134,7 +119,7 @@ export default function PublicQuotation() {
             </div>
 
             {whatsappUrl && (
-              <Button asChild className="w-full bg-[#25D366] hover:bg-[#20BD5A] text-white" size="lg">
+              <Button asChild className="w-full bg-success text-success-foreground hover:bg-success/90" size="lg">
                 <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
                   💬 Quero reservar!
                 </a>

@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus, Search, FileText, MapPin, Hotel, Trash2 } from 'lucide-react';
+import { getClientName } from '@/lib/utils';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel,
   AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
@@ -91,58 +92,62 @@ export default function Quotations() {
           </Card>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {quotations.map((q) => (
-              <Card key={q.id} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate(`/quotations/${q.id}`)}>
-                <CardContent className="p-4 space-y-3">
-                  <div className="flex items-start justify-between">
-                    <div className="min-w-0">
-                      {q.destination && (
-                        <p className="font-medium flex items-center gap-1 truncate">
-                          <MapPin className="h-4 w-4 text-accent shrink-0" /> {q.destination}
-                        </p>
-                      )}
-                      {q.hotel_name && (
-                        <p className="text-sm text-muted-foreground flex items-center gap-1 truncate">
-                          <Hotel className="h-3 w-3 shrink-0" /> {q.hotel_name}
-                          {q.hotel_stars && ` ${'⭐'.repeat(q.hotel_stars)}`}
-                        </p>
-                      )}
+            {quotations.map((q) => {
+              const clientName = getClientName(q.clients);
+
+              return (
+                <Card key={q.id} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate(`/quotations/${q.id}`)}>
+                  <CardContent className="p-4 space-y-3">
+                    <div className="flex items-start justify-between">
+                      <div className="min-w-0">
+                        {q.destination && (
+                          <p className="font-medium flex items-center gap-1 truncate">
+                            <MapPin className="h-4 w-4 text-accent shrink-0" /> {q.destination}
+                          </p>
+                        )}
+                        {q.hotel_name && (
+                          <p className="text-sm text-muted-foreground flex items-center gap-1 truncate">
+                            <Hotel className="h-3 w-3 shrink-0" /> {q.hotel_name}
+                            {q.hotel_stars && ` ${'⭐'.repeat(q.hotel_stars)}`}
+                          </p>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Badge className={statusColors[q.status] || ''}>
+                          {statusLabels[q.status] || q.status}
+                        </Badge>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => e.stopPropagation()}>
+                              <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Excluir cotação?</AlertDialogTitle>
+                              <AlertDialogDescription>Esta ação não pode ser desfeita.</AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                              <AlertDialogAction className="bg-destructive text-destructive-foreground" onClick={() => deleteQuotation.mutate(q.id)}>Excluir</AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <Badge className={statusColors[q.status] || ''}>
-                        {statusLabels[q.status] || q.status}
-                      </Badge>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => e.stopPropagation()}>
-                            <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent onClick={(e) => e.stopPropagation()}>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Excluir cotação?</AlertDialogTitle>
-                            <AlertDialogDescription>Esta ação não pode ser desfeita.</AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                            <AlertDialogAction className="bg-destructive text-destructive-foreground" onClick={() => deleteQuotation.mutate(q.id)}>Excluir</AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
+                    <div className="text-sm text-muted-foreground">
+                      {q.check_in && q.check_out && (
+                        <p>{new Date(q.check_in).toLocaleDateString('pt-BR')} → {new Date(q.check_out).toLocaleDateString('pt-BR')}</p>
+                      )}
+                      {clientName && <p className="text-xs">Cliente: {clientName}</p>}
                     </div>
-                  </div>
-                  <div className="text-sm text-muted-foreground">
-                    {q.check_in && q.check_out && (
-                      <p>{new Date(q.check_in).toLocaleDateString('pt-BR')} → {new Date(q.check_out).toLocaleDateString('pt-BR')}</p>
-                    )}
-                    {(q as any).clients?.name && <p className="text-xs">Cliente: {(q as any).clients.name}</p>}
-                  </div>
-                  <p className="text-lg font-bold font-heading text-primary">
-                    {formatCurrency(q.total_value)}
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
+                    <p className="text-lg font-bold font-heading text-primary">
+                      {formatCurrency(q.total_value)}
+                    </p>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         )}
       </div>

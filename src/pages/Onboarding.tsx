@@ -62,7 +62,7 @@ export default function Onboarding() {
       .update({ org_id: orgId })
       .eq('user_id', user.id)
       .select()
-      .single();
+      .maybeSingle();
 
     if (profileError || !profile) {
       toast({ title: 'Erro', description: profileError?.message || 'Erro ao vincular usuário à agência', variant: 'destructive' });
@@ -77,7 +77,7 @@ export default function Onboarding() {
     }
 
     const [{ data: org, error: orgFetchError }, { data: rolesData, error: rolesError }] = await Promise.all([
-      supabase.from('organizations').select('*').eq('id', orgId).single(),
+      supabase.from('organizations').select('*').eq('id', orgId).maybeSingle(),
       supabase.from('user_roles').select('role').eq('user_id', user.id),
     ]);
 

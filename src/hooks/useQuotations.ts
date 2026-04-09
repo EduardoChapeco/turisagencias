@@ -32,8 +32,9 @@ export function useQuotation(id: string | undefined) {
         .from('quotations')
         .select('*, clients(name, phone, email)')
         .eq('id', id!)
-        .single();
+        .maybeSingle();
       if (error) throw error;
+      if (!data) throw new Error('Cotação não encontrada');
       return data;
     },
     enabled: !!id,

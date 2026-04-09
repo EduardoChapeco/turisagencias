@@ -19,6 +19,7 @@ const NotFound = lazy(() => import('./pages/NotFound'));
 const Clients = lazy(() => import('./pages/Clients'));
 const ClientNew = lazy(() => import('./pages/ClientNew'));
 const ClientDetail = lazy(() => import('./pages/ClientDetail'));
+const ClientEdit = lazy(() => import('./pages/ClientEdit'));
 const PublicTravelerForm = lazy(() => import('./pages/PublicTravelerForm'));
 
 const queryClient = new QueryClient({

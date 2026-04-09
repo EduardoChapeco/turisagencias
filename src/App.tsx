@@ -15,6 +15,12 @@ const Signup = lazy(() => import('./pages/Signup'));
 const Onboarding = lazy(() => import('./pages/Onboarding'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
+// CRM
+const Clients = lazy(() => import('./pages/Clients'));
+const ClientNew = lazy(() => import('./pages/ClientNew'));
+const ClientDetail = lazy(() => import('./pages/ClientDetail'));
+const PublicTravelerForm = lazy(() => import('./pages/PublicTravelerForm'));
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: { staleTime: 5 * 60 * 1000, retry: 1 },
@@ -36,6 +42,14 @@ function OnboardingGuard({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+function ProtectedWithOrg({ children }: { children: React.ReactNode }) {
+  return (
+    <ProtectedRoute>
+      <OnboardingGuard>{children}</OnboardingGuard>
+    </ProtectedRoute>
+  );
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -45,26 +59,20 @@ const App = () => (
         <AuthProvider>
           <Suspense fallback={<Loading />}>
             <Routes>
+              {/* Public */}
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
-              <Route
-                path="/onboarding"
-                element={
-                  <ProtectedRoute>
-                    <Onboarding />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/"
-                element={
-                  <ProtectedRoute>
-                    <OnboardingGuard>
-                      <Dashboard />
-                    </OnboardingGuard>
-                  </ProtectedRoute>
-                }
-              />
+              <Route path="/f/:token" element={<PublicTravelerForm />} />
+
+              {/* Auth but no org required */}
+              <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
+
+              {/* Protected + Org required */}
+              <Route path="/" element={<ProtectedWithOrg><Dashboard /></ProtectedWithOrg>} />
+              <Route path="/clients" element={<ProtectedWithOrg><Clients /></ProtectedWithOrg>} />
+              <Route path="/clients/new" element={<ProtectedWithOrg><ClientNew /></ProtectedWithOrg>} />
+              <Route path="/clients/:id" element={<ProtectedWithOrg><ClientDetail /></ProtectedWithOrg>} />
+
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>

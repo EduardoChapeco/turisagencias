@@ -50,8 +50,8 @@ export default function Onboarding() {
       .select()
       .single();
 
-    // Add org_admin role
-    await supabase.from('user_roles').insert({ user_id: user.id, role: 'org_admin' as any });
+    // Add org_admin role via SECURITY DEFINER function
+    await supabase.rpc('assign_org_admin_role', { _user_id: user.id });
 
     setOrganization(org as any);
     if (profile) setProfile(profile as any);

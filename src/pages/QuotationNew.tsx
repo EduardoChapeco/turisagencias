@@ -78,7 +78,7 @@ export default function QuotationNew() {
 
         setInstallments(d.installments ?? []);
         setAiExtracted(true);
-        setAiRawResponse(d);
+        setAiRawResponse(JSON.parse(JSON.stringify(d)));
         toast({ title: '✨ Dados extraídos com IA!', description: 'Revise os campos antes de salvar.' });
       }
     } catch (error: unknown) {

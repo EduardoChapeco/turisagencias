@@ -78,9 +78,13 @@ export function useUpdateQuotation() {
 
   return useMutation({
     mutationFn: async ({ id, ...data }: { id: string } & Partial<QuotationFormValues>) => {
+      const { installments, ...rest } = data;
+      const payload = installments !== undefined
+        ? { ...rest, installments: JSON.parse(JSON.stringify(installments)) }
+        : rest;
       const { data: quotation, error } = await supabase
         .from('quotations')
-        .update(data)
+        .update(payload)
         .eq('id', id)
         .select()
         .single();

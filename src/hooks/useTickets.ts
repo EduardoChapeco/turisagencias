@@ -94,7 +94,9 @@ export function useCreateTicketMessage() {
       const { data, error } = await supabase
         .from('ticket_messages')
         .insert({
-          ...payload,
+          ticket_id: payload.ticket_id,
+          body: payload.content,
+          is_internal: payload.is_internal ?? false,
           sender_id: user?.id ?? null,
           sender_type: 'agent',
         })

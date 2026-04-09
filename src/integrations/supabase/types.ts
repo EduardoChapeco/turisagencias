@@ -120,6 +120,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      assign_org_admin_role: { Args: { _user_id: string }; Returns: undefined }
       get_my_org_id: { Args: never; Returns: string }
       has_role: {
         Args: {

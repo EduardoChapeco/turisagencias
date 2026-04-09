@@ -1,16 +1,17 @@
 import { create } from 'zustand';
 import type { User } from '@supabase/supabase-js';
-import type { Profile, Organization, AppRole } from '@/types';
+import type { Tables } from '@/integrations/supabase/types';
+import type { AppRole } from '@/types';
 
 interface AuthState {
   user: User | null;
-  profile: Profile | null;
-  organization: Organization | null;
+  profile: Tables<'profiles'> | null;
+  organization: Tables<'organizations'> | null;
   roles: AppRole[];
   isLoading: boolean;
   setUser: (user: User | null) => void;
-  setProfile: (profile: Profile | null) => void;
-  setOrganization: (org: Organization | null) => void;
+  setProfile: (profile: Tables<'profiles'> | null) => void;
+  setOrganization: (org: Tables<'organizations'> | null) => void;
   setRoles: (roles: AppRole[]) => void;
   setLoading: (loading: boolean) => void;
   reset: () => void;

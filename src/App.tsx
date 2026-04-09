@@ -9,6 +9,7 @@ import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { useAuthStore } from '@/stores/authStore';
 import { Loader2 } from 'lucide-react';
 
+// Auth
 const Dashboard = lazy(() => import('./pages/Index'));
 const Login = lazy(() => import('./pages/Login'));
 const Signup = lazy(() => import('./pages/Signup'));
@@ -19,7 +20,16 @@ const NotFound = lazy(() => import('./pages/NotFound'));
 const Clients = lazy(() => import('./pages/Clients'));
 const ClientNew = lazy(() => import('./pages/ClientNew'));
 const ClientDetail = lazy(() => import('./pages/ClientDetail'));
+const ClientEdit = lazy(() => import('./pages/ClientEdit'));
+
+// Cotações
+const Quotations = lazy(() => import('./pages/Quotations'));
+const QuotationNew = lazy(() => import('./pages/QuotationNew'));
+const QuotationDetail = lazy(() => import('./pages/QuotationDetail'));
+
+// Public
 const PublicTravelerForm = lazy(() => import('./pages/PublicTravelerForm'));
+const PublicQuotation = lazy(() => import('./pages/PublicQuotation'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -63,15 +73,24 @@ const App = () => (
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
               <Route path="/f/:token" element={<PublicTravelerForm />} />
+              <Route path="/q/:token" element={<PublicQuotation />} />
 
               {/* Auth but no org required */}
               <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
 
               {/* Protected + Org required */}
               <Route path="/" element={<ProtectedWithOrg><Dashboard /></ProtectedWithOrg>} />
+              
+              {/* CRM */}
               <Route path="/clients" element={<ProtectedWithOrg><Clients /></ProtectedWithOrg>} />
               <Route path="/clients/new" element={<ProtectedWithOrg><ClientNew /></ProtectedWithOrg>} />
               <Route path="/clients/:id" element={<ProtectedWithOrg><ClientDetail /></ProtectedWithOrg>} />
+              <Route path="/clients/:id/edit" element={<ProtectedWithOrg><ClientEdit /></ProtectedWithOrg>} />
+
+              {/* Cotações */}
+              <Route path="/quotations" element={<ProtectedWithOrg><Quotations /></ProtectedWithOrg>} />
+              <Route path="/quotations/new" element={<ProtectedWithOrg><QuotationNew /></ProtectedWithOrg>} />
+              <Route path="/quotations/:id" element={<ProtectedWithOrg><QuotationDetail /></ProtectedWithOrg>} />
 
               <Route path="*" element={<NotFound />} />
             </Routes>

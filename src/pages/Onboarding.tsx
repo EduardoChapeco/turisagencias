@@ -53,9 +53,13 @@ export default function Onboarding() {
     // Add org_admin role via SECURITY DEFINER function
     await supabase.rpc('assign_org_admin_role', { _user_id: user.id });
 
+    // Refetch roles from DB to get actual state
+    const { data: rolesData } = await supabase.from('user_roles').select('role').eq('user_id', user.id);
+    const freshRoles = rolesData?.map((r) => r.role as any) || [];
+
     setOrganization(org as any);
     if (profile) setProfile(profile as any);
-    setRoles(['agent', 'org_admin']);
+    setRoles(freshRoles);
 
     toast({ title: 'Agência criada!', description: `${name} está pronta para uso.` });
     setLoading(false);

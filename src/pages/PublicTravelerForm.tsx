@@ -7,28 +7,18 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Plane, CheckCircle2, Loader2 } from 'lucide-react';
+import { Plane, CheckCircle2, Loader2, AlertCircle } from 'lucide-react';
 
 export default function PublicTravelerForm() {
   const { token } = useParams<{ token: string }>();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [invalidToken, setInvalidToken] = useState(false);
   const [form, setForm] = useState({
     full_name: '', cpf: '', birth_date: '', gender: '',
     nationality: 'Brasileira', phone: '', email: '',
   });
-
-  // Try to load existing traveler data by token
-  useEffect(() => {
-    if (!token) return;
-    supabase.rpc('submit_traveler_form', {
-      _token: token,
-      _full_name: '',
-    }).then(() => {
-      // We can't read data without auth, form starts empty
-    });
-  }, [token]);
 
   const update = (field: string, value: string) => setForm(p => ({ ...p, [field]: value }));
 
@@ -52,11 +42,25 @@ export default function PublicTravelerForm() {
     if (error) {
       toast({ title: 'Erro ao enviar', description: error.message, variant: 'destructive' });
     } else if (!data) {
-      toast({ title: 'Link inválido', description: 'Este formulário não foi encontrado.', variant: 'destructive' });
+      setInvalidToken(true);
     } else {
       setSubmitted(true);
     }
   };
+
+  if (invalidToken) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-muted/30 px-4">
+        <Card className="w-full max-w-md text-center">
+          <CardContent className="py-12">
+            <AlertCircle className="mx-auto h-16 w-16 text-destructive mb-4" />
+            <h2 className="font-heading text-xl font-bold mb-2">Link inválido</h2>
+            <p className="text-sm text-muted-foreground">Este formulário não foi encontrado ou já expirou. Entre em contato com sua agência.</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   if (submitted) {
     return (

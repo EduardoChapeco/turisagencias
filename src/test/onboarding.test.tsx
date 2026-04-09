@@ -51,7 +51,7 @@ describe('Onboarding Page', () => {
     vi.clearAllMocks();
     useAuthStore.setState({
       user: { id: 'user-1', email: 'test@test.com' } as any,
-      profile: { id: 'p-1', user_id: 'user-1', org_id: null, first_name: 'Test', last_name: 'User', avatar_url: null, phone: null, created_at: '', updated_at: '' },
+      profile: { id: 'p-1', user_id: 'user-1', org_id: null, first_name: 'Test', last_name: 'User', avatar_url: null, phone: null, bio: null, email: null, is_active: true, last_seen_at: null, notification_prefs: {}, whatsapp: null, created_at: '', updated_at: '' } as any,
       organization: null,
       roles: ['agent'],
       isLoading: false,

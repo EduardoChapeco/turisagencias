@@ -99,11 +99,10 @@ export function useTogglePublicChecklistItem() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (payload: { token: string; itemId: string; isCompleted: boolean }) => {
+    mutationFn: async (payload: { token: string; itemId: string }) => {
       const { data, error } = await supabase.rpc('toggle_public_checklist_item', {
         _token: payload.token,
         _item_id: payload.itemId,
-        _is_completed: payload.isCompleted,
       });
       if (error) throw error;
       return data;

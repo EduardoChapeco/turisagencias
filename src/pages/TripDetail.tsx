@@ -234,7 +234,7 @@ export default function TripDetail() {
                         )}
                         {checklist.checklist_items?.map((item) => (
                           <label key={item.id} className="flex items-start gap-3 rounded-md border p-3">
-                            <Checkbox checked={item.is_completed} disabled />
+                            <Checkbox checked={item.is_checked} disabled />
                             <div>
                               <p className="text-sm font-medium">{item.title}</p>
                               {item.description && <p className="text-xs text-muted-foreground">{item.description}</p>}

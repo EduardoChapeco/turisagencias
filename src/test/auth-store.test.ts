@@ -28,7 +28,7 @@ describe('Auth Store', () => {
   });
 
   it('sets profile correctly', () => {
-    const mockProfile = { id: 'p-1', user_id: 'user-1', org_id: 'org-1', first_name: 'Test', last_name: 'User', avatar_url: null, phone: null, created_at: '', updated_at: '' };
+    const mockProfile = { id: 'p-1', user_id: 'user-1', org_id: 'org-1', first_name: 'Test', last_name: 'User', avatar_url: null, phone: null, bio: null, email: null, is_active: true, last_seen_at: null, notification_prefs: {}, whatsapp: null, created_at: '', updated_at: '' } as any;
     useAuthStore.getState().setProfile(mockProfile);
     expect(useAuthStore.getState().profile).toEqual(mockProfile);
   });

@@ -55,7 +55,6 @@ export function useKanbanBoard(slug: string) {
 
 export function useCreateKanbanCard() {
   const queryClient = useQueryClient();
-  const { organization } = useAuthStore();
   const { toast } = useToast();
 
   return useMutation({
@@ -67,14 +66,11 @@ export function useCreateKanbanCard() {
       client_id?: string | null;
       quotation_id?: string | null;
       trip_id?: string | null;
-      priority?: string;
     }) => {
       const { data, error } = await supabase
         .from('kanban_cards')
         .insert({
           ...payload,
-          org_id: organization!.id,
-          priority: payload.priority ?? 'medium',
         })
         .select()
         .single();

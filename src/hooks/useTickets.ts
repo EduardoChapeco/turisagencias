@@ -58,10 +58,16 @@ export function useCreateTicket() {
       const { data, error } = await supabase
         .from('tickets')
         .insert({
-          ...payload,
+          subject: payload.title,
+          title: payload.title,
+          description: payload.description,
+          type: payload.type ?? 'general',
+          priority: payload.priority ?? 'medium',
+          trip_id: payload.trip_id ?? null,
+          client_id: payload.client_id ?? null,
           org_id: organization!.id,
-          created_by_id: user?.id ?? null,
-          assigned_agent_id: user?.id ?? null,
+          created_by: user?.id ?? null,
+          assigned_to: user?.id ?? null,
         })
         .select()
         .single();
@@ -88,7 +94,9 @@ export function useCreateTicketMessage() {
       const { data, error } = await supabase
         .from('ticket_messages')
         .insert({
-          ...payload,
+          ticket_id: payload.ticket_id,
+          body: payload.content,
+          is_internal: payload.is_internal ?? false,
           sender_id: user?.id ?? null,
           sender_type: 'agent',
         })

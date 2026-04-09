@@ -9,11 +9,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
-function isMissingSchemaColumnError(message: string | undefined, column: string) {
-  if (!message) return false;
-  return message.toLowerCase().includes(`could not find the '${column}' column`.toLowerCase());
-}
-
 export default function Onboarding() {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -69,31 +64,14 @@ export default function Onboarding() {
               setLoading(true);
               const orgId = crypto.randomUUID();
 
-              const fullOrganizationPayload = {
+              const { error: orgError } = await supabase.from('organizations').insert({
                 id: orgId,
                 name: agencyName,
                 slug,
                 whatsapp: form.whatsapp || null,
                 email: form.email || null,
                 phone: form.phone || null,
-              };
-
-              const fallbackOrganizationPayload = {
-                id: orgId,
-                name: agencyName,
-                slug,
-                whatsapp: form.whatsapp || null,
-              };
-
-              let { error: orgError } = await supabase.from('organizations').insert(fullOrganizationPayload);
-
-              if (
-                orgError &&
-                (isMissingSchemaColumnError(orgError.message, 'email') || isMissingSchemaColumnError(orgError.message, 'phone'))
-              ) {
-                const retry = await supabase.from('organizations').insert(fallbackOrganizationPayload);
-                orgError = retry.error;
-              }
+              });
 
               if (orgError) {
                 toast({

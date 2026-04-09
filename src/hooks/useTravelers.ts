@@ -30,8 +30,9 @@ export function useTraveler(id: string | undefined) {
         .from('travelers')
         .select('*, traveler_documents(*)')
         .eq('id', id!)
-        .single();
+        .maybeSingle();
       if (error) throw error;
+      if (!data) throw new Error('Viajante não encontrado');
       return data;
     },
     enabled: !!id,

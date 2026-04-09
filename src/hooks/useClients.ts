@@ -34,8 +34,9 @@ export function useClient(id: string | undefined) {
         .from('clients')
         .select('*')
         .eq('id', id!)
-        .single();
+        .maybeSingle();
       if (error) throw error;
+      if (!data) throw new Error('Cliente não encontrado');
       return data;
     },
     enabled: !!id,

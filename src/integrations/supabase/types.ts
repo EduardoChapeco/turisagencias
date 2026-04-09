@@ -17,6 +17,7 @@ export type Database = {
       clients: {
         Row: {
           address: string | null
+          assigned_agent_id: string | null
           birth_date: string | null
           city: string | null
           country: string | null
@@ -30,6 +31,10 @@ export type Database = {
           org_id: string
           origin: string | null
           phone: string | null
+          photo_url: string | null
+          portal_access_enabled: boolean
+          portal_user_id: string | null
+          preferences: Json | null
           state: string | null
           tags: string[] | null
           updated_at: string
@@ -37,6 +42,7 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          assigned_agent_id?: string | null
           birth_date?: string | null
           city?: string | null
           country?: string | null
@@ -50,6 +56,10 @@ export type Database = {
           org_id: string
           origin?: string | null
           phone?: string | null
+          photo_url?: string | null
+          portal_access_enabled?: boolean
+          portal_user_id?: string | null
+          preferences?: Json | null
           state?: string | null
           tags?: string[] | null
           updated_at?: string
@@ -57,6 +67,7 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          assigned_agent_id?: string | null
           birth_date?: string | null
           city?: string | null
           country?: string | null
@@ -70,6 +81,10 @@ export type Database = {
           org_id?: string
           origin?: string | null
           phone?: string | null
+          photo_url?: string | null
+          portal_access_enabled?: boolean
+          portal_user_id?: string | null
+          preferences?: Json | null
           state?: string | null
           tags?: string[] | null
           updated_at?: string
@@ -87,10 +102,15 @@ export type Database = {
       }
       organizations: {
         Row: {
+          address: Json | null
+          ai_keys_config: Json | null
           created_at: string
+          email: string | null
           id: string
+          is_active: boolean
           logo_url: string | null
           name: string
+          phone: string | null
           plan: string | null
           primary_color: string | null
           settings: Json | null
@@ -99,10 +119,15 @@ export type Database = {
           whatsapp: string | null
         }
         Insert: {
+          address?: Json | null
+          ai_keys_config?: Json | null
           created_at?: string
+          email?: string | null
           id?: string
+          is_active?: boolean
           logo_url?: string | null
           name: string
+          phone?: string | null
           plan?: string | null
           primary_color?: string | null
           settings?: Json | null
@@ -111,10 +136,15 @@ export type Database = {
           whatsapp?: string | null
         }
         Update: {
+          address?: Json | null
+          ai_keys_config?: Json | null
           created_at?: string
+          email?: string | null
           id?: string
+          is_active?: boolean
           logo_url?: string | null
           name?: string
+          phone?: string | null
           plan?: string | null
           primary_color?: string | null
           settings?: Json | null
@@ -127,36 +157,54 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          bio: string | null
           created_at: string
+          email: string | null
           first_name: string
           id: string
+          is_active: boolean
           last_name: string
+          last_seen_at: string | null
+          notification_prefs: Json | null
           org_id: string | null
           phone: string | null
           updated_at: string
           user_id: string
+          whatsapp: string | null
         }
         Insert: {
           avatar_url?: string | null
+          bio?: string | null
           created_at?: string
+          email?: string | null
           first_name?: string
           id?: string
+          is_active?: boolean
           last_name?: string
+          last_seen_at?: string | null
+          notification_prefs?: Json | null
           org_id?: string | null
           phone?: string | null
           updated_at?: string
           user_id: string
+          whatsapp?: string | null
         }
         Update: {
           avatar_url?: string | null
+          bio?: string | null
           created_at?: string
+          email?: string | null
           first_name?: string
           id?: string
+          is_active?: boolean
           last_name?: string
+          last_seen_at?: string | null
+          notification_prefs?: Json | null
           org_id?: string | null
           phone?: string | null
           updated_at?: string
           user_id?: string
+          whatsapp?: string | null
         }
         Relationships: [
           {

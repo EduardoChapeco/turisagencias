@@ -110,7 +110,7 @@ describe('Signup Page', () => {
     fireEvent.change(screen.getByLabelText('Sobrenome'), { target: { value: 'Silva' } });
     fireEvent.change(screen.getByLabelText(/e-mail/i), { target: { value: 'joao@test.com' } });
     fireEvent.change(screen.getByLabelText(/senha/i), { target: { value: 'securepass' } });
-    fireEvent.click(screen.getByRole('button', { name: /criar conta/i }));
+    fireEvent.click(screen.getByRole('button', { name: /cadastrar/i }));
 
     await waitFor(() => {
       expect(mockSignUp).toHaveBeenCalledWith(

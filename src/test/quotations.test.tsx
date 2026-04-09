@@ -16,6 +16,7 @@ vi.mock('@/integrations/supabase/client', () => ({
     from: vi.fn().mockReturnValue({
       select: vi.fn().mockReturnValue({
         order: vi.fn().mockReturnValue({
+          limit: vi.fn().mockResolvedValue({ data: [], error: null }),
           eq: vi.fn().mockResolvedValue({ data: [], error: null }),
           ilike: vi.fn().mockResolvedValue({ data: [], error: null }),
           then: (cb: (v: unknown) => void) => cb({ data: [], error: null }),

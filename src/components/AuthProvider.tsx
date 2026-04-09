@@ -4,64 +4,73 @@ import { useAuthStore } from '@/stores/authStore';
 import type { AppRole } from '@/types';
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const { setUser, setProfile, setOrganization, setRoles, setLoading, reset } = useAuthStore();
+  const { setLoading, setOrganization, setProfile, setRoles, setUser, reset } = useAuthStore();
 
   const fetchUserData = useCallback(async (userId: string) => {
-    try {
-      const [profileRes, rolesRes] = await Promise.all([
-        supabase.from('profiles').select('*').eq('user_id', userId).maybeSingle(),
-        supabase.from('user_roles').select('role').eq('user_id', userId),
-      ]);
+    const [{ data: profile, error: profileError }, { data: rolesData, error: rolesError }] = await Promise.all([
+      supabase.from('profiles').select('*').eq('user_id', userId).maybeSingle(),
+      supabase.from('user_roles').select('role').eq('user_id', userId),
+    ]);
 
-      if (profileRes.error) throw profileRes.error;
-      if (rolesRes.error) throw rolesRes.error;
+    if (profileError) throw profileError;
+    if (rolesError) throw rolesError;
 
-      setProfile(profileRes.data ?? null);
+    setProfile(profile ?? null);
+    setRoles((rolesData ?? []).map((item) => item.role as AppRole));
+
+    if (profile?.org_id) {
+      const { data: org, error: orgError } = await supabase
+        .from('organizations')
+        .select('*')
+        .eq('id', profile.org_id)
+        .maybeSingle();
+
+      if (orgError) throw orgError;
+      setOrganization(org ?? null);
+    } else {
       setOrganization(null);
-
-      if (profileRes.data?.org_id) {
-        const { data: org, error: orgError } = await supabase
-          .from('organizations')
-          .select('*')
-          .eq('id', profileRes.data.org_id)
-          .maybeSingle();
-
-        if (orgError) throw orgError;
-        setOrganization(org ?? null);
-      }
-
-      setRoles((rolesRes.data ?? []).map((item) => item.role as AppRole));
-    } catch (error) {
-      console.error('Erro ao carregar contexto do usuário', error);
-      setProfile(null);
-      setOrganization(null);
-      setRoles([]);
     }
   }, [setOrganization, setProfile, setRoles]);
 
   useEffect(() => {
-    // Set up listener FIRST
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    const bootstrap = async () => {
+      setLoading(true);
+      const { data: { session } } = await supabase.auth.getSession();
+
       if (session?.user) {
         setUser(session.user);
-        setLoading(true);
-        // Defer to avoid Supabase deadlock on simultaneous requests
-        setTimeout(() => {
-          fetchUserData(session.user.id).finally(() => setLoading(false));
-        }, 0);
+        try {
+          await fetchUserData(session.user.id);
+        } catch (error) {
+          console.error('Erro ao carregar contexto do usuário', error);
+          reset();
+        }
       } else {
         reset();
       }
-    });
 
-    // Then check existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        setUser(session.user);
-        fetchUserData(session.user.id).finally(() => setLoading(false));
-      } else {
-        setLoading(false);
+      setLoading(false);
+    };
+
+    void bootstrap();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!session?.user) {
+        reset();
+        return;
       }
+
+      setUser(session.user);
+      setLoading(true);
+
+      queueMicrotask(() => {
+        fetchUserData(session.user.id)
+          .catch((error) => {
+            console.error('Erro ao sincronizar sessão', error);
+            reset();
+          })
+          .finally(() => setLoading(false));
+      });
     });
 
     return () => subscription.unsubscribe();

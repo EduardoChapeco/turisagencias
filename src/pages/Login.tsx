@@ -1,38 +1,25 @@
 import { useState } from 'react';
-import { useNavigate, Link, Navigate } from 'react-router-dom';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
+import { Plane } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthStore } from '@/stores/authStore';
+import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useToast } from '@/hooks/use-toast';
-import { Plane } from 'lucide-react';
 
 export default function Login() {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const { isLoading, user } = useAuthStore();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
-  const { toast } = useToast();
-  const { user, isLoading } = useAuthStore();
 
-  // Redirect if already logged in
   if (!isLoading && user) {
     return <Navigate to="/" replace />;
   }
-
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    setLoading(false);
-    if (error) {
-      toast({ title: 'Erro ao entrar', description: error.message, variant: 'destructive' });
-    } else {
-      navigate('/');
-    }
-  };
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-muted/30 px-4">
@@ -42,10 +29,25 @@ export default function Login() {
             <Plane className="h-6 w-6 text-primary-foreground" />
           </div>
           <CardTitle className="font-heading text-2xl">VoyageOS</CardTitle>
-          <CardDescription>Entre na sua conta para continuar</CardDescription>
+          <CardDescription>Entre na sua conta para continuar.</CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleLogin} className="space-y-4">
+          <form
+            className="space-y-4"
+            onSubmit={async (event) => {
+              event.preventDefault();
+              setLoading(true);
+              const { error } = await supabase.auth.signInWithPassword({ email, password });
+              setLoading(false);
+
+              if (error) {
+                toast({ title: 'Erro ao entrar', description: error.message, variant: 'destructive' });
+                return;
+              }
+
+              navigate('/');
+            }}
+          >
             <div className="space-y-2">
               <Label htmlFor="email">E-mail</Label>
               <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="seu@email.com" required />
@@ -58,9 +60,9 @@ export default function Login() {
               {loading ? 'Entrando...' : 'Entrar'}
             </Button>
           </form>
+
           <p className="mt-4 text-center text-sm text-muted-foreground">
-            Não tem conta?{' '}
-            <Link to="/signup" className="text-accent hover:underline">Criar conta</Link>
+            Não tem conta? <Link to="/signup" className="text-accent hover:underline">Criar conta</Link>
           </p>
         </CardContent>
       </Card>

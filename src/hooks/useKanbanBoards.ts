@@ -73,8 +73,6 @@ export function useCreateKanbanCard() {
         .from('kanban_cards')
         .insert({
           ...payload,
-          org_id: organization!.id,
-          priority: payload.priority ?? 'medium',
         })
         .select()
         .single();

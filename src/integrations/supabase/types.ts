@@ -57,33 +57,52 @@ export type Database = {
       }
       checklists: {
         Row: {
+          client_id: string | null
           created_at: string
+          created_by: string | null
           id: string
+          is_visible_to_client: boolean | null
           org_id: string
           share_token: string | null
           title: string
           trip_id: string | null
+          type: string | null
           updated_at: string
         }
         Insert: {
+          client_id?: string | null
           created_at?: string
+          created_by?: string | null
           id?: string
+          is_visible_to_client?: boolean | null
           org_id: string
           share_token?: string | null
           title: string
           trip_id?: string | null
+          type?: string | null
           updated_at?: string
         }
         Update: {
+          client_id?: string | null
           created_at?: string
+          created_by?: string | null
           id?: string
+          is_visible_to_client?: boolean | null
           org_id?: string
           share_token?: string | null
           title?: string
           trip_id?: string | null
+          type?: string | null
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "checklists_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "checklists_org_id_fkey"
             columns: ["org_id"]
@@ -189,9 +208,11 @@ export type Database = {
       hotels_bank: {
         Row: {
           address: string | null
+          category: number | null
           city: string | null
           country: string | null
           created_at: string
+          description: string | null
           email: string | null
           id: string
           name: string
@@ -199,16 +220,20 @@ export type Database = {
           org_id: string
           phone: string | null
           photo_url: string | null
+          regime_options: string[] | null
           stars: number | null
           state: string | null
+          tags: string[] | null
           updated_at: string
           website: string | null
         }
         Insert: {
           address?: string | null
+          category?: number | null
           city?: string | null
           country?: string | null
           created_at?: string
+          description?: string | null
           email?: string | null
           id?: string
           name: string
@@ -216,16 +241,20 @@ export type Database = {
           org_id: string
           phone?: string | null
           photo_url?: string | null
+          regime_options?: string[] | null
           stars?: number | null
           state?: string | null
+          tags?: string[] | null
           updated_at?: string
           website?: string | null
         }
         Update: {
           address?: string | null
+          category?: number | null
           city?: string | null
           country?: string | null
           created_at?: string
+          description?: string | null
           email?: string | null
           id?: string
           name?: string
@@ -233,8 +262,10 @@ export type Database = {
           org_id?: string
           phone?: string | null
           photo_url?: string | null
+          regime_options?: string[] | null
           stars?: number | null
           state?: string | null
+          tags?: string[] | null
           updated_at?: string
           website?: string | null
         }
@@ -671,6 +702,7 @@ export type Database = {
           id: string
           is_internal: boolean
           sender_id: string | null
+          sender_type: string | null
           ticket_id: string
         }
         Insert: {
@@ -679,6 +711,7 @@ export type Database = {
           id?: string
           is_internal?: boolean
           sender_id?: string | null
+          sender_type?: string | null
           ticket_id: string
         }
         Update: {
@@ -687,6 +720,7 @@ export type Database = {
           id?: string
           is_internal?: boolean
           sender_id?: string | null
+          sender_type?: string | null
           ticket_id?: string
         }
         Relationships: [
@@ -705,11 +739,15 @@ export type Database = {
           client_id: string | null
           created_at: string
           created_by: string | null
+          description: string | null
           id: string
           org_id: string
           priority: string
           status: string
           subject: string
+          title: string | null
+          trip_id: string | null
+          type: string | null
           updated_at: string
         }
         Insert: {
@@ -717,11 +755,15 @@ export type Database = {
           client_id?: string | null
           created_at?: string
           created_by?: string | null
+          description?: string | null
           id?: string
           org_id: string
           priority?: string
           status?: string
           subject: string
+          title?: string | null
+          trip_id?: string | null
+          type?: string | null
           updated_at?: string
         }
         Update: {
@@ -729,11 +771,15 @@ export type Database = {
           client_id?: string | null
           created_at?: string
           created_by?: string | null
+          description?: string | null
           id?: string
           org_id?: string
           priority?: string
           status?: string
           subject?: string
+          title?: string | null
+          trip_id?: string | null
+          type?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -749,6 +795,13 @@ export type Database = {
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tickets_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
             referencedColumns: ["id"]
           },
         ]
@@ -957,44 +1010,198 @@ export type Database = {
           },
         ]
       }
+      trip_documents: {
+        Row: {
+          created_at: string
+          doc_type: string | null
+          file_url: string | null
+          id: string
+          is_visible_to_client: boolean
+          title: string
+          trip_id: string
+        }
+        Insert: {
+          created_at?: string
+          doc_type?: string | null
+          file_url?: string | null
+          id?: string
+          is_visible_to_client?: boolean
+          title: string
+          trip_id: string
+        }
+        Update: {
+          created_at?: string
+          doc_type?: string | null
+          file_url?: string | null
+          id?: string
+          is_visible_to_client?: boolean
+          title?: string
+          trip_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_documents_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trip_flights: {
+        Row: {
+          airline_name: string | null
+          arrival_datetime: string | null
+          booking_code: string | null
+          created_at: string
+          departure_datetime: string | null
+          destination_city: string | null
+          flight_number: string | null
+          id: string
+          notes: string | null
+          origin_city: string | null
+          sequence: number
+          trip_id: string
+        }
+        Insert: {
+          airline_name?: string | null
+          arrival_datetime?: string | null
+          booking_code?: string | null
+          created_at?: string
+          departure_datetime?: string | null
+          destination_city?: string | null
+          flight_number?: string | null
+          id?: string
+          notes?: string | null
+          origin_city?: string | null
+          sequence?: number
+          trip_id: string
+        }
+        Update: {
+          airline_name?: string | null
+          arrival_datetime?: string | null
+          booking_code?: string | null
+          created_at?: string
+          departure_datetime?: string | null
+          destination_city?: string | null
+          flight_number?: string | null
+          id?: string
+          notes?: string | null
+          origin_city?: string | null
+          sequence?: number
+          trip_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_flights_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trip_travelers: {
+        Row: {
+          created_at: string
+          id: string
+          seat_number: string | null
+          ticket_number: string | null
+          traveler_id: string
+          trip_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          seat_number?: string | null
+          ticket_number?: string | null
+          traveler_id: string
+          trip_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          seat_number?: string | null
+          ticket_number?: string | null
+          traveler_id?: string
+          trip_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_travelers_traveler_id_fkey"
+            columns: ["traveler_id"]
+            isOneToOne: false
+            referencedRelation: "travelers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trip_travelers_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       trips: {
         Row: {
+          assigned_agent_id: string | null
           created_at: string
           created_by: string | null
           departure_date: string | null
           destination: string | null
+          destination_city: string | null
+          destination_country: string | null
+          hotel_name: string | null
+          hotel_regime: string | null
           id: string
           notes: string | null
+          notes_internal: string | null
           org_id: string
           primary_client_id: string | null
           return_date: string | null
           status: string
+          title: string | null
           updated_at: string
         }
         Insert: {
+          assigned_agent_id?: string | null
           created_at?: string
           created_by?: string | null
           departure_date?: string | null
           destination?: string | null
+          destination_city?: string | null
+          destination_country?: string | null
+          hotel_name?: string | null
+          hotel_regime?: string | null
           id?: string
           notes?: string | null
+          notes_internal?: string | null
           org_id: string
           primary_client_id?: string | null
           return_date?: string | null
           status?: string
+          title?: string | null
           updated_at?: string
         }
         Update: {
+          assigned_agent_id?: string | null
           created_at?: string
           created_by?: string | null
           departure_date?: string | null
           destination?: string | null
+          destination_city?: string | null
+          destination_country?: string | null
+          hotel_name?: string | null
+          hotel_regime?: string | null
           id?: string
           notes?: string | null
+          notes_internal?: string | null
           org_id?: string
           primary_client_id?: string | null
           return_date?: string | null
           status?: string
+          title?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -1056,6 +1263,16 @@ export type Database = {
           org_logo: string
           org_name: string
           org_primary_color: string
+        }[]
+      }
+      get_public_organization_by_slug: {
+        Args: { _slug: string }
+        Returns: {
+          id: string
+          logo_url: string
+          name: string
+          primary_color: string
+          whatsapp: string
         }[]
       }
       get_public_quotation: {

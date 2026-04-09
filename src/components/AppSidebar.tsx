@@ -3,10 +3,6 @@ import {
   Users,
   FileText,
   Plane,
-  Columns3,
-  TicketCheck,
-  Hotel,
-  Settings,
   LogOut,
 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
@@ -31,14 +27,6 @@ const mainNav = [
   { title: 'Dashboard', url: '/', icon: LayoutDashboard },
   { title: 'Clientes', url: '/clients', icon: Users },
   { title: 'Cotações', url: '/quotations', icon: FileText },
-  { title: 'Viagens', url: '/trips', icon: Plane },
-  { title: 'Kanban', url: '/kanban/sales', icon: Columns3 },
-  { title: 'Tickets', url: '/tickets', icon: TicketCheck },
-  { title: 'Hotéis', url: '/hotels', icon: Hotel },
-];
-
-const secondaryNav = [
-  { title: 'Configurações', url: '/settings', icon: Settings },
 ];
 
 export function AppSidebar() {
@@ -85,23 +73,6 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        <SidebarGroup>
-          <SidebarGroupLabel>Sistema</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {secondaryNav.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <NavLink to={item.url} className="hover:bg-sidebar-accent/50" activeClassName="bg-sidebar-accent text-sidebar-primary font-medium">
-                      <item.icon className="mr-2 h-4 w-4" />
-                      {!collapsed && <span>{item.title}</span>}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
       </SidebarContent>
 
       <SidebarFooter>

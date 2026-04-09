@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthStore } from '@/stores/authStore';
 import { useToast } from '@/hooks/use-toast';
+import type { QuotationFormValues } from '@/types';
 
 export function useQuotations(filters?: { status?: string; search?: string }) {
   const { organization } = useAuthStore();
@@ -45,26 +46,7 @@ export function useCreateQuotation() {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async (data: {
-      destination?: string;
-      hotel_name?: string;
-      hotel_stars?: number;
-      hotel_photo_url?: string;
-      check_in?: string;
-      check_out?: string;
-      num_nights?: number;
-      meal_plan?: string;
-      room_type?: string;
-      total_value?: number;
-      currency?: string;
-      installments?: any;
-      whatsapp_text?: string;
-      client_id?: string;
-      source_file_url?: string;
-      ai_extracted?: boolean;
-      ai_raw_response?: any;
-      status?: string;
-    }) => {
+    mutationFn: async (data: QuotationFormValues) => {
       const { data: quotation, error } = await supabase
         .from('quotations')
         .insert({ ...data, org_id: organization!.id, agent_id: user!.id })
@@ -88,13 +70,7 @@ export function useUpdateQuotation() {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async ({ id, ...data }: { id: string } & Partial<{
-      destination: string; hotel_name: string; hotel_stars: number;
-      check_in: string; check_out: string; num_nights: number;
-      meal_plan: string; room_type: string; total_value: number;
-      currency: string; installments: any; whatsapp_text: string;
-      status: string; client_id: string; hotel_photo_url: string;
-    }>) => {
+    mutationFn: async ({ id, ...data }: { id: string } & Partial<QuotationFormValues>) => {
       const { data: quotation, error } = await supabase
         .from('quotations')
         .update(data)

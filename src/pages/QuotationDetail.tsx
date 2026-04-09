@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, Copy, ExternalLink, Send, MapPin, Hotel, Calendar, DollarSign } from 'lucide-react';
+import { parseInstallments } from '@/lib/utils';
 
 const statusLabels: Record<string, string> = {
   draft: 'Rascunho', sent: 'Enviada', viewed: 'Visualizada', accepted: 'Aceita', expired: 'Expirada',
@@ -45,6 +46,8 @@ export default function QuotationDetail() {
     if (!value) return '-';
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency }).format(value);
   };
+
+  const installments = parseInstallments(quotation?.installments);
 
   if (isLoading) {
     return <AppLayout><div className="space-y-4"><Skeleton className="h-8 w-48" /><Skeleton className="h-96" /></div></AppLayout>;
@@ -112,9 +115,9 @@ export default function QuotationDetail() {
               <p className="flex items-center gap-2 text-lg font-bold text-primary">
                 <DollarSign className="h-4 w-4" /> {formatCurrency(quotation.total_value, quotation.currency || 'BRL')}
               </p>
-              {quotation.installments && Array.isArray(quotation.installments) && (quotation.installments as any[]).length > 0 && (
+              {installments.length > 0 && (
                 <div className="space-y-1 text-muted-foreground">
-                  {(quotation.installments as any[]).map((inst: any, i: number) => (
+                  {installments.map((inst, i) => (
                     <p key={i}>{inst.type}: {inst.installment_count}x de R$ {inst.value?.toFixed(2)}</p>
                   ))}
                 </div>

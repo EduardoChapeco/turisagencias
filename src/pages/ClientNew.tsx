@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft } from 'lucide-react';
+import type { ClientFormValues } from '@/types';
 
 export default function ClientNew() {
   const navigate = useNavigate();
@@ -22,10 +23,22 @@ export default function ClientNew() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const cleaned = Object.fromEntries(
-      Object.entries(form).filter(([_, v]) => v !== '')
-    );
-    const result = await createClient.mutateAsync(cleaned as any);
+    const payload: ClientFormValues = {
+      name: form.name.trim(),
+      ...(form.email ? { email: form.email.trim() } : {}),
+      ...(form.phone ? { phone: form.phone.trim() } : {}),
+      ...(form.cpf ? { cpf: form.cpf.trim() } : {}),
+      ...(form.birth_date ? { birth_date: form.birth_date } : {}),
+      ...(form.address ? { address: form.address.trim() } : {}),
+      ...(form.city ? { city: form.city.trim() } : {}),
+      ...(form.state ? { state: form.state.trim() } : {}),
+      ...(form.zip_code ? { zip_code: form.zip_code.trim() } : {}),
+      ...(form.country ? { country: form.country.trim() } : {}),
+      ...(form.origin ? { origin: form.origin.trim() } : {}),
+      ...(form.notes ? { notes: form.notes.trim() } : {}),
+    };
+
+    const result = await createClient.mutateAsync(payload);
     if (result) navigate(`/clients/${result.id}`);
   };
 

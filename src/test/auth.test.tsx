@@ -96,8 +96,8 @@ describe('Signup Page', () => {
 
   it('renders signup form with name, email and password fields', () => {
     renderWithProviders(<Signup />, '/signup');
-    expect(screen.getByLabelText(/nome/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/sobrenome/i)).toBeInTheDocument();
+    expect(screen.getByLabelText('Nome')).toBeInTheDocument();
+    expect(screen.getByLabelText('Sobrenome')).toBeInTheDocument();
     expect(screen.getByLabelText(/e-mail/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/senha/i)).toBeInTheDocument();
   });

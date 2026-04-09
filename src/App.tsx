@@ -73,6 +73,7 @@ const App = () => (
               <Route path="/clients" element={<ProtectedWithOrg><Clients /></ProtectedWithOrg>} />
               <Route path="/clients/new" element={<ProtectedWithOrg><ClientNew /></ProtectedWithOrg>} />
               <Route path="/clients/:id" element={<ProtectedWithOrg><ClientDetail /></ProtectedWithOrg>} />
+              <Route path="/clients/:id/edit" element={<ProtectedWithOrg><ClientEdit /></ProtectedWithOrg>} />
 
               <Route path="*" element={<NotFound />} />
             </Routes>

@@ -66,7 +66,6 @@ export function useCreateKanbanCard() {
       client_id?: string | null;
       quotation_id?: string | null;
       trip_id?: string | null;
-      priority?: string;
     }) => {
       const { data, error } = await supabase
         .from('kanban_cards')

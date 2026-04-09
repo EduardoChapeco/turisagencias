@@ -78,7 +78,10 @@ export function useUpdateTraveler() {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async ({ id, ...data }: { id: string; [key: string]: any }) => {
+    mutationFn: async ({ id, ...data }: { id: string } & Partial<{
+      full_name: string; cpf: string; birth_date: string; gender: string;
+      nationality: string; phone: string; email: string; relation: string; client_id: string;
+    }>) => {
       const { data: traveler, error } = await supabase
         .from('travelers')
         .update(data)

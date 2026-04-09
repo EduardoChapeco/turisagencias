@@ -86,7 +86,11 @@ export function useUpdateClient() {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async ({ id, ...data }: { id: string; [key: string]: any }) => {
+    mutationFn: async ({ id, ...data }: { id: string } & Partial<{
+      name: string; email: string; phone: string; cpf: string; birth_date: string;
+      address: string; city: string; state: string; zip_code: string; country: string;
+      origin: string; tags: string[]; notes: string;
+    }>) => {
       const { data: client, error } = await supabase
         .from('clients')
         .update(data)

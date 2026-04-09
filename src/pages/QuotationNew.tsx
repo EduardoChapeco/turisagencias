@@ -102,7 +102,7 @@ export default function QuotationNew() {
       room_type: form.room_type || undefined,
       total_value: form.total_value ? parseFloat(form.total_value) : undefined,
       currency: form.currency,
-      installments: installments.length > 0 ? (installments as unknown as import('@/integrations/supabase/types').Json) : undefined,
+      installments: installments.length > 0 ? JSON.parse(JSON.stringify(installments)) : undefined,
       whatsapp_text: form.whatsapp_text || undefined,
       client_id: form.client_id || undefined,
       ai_extracted: aiExtracted,

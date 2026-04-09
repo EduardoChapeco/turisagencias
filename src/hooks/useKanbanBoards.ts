@@ -55,7 +55,6 @@ export function useKanbanBoard(slug: string) {
 
 export function useCreateKanbanCard() {
   const queryClient = useQueryClient();
-  const { organization } = useAuthStore();
   const { toast } = useToast();
 
   return useMutation({

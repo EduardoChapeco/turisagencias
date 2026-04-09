@@ -106,8 +106,8 @@ describe('Signup Page', () => {
     mockSignUp.mockResolvedValue({ data: {}, error: null });
     renderWithProviders(<Signup />, '/signup');
 
-    fireEvent.change(screen.getByLabelText(/nome/i), { target: { value: 'João' } });
-    fireEvent.change(screen.getByLabelText(/sobrenome/i), { target: { value: 'Silva' } });
+    fireEvent.change(screen.getByLabelText('Nome'), { target: { value: 'João' } });
+    fireEvent.change(screen.getByLabelText('Sobrenome'), { target: { value: 'Silva' } });
     fireEvent.change(screen.getByLabelText(/e-mail/i), { target: { value: 'joao@test.com' } });
     fireEvent.change(screen.getByLabelText(/senha/i), { target: { value: 'securepass' } });
     fireEvent.click(screen.getByRole('button', { name: /criar conta/i }));

@@ -8,7 +8,7 @@ export default function PublicChecklist() {
   const { token } = useParams<{ token: string }>();
   const { data, isLoading } = usePublicChecklist(token);
   const toggleItem = useTogglePublicChecklistItem();
-  const title = data?.[0]?.title ?? 'Checklist da viagem';
+  const title = data?.[0]?.checklist_title ?? 'Checklist da viagem';
 
   return (
     <div className="min-h-screen bg-muted/30 px-4 py-10">

@@ -14,6 +14,47 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_keys_pool: {
+        Row: {
+          api_key: string
+          created_at: string
+          id: string
+          is_active: boolean
+          monthly_limit_usd: number | null
+          org_id: string
+          provider: string
+          updated_at: string
+        }
+        Insert: {
+          api_key: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          monthly_limit_usd?: number | null
+          org_id: string
+          provider: string
+          updated_at?: string
+        }
+        Update: {
+          api_key?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          monthly_limit_usd?: number | null
+          org_id?: string
+          provider?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_keys_pool_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       checklist_items: {
         Row: {
           checked_at: string | null
@@ -198,6 +239,71 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "clients_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      destination_guides: {
+        Row: {
+          city: string
+          climate_info: string | null
+          country: string
+          cover_image_url: string | null
+          created_at: string
+          currency_info: string | null
+          emergency_numbers: Json | null
+          id: string
+          intro: string | null
+          is_published: boolean
+          language_tips: string | null
+          org_id: string
+          tips: Json | null
+          transportation: string | null
+          updated_at: string
+          useful_contacts: Json | null
+        }
+        Insert: {
+          city: string
+          climate_info?: string | null
+          country: string
+          cover_image_url?: string | null
+          created_at?: string
+          currency_info?: string | null
+          emergency_numbers?: Json | null
+          id?: string
+          intro?: string | null
+          is_published?: boolean
+          language_tips?: string | null
+          org_id: string
+          tips?: Json | null
+          transportation?: string | null
+          updated_at?: string
+          useful_contacts?: Json | null
+        }
+        Update: {
+          city?: string
+          climate_info?: string | null
+          country?: string
+          cover_image_url?: string | null
+          created_at?: string
+          currency_info?: string | null
+          emergency_numbers?: Json | null
+          id?: string
+          intro?: string | null
+          is_published?: boolean
+          language_tips?: string | null
+          org_id?: string
+          tips?: Json | null
+          transportation?: string | null
+          updated_at?: string
+          useful_contacts?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "destination_guides_org_id_fkey"
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "organizations"

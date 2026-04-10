@@ -87,3 +87,28 @@ export function useCreateKanbanCard() {
     },
   });
 }
+
+export function useUpdateKanbanCard() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async ({ id, column_id }: { id: string; column_id: string }) => {
+      const { data, error } = await supabase
+        .from('kanban_cards')
+        .update({ column_id })
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['kanban-board'] });
+    },
+    onError: (err: Error) => {
+      toast({ title: 'Erro ao mover card', description: err.message, variant: 'destructive' });
+    },
+  });
+}

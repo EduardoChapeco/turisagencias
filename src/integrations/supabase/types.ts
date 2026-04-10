@@ -14,6 +14,183 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_keys_pool: {
+        Row: {
+          id: string
+          org_id: string
+          provider: string
+          api_key_encrypted: string
+          label: string | null
+          monthly_limit: number | null
+          daily_limit: number | null
+          used_this_month: number | null
+          used_today: number | null
+          last_used_at: string | null
+          reset_daily_at: string | null
+          is_active: boolean | null
+          error_count: number | null
+          priority: number | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          org_id: string
+          provider: string
+          api_key?: string
+          label?: string | null
+          monthly_limit?: number | null
+          daily_limit?: number | null
+          used_this_month?: number | null
+          used_today?: number | null
+          last_used_at?: string | null
+          reset_daily_at?: string | null
+          is_active?: boolean | null
+          error_count?: number | null
+          priority?: number | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          org_id?: string
+          provider?: string
+          api_key_encrypted?: string
+          label?: string | null
+          monthly_limit?: number | null
+          daily_limit?: number | null
+          used_this_month?: number | null
+          used_today?: number | null
+          last_used_at?: string | null
+          reset_daily_at?: string | null
+          is_active?: boolean | null
+          error_count?: number | null
+          priority?: number | null
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_keys_pool_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      ai_knowledge_base: {
+        Row: {
+          id: string
+          org_id: string
+          category: string
+          title: string
+          content: string
+          tags: string[] | null
+          embedding: string | null
+          is_active: boolean | null
+          created_by: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          org_id: string
+          category: string
+          title: string
+          content: string
+          tags?: string[] | null
+          embedding?: string | null
+          is_active?: boolean | null
+          created_by?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          org_id?: string
+          category?: string
+          title?: string
+          content?: string
+          tags?: string[] | null
+          embedding?: string | null
+          is_active?: boolean | null
+          created_by?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_knowledge_base_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      destination_guides: {
+        Row: {
+          id: string
+          org_id: string
+          city: string
+          country: string
+          cover_image_url: string | null
+          intro: string | null
+          tips: Json | null
+          useful_contacts: Json | null
+          emergency_numbers: Json | null
+          currency_info: string | null
+          climate_info: string | null
+          transportation: string | null
+          language_tips: string | null
+          is_published: boolean | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          org_id: string
+          city: string
+          country: string
+          cover_image_url?: string | null
+          intro?: string | null
+          tips?: Json | null
+          useful_contacts?: Json | null
+          emergency_numbers?: Json | null
+          currency_info?: string | null
+          climate_info?: string | null
+          transportation?: string | null
+          language_tips?: string | null
+          is_published?: boolean | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          org_id?: string
+          city?: string
+          country?: string
+          cover_image_url?: string | null
+          intro?: string | null
+          tips?: Json | null
+          useful_contacts?: Json | null
+          emergency_numbers?: Json | null
+          currency_info?: string | null
+          climate_info?: string | null
+          transportation?: string | null
+          language_tips?: string | null
+          is_published?: boolean | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "destination_guides_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       checklist_items: {
         Row: {
           checked_at: string | null

@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -9,7 +10,28 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { imageBase64, text } = await req.json();
+    const authHeader = req.headers.get("Authorization");
+    if(!authHeader) {
+      throw new Error("Missing Authorization header. Requisição bloqueada.");
+    }
+
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY");
+    
+    if (!supabaseUrl || !supabaseAnonKey) {
+      throw new Error("Missing Supabase environment variables");
+    }
+
+    const supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
+    if (authError || !user) {
+      throw new Error("Acesso não autorizado ou token inválido: " + (authError?.message || "User not found"));
+    }
+
+    const { imageBase64, text, client_id, org_id, agent_id, source_file_url } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
@@ -134,6 +156,38 @@ For the whatsapp_text, create an attractive message in Portuguese with:
     }
 
     const extracted = JSON.parse(toolCall.function.arguments);
+
+    // Contrato garantido: sempre persiste se org_id for passado
+    if (org_id) {
+      const { error: insertError } = await supabaseClient
+        .from('quotations')
+        .insert({
+          org_id,
+          client_id: client_id || null,
+          agent_id: agent_id || user.id,
+          status: 'draft',
+          ai_extracted: true,
+          ai_raw_response: extracted,
+          destination: extracted.destination,
+          hotel_name: extracted.hotel_name,
+          hotel_stars: extracted.hotel_stars,
+          check_in: extracted.check_in,
+          check_out: extracted.check_out,
+          num_nights: extracted.num_nights,
+          meal_plan: extracted.meal_plan,
+          room_type: extracted.room_type,
+          total_value: extracted.total_value,
+          currency: extracted.currency,
+          installments: extracted.installments,
+          whatsapp_text: extracted.whatsapp_text,
+          source_file_url: source_file_url || null,
+        });
+
+      if (insertError) {
+        console.error("Erro ao persistir a cotacao (FALHA DE CONTRATO):", insertError);
+        throw new Error("Erro Crítico: A API IA obteve os dados, mas falhou ao persistir no Supabase: " + insertError.message);
+      }
+    }
 
     return new Response(JSON.stringify({ data: extracted }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

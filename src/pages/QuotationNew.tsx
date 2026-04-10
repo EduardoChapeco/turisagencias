@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { AppLayout } from '@/components/AppLayout';
 import { useCreateQuotation } from '@/hooks/useQuotations';
 import { useClients } from '@/hooks/useClients';
+import { useAuthStore } from '@/stores/authStore';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,6 +19,7 @@ export default function QuotationNew() {
   const navigate = useNavigate();
   const createQuotation = useCreateQuotation();
   const { data: clients } = useClients();
+  const { organization } = useAuthStore();
   const { toast } = useToast();
   const [extracting, setExtracting] = useState(false);
   const [aiExtracted, setAiExtracted] = useState(false);
@@ -54,7 +56,11 @@ export default function QuotationNew() {
 
       // Call AI extraction
       const { data, error } = await supabase.functions.invoke('extract-quotation', {
-        body: { imageBase64: base64 },
+        body: { 
+          imageBase64: base64,
+          org_id: organization?.id,
+          client_id: form.client_id || null
+        },
       });
 
       if (error) throw error;

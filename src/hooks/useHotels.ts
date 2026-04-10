@@ -10,7 +10,7 @@ export function useHotels(search?: string) {
   return useQuery({
     queryKey: ['hotels', organization?.id, search],
     queryFn: async () => {
-      let query = supabase.from('hotels_bank').select('*').order('name');
+      let query = supabase.from('hotels_bank').select('*').eq('org_id', organization!.id).order('name');
       if (search) query = query.ilike('name', `%${search}%`);
       const { data, error } = await query;
       if (error) throw error;
@@ -59,6 +59,60 @@ export function useCreateHotel() {
     },
     onError: (err: Error) => {
       toast({ title: 'Erro ao criar hotel', description: err.message, variant: 'destructive' });
+    },
+  });
+}
+
+export function useUpdateHotel() {
+  const queryClient = useQueryClient();
+  const { organization } = useAuthStore();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async ({ id, ...payload }: any) => {
+      if (!organization?.id) throw new Error('Organização não encontrada');
+      const { data, error } = await supabase
+        .from('hotels_bank')
+        .update(payload)
+        .eq('id', id)
+        .eq('org_id', organization.id)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['hotels'] });
+      queryClient.invalidateQueries({ queryKey: ['hotel', data.id] });
+      toast({ title: 'Hotel atualizado com sucesso!' });
+    },
+    onError: (err: Error) => {
+      toast({ title: 'Erro ao atualizar hotel', description: err.message, variant: 'destructive' });
+    },
+  });
+}
+
+export function useDeleteHotel() {
+  const queryClient = useQueryClient();
+  const { organization } = useAuthStore();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      if (!organization?.id) throw new Error('Organização não encontrada');
+      const { error } = await supabase
+        .from('hotels_bank')
+        .delete()
+        .eq('id', id)
+        .eq('org_id', organization.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['hotels'] });
+      toast({ title: 'Hotel removido do banco.' });
+    },
+    onError: (err: Error) => {
+      toast({ title: 'Erro ao remover hotel', description: err.message, variant: 'destructive' });
     },
   });
 }

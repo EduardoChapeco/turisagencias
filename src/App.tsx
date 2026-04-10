@@ -30,6 +30,11 @@ const TripNew = lazy(() => import('./pages/TripNew'));
 const TripDetail = lazy(() => import('./pages/TripDetail'));
 
 const KanbanBoard = lazy(() => import('./pages/KanbanBoard'));
+const Settings = lazy(() => import('./pages/Settings'));
+const AIChat = lazy(() => import('./pages/AIChat'));
+
+const Guides = lazy(() => import('./pages/Guides'));
+const GuideDetail = lazy(() => import('./pages/GuideDetail'));
 
 const Hotels = lazy(() => import('./pages/Hotels'));
 const HotelNew = lazy(() => import('./pages/HotelNew'));
@@ -121,6 +126,11 @@ const App = () => (
 
               <Route path="/kanban/sales" element={<ProtectedWithOrg><TripsRole><KanbanBoard /></TripsRole></ProtectedWithOrg>} />
               <Route path="/kanban/departures" element={<ProtectedWithOrg><TripsRole><KanbanBoard /></TripsRole></ProtectedWithOrg>} />
+              <Route path="/ai-chat" element={<ProtectedWithOrg><TripsRole><AIChat /></TripsRole></ProtectedWithOrg>} />
+              <Route path="/settings" element={<ProtectedWithOrg><TripsRole><Settings /></TripsRole></ProtectedWithOrg>} />
+              
+              <Route path="/guides" element={<ProtectedWithOrg><TripsRole><Guides /></TripsRole></ProtectedWithOrg>} />
+              <Route path="/guides/:id" element={<ProtectedWithOrg><TripsRole><GuideDetail /></TripsRole></ProtectedWithOrg>} />
 
               <Route path="/hotels" element={<ProtectedWithOrg><TripsRole><Hotels /></TripsRole></ProtectedWithOrg>} />
               <Route path="/hotels/new" element={<ProtectedWithOrg><TripsRole><HotelNew /></TripsRole></ProtectedWithOrg>} />

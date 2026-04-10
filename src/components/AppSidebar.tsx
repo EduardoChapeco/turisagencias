@@ -1,12 +1,15 @@
 import {
   Building2,
   FileText,
+  Globe2,
   KanbanSquare,
   LayoutDashboard,
   LifeBuoy,
   LogOut,
   Plane,
   Users,
+  Settings as SettingsIcon,
+  Sparkles
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { NavLink } from '@/components/NavLink';
@@ -33,7 +36,10 @@ const mainNav = [
   { title: 'Viagens', url: '/trips', icon: Plane },
   { title: 'Kanban Vendas', url: '/kanban/sales', icon: KanbanSquare },
   { title: 'Hotéis', url: '/hotels', icon: Building2 },
+  { title: 'Guias de Destino', url: '/guides', icon: Globe2 },
   { title: 'Tickets', url: '/tickets', icon: LifeBuoy },
+  { title: 'V-Agent (IA)', url: '/ai-chat', icon: Sparkles },
+  { title: 'Configurações', url: '/settings', icon: SettingsIcon },
 ];
 
 export function AppSidebar() {

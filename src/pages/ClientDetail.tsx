@@ -1,9 +1,10 @@
 import { useParams, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import { AppLayout } from '@/components/AppLayout';
 import { useClient } from '@/hooks/useClients';
 import { useTravelers, useCreateTraveler, useDeleteTraveler } from '@/hooks/useTravelers';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -16,8 +17,10 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { ArrowLeft, Plus, User, Mail, Phone, MapPin, Calendar, Copy, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { 
+  ArrowLeft, Plus, User, Mail, Phone, MapPin, Calendar, Copy, 
+  Trash2, MessageCircle, FileText, Plane, Briefcase, Globe
+} from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 export default function ClientDetail() {
@@ -40,15 +43,16 @@ export default function ClientDetail() {
 
   const copyFormLink = (token: string) => {
     navigator.clipboard.writeText(`${window.location.origin}/f/${token}`);
-    toast({ title: 'Link copiado!' });
+    toast({ title: 'Link copiado para a área de transferência!' });
   };
 
   if (isLoading) {
     return (
       <AppLayout>
-        <div className="space-y-4">
-          <Skeleton className="h-8 w-48" />
-          <Skeleton className="h-64 w-full" />
+        <div className="space-y-4 max-w-5xl mx-auto">
+          <Skeleton className="h-8 w-48 mb-6" />
+          <Skeleton className="h-48 w-full rounded-2xl" />
+          <Skeleton className="h-64 w-full mt-6 rounded-2xl" />
         </div>
       </AppLayout>
     );
@@ -57,81 +61,174 @@ export default function ClientDetail() {
   if (!client) {
     return (
       <AppLayout>
-        <div className="text-center py-12">
-          <p className="text-muted-foreground">Cliente não encontrado.</p>
-          <Button variant="link" onClick={() => navigate('/clients')}>Voltar</Button>
+        <div className="flex flex-col items-center justify-center py-24">
+          <p className="text-muted-foreground text-lg mb-4">Cliente não encontrado ou removido.</p>
+          <Button variant="outline" onClick={() => navigate('/clients')}>Voltar para a Lista</Button>
         </div>
       </AppLayout>
     );
   }
 
+  // Detect basic tags to apply dynamic styling
+  const isVip = client.tags?.map(t => t.toLowerCase()).includes('vip');
+
   return (
     <AppLayout>
-      <div className="space-y-6">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/clients')}>
-            <ArrowLeft className="h-4 w-4" />
+      <div className="space-y-6 max-w-[1200px] mx-auto">
+        <div className="flex items-center gap-4 mb-2">
+          <Button variant="ghost" size="icon" onClick={() => navigate('/clients')} className="hover:bg-accent/10">
+            <ArrowLeft className="h-5 w-5" />
           </Button>
-          <div>
-            <h1 className="font-heading text-2xl font-bold">{client.name}</h1>
-            <p className="text-sm text-muted-foreground">Cliente desde {new Date(client.created_at).toLocaleDateString('pt-BR')}</p>
-          </div>
-          <Button variant="outline" className="ml-auto" onClick={() => navigate(`/clients/${id}/edit`)}>
-            Editar
-          </Button>
+          <span className="text-sm font-medium text-muted-foreground tracking-tight">CRM / Ficha Cadastral</span>
         </div>
 
-        <Tabs defaultValue="info">
-          <TabsList>
-            <TabsTrigger value="info">Dados</TabsTrigger>
-            <TabsTrigger value="travelers">Viajantes ({travelers?.length || 0})</TabsTrigger>
+        {/* Header Profile - "World ID / Notion Style" */}
+        <div className="relative rounded-3xl overflow-hidden shadow-sm border border-border/50 bg-surface-elevated">
+           {/* Cover Banner */}
+           <div className={`h-32 w-full ${isVip ? 'bg-gradient-to-r from-purple-600 to-indigo-900' : 'bg-gradient-to-r from-primary to-accent'} opacity-90`} />
+           
+           <div className="px-6 sm:px-10 pb-6 relative">
+              <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 -mt-12 sm:-mt-16 mb-4">
+                 {/* Avatar & Title */}
+                 <div className="flex items-end gap-5">
+                    <div className="h-24 w-24 sm:h-32 sm:w-32 rounded-2xl border-4 border-background bg-accent/10 flex items-center justify-center overflow-hidden shadow-md">
+                       {client.photo_url ? (
+                         <img src={client.photo_url} alt={client.name} className="w-full h-full object-cover" />
+                       ) : (
+                         <span className="font-heading text-4xl text-primary/40 font-bold">{client.name.substring(0, 2).toUpperCase()}</span>
+                       )}
+                    </div>
+                    <div className="pb-2">
+                       <h1 className="font-heading text-3xl sm:text-4xl font-bold tracking-tight text-foreground flex items-center gap-3">
+                         {client.name}
+                         {isVip && <Badge className="bg-purple-500 hover:bg-purple-600 border-none text-xs px-2 py-0.5">VIP</Badge>}
+                       </h1>
+                       <div className="flex items-center gap-2 mt-1.5 text-sm text-muted-foreground">
+                         <Globe className="h-3.5 w-3.5" /> 
+                         <span>Cliente desde {new Date(client.created_at).toLocaleDateString('pt-BR')}</span>
+                       </div>
+                    </div>
+                 </div>
+                 
+                 {/* Action Buttons */}
+                 <div className="flex gap-2 pb-2">
+                    {client.phone && (
+                      <Button variant="default" className="bg-green-600 hover:bg-green-700 text-white shadow-sm" onClick={() => window.open(`https://wa.me/${client.phone.replace(/\D/g, '')}`, '_blank')}>
+                         <MessageCircle className="h-4 w-4 mr-2" /> WhatsApp
+                      </Button>
+                    )}
+                    <Button variant="outline" onClick={() => navigate(`/clients/${id}/edit`)}>
+                       Editar Ficha
+                    </Button>
+                 </div>
+              </div>
+              
+              {/* Tags Area */}
+              {client.tags && client.tags.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-4 ml-1">
+                  {client.tags.map((tag) => (
+                     <Badge key={tag} variant="secondary" className="bg-primary/5 text-primary hover:bg-primary/10 transition-colors font-medium rounded-md px-3">
+                       #{tag}
+                     </Badge>
+                  ))}
+                </div>
+              )}
+           </div>
+        </div>
+
+        {/* Tab Navigation */}
+        <Tabs defaultValue="info" className="mt-8">
+          <TabsList className="bg-transparent border-b border-border/40 w-full justify-start h-auto p-0 rounded-none mb-6">
+            <TabsTrigger value="info" className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:shadow-none rounded-none px-6 py-3 font-medium">Dados Principais</TabsTrigger>
+            <TabsTrigger value="travelers" className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:shadow-none rounded-none px-6 py-3 font-medium">Viajantes Vinculados <span className="ml-2 text-xs bg-muted px-2 py-0.5 rounded-full">{travelers?.length || 0}</span></TabsTrigger>
+            <TabsTrigger value="history" className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:shadow-none rounded-none px-6 py-3 font-medium">Timeline de Viagens</TabsTrigger>
+            <TabsTrigger value="docs" className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:shadow-none rounded-none px-6 py-3 font-medium">Documentos & Contratos</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="info" className="space-y-4 mt-4">
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Card>
-                <CardHeader><CardTitle className="text-sm text-muted-foreground">Contato</CardTitle></CardHeader>
-                <CardContent className="space-y-2 text-sm">
-                  {client.email && <p className="flex items-center gap-2"><Mail className="h-4 w-4 text-muted-foreground" /> {client.email}</p>}
-                  {client.phone && <p className="flex items-center gap-2"><Phone className="h-4 w-4 text-muted-foreground" /> {client.phone}</p>}
-                  {client.cpf && <p className="flex items-center gap-2"><User className="h-4 w-4 text-muted-foreground" /> CPF: {client.cpf}</p>}
-                  {client.birth_date && <p className="flex items-center gap-2"><Calendar className="h-4 w-4 text-muted-foreground" /> {new Date(client.birth_date).toLocaleDateString('pt-BR')}</p>}
+          <TabsContent value="info" className="space-y-6 focus-visible:outline-none">
+            <div className="grid gap-6 md:grid-cols-3">
+              {/* Personal Details Card */}
+              <Card className="md:col-span-2 border-border/50 shadow-sm rounded-2xl overflow-hidden">
+                <CardHeader className="bg-surface/50 border-b border-border/30 pb-4">
+                   <CardTitle className="text-base flex items-center gap-2"><User className="h-4 w-4 text-primary" /> Informações Pessoais</CardTitle>
+                </CardHeader>
+                <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-y-6 gap-x-8 pt-6">
+                  <div>
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">E-mail Principal</p>
+                    <p className="font-medium">{client.email || '—'}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Telefone / WhatsApp</p>
+                    <p className="font-medium">{client.phone || '—'}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">CPF</p>
+                    <p className="font-medium">{client.cpf || '—'}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Data de Nascimento</p>
+                    <p className="font-medium">{client.birth_date ? new Date(client.birth_date).toLocaleDateString('pt-BR') : '—'}</p>
+                  </div>
                 </CardContent>
               </Card>
-              <Card>
-                <CardHeader><CardTitle className="text-sm text-muted-foreground">Endereço</CardTitle></CardHeader>
-                <CardContent className="space-y-1 text-sm">
-                  {client.address && <p className="flex items-center gap-2"><MapPin className="h-4 w-4 text-muted-foreground" /> {client.address}</p>}
-                  <p>{[client.city, client.state, client.zip_code].filter(Boolean).join(', ')}</p>
-                  {client.country && <p>{client.country}</p>}
+
+              {/* Address Card */}
+              <Card className="border-border/50 shadow-sm rounded-2xl overflow-hidden">
+                <CardHeader className="bg-surface/50 border-b border-border/30 pb-4">
+                   <CardTitle className="text-base flex items-center gap-2"><MapPin className="h-4 w-4 text-accent" /> Localização</CardTitle>
+                </CardHeader>
+                <CardContent className="pt-6 space-y-4">
+                  <div>
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Endereço</p>
+                    <p className="text-sm">{client.address || 'Não preenchido'}</p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                     <div>
+                       <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Cidade</p>
+                       <p className="text-sm">{client.city || '—'}</p>
+                     </div>
+                     <div>
+                       <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Estado</p>
+                       <p className="text-sm">{client.state || '—'}</p>
+                     </div>
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">CEP e País</p>
+                    <p className="text-sm">{[client.zip_code, client.country].filter(Boolean).join(' • ') || '—'}</p>
+                  </div>
                 </CardContent>
               </Card>
             </div>
-            {client.tags && client.tags.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {client.tags.map((tag) => <Badge key={tag} variant="secondary">{tag}</Badge>)}
-              </div>
-            )}
+
+            {/* Notes Section styled nicely */}
             {client.notes && (
-              <Card>
-                <CardHeader><CardTitle className="text-sm text-muted-foreground">Observações</CardTitle></CardHeader>
-                <CardContent><p className="text-sm whitespace-pre-wrap">{client.notes}</p></CardContent>
+              <Card className="border-warning/30 bg-warning/5 shadow-sm rounded-2xl overflow-hidden">
+                <CardHeader className="pb-2">
+                   <CardTitle className="text-base text-warning flex items-center gap-2"><FileText className="h-4 w-4" /> Notas Internas do Agente</CardTitle>
+                </CardHeader>
+                <CardContent>
+                   <p className="text-sm text-foreground/80 leading-relaxed whitespace-pre-wrap">{client.notes}</p>
+                </CardContent>
               </Card>
             )}
           </TabsContent>
 
-          <TabsContent value="travelers" className="space-y-4 mt-4">
-            <div className="flex justify-end">
+          <TabsContent value="travelers" className="space-y-6 focus-visible:outline-none">
+            <div className="flex justify-between items-center bg-surface/50 p-4 rounded-xl border border-border/50">
+               <div>
+                  <h3 className="font-medium">Grupo Familiar / Companheiros</h3>
+                  <p className="text-xs text-muted-foreground mt-1">Viajantes que utilizam os pacotes comprados por este cliente.</p>
+               </div>
               <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button><Plus className="mr-2 h-4 w-4" /> Novo Viajante</Button>
+                  <Button className="shadow-sm rounded-full px-5"><Plus className="mr-2 h-4 w-4" /> Adicionar Viajante</Button>
                 </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader><DialogTitle>Adicionar Viajante</DialogTitle></DialogHeader>
-                  <div className="space-y-4">
+                <DialogContent className="sm:max-w-[425px]">
+                  <DialogHeader><DialogTitle>Designar Viajante</DialogTitle></DialogHeader>
+                  <div className="space-y-4 pt-4">
                     <div className="space-y-2">
                       <Label>Nome completo *</Label>
-                      <Input value={newTraveler.full_name} onChange={(e) => setNewTraveler(p => ({ ...p, full_name: e.target.value }))} />
+                      <Input value={newTraveler.full_name} onChange={(e) => setNewTraveler(p => ({ ...p, full_name: e.target.value }))} autoFocus />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
@@ -144,11 +241,11 @@ export default function ClientDetail() {
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <Label>Relação com o cliente</Label>
-                      <Input value={newTraveler.relation} onChange={(e) => setNewTraveler(p => ({ ...p, relation: e.target.value }))} placeholder="Cônjuge, filho, amigo..." />
+                      <Label>Relação com o comprador</Label>
+                      <Input value={newTraveler.relation} onChange={(e) => setNewTraveler(p => ({ ...p, relation: e.target.value }))} placeholder="Ex: Esposa, Filho, Amigo" />
                     </div>
-                    <Button onClick={handleAddTraveler} disabled={!newTraveler.full_name || createTraveler.isPending} className="w-full">
-                      {createTraveler.isPending ? 'Salvando...' : 'Adicionar'}
+                    <Button onClick={handleAddTraveler} disabled={!newTraveler.full_name || createTraveler.isPending} className="w-full mt-2">
+                      {createTraveler.isPending ? 'Salvando vinculação...' : 'Salvar Viajante'}
                     </Button>
                   </div>
                 </DialogContent>
@@ -156,48 +253,66 @@ export default function ClientDetail() {
             </div>
 
             {loadingTravelers ? (
-              <div className="space-y-3">{[1, 2, 3].map(i => <Skeleton key={i} className="h-16" />)}</div>
+              <div className="grid md:grid-cols-2 gap-4">{[1, 2].map(i => <Skeleton key={i} className="h-32 rounded-2xl" />)}</div>
             ) : !travelers?.length ? (
-              <Card>
-                <CardContent className="flex flex-col items-center py-8">
-                  <User className="h-8 w-8 text-muted-foreground/50 mb-2" />
-                  <p className="text-sm text-muted-foreground">Nenhum viajante cadastrado para este cliente.</p>
-                </CardContent>
-              </Card>
+              <div className="flex flex-col items-center justify-center py-16 border-2 border-dashed border-border/50 rounded-2xl bg-surface/30">
+                <UsersGroupIcon className="h-10 w-10 text-muted-foreground/30 mb-3" />
+                <p className="text-sm font-medium text-foreground">Sem viajantes extras</p>
+                <p className="text-xs text-muted-foreground text-center mt-1 max-w-sm">Este cliente costuma viajar sozinho ou os parceiros não foram cadastrados na ficha principal.</p>
+              </div>
             ) : (
-              <div className="space-y-3">
+              <div className="grid md:grid-cols-2 gap-4">
                 {travelers.map((t) => (
-                  <Card key={t.id}>
-                    <CardContent className="flex items-center justify-between p-4">
-                      <div>
-                        <p className="font-medium">{t.full_name}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {t.relation && `${t.relation} • `}
-                          {t.cpf && `CPF: ${t.cpf} • `}
-                          {t.form_completed_at ? '✅ Formulário preenchido' : '⏳ Aguardando preenchimento'}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Button variant="outline" size="sm" onClick={() => copyFormLink(t.form_token!)}>
-                          <Copy className="mr-1 h-3 w-3" /> Link
-                        </Button>
-                        <AlertDialog>
+                  <Card key={t.id} className="rounded-2xl border-border/60 hover:shadow-md transition-shadow group relative overflow-hidden">
+                    <div className="absolute top-0 left-0 w-1 h-full bg-accent/50" />
+                    <CardContent className="p-5">
+                      <div className="flex justify-between items-start mb-3">
+                         <div>
+                           <h4 className="font-heading font-semibold text-lg text-foreground truncate max-w-[200px]">{t.full_name}</h4>
+                           <Badge variant="outline" className="text-[10px] mt-1 uppercase text-muted-foreground tracking-wider bg-transparent">{t.relation || 'Sem vínculo'}</Badge>
+                         </div>
+                         <AlertDialog>
                           <AlertDialogTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive">
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity hover:text-destructive hover:bg-destructive/10">
                               <Trash2 className="h-4 w-4" />
                             </Button>
                           </AlertDialogTrigger>
                           <AlertDialogContent>
                             <AlertDialogHeader>
-                              <AlertDialogTitle>Excluir viajante?</AlertDialogTitle>
-                              <AlertDialogDescription>Esta ação remove {t.full_name} permanentemente.</AlertDialogDescription>
+                              <AlertDialogTitle>Desvincular viajante?</AlertDialogTitle>
+                              <AlertDialogDescription>Esta ação remove {t.full_name} desta ficha permanentemente.</AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
-                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                              <AlertDialogAction className="bg-destructive text-destructive-foreground" onClick={() => deleteTraveler.mutate(t.id)}>Excluir</AlertDialogAction>
+                              <AlertDialogCancel>Me arrependi</AlertDialogCancel>
+                              <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={() => deleteTraveler.mutate(t.id)}>Remover</AlertDialogAction>
                             </AlertDialogFooter>
                           </AlertDialogContent>
                         </AlertDialog>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-2 text-xs mb-4">
+                         <div className="bg-surface p-2 rounded-md border border-border/40">
+                             <span className="text-muted-foreground block mb-0.5">CPF</span>
+                             <span className="font-medium">{t.cpf || 'Pendente'}</span>
+                         </div>
+                         <div className="bg-surface p-2 rounded-md border border-border/40">
+                             <span className="text-muted-foreground block mb-0.5">Nascimento</span>
+                             <span className="font-medium">{t.birth_date ? new Date(t.birth_date).toLocaleDateString('pt-BR') : 'Pendente'}</span>
+                         </div>
+                      </div>
+
+                      <div className="flex items-center justify-between pt-2 border-t border-border/40">
+                         <div className="flex items-center gap-1.5">
+                            {t.form_completed_at ? (
+                              <Badge className="bg-success/10 text-success border-success/20 hover:bg-success/20">Ficha Completa</Badge>
+                            ) : (
+                              <Badge variant="outline" className="bg-warning/10 text-warning-foreground border-warning/30">Pendente</Badge>
+                            )}
+                         </div>
+                         
+                         <Button variant="ghost" size="sm" className="h-8 text-xs font-medium text-accent hover:text-accent-foreground hover:bg-accent/10" onClick={() => copyFormLink(t.form_token!)}>
+                           <Copy className="mr-1.5 h-3.5 w-3.5" /> Enviar Link Seguro
+                         </Button>
                       </div>
                     </CardContent>
                   </Card>
@@ -205,8 +320,57 @@ export default function ClientDetail() {
               </div>
             )}
           </TabsContent>
+
+          <TabsContent value="history" className="focus-visible:outline-none">
+             {/* Empty State visual para Timeline (PRD Requirement Dummy) */}
+             <div className="flex flex-col items-center justify-center py-20 border border-border/50 rounded-2xl bg-surface/20">
+                <div className="h-16 w-16 mb-4 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Plane className="h-8 w-8 text-primary" />
+                </div>
+                <h3 className="font-heading font-semibold text-lg">Nenhuma Viagem Registrada</h3>
+                <p className="text-sm text-muted-foreground mt-1 mb-6 text-center max-w-sm">
+                  Quando este cliente fechar a primeira cotação conosco, você verá aqui uma linha do tempo mágica dos destinos.
+                </p>
+                <Button onClick={() => navigate('/quotations/new')}>Criar Cotação IA</Button>
+             </div>
+          </TabsContent>
+          
+          <TabsContent value="docs" className="focus-visible:outline-none">
+             <div className="flex flex-col items-center justify-center py-20 border border-border/50 rounded-2xl bg-surface/20">
+                <div className="h-16 w-16 mb-4 rounded-full bg-accent/10 flex items-center justify-center">
+                  <Briefcase className="h-8 w-8 text-accent" />
+                </div>
+                <h3 className="font-heading font-semibold text-lg">Cofre de Documentos</h3>
+                <p className="text-sm text-muted-foreground mt-1 mb-6 text-center max-w-sm">
+                  Esta aba armazena os contratos DocuSign e passaportes centralizados. (Em Breve)
+                </p>
+             </div>
+          </TabsContent>
         </Tabs>
       </div>
     </AppLayout>
+  );
+}
+
+// Helper icon component for empty states
+function UsersGroupIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg 
+      xmlns="http://www.w3.org/2000/svg" 
+      width="24" 
+      height="24" 
+      viewBox="0 0 24 24" 
+      fill="none" 
+      stroke="currentColor" 
+      strokeWidth="2" 
+      strokeLinecap="round" 
+      strokeLinejoin="round" 
+      {...props}
+    >
+      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+    </svg>
   );
 }

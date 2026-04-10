@@ -38,11 +38,11 @@ export default function HotelDetail() {
       city: hotel.city || '',
       state: hotel.state || '',
       country: hotel.country || 'Brasil',
-      zip_code: hotel.zip_code || '',
+      zip_code: (hotel as any).zip_code || '',
       phone: hotel.phone || '',
       website: hotel.website || '',
       email: hotel.email || '',
-      cover_image_url: hotel.cover_image_url || '',
+      cover_image_url: hotel.photo_url || '',
       tags: [...(hotel.tags || [])],
       regime_options: [...(hotel.regime_options || [])],
       amenities: [...((hotel as any).amenities || [])],
@@ -196,9 +196,9 @@ export default function HotelDetail() {
                   </>
                 ) : (
                   <>
-                    {hotel.cover_image_url && (
-                      <div className="sm:col-span-2 rounded-xl overflow-hidden h-48">
-                        <img src={hotel.cover_image_url} alt={hotel.name} className="w-full h-full object-cover" />
+                     {hotel.photo_url && (
+                       <div className="sm:col-span-2 rounded-xl overflow-hidden h-48">
+                         <img src={hotel.photo_url} alt={hotel.name} className="w-full h-full object-cover" />
                       </div>
                     )}
                     {hotel.description && <p className="sm:col-span-2 text-muted-foreground text-sm leading-6">{hotel.description}</p>}

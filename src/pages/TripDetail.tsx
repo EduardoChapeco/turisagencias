@@ -255,7 +255,7 @@ export default function TripDetail() {
                 </CardHeader>
                 <CardContent className="p-6">
                   {!tickets?.length && <p className="text-sm text-muted-foreground text-center py-6">Nenhum chamado aberto na agência para este Workspace.</p>}
-                  <div className="space-y-3">
+                   <div className="space-y-3">
                      {tickets?.map((ticket) => (
                        <button
                          key={ticket.id}
@@ -263,18 +263,19 @@ export default function TripDetail() {
                          className="w-full flex items-center justify-between rounded-xl border border-border/60 p-4 text-left transition-colors hover:border-primary/50 hover:bg-surface/50"
                          onClick={() => navigate(`/tickets/${ticket.id}`)}
                        >
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <p className="font-medium">{ticket.title}</p>
-                          <p className="mt-1 text-sm text-muted-foreground">{ticket.description}</p>
-                        </div>
-                        <div className="text-right text-xs text-muted-foreground">
-                          <p>{ticket.status}</p>
-                          <p>{ticket.priority}</p>
-                        </div>
-                      </div>
-                    </button>
-                  ))}
+                       <div className="flex items-start justify-between gap-3">
+                         <div>
+                           <p className="font-medium">{ticket.title}</p>
+                           <p className="mt-1 text-sm text-muted-foreground">{ticket.description}</p>
+                         </div>
+                         <div className="text-right text-xs text-muted-foreground">
+                           <p>{ticket.status}</p>
+                           <p>{ticket.priority}</p>
+                         </div>
+                       </div>
+                     </button>
+                   ))}
+                   </div>
                 </CardContent>
               </Card>
 

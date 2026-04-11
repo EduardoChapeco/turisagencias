@@ -265,7 +265,7 @@ export function useKanbanChecklists(cardId: string | null) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('kanban_checklists')
-        .select('*, items:kanban_checklist_items(*, )')
+        .select('*, items:kanban_checklist_items(*)')
         .eq('card_id', cardId!)
         .order('created_at');
       if (error) throw error;

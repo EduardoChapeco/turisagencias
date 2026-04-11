@@ -38,17 +38,17 @@ export function GuideEdit({ id, open, onClose, onSuccess }: GuideEditProps) {
   useEffect(() => {
     if (open && isUpdate && id) {
       setLoading(true);
-      supabase
+      (supabase
         .from('destination_guides')
         .select('*')
         .eq('id', id)
-        .single()
+        .single() as any as Promise<{ data: any }>)
         .then(({ data }) => {
           if (data) {
             setForm({
               city: data.city,
               country: data.country,
-              slug: (data as any).slug || '',
+              slug: data.slug || '',
               cover_image_url: data.cover_image_url || '',
               intro: data.intro || '',
               currency_info: data.currency_info || '',

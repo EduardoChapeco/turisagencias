@@ -15,12 +15,12 @@ export default function PublicGuide() {
       const { data, error } = await supabase
         .from('destination_guides')
         .select('*')
-        .eq('slug', slug)
-        .eq('is_published', true)
-        .single();
+        .eq('is_published', true) as any;
         
       if (error) throw error;
-      return data;
+      const match = (data as any[])?.find((g: any) => g.slug === slug);
+      if (!match) throw new Error('Guide not found');
+      return match;
     },
     enabled: !!slug,
   });

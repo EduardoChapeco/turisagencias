@@ -10,15 +10,15 @@ export default function PublicTravelerInfo() {
     queryKey: ['public-traveler-info', slug],
     queryFn: async () => {
       if (!slug) throw new Error('Slug is required');
-      const { data, error } = await supabase
-        .from('traveler_info_pages')
+      const { data, error } = await (supabase
+        .from('traveler_info_pages' as any)
         .select('*')
         .eq('slug', slug)
         .eq('is_published', true)
-        .single();
+        .single() as any);
         
       if (error) throw error;
-      return data;
+      return data as any;
     },
     enabled: !!slug,
   });

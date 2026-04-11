@@ -1,7 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from './useAuth';
+import { useAuthStore } from '@/stores/authStore';
 import { useToast } from './use-toast';
+
+const useAuth = () => {
+  const { organization, user } = useAuthStore();
+  return { currentOrg: organization, session: { user } };
+};
 
 export const useTravelerInfoPages = () => {
   const { currentOrg } = useAuth();
@@ -11,11 +16,11 @@ export const useTravelerInfoPages = () => {
     queryFn: async () => {
       if (!currentOrg?.id) throw new Error('No organization selected');
       
-      const { data, error } = await supabase
-        .from('traveler_info_pages')
+      const { data, error } = await (supabase
+        .from('traveler_info_pages' as any)
         .select('*')
         .eq('org_id', currentOrg.id)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false }) as any);
         
       if (error) throw error;
       return data;
@@ -33,11 +38,11 @@ export const useTravelerInfoPage = (id?: string) => {
       if (!id) return null;
       if (!currentOrg?.id) throw new Error('No organization selected');
       
-      const { data, error } = await supabase
-        .from('traveler_info_pages')
+      const { data, error } = await (supabase
+        .from('traveler_info_pages' as any)
         .select('*')
         .eq('id', id)
-        .single();
+        .single() as any);
         
       if (error) throw error;
       return data;
@@ -59,31 +64,31 @@ export const useSaveTravelerInfoPage = () => {
       
       if (isUpdate) {
         const { id, ...updateData } = pageData;
-        const { data, error } = await supabase
-          .from('traveler_info_pages')
+        const { data, error } = await (supabase
+          .from('traveler_info_pages' as any)
           .update(updateData)
           .eq('id', id)
           .select()
-          .single();
+          .single() as any);
           
         if (error) throw error;
         return data;
       } else {
-        const { data, error } = await supabase
-          .from('traveler_info_pages')
+        const { data, error } = await (supabase
+          .from('traveler_info_pages' as any)
           .insert({
             ...pageData,
             org_id: currentOrg.id,
             author_id: session?.user?.id,
           })
           .select()
-          .single();
+          .single() as any);
           
         if (error) throw error;
         return data;
       }
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['traveler_info_pages'] });
       toast({
         title: 'Página salva!',
@@ -107,10 +112,10 @@ export const useDeleteTravelerInfoPage = () => {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('traveler_info_pages')
+      const { error } = await (supabase
+        .from('traveler_info_pages' as any)
         .delete()
-        .eq('id', id);
+        .eq('id', id) as any);
         
       if (error) throw error;
       return true;

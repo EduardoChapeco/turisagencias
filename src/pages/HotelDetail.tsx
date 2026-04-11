@@ -98,10 +98,10 @@ export default function HotelDetail() {
       <div className="max-w-6xl">
         <BentoGrid cols={3} gap="lg">
           {/* Capa e Descrição (2 columns wide, 2 rows high if there's image) */}
-          <BentoCell colSpan={2} rowSpan={hotel.cover_image_url ? 2 : 1} padding="none" className="flex flex-col">
-            {hotel.cover_image_url && (
+          <BentoCell colSpan={2} rowSpan={(hotel as any).photo_url ? 2 : 1} padding="none" className="flex flex-col">
+            {(hotel as any).photo_url && (
               <div className="h-48 md:h-64 w-full shrink-0">
-                <img src={hotel.cover_image_url} alt={hotel.name} className="w-full h-full object-cover" />
+                <img src={(hotel as any).photo_url} alt={hotel.name} className="w-full h-full object-cover" />
               </div>
             )}
             <div className="p-6 flex-1 flex flex-col">
@@ -124,12 +124,12 @@ export default function HotelDetail() {
               <MapPin className="h-4 w-4 text-cb-muted" /> Endereço e Contato
             </h3>
             <div className="space-y-4">
-              {hotel.address || hotel.city || hotel.zip_code ? (
+              {hotel.address || hotel.city ? (
                 <div>
                    <p className="text-[10px] font-semibold tracking-wider text-cb-muted uppercase mb-1">Localização</p>
                    <p className="text-sm text-cb-text">{hotel.address}</p>
                    <p className="text-sm text-cb-muted mt-0.5">{[hotel.city, hotel.state].filter(Boolean).join(' - ')}</p>
-                   <p className="text-sm text-cb-muted">{[hotel.country, hotel.zip_code].filter(Boolean).join(', ')}</p>
+                   <p className="text-sm text-cb-muted">{hotel.country}</p>
                 </div>
               ) : null}
 
@@ -175,7 +175,7 @@ export default function HotelDetail() {
           </BentoCell>
 
           {/* Regimes */}
-          <BentoCell colSpan={hotel.cover_image_url ? 1 : 2}>
+          <BentoCell colSpan={(hotel as any).photo_url ? 1 : 2}>
              <h3 className="font-semibold mb-4 text-cb-text flex items-center gap-2">
                <Coffee className="h-4 w-4 text-cb-muted" /> Opções de Check-in / Regime
              </h3>

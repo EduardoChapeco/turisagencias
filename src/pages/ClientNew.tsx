@@ -62,7 +62,7 @@ export default function ClientNew() {
       ...(form.notes ? { notes: form.notes.trim() } : {}),
       ...(form.passport_number ? { passport_number: form.passport_number.trim() } : {}),
       ...(form.passport_expiry ? { passport_expiry: form.passport_expiry } : {}),
-      portal_access: form.portal_access,
+      portal_access_enabled: form.portal_access,
       ...(tags.length ? { tags } : {}),
       // preferences as JSON object
       preferences: {

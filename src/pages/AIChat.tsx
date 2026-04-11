@@ -142,6 +142,4 @@ export default function AIChat() {
       </div>
     </AppLayout>
   );
-}Layout>
-  );
 }

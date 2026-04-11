@@ -16,55 +16,34 @@ export type Database = {
     Tables: {
       ai_keys_pool: {
         Row: {
+          api_key: string
+          created_at: string
           id: string
+          is_active: boolean
+          monthly_limit_usd: number | null
           org_id: string
           provider: string
-          api_key_encrypted: string
-          label: string | null
-          monthly_limit: number | null
-          daily_limit: number | null
-          used_this_month: number | null
-          used_today: number | null
-          last_used_at: string | null
-          reset_daily_at: string | null
-          is_active: boolean | null
-          error_count: number | null
-          priority: number | null
-          created_at: string
+          updated_at: string
         }
         Insert: {
+          api_key: string
+          created_at?: string
           id?: string
+          is_active?: boolean
+          monthly_limit_usd?: number | null
           org_id: string
           provider: string
-          api_key?: string
-          label?: string | null
-          monthly_limit?: number | null
-          daily_limit?: number | null
-          used_this_month?: number | null
-          used_today?: number | null
-          last_used_at?: string | null
-          reset_daily_at?: string | null
-          is_active?: boolean | null
-          error_count?: number | null
-          priority?: number | null
-          created_at?: string
+          updated_at?: string
         }
         Update: {
+          api_key?: string
+          created_at?: string
           id?: string
+          is_active?: boolean
+          monthly_limit_usd?: number | null
           org_id?: string
           provider?: string
-          api_key_encrypted?: string
-          label?: string | null
-          monthly_limit?: number | null
-          daily_limit?: number | null
-          used_this_month?: number | null
-          used_today?: number | null
-          last_used_at?: string | null
-          reset_daily_at?: string | null
-          is_active?: boolean | null
-          error_count?: number | null
-          priority?: number | null
-          created_at?: string
+          updated_at?: string
         }
         Relationships: [
           {
@@ -73,122 +52,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "organizations"
             referencedColumns: ["id"]
-          }
-        ]
-      }
-      ai_knowledge_base: {
-        Row: {
-          id: string
-          org_id: string
-          category: string
-          title: string
-          content: string
-          tags: string[] | null
-          embedding: string | null
-          is_active: boolean | null
-          created_by: string | null
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          org_id: string
-          category: string
-          title: string
-          content: string
-          tags?: string[] | null
-          embedding?: string | null
-          is_active?: boolean | null
-          created_by?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          org_id?: string
-          category?: string
-          title?: string
-          content?: string
-          tags?: string[] | null
-          embedding?: string | null
-          is_active?: boolean | null
-          created_by?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "ai_knowledge_base_org_id_fkey"
-            columns: ["org_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          }
-        ]
-      }
-      destination_guides: {
-        Row: {
-          id: string
-          org_id: string
-          city: string
-          country: string
-          cover_image_url: string | null
-          intro: string | null
-          tips: Json | null
-          useful_contacts: Json | null
-          emergency_numbers: Json | null
-          currency_info: string | null
-          climate_info: string | null
-          transportation: string | null
-          language_tips: string | null
-          is_published: boolean | null
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          org_id: string
-          city: string
-          country: string
-          cover_image_url?: string | null
-          intro?: string | null
-          tips?: Json | null
-          useful_contacts?: Json | null
-          emergency_numbers?: Json | null
-          currency_info?: string | null
-          climate_info?: string | null
-          transportation?: string | null
-          language_tips?: string | null
-          is_published?: boolean | null
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          org_id?: string
-          city?: string
-          country?: string
-          cover_image_url?: string | null
-          intro?: string | null
-          tips?: Json | null
-          useful_contacts?: Json | null
-          emergency_numbers?: Json | null
-          currency_info?: string | null
-          climate_info?: string | null
-          transportation?: string | null
-          language_tips?: string | null
-          is_published?: boolean | null
-          created_at?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "destination_guides_org_id_fkey"
-            columns: ["org_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          }
+          },
         ]
       }
       checklist_items: {
@@ -375,6 +239,71 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "clients_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      destination_guides: {
+        Row: {
+          city: string
+          climate_info: string | null
+          country: string
+          cover_image_url: string | null
+          created_at: string
+          currency_info: string | null
+          emergency_numbers: Json | null
+          id: string
+          intro: string | null
+          is_published: boolean
+          language_tips: string | null
+          org_id: string
+          tips: Json | null
+          transportation: string | null
+          updated_at: string
+          useful_contacts: Json | null
+        }
+        Insert: {
+          city: string
+          climate_info?: string | null
+          country: string
+          cover_image_url?: string | null
+          created_at?: string
+          currency_info?: string | null
+          emergency_numbers?: Json | null
+          id?: string
+          intro?: string | null
+          is_published?: boolean
+          language_tips?: string | null
+          org_id: string
+          tips?: Json | null
+          transportation?: string | null
+          updated_at?: string
+          useful_contacts?: Json | null
+        }
+        Update: {
+          city?: string
+          climate_info?: string | null
+          country?: string
+          cover_image_url?: string | null
+          created_at?: string
+          currency_info?: string | null
+          emergency_numbers?: Json | null
+          id?: string
+          intro?: string | null
+          is_published?: boolean
+          language_tips?: string | null
+          org_id?: string
+          tips?: Json | null
+          transportation?: string | null
+          updated_at?: string
+          useful_contacts?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "destination_guides_org_id_fkey"
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "organizations"

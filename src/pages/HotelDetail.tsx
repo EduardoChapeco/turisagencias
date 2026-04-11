@@ -8,7 +8,10 @@ import { StatusBadge } from '@/components/ui/StatusBadge';
 import { EmptyState, PageSkeleton } from '@/components/ui/EmptyState';
 import { BentoGrid, BentoCell } from '@/components/ui/BentoGrid';
 import { HotelEdit } from '@/pages/HotelEdit';
-import { Building2, MapPin, Phone, Globe, Mail, Star, Trash2, Pencil, Coffee, Info, Tag } from 'lucide-react';
+import { MediaCarousel } from '@/components/ui/MediaCarousel';
+import { MediaGallery } from '@/components/ui/MediaGallery';
+import { SectionRenderer } from '@/components/ui/SectionRenderer';
+import { Building2, MapPin, Phone, Globe, Mail, Star, Trash2, Pencil, Coffee, Info, Tag, Video, Image as ImageIcon } from 'lucide-react';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
@@ -51,6 +54,9 @@ export default function HotelDetail() {
 
   const stars = Number(hotel.category) || 0;
   const amenities = (hotel as any).amenities || [];
+  const gallery = (hotel as any).gallery_urls || [];
+  const sections = (hotel as any).sections || [];
+  const carouselImages = [hotel.photo_url, ...gallery].filter(Boolean);
 
   return (
     <AppLayout>
@@ -95,14 +101,12 @@ export default function HotelDetail() {
         }
       />
 
-      <div className="max-w-6xl">
+      <div className="max-w-6xl space-y-12">
         <BentoGrid cols={3} gap="lg">
           {/* Capa e Descrição (2 columns wide, 2 rows high if there's image) */}
-          <BentoCell colSpan={2} rowSpan={(hotel as any).photo_url ? 2 : 1} padding="none" className="flex flex-col">
-            {(hotel as any).photo_url && (
-              <div className="h-48 md:h-64 w-full shrink-0">
-                <img src={(hotel as any).photo_url} alt={hotel.name} className="w-full h-full object-cover" />
-              </div>
+          <BentoCell colSpan={2} rowSpan={carouselImages.length > 0 ? 2 : 1} padding="none" className="flex flex-col">
+            {carouselImages.length > 0 && (
+              <MediaCarousel images={carouselImages} aspectRatio="wide" />
             )}
             <div className="p-6 flex-1 flex flex-col">
               <h3 className="text-lg font-semibold flex items-center gap-2 mb-3">
@@ -175,7 +179,7 @@ export default function HotelDetail() {
           </BentoCell>
 
           {/* Regimes */}
-          <BentoCell colSpan={(hotel as any).photo_url ? 1 : 2}>
+          <BentoCell colSpan={carouselImages.length > 0 ? 1 : 2}>
              <h3 className="font-semibold mb-4 text-cb-text flex items-center gap-2">
                <Coffee className="h-4 w-4 text-cb-muted" /> Opções de Check-in / Regime
              </h3>
@@ -204,8 +208,36 @@ export default function HotelDetail() {
                 </div>
              </div>
           </BentoCell>
-
         </BentoGrid>
+
+        {/* Dynamic Sections */}
+        <SectionRenderer sections={sections} />
+
+        {/* Gallery Section If Not Handled In Sections */}
+        {gallery.length > 0 && !sections.some((s: any) => s.type === 'gallery') && (
+          <div className="pt-8">
+            <h2 className="text-2xl font-bold mb-6 text-cb-text flex items-center gap-3">
+              <ImageIcon className="h-6 w-6 text-cb-accent" /> Galeria de Fotos
+            </h2>
+            <MediaGallery images={gallery} />
+          </div>
+        )}
+
+        {/* Video Section */}
+        {(hotel as any).video_url && (
+           <div className="pt-8">
+            <h2 className="text-2xl font-bold mb-6 text-cb-text flex items-center gap-3">
+              <Video className="h-6 w-6 text-cb-accent" /> Apresentação em Vídeo
+            </h2>
+            <div className="aspect-video rounded-3xl overflow-hidden shadow-2xl border border-cb-border">
+              <iframe 
+                src={(hotel as any).video_url.replace('watch?v=', 'embed/')} 
+                className="w-full h-full" 
+                allowFullScreen
+              />
+            </div>
+          </div>
+        )}
       </div>
 
       <HotelEdit

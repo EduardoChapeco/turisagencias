@@ -8,7 +8,10 @@ import { StatusBadge } from '@/components/ui/StatusBadge';
 import { EmptyState, PageSkeleton } from '@/components/ui/EmptyState';
 import { BentoGrid, BentoCell } from '@/components/ui/BentoGrid';
 import { GuideEdit } from '@/pages/GuideEdit';
-import { Globe2, Map, Pencil, Trash2, BookOpen, Sun, CreditCard, Car, Languages } from 'lucide-react';
+import { MediaCarousel } from '@/components/ui/MediaCarousel';
+import { MediaGallery } from '@/components/ui/MediaGallery';
+import { SectionRenderer } from '@/components/ui/SectionRenderer';
+import { Globe2, Map, Pencil, Trash2, BookOpen, Sun, CreditCard, Car, Languages, Video, Image as ImageIcon } from 'lucide-react';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
@@ -48,6 +51,10 @@ export default function GuideDetail() {
     await deleteGuide.mutateAsync(id);
     navigate('/guides');
   };
+
+  const gallery = (guide as any).gallery_urls || [];
+  const sections = (guide as any).sections || [];
+  const carouselImages = [guide.cover_image_url, ...gallery].filter(Boolean);
 
   return (
     <AppLayout>
@@ -92,21 +99,19 @@ export default function GuideDetail() {
         }
       />
 
-      <div className="max-w-6xl">
+      <div className="max-w-6xl space-y-12">
         <BentoGrid cols={3} gap="lg">
           {/* Capa e Introdução */}
-          <BentoCell colSpan={2} rowSpan={2} padding="none" className="flex flex-col">
-            {guide.cover_image_url && (
-              <div className="h-48 md:h-64 w-full shrink-0">
-                <img src={guide.cover_image_url} alt={guide.city} className="w-full h-full object-cover" />
-              </div>
+          <BentoCell colSpan={2} rowSpan={carouselImages.length > 0 ? 2 : 1} padding="none" className="flex flex-col">
+            {carouselImages.length > 0 && (
+              <MediaCarousel images={carouselImages} aspectRatio="wide" />
             )}
             <div className="p-6 flex-1 flex flex-col">
               <h3 className="text-lg font-semibold flex items-center gap-2 mb-3">
                 <BookOpen className="h-4 w-4 text-cb-muted" /> Sobre o Destino
               </h3>
               {guide.intro ? (
-                <p className="text-sm text-cb-muted leading-relaxed whitespace-pre-wrap">
+                <p className="text-sm text-cb-muted leading-relaxed whitespace-pre-wrap text-lg">
                   {guide.intro}
                 </p>
               ) : (
@@ -170,8 +175,36 @@ export default function GuideDetail() {
                </div>
             </div>
           </BentoCell>
-
         </BentoGrid>
+
+        {/* Dynamic Sections */}
+        <SectionRenderer sections={sections} />
+
+        {/* Gallery Section */}
+        {gallery.length > 0 && !sections.some((s: any) => s.type === 'gallery') && (
+          <div className="pt-8">
+            <h2 className="text-2xl font-bold mb-6 text-cb-text flex items-center gap-3">
+              <ImageIcon className="h-6 w-6 text-cb-accent" /> Galeria do Destino
+            </h2>
+            <MediaGallery images={gallery} />
+          </div>
+        )}
+
+        {/* Video Section */}
+        {(guide as any).video_url && (
+           <div className="pt-8">
+            <h2 className="text-2xl font-bold mb-6 text-cb-text flex items-center gap-3">
+              <Video className="h-6 w-6 text-cb-accent" /> Documentário/Vídeo do Destino
+            </h2>
+            <div className="aspect-video rounded-3xl overflow-hidden shadow-2xl border border-cb-border">
+              <iframe 
+                src={(guide as any).video_url.replace('watch?v=', 'embed/')} 
+                className="w-full h-full" 
+                allowFullScreen
+              />
+            </div>
+          </div>
+        )}
       </div>
 
       <GuideEdit

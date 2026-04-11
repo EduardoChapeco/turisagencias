@@ -41,11 +41,11 @@ export function HotelEdit({ id, open, onClose, onSuccess }: HotelEditProps) {
   useEffect(() => {
     if (open && isUpdate && id) {
       setLoading(true);
-      supabase
+      (supabase
         .from('hotels_bank')
         .select('*')
         .eq('id', id)
-        .single()
+        .single() as any as Promise<{ data: any }>)
         .then(({ data }) => {
           if (data) {
             setForm({
@@ -59,7 +59,7 @@ export function HotelEdit({ id, open, onClose, onSuccess }: HotelEditProps) {
               phone: data.phone ?? '',
               website: data.website ?? '',
               email: data.email ?? '',
-              cover_image_url: data.cover_image_url ?? '',
+              cover_image_url: data.photo_url ?? '',
               tags: data.tags ? data.tags.join(', ') : '',
               regime_options: data.regime_options ? data.regime_options.join(', ') : '',
               amenities: (data as any).amenities ? (data as any).amenities.join(', ') : '',
@@ -87,11 +87,10 @@ export function HotelEdit({ id, open, onClose, onSuccess }: HotelEditProps) {
       city: form.city || null,
       state: form.state || null,
       country: form.country || null,
-      zip_code: form.zip_code || null,
       phone: form.phone || null,
       website: form.website || null,
       email: form.email || null,
-      cover_image_url: form.cover_image_url || null,
+      photo_url: form.cover_image_url || null,
       tags: form.tags ? form.tags.split(',').map((x) => x.trim()).filter(Boolean) : [],
       regime_options: form.regime_options ? form.regime_options.split(',').map((x) => x.trim()).filter(Boolean) : [],
       amenities: form.amenities ? form.amenities.split(',').map((x) => x.trim()).filter(Boolean) : [],

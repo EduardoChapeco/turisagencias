@@ -12,11 +12,11 @@ export default function PublicGuide() {
     queryKey: ['public-guide', slug],
     queryFn: async () => {
       if (!slug) throw new Error('Slug is required');
-      const { data, error } = await supabase
+      const { data, error } = await (supabase
         .from('destination_guides')
         .select('*')
-        .eq('slug', slug)
-        .eq('is_published', true)
+        .eq('slug' as any, slug)
+        .eq('is_published', true) as any)
         .single();
         
       if (error) throw error;

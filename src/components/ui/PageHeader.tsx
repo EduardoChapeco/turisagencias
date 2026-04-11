@@ -20,7 +20,7 @@ interface BreadcrumbItem {
   onClick?: () => void;
 }
 
-interface PageHeaderProps {
+export interface PageHeaderProps {
   title: string;
   description?: string;
   icon?: React.ElementType;
@@ -28,6 +28,9 @@ interface PageHeaderProps {
   breadcrumb?: BreadcrumbItem[];
   /** Badge/chip exibido ao lado do título */
   badge?: React.ReactNode;
+  /** Back navigation link */
+  backTo?: string;
+  backToLabel?: string;
   className?: string;
 }
 

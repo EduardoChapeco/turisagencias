@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
-import { Plane } from 'lucide-react';
+import { Cloud } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthStore } from '@/stores/authStore';
 import { useToast } from '@/hooks/use-toast';
@@ -26,9 +26,9 @@ export default function Login() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-lg bg-primary">
-            <Plane className="h-6 w-6 text-primary-foreground" />
+            <Cloud className="h-6 w-6 text-primary-foreground" />
           </div>
-          <CardTitle className="font-heading text-2xl">VoyageOS</CardTitle>
+          <CardTitle className="font-heading text-2xl">CloudBlock</CardTitle>
           <CardDescription>Entre na sua conta para continuar.</CardDescription>
         </CardHeader>
         <CardContent>

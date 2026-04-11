@@ -1,5 +1,6 @@
 import {
   Building2,
+  Cloud,
   FileText,
   Globe2,
   KanbanSquare,
@@ -9,7 +10,8 @@ import {
   Plane,
   Users,
   Settings as SettingsIcon,
-  Sparkles
+  Sparkles,
+  Book
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { NavLink } from '@/components/NavLink';
@@ -37,6 +39,7 @@ const mainNav = [
   { title: 'Kanban Vendas', url: '/kanban/sales', icon: KanbanSquare },
   { title: 'Hotéis', url: '/hotels', icon: Building2 },
   { title: 'Guias de Destino', url: '/guides', icon: Globe2 },
+  { title: 'Info Páginas', url: '/info', icon: Book },
   { title: 'Tickets', url: '/tickets', icon: LifeBuoy },
   { title: 'V-Agent (IA)', url: '/ai-chat', icon: Sparkles },
   { title: 'Configurações', url: '/settings', icon: SettingsIcon },
@@ -58,11 +61,11 @@ export function AppSidebar() {
       <SidebarContent>
         <div className="flex items-center gap-2 px-4 py-4">
           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-sidebar-primary">
-            <Plane className="h-4 w-4 text-sidebar-primary-foreground" />
+            <Cloud className="h-4 w-4 text-sidebar-primary-foreground" />
           </div>
           {!collapsed && (
             <span className="truncate font-heading text-sm font-semibold text-sidebar-foreground">
-              {organization?.name || 'VoyageOS'}
+              {organization?.name || 'CloudBlock'}
             </span>
           )}
         </div>

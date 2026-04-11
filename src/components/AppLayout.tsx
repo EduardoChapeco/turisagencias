@@ -13,7 +13,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         <div className="flex min-w-0 flex-1 flex-col">
           <header className="flex h-14 items-center gap-4 border-b bg-background/95 px-4 backdrop-blur">
             <SidebarTrigger />
-            <h1 className="font-heading text-lg font-semibold text-foreground">VoyageOS</h1>
+            <h1 className="font-heading text-lg font-semibold text-foreground">CloudBlock</h1>
             <div className="ml-auto flex items-center gap-3">
               <NotificationPanel />
               <div className="text-right">

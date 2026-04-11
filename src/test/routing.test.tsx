@@ -83,7 +83,7 @@ describe('Route Guards', () => {
   it('Login page renders correctly', () => {
     useAuthStore.setState({ user: null, isLoading: false, profile: null, organization: null, roles: [] });
     renderInRouter(<Login />, '/login');
-    expect(screen.getByText(/voyageos/i)).toBeInTheDocument();
+    expect(screen.getByText(/cloudblock/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/e-mail/i)).toBeInTheDocument();
   });
 

@@ -16,6 +16,7 @@ export default {
       fontFamily: {
         sans: ["Inter", "system-ui", "sans-serif"],
         heading: ["Sora", "system-ui", "sans-serif"],
+        mono: ["JetBrains Mono", "Fira Code", "monospace"],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -59,6 +60,22 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        // CloudBlock design system tokens
+        cb: {
+          primary:   "hsl(var(--cb-primary))",
+          accent:    "hsl(var(--cb-accent))",
+          bg:        "hsl(var(--cb-bg))",
+          s0:        "hsl(var(--cb-surface-0))",
+          s1:        "hsl(var(--cb-surface-1))",
+          s2:        "hsl(var(--cb-surface-2))",
+          border:    "hsl(var(--cb-border))",
+          text:      "hsl(var(--cb-text-primary))",
+          muted:     "hsl(var(--cb-text-muted))",
+          success:   "hsl(var(--cb-success))",
+          warning:   "hsl(var(--cb-warning))",
+          danger:    "hsl(var(--cb-danger))",
+          info:      "hsl(var(--cb-info))",
+        },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
@@ -74,6 +91,19 @@ export default {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+        // CB tokens
+        "cb-sm":  "var(--cb-radius-sm)",
+        "cb-md":  "var(--cb-radius-md)",
+        "cb-lg":  "var(--cb-radius-lg)",
+        "cb-xl":  "var(--cb-radius-xl)",
+      },
+      gap: {
+        "cb-xs":  "var(--cb-gap-xs)",
+        "cb-sm":  "var(--cb-gap-sm)",
+        "cb-md":  "var(--cb-gap-md)",
+        "cb-lg":  "var(--cb-gap-lg)",
+        "cb-xl":  "var(--cb-gap-xl)",
+        "cb-2xl": "var(--cb-gap-2xl)",
       },
       keyframes: {
         "accordion-down": {

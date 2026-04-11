@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
-import { Plane } from 'lucide-react';
+import { Cloud } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthStore } from '@/stores/authStore';
 import { useToast } from '@/hooks/use-toast';
@@ -32,10 +32,10 @@ export default function Onboarding() {
       <Card className="w-full max-w-lg">
         <CardHeader className="text-center">
           <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-lg bg-primary">
-            <Plane className="h-6 w-6 text-primary-foreground" />
+            <Cloud className="h-6 w-6 text-primary-foreground" />
           </div>
           <CardTitle className="font-heading text-2xl">Configure sua agência</CardTitle>
-          <CardDescription>Preencha os dados iniciais para ativar o VoyageOS.</CardDescription>
+          <CardDescription>Preencha os dados iniciais para ativar o CloudBlock.</CardDescription>
         </CardHeader>
         <CardContent>
           <form

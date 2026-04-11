@@ -3,6 +3,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuthStore } from '@/stores/authStore';
 import { useToast } from '@/hooks/use-toast';
 
+/* ─────────────────────────────────────────────
+   Board + Columns + Cards (hook original expandido)
+   ───────────────────────────────────────────── */
+
 export function useKanbanBoard(slug: string) {
   const { organization } = useAuthStore();
 
@@ -16,6 +20,7 @@ export function useKanbanBoard(slug: string) {
         .maybeSingle();
 
       if (boardError) throw boardError;
+
       if (!board && organization?.id) {
         await supabase.rpc('ensure_default_kanban_boards', { _org_id: organization.id });
         const { data: seededBoard, error: seededBoardError } = await supabase
@@ -28,7 +33,11 @@ export function useKanbanBoard(slug: string) {
 
         const [{ data: columns, error: columnsError }, { data: cards, error: cardsError }] = await Promise.all([
           supabase.from('kanban_columns').select('*').eq('board_id', seededBoard.id).order('position'),
-          supabase.from('kanban_cards').select('*, clients(name), quotations(destination), trips(title)').eq('board_id', seededBoard.id).order('position'),
+          supabase
+            .from('kanban_cards')
+            .select('*, clients(name, phone), quotations(destination), trips(title)')
+            .eq('board_id', seededBoard.id)
+            .order('position'),
         ]);
 
         if (columnsError) throw columnsError;
@@ -40,7 +49,11 @@ export function useKanbanBoard(slug: string) {
 
       const [{ data: columns, error: columnsError }, { data: cards, error: cardsError }] = await Promise.all([
         supabase.from('kanban_columns').select('*').eq('board_id', board.id).order('position'),
-        supabase.from('kanban_cards').select('*, clients(name), quotations(destination), trips(title)').eq('board_id', board.id).order('position'),
+        supabase
+          .from('kanban_cards')
+          .select('*, clients(name, phone), quotations(destination), trips(title)')
+          .eq('board_id', board.id)
+          .order('position'),
       ]);
 
       if (columnsError) throw columnsError;
@@ -66,15 +79,16 @@ export function useCreateKanbanCard() {
       client_id?: string | null;
       quotation_id?: string | null;
       trip_id?: string | null;
+      estimated_value?: number | null;
+      whatsapp?: string | null;
+      email?: string | null;
+      tags?: string[];
     }) => {
       const { data, error } = await supabase
         .from('kanban_cards')
-        .insert({
-          ...payload,
-        })
+        .insert({ ...payload })
         .select()
         .single();
-
       if (error) throw error;
       return data;
     },
@@ -93,22 +107,323 @@ export function useUpdateKanbanCard() {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async ({ id, column_id }: { id: string; column_id: string }) => {
+    mutationFn: async ({
+      id,
+      ...updates
+    }: {
+      id: string;
+      column_id?: string;
+      title?: string;
+      description?: string | null;
+      estimated_value?: number | null;
+      whatsapp?: string | null;
+      email?: string | null;
+      tags?: string[];
+      client_id?: string | null;
+      quotation_id?: string | null;
+      trip_id?: string | null;
+    }) => {
       const { data, error } = await supabase
         .from('kanban_cards')
-        .update({ column_id })
+        .update(updates)
         .eq('id', id)
         .select()
         .single();
-
       if (error) throw error;
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['kanban-board'] });
+      queryClient.invalidateQueries({ queryKey: ['kanban-card'] });
     },
     onError: (err: Error) => {
-      toast({ title: 'Erro ao mover card', description: err.message, variant: 'destructive' });
+      toast({ title: 'Erro ao atualizar card', description: err.message, variant: 'destructive' });
+    },
+  });
+}
+
+export function useDeleteKanbanCard() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from('kanban_cards').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['kanban-board'] });
+      toast({ title: 'Card removido.' });
+    },
+    onError: (err: Error) => {
+      toast({ title: 'Erro ao remover card', description: err.message, variant: 'destructive' });
+    },
+  });
+}
+
+/* ─────────────────────────────────────────────
+   NOTAS
+   ───────────────────────────────────────────── */
+
+export function useKanbanNotes(cardId: string | null) {
+  return useQuery({
+    queryKey: ['kanban-notes', cardId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('kanban_notes')
+        .select('*, author:profiles(first_name, last_name, avatar_url)')
+        .eq('card_id', cardId!)
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!cardId,
+    staleTime: 30 * 1000,
+  });
+}
+
+export function useCreateKanbanNote() {
+  const queryClient = useQueryClient();
+  const { organization, user } = useAuthStore();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async ({ card_id, body }: { card_id: string; body: string }) => {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('user_id', user!.id)
+        .maybeSingle();
+
+      const { data, error } = await supabase
+        .from('kanban_notes')
+        .insert({ card_id, body, org_id: organization!.id, author_id: profile?.id ?? null })
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (_, vars) => {
+      queryClient.invalidateQueries({ queryKey: ['kanban-notes', vars.card_id] });
+    },
+    onError: (err: Error) => {
+      toast({ title: 'Erro ao salvar nota', description: err.message, variant: 'destructive' });
+    },
+  });
+}
+
+export function useUpdateKanbanNote() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async ({ id, card_id, body }: { id: string; card_id: string; body: string }) => {
+      const { data, error } = await supabase
+        .from('kanban_notes')
+        .update({ body })
+        .eq('id', id)
+        .select()
+        .single();
+      if (error) throw error;
+      return { ...data, card_id };
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['kanban-notes', data.card_id] });
+    },
+    onError: (err: Error) => {
+      toast({ title: 'Erro ao editar nota', description: err.message, variant: 'destructive' });
+    },
+  });
+}
+
+export function useDeleteKanbanNote() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async ({ id, card_id }: { id: string; card_id: string }) => {
+      const { error } = await supabase.from('kanban_notes').delete().eq('id', id);
+      if (error) throw error;
+      return card_id;
+    },
+    onSuccess: (card_id) => {
+      queryClient.invalidateQueries({ queryKey: ['kanban-notes', card_id] });
+    },
+    onError: (err: Error) => {
+      toast({ title: 'Erro ao excluir nota', description: err.message, variant: 'destructive' });
+    },
+  });
+}
+
+/* ─────────────────────────────────────────────
+   CHECKLISTS
+   ───────────────────────────────────────────── */
+
+export function useKanbanChecklists(cardId: string | null) {
+  return useQuery({
+    queryKey: ['kanban-checklists', cardId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('kanban_checklists')
+        .select('*, items:kanban_checklist_items(*, )')
+        .eq('card_id', cardId!)
+        .order('created_at');
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!cardId,
+  });
+}
+
+export function useCreateKanbanChecklist() {
+  const queryClient = useQueryClient();
+  const { organization } = useAuthStore();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async ({ card_id, title }: { card_id: string; title?: string }) => {
+      const { data, error } = await supabase
+        .from('kanban_checklists')
+        .insert({ card_id, org_id: organization!.id, title: title ?? 'Checklist' })
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['kanban-checklists', data.card_id] });
+    },
+    onError: (err: Error) => {
+      toast({ title: 'Erro ao criar checklist', description: err.message, variant: 'destructive' });
+    },
+  });
+}
+
+export function useToggleChecklistItem() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      item_id,
+      is_checked,
+      card_id,
+    }: {
+      item_id: string;
+      is_checked: boolean;
+      card_id: string;
+    }) => {
+      const { data, error } = await supabase
+        .from('kanban_checklist_items')
+        .update({ is_checked, checked_at: is_checked ? new Date().toISOString() : null })
+        .eq('id', item_id)
+        .select()
+        .single();
+      if (error) throw error;
+      return { ...data, card_id };
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['kanban-checklists', data.card_id] });
+    },
+  });
+}
+
+export function useAddChecklistItem() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async ({
+      checklist_id,
+      title,
+      card_id,
+    }: {
+      checklist_id: string;
+      title: string;
+      card_id: string;
+    }) => {
+      const { data, error } = await supabase
+        .from('kanban_checklist_items')
+        .insert({ checklist_id, title, position: 0 })
+        .select()
+        .single();
+      if (error) throw error;
+      return { ...data, card_id };
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['kanban-checklists', data.card_id] });
+    },
+    onError: (err: Error) => {
+      toast({ title: 'Erro ao adicionar item', description: err.message, variant: 'destructive' });
+    },
+  });
+}
+
+export function useDeleteChecklistItem() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ item_id, card_id }: { item_id: string; card_id: string }) => {
+      const { error } = await supabase.from('kanban_checklist_items').delete().eq('id', item_id);
+      if (error) throw error;
+      return card_id;
+    },
+    onSuccess: (card_id) => {
+      queryClient.invalidateQueries({ queryKey: ['kanban-checklists', card_id] });
+    },
+  });
+}
+
+/* ─────────────────────────────────────────────
+   TAGS
+   ───────────────────────────────────────────── */
+
+export function useKanbanTags() {
+  const { organization } = useAuthStore();
+
+  return useQuery({
+    queryKey: ['kanban-tags', organization?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('kanban_tags')
+        .select('*')
+        .eq('org_id', organization!.id)
+        .order('name');
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!organization?.id,
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+const TAG_COLORS = [
+  '#2E86AB', '#1E3A5F', '#27AE60', '#F39C12',
+  '#E74C3C', '#8E44AD', '#2980B9', '#16A085',
+];
+
+export function useCreateKanbanTag() {
+  const queryClient = useQueryClient();
+  const { organization } = useAuthStore();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async ({ name }: { name: string }) => {
+      const existingTags = queryClient.getQueryData<{ color: string }[]>(['kanban-tags', organization?.id]) ?? [];
+      const color = TAG_COLORS[existingTags.length % TAG_COLORS.length];
+
+      const { data, error } = await supabase
+        .from('kanban_tags')
+        .insert({ name: name.trim(), org_id: organization!.id, color })
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['kanban-tags'] });
+    },
+    onError: (err: Error) => {
+      toast({ title: 'Erro ao criar tag', description: err.message, variant: 'destructive' });
     },
   });
 }

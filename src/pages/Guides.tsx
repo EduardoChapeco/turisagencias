@@ -8,11 +8,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { useState } from 'react';
+import { PageHeader } from '@/components/ui/PageHeader';
+import { GuideEdit } from './GuideEdit';
 
 export default function Guides() {
   const navigate = useNavigate();
   const { data: guides, isLoading } = useGuides();
   const [searchTerm, setSearchTerm] = useState('');
+  const [editSheet, setEditSheet] = useState<{ open: boolean; id: string | null }>({ open: false, id: null });
 
   const filteredGuides = guides?.filter(
     (g) =>
@@ -22,25 +25,21 @@ export default function Guides() {
 
   return (
     <AppLayout>
-      <div className="space-y-8 max-w-7xl mx-auto">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="font-heading text-3xl font-bold flex items-center gap-3">
-               <Globe2 className="h-8 w-8 text-primary" />
-               Guias Mágicos
-            </h1>
-            <p className="text-muted-foreground mt-1">
-              Base de conhecimento de destinos. Alimenta sua IA e enriquece os Portais de Clientes.
-            </p>
-          </div>
-          <Button onClick={() => navigate('/guides/new')} size="lg" className="rounded-xl shadow-sm">
-            <Plus className="mr-2 h-5 w-5" />
-            Criar Livro de Destino
-          </Button>
-        </div>
+      <div className="space-y-6">
+        <PageHeader 
+          title="Guias Mágicos"
+          description="Base de conhecimento de destinos. Alimenta sua IA e enriquece os Portais de Clientes."
+          icon={Globe2}
+          actions={
+            <Button onClick={() => setEditSheet({ open: true, id: null })}>
+              <Plus className="mr-2 h-4 w-4" />
+              Criar Livro de Destino
+            </Button>
+          }
+        />
 
-        <Card className="border-border/50 shadow-sm overflow-hidden bg-surface/50">
-          <div className="p-4 border-b border-border/30 bg-card/50 flex flex-col sm:flex-row gap-4 justify-between items-center">
+        <Card className="surface-card border-cb-border overflow-hidden">
+          <div className="p-4 border-b border-cb-border bg-cb-s0 flex flex-col sm:flex-row gap-4 justify-between items-center">
             <div className="relative w-full sm:w-96">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
@@ -71,7 +70,7 @@ export default function Guides() {
                 <p className="text-muted-foreground mt-1 max-w-md">
                   Crie guias detalhados sobre cidades e países. Dicas, contatos de emergência e regras de vistos cadastradas aqui serão lidas pelo V-Agent nas conversas.
                 </p>
-                <Button variant="outline" className="mt-6" onClick={() => navigate('/guides/new')}>
+                <Button variant="outline" className="mt-6" onClick={() => setEditSheet({ open: true, id: null })}>
                    Começar Mapeamento
                 </Button>
               </div>
@@ -120,6 +119,13 @@ export default function Guides() {
           </CardContent>
         </Card>
       </div>
+
+      <GuideEdit 
+        open={editSheet.open} 
+        id={editSheet.id} 
+        onClose={() => setEditSheet({ open: false, id: null })} 
+        onSuccess={() => {}} 
+      />
     </AppLayout>
   );
 }

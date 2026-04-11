@@ -36,8 +36,9 @@ const AIChat = lazy(() => import('./pages/AIChat'));
 const Guides = lazy(() => import('./pages/Guides'));
 const GuideDetail = lazy(() => import('./pages/GuideDetail'));
 
+const TravelerInfo = lazy(() => import('./pages/TravelerInfo'));
+
 const Hotels = lazy(() => import('./pages/Hotels'));
-const HotelNew = lazy(() => import('./pages/HotelNew'));
 const HotelDetail = lazy(() => import('./pages/HotelDetail'));
 
 const Tickets = lazy(() => import('./pages/Tickets'));
@@ -50,6 +51,8 @@ const PortalTripDetail = lazy(() => import('./pages/PortalTripDetail'));
 const PublicTravelerForm = lazy(() => import('./pages/PublicTravelerForm'));
 const PublicQuotation = lazy(() => import('./pages/PublicQuotation'));
 const PublicChecklist = lazy(() => import('./pages/PublicChecklist'));
+const PublicGuide = lazy(() => import('./pages/PublicGuide'));
+const PublicTravelerInfo = lazy(() => import('./pages/PublicTravelerInfo'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -103,6 +106,8 @@ const App = () => (
               <Route path="/f/:token" element={<PublicTravelerForm />} />
               <Route path="/q/:token" element={<PublicQuotation />} />
               <Route path="/c/:token" element={<PublicChecklist />} />
+              <Route path="/p/guide/:slug" element={<PublicGuide />} />
+              <Route path="/p/info/:slug" element={<PublicTravelerInfo />} />
               <Route path="/portal/:org_slug" element={<PortalLogin />} />
               <Route path="/portal/:org_slug/home" element={<ProtectedRoute><PortalHome /></ProtectedRoute>} />
               <Route path="/portal/:org_slug/trip/:id" element={<ProtectedRoute><PortalTripDetail /></ProtectedRoute>} />
@@ -132,8 +137,9 @@ const App = () => (
               <Route path="/guides" element={<ProtectedWithOrg><TripsRole><Guides /></TripsRole></ProtectedWithOrg>} />
               <Route path="/guides/:id" element={<ProtectedWithOrg><TripsRole><GuideDetail /></TripsRole></ProtectedWithOrg>} />
 
+              <Route path="/info" element={<ProtectedWithOrg><TripsRole><TravelerInfo /></TripsRole></ProtectedWithOrg>} />
+
               <Route path="/hotels" element={<ProtectedWithOrg><TripsRole><Hotels /></TripsRole></ProtectedWithOrg>} />
-              <Route path="/hotels/new" element={<ProtectedWithOrg><TripsRole><HotelNew /></TripsRole></ProtectedWithOrg>} />
               <Route path="/hotels/:id" element={<ProtectedWithOrg><TripsRole><HotelDetail /></TripsRole></ProtectedWithOrg>} />
 
               <Route path="/tickets" element={<ProtectedWithOrg><TripsRole><Tickets /></TripsRole></ProtectedWithOrg>} />

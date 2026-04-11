@@ -1,332 +1,218 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import { useState } from 'react';
 import { AppLayout } from '@/components/AppLayout';
-import { useHotel, useUpdateHotel, useDeleteHotel } from '@/hooks/useHotels';
+import { useHotel, useDeleteHotel } from '@/hooks/useHotels';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, MapPin, Star, Tag, Phone, Globe, Trash2, Save, X, BedDouble, Wifi, Coffee, Dumbbell } from 'lucide-react';
-
-const REGIME_OPTIONS = ['Sem Regime', 'Café da Manhã', 'Meia Pensão', 'Pensão Completa', 'All Inclusive', 'Ultra All Inclusive'];
-const AMENITY_OPTIONS = ['Wi-Fi', 'Piscina', 'Academia', 'Spa', 'Restaurante', 'Bar', 'Estacionamento', 'Traslado Aeroporto', 'Business Center', 'Beira-Mar', 'Pet Friendly', 'Acessível'];
+import { PageHeader } from '@/components/ui/PageHeader';
+import { StatusBadge } from '@/components/ui/StatusBadge';
+import { EmptyState, PageSkeleton } from '@/components/ui/EmptyState';
+import { BentoGrid, BentoCell } from '@/components/ui/BentoGrid';
+import { HotelEdit } from '@/pages/HotelEdit';
+import { Building2, MapPin, Phone, Globe, Mail, Star, Trash2, Pencil, Coffee, Info, Tag } from 'lucide-react';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 export default function HotelDetail() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const { data: hotel, isLoading } = useHotel(id);
-  const updateHotel = useUpdateHotel?.();
   const deleteHotel = useDeleteHotel?.();
 
-  const [editing, setEditing] = useState(false);
-  const [form, setForm] = useState<any>(null);
-  const [tagInput, setTagInput] = useState('');
-  const [amenities, setAmenities] = useState<string[]>([]);
-  const [regimeOptions, setRegimeOptions] = useState<string[]>([]);
-
-  const startEdit = () => {
-    if (!hotel) return;
-    setForm({
-      name: hotel.name,
-      description: hotel.description || '',
-      category: hotel.category || '',
-      address: hotel.address || '',
-      city: hotel.city || '',
-      state: hotel.state || '',
-      country: hotel.country || 'Brasil',
-      zip_code: hotel.zip_code || '',
-      phone: hotel.phone || '',
-      website: hotel.website || '',
-      email: hotel.email || '',
-      cover_image_url: hotel.cover_image_url || '',
-      tags: [...(hotel.tags || [])],
-      regime_options: [...(hotel.regime_options || [])],
-      amenities: [...((hotel as any).amenities || [])],
-    });
-    setAmenities([...((hotel as any).amenities || [])]);
-    setRegimeOptions([...(hotel.regime_options || [])]);
-    setEditing(true);
-  };
-
-  const handleSave = async () => {
-    if (!form || !id || !updateHotel) return;
-    await updateHotel.mutateAsync({ id, ...form, amenities, regime_options: regimeOptions });
-    setEditing(false);
-  };
-
-  const handleDelete = async () => {
-    if (!id || !deleteHotel) return;
-    if (confirm('Remover este hotel do banco? Cotações vinculadas não serão afetadas.')) {
-      await deleteHotel.mutateAsync(id);
-      navigate('/hotels');
-    }
-  };
-
-  const toggleAmenity = (a: string) => {
-    setAmenities((prev) => prev.includes(a) ? prev.filter((x) => x !== a) : [...prev, a]);
-  };
-  const toggleRegime = (r: string) => {
-    setRegimeOptions((prev) => prev.includes(r) ? prev.filter((x) => x !== r) : [...prev, r]);
-  };
-  const addTag = () => {
-    const t = tagInput.trim();
-    if (!t || form?.tags?.includes(t)) return;
-    setForm((p: any) => ({ ...p, tags: [...(p.tags || []), t] }));
-    setTagInput('');
-  };
-  const removeTag = (t: string) => setForm((p: any) => ({ ...p, tags: p.tags.filter((x: string) => x !== t) }));
+  const [editOpen, setEditOpen] = useState(false);
 
   if (isLoading) {
-    return <AppLayout><Skeleton className="h-[600px] rounded-2xl" /></AppLayout>;
+    return (
+      <AppLayout>
+        <PageSkeleton />
+      </AppLayout>
+    );
   }
 
   if (!hotel) {
     return (
       <AppLayout>
-        <div className="flex flex-col items-center justify-center h-64">
-          <p className="text-muted-foreground">Hotel não encontrado.</p>
-          <Button variant="outline" className="mt-4" onClick={() => navigate('/hotels')}>Voltar</Button>
-        </div>
+        <EmptyState
+          icon={Building2}
+          title="Hotel não encontrado"
+          description="O hotel que você tentou acessar não existe ou foi removido."
+          action={<Button variant="outline" onClick={() => navigate('/hotels')}>Voltar aos hotéis</Button>}
+        />
       </AppLayout>
     );
   }
 
-  const displayForm = editing ? form : hotel;
+  const handleDelete = async () => {
+    if (!id || !deleteHotel) return;
+    await deleteHotel.mutateAsync(id);
+    navigate('/hotels');
+  };
+
   const stars = Number(hotel.category) || 0;
+  const amenities = (hotel as any).amenities || [];
 
   return (
     <AppLayout>
-      <div className="max-w-5xl mx-auto space-y-6 pb-12">
-        
-        {/* Header */}
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex items-start gap-4">
-            <Button variant="outline" size="icon" className="rounded-xl shrink-0" onClick={() => navigate('/hotels')}>
-              <ArrowLeft className="h-5 w-5" />
+      <PageHeader
+        title={hotel.name}
+        description={[hotel.city, hotel.state, hotel.country].filter(Boolean).join(', ')}
+        icon={Building2}
+        badge={stars > 0 ? (
+          <div className="flex gap-0.5">
+            {Array.from({ length: Math.min(stars, 5) }).map((_, i) => (
+              <Star key={i} className="h-3.5 w-3.5 text-cb-warning fill-cb-warning" />
+            ))}
+          </div>
+        ) : undefined}
+        backTo="/hotels"
+        backToLabel="Hotéis"
+        actions={
+          <>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="outline" size="icon" className="border-cb-danger/20 text-cb-danger hover:bg-cb-danger/10">
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Remover Hotel?</AlertDialogTitle>
+                  <AlertDialogDescription>Esta ação é irreversível. O hotel será apagado do banco da agência.</AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleDelete} className="bg-cb-danger text-cb-s0 hover:bg-cb-danger/90">
+                    Remover
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+            <Button onClick={() => setEditOpen(true)}>
+              <Pencil className="h-4 w-4 mr-2" /> Editar
             </Button>
-            <div>
-              <h1 className="font-heading text-3xl font-bold text-primary">{hotel.name}</h1>
-              <p className="text-muted-foreground mt-1 flex items-center gap-2">
-                <MapPin className="h-4 w-4 text-accent" />
-                {[hotel.city, hotel.state, hotel.country].filter(Boolean).join(', ')}
-              </p>
-              {stars > 0 && (
-                <div className="flex items-center gap-1 mt-2">
-                  {Array.from({ length: stars }).map((_, i) => (
-                    <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                  ))}
-                  {Array.from({ length: 5 - stars }).map((_, i) => (
-                    <Star key={i} className="h-4 w-4 text-muted-foreground/30" />
-                  ))}
+          </>
+        }
+      />
+
+      <div className="max-w-6xl">
+        <BentoGrid cols={3} gap="lg">
+          {/* Capa e Descrição (2 columns wide, 2 rows high if there's image) */}
+          <BentoCell colSpan={2} rowSpan={hotel.cover_image_url ? 2 : 1} padding="none" className="flex flex-col">
+            {hotel.cover_image_url && (
+              <div className="h-48 md:h-64 w-full shrink-0">
+                <img src={hotel.cover_image_url} alt={hotel.name} className="w-full h-full object-cover" />
+              </div>
+            )}
+            <div className="p-6 flex-1 flex flex-col">
+              <h3 className="text-lg font-semibold flex items-center gap-2 mb-3">
+                <Info className="h-4 w-4 text-cb-muted" /> Sobre o Hotel
+              </h3>
+              {hotel.description ? (
+                <p className="text-sm text-cb-muted leading-relaxed whitespace-pre-wrap">
+                  {hotel.description}
+                </p>
+              ) : (
+                <p className="text-sm text-cb-muted italic">Nenhuma descrição informada.</p>
+              )}
+            </div>
+          </BentoCell>
+
+          {/* Box de Contato e Endereço */}
+          <BentoCell colSpan={1} rowSpan={1} padding="lg">
+            <h3 className="font-semibold mb-4 text-cb-text flex items-center gap-2">
+              <MapPin className="h-4 w-4 text-cb-muted" /> Endereço e Contato
+            </h3>
+            <div className="space-y-4">
+              {hotel.address || hotel.city || hotel.zip_code ? (
+                <div>
+                   <p className="text-[10px] font-semibold tracking-wider text-cb-muted uppercase mb-1">Localização</p>
+                   <p className="text-sm text-cb-text">{hotel.address}</p>
+                   <p className="text-sm text-cb-muted mt-0.5">{[hotel.city, hotel.state].filter(Boolean).join(' - ')}</p>
+                   <p className="text-sm text-cb-muted">{[hotel.country, hotel.zip_code].filter(Boolean).join(', ')}</p>
+                </div>
+              ) : null}
+
+              {hotel.phone && (
+                <div>
+                   <p className="text-[10px] font-semibold tracking-wider text-cb-muted uppercase mb-1">Telefone</p>
+                   <p className="text-sm text-cb-text flex items-center gap-1.5"><Phone className="h-3.5 w-3.5" /> {hotel.phone}</p>
+                </div>
+              )}
+              {hotel.email && (
+                <div>
+                   <p className="text-[10px] font-semibold tracking-wider text-cb-muted uppercase mb-1">E-mail</p>
+                   <p className="text-sm text-cb-text flex items-center gap-1.5"><Mail className="h-3.5 w-3.5" /> {hotel.email}</p>
+                </div>
+              )}
+              {hotel.website && (
+                <div>
+                   <p className="text-[10px] font-semibold tracking-wider text-cb-muted uppercase mb-1">Site</p>
+                   <a href={hotel.website} target="_blank" rel="noreferrer" className="text-sm text-cb-accent flex items-center gap-1.5 hover:underline">
+                     <Globe className="h-3.5 w-3.5" /> Acessar site
+                   </a>
                 </div>
               )}
             </div>
-          </div>
-          <div className="flex gap-2 shrink-0">
-            {editing ? (
-              <>
-                <Button variant="outline" onClick={() => setEditing(false)}>Cancelar</Button>
-                <Button onClick={handleSave} disabled={updateHotel?.isPending} className="rounded-xl">
-                  <Save className="h-4 w-4 mr-2" />
-                  {updateHotel?.isPending ? 'Salvando...' : 'Salvar'}
-                </Button>
-              </>
+          </BentoCell>
+
+          {/* Comodidades */}
+          <BentoCell>
+            <h3 className="font-semibold mb-4 text-cb-text flex items-center gap-2">
+              <Coffee className="h-4 w-4 text-cb-muted" /> Comodidades
+            </h3>
+            {amenities.length > 0 ? (
+              <ul className="space-y-2">
+                {amenities.map((item: string) => (
+                  <li key={item} className="text-sm text-cb-text flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-cb-accent" /> {item}
+                  </li>
+                ))}
+              </ul>
             ) : (
-              <>
-                <Button variant="destructive" size="icon" className="rounded-xl" onClick={handleDelete}>
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-                <Button onClick={startEdit} className="rounded-xl">Editar Hotel</Button>
-              </>
+              <p className="text-sm text-cb-muted italic">Nenhuma comodidade detalhada.</p>
             )}
-          </div>
-        </div>
+          </BentoCell>
 
-        <Tabs defaultValue="details" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 max-w-sm">
-            <TabsTrigger value="details"><BedDouble className="h-4 w-4 mr-2" />Detalhes</TabsTrigger>
-            <TabsTrigger value="amenities"><Wifi className="h-4 w-4 mr-2" />Comodidades</TabsTrigger>
-            <TabsTrigger value="contact"><Phone className="h-4 w-4 mr-2" />Contato</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="details" className="mt-6 space-y-6">
-            <Card className="border-border/50 shadow-sm">
-              <CardHeader className="bg-surface/50 border-b border-border/30">
-                <CardTitle>Dados do Estabelecimento</CardTitle>
-              </CardHeader>
-              <CardContent className="p-6 grid gap-4 sm:grid-cols-2">
-                {editing ? (
-                  <>
-                    <div className="space-y-2 sm:col-span-2">
-                      <Label>Nome</Label>
-                      <Input value={form.name} onChange={(e) => setForm((p: any) => ({ ...p, name: e.target.value }))} />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Categoria (Estrelas 1-5)</Label>
-                      <Input type="number" min="1" max="5" value={form.category} onChange={(e) => setForm((p: any) => ({ ...p, category: e.target.value }))} />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>URL Foto de Capa</Label>
-                      <Input value={form.cover_image_url} onChange={(e) => setForm((p: any) => ({ ...p, cover_image_url: e.target.value }))} />
-                    </div>
-                    <div className="space-y-2 sm:col-span-2">
-                      <Label>Descrição</Label>
-                      <Textarea value={form.description} onChange={(e) => setForm((p: any) => ({ ...p, description: e.target.value }))} rows={4} />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Cidade</Label>
-                      <Input value={form.city} onChange={(e) => setForm((p: any) => ({ ...p, city: e.target.value }))} />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Estado</Label>
-                      <Input value={form.state} onChange={(e) => setForm((p: any) => ({ ...p, state: e.target.value }))} />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>País</Label>
-                      <Input value={form.country} onChange={(e) => setForm((p: any) => ({ ...p, country: e.target.value }))} />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>CEP</Label>
-                      <Input value={form.zip_code} onChange={(e) => setForm((p: any) => ({ ...p, zip_code: e.target.value }))} />
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    {hotel.cover_image_url && (
-                      <div className="sm:col-span-2 rounded-xl overflow-hidden h-48">
-                        <img src={hotel.cover_image_url} alt={hotel.name} className="w-full h-full object-cover" />
-                      </div>
-                    )}
-                    {hotel.description && <p className="sm:col-span-2 text-muted-foreground text-sm leading-6">{hotel.description}</p>}
-                    {hotel.address && <div><p className="text-xs text-muted-foreground uppercase font-semibold">Endereço</p><p className="text-sm">{hotel.address}</p></div>}
-                  </>
-                )}
-              </CardContent>
-            </Card>
-
-            <Card className="border-border/50 shadow-sm">
-              <CardHeader className="bg-surface/50 border-b border-border/30">
-                <CardTitle className="flex items-center gap-2"><Coffee className="h-5 w-5 text-accent" /> Regimes Disponíveis</CardTitle>
-              </CardHeader>
-              <CardContent className="p-6">
-                {editing ? (
-                  <div className="flex flex-wrap gap-2">
-                    {REGIME_OPTIONS.map((r) => (
-                      <button key={r} type="button" onClick={() => toggleRegime(r)}
-                        className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-colors ${regimeOptions.includes(r) ? 'bg-primary text-primary-foreground border-primary' : 'bg-muted border-border text-muted-foreground hover:border-primary/50'}`}
-                      >{r}</button>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="flex flex-wrap gap-2">
-                    {!hotel.regime_options?.length && <p className="text-sm text-muted-foreground">Nenhum regime cadastrado.</p>}
-                    {hotel.regime_options?.map((r) => <Badge key={r} variant="secondary">{r}</Badge>)}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            <Card className="border-border/50 shadow-sm">
-              <CardHeader className="bg-surface/50 border-b border-border/30">
-                <CardTitle className="flex items-center gap-2"><Tag className="h-5 w-5 text-accent" /> Tags de Busca</CardTitle>
-              </CardHeader>
-              <CardContent className="p-6 space-y-3">
-                {editing && (
-                  <div className="flex gap-2">
-                    <Input value={tagInput} onChange={(e) => setTagInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addTag(); } }} placeholder="Ex: Resort, Luxo, Familiar..." />
-                    <Button type="button" variant="outline" onClick={addTag}>+</Button>
-                  </div>
-                )}
+          {/* Regimes */}
+          <BentoCell colSpan={hotel.cover_image_url ? 1 : 2}>
+             <h3 className="font-semibold mb-4 text-cb-text flex items-center gap-2">
+               <Coffee className="h-4 w-4 text-cb-muted" /> Opções de Check-in / Regime
+             </h3>
+             {hotel.regime_options && hotel.regime_options.length > 0 ? (
                 <div className="flex flex-wrap gap-2">
-                  {!displayForm?.tags?.length && <p className="text-sm text-muted-foreground">Nenhuma tag cadastrada.</p>}
-                  {(displayForm?.tags || []).map((tag: string) => (
-                    <Badge key={tag} variant="outline" className="gap-1.5">
-                      {tag}
-                      {editing && <button type="button" onClick={() => removeTag(tag)}><X className="h-3 w-3" /></button>}
-                    </Badge>
+                  {hotel.regime_options.map(r => (
+                    <StatusBadge key={r} variant="success" size="sm">{r}</StatusBadge>
                   ))}
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+             ) : (
+               <p className="text-sm text-cb-muted italic">Nenhuma opção de regime salva.</p>
+             )}
 
-          <TabsContent value="amenities" className="mt-6">
-            <Card className="border-border/50 shadow-sm">
-              <CardHeader className="bg-surface/50 border-b border-border/30">
-                <CardTitle className="flex items-center gap-2"><Dumbbell className="h-5 w-5 text-accent" /> Comodidades e Serviços</CardTitle>
-                <CardDescription>Marque as facilidades disponíveis no hotel.</CardDescription>
-              </CardHeader>
-              <CardContent className="p-6">
-                {editing ? (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                    {AMENITY_OPTIONS.map((a) => (
-                      <button key={a} type="button" onClick={() => toggleAmenity(a)}
-                        className={`flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium border transition-all ${amenities.includes(a) ? 'bg-primary/10 text-primary border-primary/40 shadow-sm' : 'bg-muted/50 border-border text-muted-foreground hover:border-primary/30'}`}
-                      >
-                        <span className={`w-3 h-3 rounded-full border-2 transition-colors ${amenities.includes(a) ? 'bg-primary border-primary' : 'border-muted-foreground/50'}`} />
-                        {a}
-                      </button>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="flex flex-wrap gap-2">
-                    {!(hotel as any).amenities?.length && <p className="text-sm text-muted-foreground">Nenhuma comodidade cadastrada. Clique em "Editar Hotel" para preencher.</p>}
-                    {((hotel as any).amenities || []).map((a: string) => (
-                      <Badge key={a} className="gap-1.5"><span className="w-2 h-2 rounded-full bg-primary-foreground/70" />{a}</Badge>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
+             <div className="mt-8 border-t border-cb-border pt-4">
+                <h3 className="font-semibold mb-3 text-cb-text flex items-center gap-2 text-sm">
+                  <Tag className="h-4 w-4 text-cb-muted" /> Tags
+                </h3>
+                <div className="flex flex-wrap gap-1.5">
+                  {!hotel.tags || hotel.tags.length === 0 ? (
+                    <p className="text-sm text-cb-muted italic">Sem tags</p>
+                  ) : (
+                    hotel.tags.map(t => (
+                      <span key={t} className="px-2 py-0.5 rounded-full text-xs border border-cb-border bg-cb-s1 text-cb-text">{t}</span>
+                    ))
+                  )}
+                </div>
+             </div>
+          </BentoCell>
 
-          <TabsContent value="contact" className="mt-6">
-            <Card className="border-border/50 shadow-sm">
-              <CardHeader className="bg-surface/50 border-b border-border/30">
-                <CardTitle className="flex items-center gap-2"><Phone className="h-5 w-5 text-accent" /> Dados de Contato</CardTitle>
-              </CardHeader>
-              <CardContent className="p-6 grid gap-4 sm:grid-cols-2">
-                {editing ? (
-                  <>
-                    <div className="space-y-2">
-                      <Label>Telefone</Label>
-                      <Input value={form.phone} onChange={(e) => setForm((p: any) => ({ ...p, phone: e.target.value }))} placeholder="+55 (11) 3333-3333" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>E-mail</Label>
-                      <Input type="email" value={form.email} onChange={(e) => setForm((p: any) => ({ ...p, email: e.target.value }))} />
-                    </div>
-                    <div className="space-y-2 sm:col-span-2">
-                      <Label>Site / Booking</Label>
-                      <Input value={form.website} onChange={(e) => setForm((p: any) => ({ ...p, website: e.target.value }))} placeholder="https://..." />
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    {hotel.phone && <div><p className="text-xs text-muted-foreground uppercase font-semibold">Telefone</p><p className="text-sm">{hotel.phone}</p></div>}
-                    {(hotel as any).email && <div><p className="text-xs text-muted-foreground uppercase font-semibold">E-mail</p><p className="text-sm">{(hotel as any).email}</p></div>}
-                    {hotel.website && (
-                      <div className="sm:col-span-2">
-                        <p className="text-xs text-muted-foreground uppercase font-semibold">Site</p>
-                        <a href={hotel.website} target="_blank" rel="noreferrer" className="text-sm text-primary flex items-center gap-1 mt-1 hover:underline">
-                          <Globe className="h-3.5 w-3.5" /> {hotel.website}
-                        </a>
-                      </div>
-                    )}
-                    {!hotel.phone && !(hotel as any).email && !hotel.website && (
-                      <p className="sm:col-span-2 text-sm text-muted-foreground">Nenhum contato cadastrado. Clique em "Editar Hotel" para adicionar.</p>
-                    )}
-                  </>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+        </BentoGrid>
       </div>
+
+      <HotelEdit
+        open={editOpen}
+        id={id!}
+        onClose={() => setEditOpen(false)}
+      />
     </AppLayout>
   );
 }

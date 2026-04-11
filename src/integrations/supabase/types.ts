@@ -1249,63 +1249,6 @@ export type Database = {
           },
         ]
       }
-      traveler_info_pages: {
-        Row: {
-          id: string
-          org_id: string
-          title: string
-          slug: string
-          description: string | null
-          cover_image_url: string | null
-          content_blocks: Json
-          is_published: boolean | null
-          author_id: string | null
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          org_id: string
-          title: string
-          slug: string
-          description?: string | null
-          cover_image_url?: string | null
-          content_blocks?: Json
-          is_published?: boolean | null
-          author_id?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          org_id?: string
-          title?: string
-          slug?: string
-          description?: string | null
-          cover_image_url?: string | null
-          content_blocks?: Json
-          is_published?: boolean | null
-          author_id?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "traveler_info_pages_author_id_fkey"
-            columns: ["author_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "traveler_info_pages_org_id_fkey"
-            columns: ["org_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          }
-        ]
-      }
       trips: {
         Row: {
           assigned_agent_id: string | null

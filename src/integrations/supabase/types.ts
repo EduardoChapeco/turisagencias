@@ -431,13 +431,17 @@ export type Database = {
           column_id: string
           created_at: string
           description: string | null
+          email: string | null
+          estimated_value: number | null
           id: string
           metadata: Json | null
           position: number
           quotation_id: string | null
+          tags: string[] | null
           title: string
           trip_id: string | null
           updated_at: string
+          whatsapp: string | null
         }
         Insert: {
           assigned_to?: string | null
@@ -446,13 +450,17 @@ export type Database = {
           column_id: string
           created_at?: string
           description?: string | null
+          email?: string | null
+          estimated_value?: number | null
           id?: string
           metadata?: Json | null
           position?: number
           quotation_id?: string | null
+          tags?: string[] | null
           title: string
           trip_id?: string | null
           updated_at?: string
+          whatsapp?: string | null
         }
         Update: {
           assigned_to?: string | null
@@ -461,13 +469,17 @@ export type Database = {
           column_id?: string
           created_at?: string
           description?: string | null
+          email?: string | null
+          estimated_value?: number | null
           id?: string
           metadata?: Json | null
           position?: number
           quotation_id?: string | null
+          tags?: string[] | null
           title?: string
           trip_id?: string | null
           updated_at?: string
+          whatsapp?: string | null
         }
         Relationships: [
           {
@@ -507,6 +519,83 @@ export type Database = {
           },
         ]
       }
+      kanban_checklist_items: {
+        Row: {
+          checked_at: string | null
+          checklist_id: string
+          created_at: string
+          id: string
+          is_checked: boolean
+          position: number
+          title: string
+        }
+        Insert: {
+          checked_at?: string | null
+          checklist_id: string
+          created_at?: string
+          id?: string
+          is_checked?: boolean
+          position?: number
+          title: string
+        }
+        Update: {
+          checked_at?: string | null
+          checklist_id?: string
+          created_at?: string
+          id?: string
+          is_checked?: boolean
+          position?: number
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kanban_checklist_items_checklist_id_fkey"
+            columns: ["checklist_id"]
+            isOneToOne: false
+            referencedRelation: "kanban_checklists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      kanban_checklists: {
+        Row: {
+          card_id: string
+          created_at: string
+          id: string
+          org_id: string
+          title: string
+        }
+        Insert: {
+          card_id: string
+          created_at?: string
+          id?: string
+          org_id: string
+          title?: string
+        }
+        Update: {
+          card_id?: string
+          created_at?: string
+          id?: string
+          org_id?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kanban_checklists_card_id_fkey"
+            columns: ["card_id"]
+            isOneToOne: false
+            referencedRelation: "kanban_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "kanban_checklists_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       kanban_columns: {
         Row: {
           board_id: string
@@ -538,6 +627,90 @@ export type Database = {
             columns: ["board_id"]
             isOneToOne: false
             referencedRelation: "kanban_boards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      kanban_notes: {
+        Row: {
+          author_id: string | null
+          body: string
+          card_id: string
+          created_at: string
+          id: string
+          org_id: string
+          updated_at: string
+        }
+        Insert: {
+          author_id?: string | null
+          body: string
+          card_id: string
+          created_at?: string
+          id?: string
+          org_id: string
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string | null
+          body?: string
+          card_id?: string
+          created_at?: string
+          id?: string
+          org_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kanban_notes_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "kanban_notes_card_id_fkey"
+            columns: ["card_id"]
+            isOneToOne: false
+            referencedRelation: "kanban_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "kanban_notes_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      kanban_tags: {
+        Row: {
+          color: string
+          created_at: string
+          id: string
+          name: string
+          org_id: string
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          id?: string
+          name: string
+          org_id: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          id?: string
+          name?: string
+          org_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kanban_tags_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]

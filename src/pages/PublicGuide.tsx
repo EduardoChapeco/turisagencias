@@ -12,15 +12,15 @@ export default function PublicGuide() {
     queryKey: ['public-guide', slug],
     queryFn: async () => {
       if (!slug) throw new Error('Slug is required');
-      const { data, error } = await (supabase
+      const { data, error } = await supabase
         .from('destination_guides')
         .select('*')
-        .eq('slug' as any, slug)
-        .eq('is_published', true) as any)
-        .single();
+        .eq('is_published', true) as any;
         
       if (error) throw error;
-      return data;
+      const match = (data as any[])?.find((g: any) => g.slug === slug);
+      if (!match) throw new Error('Guide not found');
+      return match;
     },
     enabled: !!slug,
   });

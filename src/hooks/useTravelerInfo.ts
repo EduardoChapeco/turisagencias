@@ -88,7 +88,7 @@ export const useSaveTravelerInfoPage = () => {
         return data;
       }
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['traveler_info_pages'] });
       toast({
         title: 'Página salva!',

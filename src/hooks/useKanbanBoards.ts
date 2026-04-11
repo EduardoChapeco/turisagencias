@@ -13,40 +13,71 @@ export function useKanbanBoard(slug: string) {
   return useQuery({
     queryKey: ['kanban-board', organization?.id, slug],
     queryFn: async () => {
-      const { data: board, error: boardError } = await supabase
+      if (!organization?.id) throw new Error('Organização não encontrada');
+
+      // Step 1: Try to find the board
+      let { data: board, error: boardError } = await supabase
         .from('kanban_boards')
         .select('*')
+        .eq('org_id', organization.id)
         .eq('slug', slug)
         .maybeSingle();
 
       if (boardError) throw boardError;
 
-      if (!board && organization?.id) {
-        await supabase.rpc('ensure_default_kanban_boards', { _org_id: organization.id });
-        const { data: seededBoard, error: seededBoardError } = await supabase
+      // Step 2: If no board, try RPC seeding (best effort)
+      if (!board) {
+        try {
+          await supabase.rpc('ensure_default_kanban_boards', { _org_id: organization.id });
+        } catch (_) {
+          // RPC might not exist yet — proceed gracefully
+        }
+
+        const { data: seededBoard } = await supabase
           .from('kanban_boards')
           .select('*')
+          .eq('org_id', organization.id)
           .eq('slug', slug)
           .maybeSingle();
-        if (seededBoardError) throw seededBoardError;
-        if (!seededBoard) throw new Error('Board não encontrado');
 
-        const [{ data: columns, error: columnsError }, { data: cards, error: cardsError }] = await Promise.all([
-          supabase.from('kanban_columns').select('*').eq('board_id', seededBoard.id).order('position'),
-          supabase
-            .from('kanban_cards')
-            .select('*, clients(name, phone), quotations(destination), trips(title)')
-            .eq('board_id', seededBoard.id)
-            .order('position'),
-        ]);
-
-        if (columnsError) throw columnsError;
-        if (cardsError) throw cardsError;
-        return { board: seededBoard, columns: columns ?? [], cards: cards ?? [] };
+        board = seededBoard;
       }
 
-      if (!board) throw new Error('Board não encontrado');
+      // Step 3: If still no board, create it directly
+      if (!board) {
+        const boardName = slug === 'departures' ? 'Embarques' : 'Vendas';
+        const { data: newBoard, error: createErr } = await supabase
+          .from('kanban_boards')
+          .insert({ org_id: organization.id, name: boardName, slug })
+          .select()
+          .single();
+        if (createErr) throw createErr;
+        board = newBoard;
 
+        // Seed default columns
+        const defaultColumns = slug === 'departures'
+          ? [
+              { name: 'Confirmado',     color: '#60a5fa', position: 0 },
+              { name: 'Docs Pendentes', color: '#fb923c', position: 1 },
+              { name: 'Pronto para IR', color: '#34d399', position: 2 },
+              { name: 'Em Viagem ✈️',  color: '#a78bfa', position: 3 },
+              { name: 'Retornou',       color: '#94a3b8', position: 4 },
+            ]
+          : [
+              { name: 'Leads',       color: '#94a3b8', position: 0 },
+              { name: 'Qualificado', color: '#60a5fa', position: 1 },
+              { name: 'Proposta',    color: '#a78bfa', position: 2 },
+              { name: 'Negociação',  color: '#fb923c', position: 3 },
+              { name: 'Fechado ✅',  color: '#34d399', position: 4 },
+              { name: 'Perdido ❌',  color: '#f87171', position: 5 },
+            ];
+
+        await supabase
+          .from('kanban_columns')
+          .insert(defaultColumns.map((c) => ({ ...c, board_id: board!.id })));
+      }
+
+      // Step 4: Fetch columns + cards
       const [{ data: columns, error: columnsError }, { data: cards, error: cardsError }] = await Promise.all([
         supabase.from('kanban_columns').select('*').eq('board_id', board.id).order('position'),
         supabase
@@ -61,8 +92,9 @@ export function useKanbanBoard(slug: string) {
 
       return { board, columns: columns ?? [], cards: cards ?? [] };
     },
-    enabled: !!organization,
+    enabled: !!organization?.id,
     staleTime: 60 * 1000,
+    retry: 1,
   });
 }
 

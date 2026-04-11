@@ -41,6 +41,8 @@ export function PageHeader({
   actions,
   breadcrumb,
   badge,
+  backTo,
+  backToLabel,
   className,
 }: PageHeaderProps) {
   return (

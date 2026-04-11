@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from './useAuth';
+import { useAuth } from '@/stores/authStore';
 import { useToast } from './use-toast';
 
 export const useTravelerInfoPages = () => {

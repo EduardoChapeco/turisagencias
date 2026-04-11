@@ -260,6 +260,7 @@ export type Database = {
           is_published: boolean
           language_tips: string | null
           org_id: string
+          slug: string | null
           tips: Json | null
           transportation: string | null
           updated_at: string
@@ -278,6 +279,7 @@ export type Database = {
           is_published?: boolean
           language_tips?: string | null
           org_id: string
+          slug?: string | null
           tips?: Json | null
           transportation?: string | null
           updated_at?: string
@@ -296,6 +298,7 @@ export type Database = {
           is_published?: boolean
           language_tips?: string | null
           org_id?: string
+          slug?: string | null
           tips?: Json | null
           transportation?: string | null
           updated_at?: string
@@ -1216,6 +1219,63 @@ export type Database = {
             columns: ["traveler_id"]
             isOneToOne: false
             referencedRelation: "travelers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      traveler_info_pages: {
+        Row: {
+          author_id: string | null
+          content_blocks: Json | null
+          cover_image_url: string | null
+          created_at: string
+          description: string | null
+          id: string
+          is_published: boolean
+          org_id: string
+          slug: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          author_id?: string | null
+          content_blocks?: Json | null
+          cover_image_url?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_published?: boolean
+          org_id: string
+          slug?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string | null
+          content_blocks?: Json | null
+          cover_image_url?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_published?: boolean
+          org_id?: string
+          slug?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "traveler_info_pages_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "traveler_info_pages_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]

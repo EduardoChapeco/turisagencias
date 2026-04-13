@@ -95,7 +95,43 @@ export default function ClientDetail() {
         {/* Header Profile - "World ID / Notion Style" */}
         <div className="relative rounded-3xl overflow-hidden shadow-sm border border-vj-border bg-white">
            {/* Cover Banner */}
-           <div className={`h-32 w-full ${isVip ? 'bg-gradient-to-r from-purple-600 to-indigo-900' : 'bg-gradient-to-r from-primary to-accent'} opacity-90`} />
+           <div 
+             className={`h-32 w-full relative group cursor-pointer ${!(client as any).cover_url ? (isVip ? 'bg-gradient-to-r from-purple-600 to-indigo-900' : 'bg-gradient-to-r from-primary to-accent') : ''} opacity-90`}
+             onClick={() => coverInputRef.current?.click()}
+           >
+             {(client as any).cover_url && (
+               <img src={(client as any).cover_url} alt="Cover" className="w-full h-full object-cover" />
+             )}
+             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
+               <span className="text-white opacity-0 group-hover:opacity-100 transition-opacity text-sm font-medium flex items-center gap-2">
+                 <ImageIcon className="h-4 w-4" /> Alterar capa
+               </span>
+             </div>
+           </div>
+           <input 
+             ref={coverInputRef}
+             type="file"
+             accept="image/*"
+             className="hidden"
+             onChange={async (e) => {
+               const file = e.target.files?.[0];
+               if (!file) return;
+               setUploadingCover(true);
+               try {
+                 const ext = file.name.split('.').pop();
+                 const path = `covers/${client.id}.${ext}`;
+                 const { error: upErr } = await supabase.storage.from('client-media').upload(path, file, { upsert: true });
+                 if (upErr) throw upErr;
+                 const { data: urlData } = supabase.storage.from('client-media').getPublicUrl(path);
+                 await updateClient.mutateAsync({ id: client.id, cover_url: urlData.publicUrl } as any);
+                 toast({ title: 'Capa atualizada!' });
+               } catch (err: any) {
+                 toast({ title: 'Erro ao enviar capa', description: err.message, variant: 'destructive' });
+               } finally {
+                 setUploadingCover(false);
+               }
+             }}
+           />
            
            <div className="px-6 sm:px-10 pb-6 relative">
               <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 -mt-12 sm:-mt-16 mb-4">

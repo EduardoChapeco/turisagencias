@@ -1,10 +1,11 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { AppLayout } from '@/components/AppLayout';
 import { ClientEditSheet } from '@/components/ClientEditSheet';
 import { QuotationBuilderSheet } from '@/components/QuotationBuilderSheet';
-import { useClient } from '@/hooks/useClients';
+import { useClient, useUpdateClient } from '@/hooks/useClients';
 import { useTravelers, useCreateTraveler, useDeleteTraveler } from '@/hooks/useTravelers';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -21,7 +22,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { 
   ArrowLeft, Plus, User, Mail, Phone, MapPin, Calendar, Copy, 
-  Trash2, MessageCircle, FileText, Plane, Globe, Link, Shield
+  Trash2, MessageCircle, FileText, Plane, Globe, Link, Shield, Camera, ImageIcon
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -32,11 +33,16 @@ export default function ClientDetail() {
   const { data: travelers, isLoading: loadingTravelers } = useTravelers(id);
   const createTraveler = useCreateTraveler();
   const deleteTraveler = useDeleteTraveler();
+  const updateClient = useUpdateClient();
   const { toast } = useToast();
   const [newTraveler, setNewTraveler] = useState({ full_name: '', cpf: '', birth_date: '', email: '', phone: '', relation: '' });
   const [dialogOpen, setDialogOpen] = useState(false);
   const [clientSheetOpen, setClientSheetOpen] = useState(false);
   const [quotationBuilderOpen, setQuotationBuilderOpen] = useState(false);
+  const [uploadingCover, setUploadingCover] = useState(false);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const coverInputRef = useRef<HTMLInputElement>(null);
+  const photoInputRef = useRef<HTMLInputElement>(null);
 
   const handleAddTraveler = async () => {
     if (!newTraveler.full_name) return;

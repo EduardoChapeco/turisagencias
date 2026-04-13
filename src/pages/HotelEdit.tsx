@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Building2, Save, Image as ImageIcon, Video, Plus, Trash2, Layout, Type, Grid, Columns } from 'lucide-react';
+import { Building2, Save, Image as ImageIcon, Video, Plus, Trash2, Layout, Type, Grid, Columns, X } from 'lucide-react';
 import { SheetPage } from '@/components/ui/SheetPage';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

@@ -314,6 +314,50 @@ export type Database = {
           },
         ]
       }
+      experiences: {
+        Row: {
+          created_at: string | null
+          descricao: string | null
+          id: string
+          is_active: boolean | null
+          nome: string
+          org_id: string
+          preco: number | null
+          tipo: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          descricao?: string | null
+          id?: string
+          is_active?: boolean | null
+          nome: string
+          org_id: string
+          preco?: number | null
+          tipo?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          descricao?: string | null
+          id?: string
+          is_active?: boolean | null
+          nome?: string
+          org_id?: string
+          preco?: number | null
+          tipo?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "experiences_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       hotels_bank: {
         Row: {
           address: string | null
@@ -815,6 +859,53 @@ export type Database = {
           whatsapp?: string | null
         }
         Relationships: []
+      }
+      policy_cache: {
+        Row: {
+          conteudo: Json
+          criado_em: string | null
+          criado_por: string | null
+          id: string
+          notas_internas: string | null
+          operadora: string
+          operadora_display: string | null
+          org_id: string
+          tipo: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          conteudo?: Json
+          criado_em?: string | null
+          criado_por?: string | null
+          id?: string
+          notas_internas?: string | null
+          operadora: string
+          operadora_display?: string | null
+          org_id: string
+          tipo?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          conteudo?: Json
+          criado_em?: string | null
+          criado_por?: string | null
+          id?: string
+          notas_internas?: string | null
+          operadora?: string
+          operadora_display?: string | null
+          org_id?: string
+          tipo?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "policy_cache_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -1584,6 +1675,15 @@ export type Database = {
     }
     Functions: {
       assign_org_admin_role: { Args: { _user_id: string }; Returns: undefined }
+      confirm_public_quotation: {
+        Args: {
+          p_notes?: string
+          p_token: string
+          p_traveler_email?: string
+          p_traveler_name: string
+        }
+        Returns: undefined
+      }
       ensure_default_kanban_boards: {
         Args: { _org_id: string }
         Returns: undefined

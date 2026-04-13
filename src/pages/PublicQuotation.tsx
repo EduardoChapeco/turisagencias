@@ -88,7 +88,11 @@ export default function PublicQuotation() {
           instrucoes, ponto_encontro, adultos, criancas, valor_total, order_position
         ),
         quote_price_items(icon, label, amount, order_position),
-        quote_includes(icon, title, description, order_position)
+        quote_includes(icon, title, description, order_position),
+        quote_experiences(
+          id, nome, tipo, fornecedor, data_inicio, data_fim,
+          adultos, criancas, valor_total, order_position
+        )
       `)
       .eq('public_token', token)
       .single()
@@ -114,7 +118,7 @@ export default function PublicQuotation() {
           transfers: ((row.quote_transfers as any[]) || []).sort((a: any, b: any) => a.order_position - b.order_position),
           price_items: ((row.quote_price_items as any[]) || []).sort((a: any, b: any) => a.order_position - b.order_position),
           includes_items: ((row.quote_includes as any[]) || []).sort((a: any, b: any) => a.order_position - b.order_position),
-          excursions: [],
+          excursions: ((row.quote_experiences as any[]) || []).sort((a: any, b: any) => a.order_position - b.order_position),
           included_items: [],
           excluded_items: [],
         };

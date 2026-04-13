@@ -585,7 +585,7 @@ export default function PublicGuide() {
           </div>
         </div>
 
-        {/* CLIMA */}
+        {/* CLIMA — só exibe se houver informação real de clima no guia */}
         {guide.climate_info && (
           <div style={{ marginTop: 20 }}>
             <div className="vj-weather-card">
@@ -593,19 +593,15 @@ export default function PublicGuide() {
                 <div className="vj-wc-icon">☀️</div>
                 <div>
                   <div className="vj-wc-temp">
-                    {guide.avg_temperature ? `${guide.avg_temperature}°C` : '28°C'}
+                    {guide.avg_temperature ? `${guide.avg_temperature}°C` : '—'}
                   </div>
-                  <div className="vj-wc-sub">{guide.city} · {guide.best_season || 'Clima tropical'}</div>
+                  <div className="vj-wc-sub">{guide.city} · {guide.best_season || 'Clima local'}</div>
                 </div>
               </div>
-              <div className="vj-wc-days">
-                {['Seg','Ter','Qua','Qui','Sex'].map((d, i) => (
-                  <div key={d} className="vj-wd">
-                    <div className="vj-wd-label">{d}</div>
-                    <div className="vj-wd-icon">{['☀️','☀️','⛅','☀️','🌦️'][i]}</div>
-                    <div className="vj-wd-val">{[28,30,26,31,27][i]}°</div>
-                  </div>
-                ))}
+              <div className="vj-wc-note">
+                <p style={{ fontSize: 12, color: 'var(--vj-txt2)', lineHeight: 1.6, margin: 0 }}>
+                  {guide.climate_info}
+                </p>
               </div>
             </div>
           </div>

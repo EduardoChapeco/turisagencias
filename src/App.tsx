@@ -57,13 +57,13 @@ const PublicTravelerInfo = lazy(() => import('./pages/PublicTravelerInfo'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
-    queries: { 
-      staleTime: Infinity,          // Dados nunca ficam stale automaticamente
-      gcTime: 30 * 60 * 1000,       // Cache mantido por 30min mesmo sem uso
+    queries: {
+      staleTime: 2 * 60 * 1000,     // 2 min — dados ficam frescos por 2 min
+      gcTime: 30 * 60 * 1000,       // Cache mantido por 30min sem uso
       retry: 1,
-      refetchOnWindowFocus: false,   // NUNCA re-busca ao voltar para a aba
-      refetchOnReconnect: false,     // NUNCA re-busca ao reconectar internet
-      refetchOnMount: false,         // NUNCA re-busca ao montar (usa cache)
+      refetchOnWindowFocus: true,    // Re-busca ao voltar para a aba (CRM multi-agente)
+      refetchOnReconnect: true,      // Re-busca ao reconectar internet
+      refetchOnMount: 'always',      // Sempre verifica dados frescos ao navegar
     },
   },
 });

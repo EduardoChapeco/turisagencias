@@ -45,7 +45,7 @@ export function useCreateHotel() {
 
   return useMutation({
     mutationFn: async (payload: HotelFormValues) => {
-      const { gallery_urls, sections, video_url, ...dbPayload } = payload;
+      const { gallery_urls: _g, sections: _s, video_url: _v, ...dbPayload } = payload;
       const { data, error } = await supabase
         .from('hotels_bank')
         .insert({ ...dbPayload, org_id: organization!.id })

@@ -77,10 +77,12 @@ export default function Settings() {
                       value={provider}
                       onChange={e => setProvider(e.target.value)}
                     >
-                      <option>Groq</option>
-                      <option>OpenRouter</option>
-                      <option>Gemini</option>
-                      <option>OpenAI</option>
+                      <option value="OpenRouter">OpenRouter (Recomendado — acesso a todos os modelos)</option>
+                      <option value="Gemini">Google Gemini (Extração de PDF/Imagem)</option>
+                      <option value="Groq">Groq (Ultra-rápido, textos)</option>
+                      <option value="OpenAI">OpenAI GPT-4o</option>
+                      <option value="Firecrawl">Firecrawl (Scraping de páginas web)</option>
+                      <option value="Steel">Steel (Automação de browser)</option>
                     </select>
                   </div>
                   <div className="space-y-2">

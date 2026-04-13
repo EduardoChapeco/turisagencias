@@ -136,14 +136,44 @@ export default function ClientDetail() {
            <div className="px-6 sm:px-10 pb-6 relative">
               <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 -mt-12 sm:-mt-16 mb-4">
                  {/* Avatar & Title */}
-                 <div className="flex items-end gap-5">
-                    <div className="h-24 w-24 sm:h-32 sm:w-32 rounded-2xl border-4 border-background bg-accent/10 flex items-center justify-center overflow-hidden shadow-md">
-                       {client.photo_url ? (
-                         <img src={client.photo_url} alt={client.name} className="w-full h-full object-cover" />
-                       ) : (
-                         <span className="font-heading text-4xl text-vj-green font-bold">{client.name.substring(0, 2).toUpperCase()}</span>
-                       )}
-                    </div>
+                  <div className="flex items-end gap-5">
+                     <div 
+                       className="h-24 w-24 sm:h-32 sm:w-32 rounded-2xl border-4 border-background bg-accent/10 flex items-center justify-center overflow-hidden shadow-md relative group cursor-pointer"
+                       onClick={() => photoInputRef.current?.click()}
+                     >
+                        {client.photo_url ? (
+                          <img src={client.photo_url} alt={client.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <span className="font-heading text-4xl text-vj-green font-bold">{client.name.substring(0, 2).toUpperCase()}</span>
+                        )}
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center">
+                          <Camera className="h-5 w-5 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                        </div>
+                     </div>
+                     <input
+                       ref={photoInputRef}
+                       type="file"
+                       accept="image/*"
+                       className="hidden"
+                       onChange={async (e) => {
+                         const file = e.target.files?.[0];
+                         if (!file) return;
+                         setUploadingPhoto(true);
+                         try {
+                           const ext = file.name.split('.').pop();
+                           const path = `photos/${client.id}.${ext}`;
+                           const { error: upErr } = await supabase.storage.from('client-media').upload(path, file, { upsert: true });
+                           if (upErr) throw upErr;
+                           const { data: urlData } = supabase.storage.from('client-media').getPublicUrl(path);
+                           await updateClient.mutateAsync({ id: client.id, photo_url: urlData.publicUrl });
+                           toast({ title: 'Foto atualizada!' });
+                         } catch (err: any) {
+                           toast({ title: 'Erro ao enviar foto', description: err.message, variant: 'destructive' });
+                         } finally {
+                           setUploadingPhoto(false);
+                         }
+                       }}
+                     />
                     <div className="pb-2">
                        <h1 className="font-heading text-3xl sm:text-4xl font-bold tracking-tight text-foreground flex items-center gap-3">
                          {client.name}

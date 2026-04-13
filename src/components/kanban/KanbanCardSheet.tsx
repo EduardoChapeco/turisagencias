@@ -552,6 +552,74 @@ function NotasSection({ cardId }: { cardId: string }) {
 }
 
 /* ─────────────────────────────────────────────
+   SEÇÃO: Vínculos (editable)
+   ───────────────────────────────────────────── */
+function VinculosSection({ card }: { card: KanbanCard }) {
+  const updateCard = useUpdateKanbanCard();
+  const { data: trips } = useTrips();
+  const [clientId, setClientId] = useState(card.client_id ?? '');
+  const [tripId, setTripId] = useState(card.trip_id ?? '');
+
+  const handleLinkClient = async (id: string) => {
+    setClientId(id);
+    await updateCard.mutateAsync({ id: card.id, client_id: id || null });
+  };
+
+  const handleLinkTrip = async (id: string) => {
+    setTripId(id);
+    await updateCard.mutateAsync({ id: card.id, trip_id: id || null });
+  };
+
+  return (
+    <div className="space-y-5">
+      <div className="space-y-2">
+        <Label className="text-xs font-semibold text-vj-txt3 uppercase tracking-wide">Vincular Cliente</Label>
+        <ClientSearchSelect
+          value={clientId}
+          onChange={handleLinkClient}
+          placeholder="Buscar cliente..."
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label className="text-xs font-semibold text-vj-txt3 uppercase tracking-wide">Vincular Viagem</Label>
+        <select
+          value={tripId}
+          onChange={(e) => void handleLinkTrip(e.target.value)}
+          className="w-full h-10 px-3 border border-border rounded-md bg-background text-sm"
+        >
+          <option value="">Nenhuma viagem</option>
+          {trips?.map(t => (
+            <option key={t.id} value={t.id}>{t.title || t.destination || `Viagem ${t.id.slice(0, 8)}`}</option>
+          ))}
+        </select>
+      </div>
+
+      {/* Show current links */}
+      {card.clients && (
+        <div className="surface-muted rounded-cb-md p-4">
+          <p className="text-xs font-semibold text-vj-txt3 uppercase tracking-wide mb-2">Cliente atual</p>
+          <p className="font-medium text-vj-txt">{card.clients.name}</p>
+          {card.clients.phone && <p className="text-sm text-vj-txt3 mt-0.5">{card.clients.phone}</p>}
+        </div>
+      )}
+      {card.quotations?.destination && (
+        <div className="surface-muted rounded-cb-md p-4">
+          <p className="text-xs font-semibold text-vj-txt3 uppercase tracking-wide mb-2">Cotação</p>
+          <p className="font-medium text-vj-txt">{card.quotations.destination}</p>
+        </div>
+      )}
+      {card.trips?.title && (
+        <div className="surface-muted rounded-cb-md p-4">
+          <p className="text-xs font-semibold text-vj-txt3 uppercase tracking-wide mb-2">Viagem</p>
+          <p className="font-medium text-vj-txt">{card.trips.title}</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────
    COMPONENTE PRINCIPAL
    ───────────────────────────────────────────── */
 const SECTIONS = [

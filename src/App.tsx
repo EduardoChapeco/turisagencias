@@ -57,9 +57,12 @@ const PublicTravelerInfo = lazy(() => import('./pages/PublicTravelerInfo'));
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: { 
-      staleTime: 5 * 60 * 1000, 
+      staleTime: Infinity,          // Dados nunca ficam stale automaticamente
+      gcTime: 30 * 60 * 1000,       // Cache mantido por 30min mesmo sem uso
       retry: 1,
-      refetchOnWindowFocus: false, // Previne reload agressivo na troca de abas reclamada pelo usuário
+      refetchOnWindowFocus: false,   // NUNCA re-busca ao voltar para a aba
+      refetchOnReconnect: false,     // NUNCA re-busca ao reconectar internet
+      refetchOnMount: false,         // NUNCA re-busca ao montar (usa cache)
     },
   },
 });

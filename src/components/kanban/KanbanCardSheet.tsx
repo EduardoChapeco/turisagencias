@@ -10,9 +10,16 @@ import {
   Trash2,
   User,
   X,
+  Plane,
 } from 'lucide-react';
 import { SheetPage } from '@/components/ui/SheetPage';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { StatusBadge, mapStatusToVariant } from '@/components/ui/StatusBadge';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { ClientSearchSelect } from '@/components/ui/ClientSearchSelect';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -602,36 +609,7 @@ export function KanbanCardSheet({ card, isOpen, onClose, onDeleted }: Props) {
           {activeSection === 'dados' && <DadosSection card={card} />}
           {activeSection === 'checklist' && <ChecklistSection cardId={card.id} />}
           {activeSection === 'notas' && <NotasSection cardId={card.id} />}
-          {activeSection === 'vinculos' && (
-            <div className="space-y-3">
-              {card.clients && (
-                <div className="surface-muted rounded-cb-md p-4">
-                  <p className="text-xs font-semibold text-vj-txt3 uppercase tracking-wide mb-2">Cliente</p>
-                  <p className="font-medium text-vj-txt">{card.clients.name}</p>
-                  {card.clients.phone && <p className="text-sm text-vj-txt3 mt-0.5">{card.clients.phone}</p>}
-                </div>
-              )}
-              {card.quotations?.destination && (
-                <div className="surface-muted rounded-cb-md p-4">
-                  <p className="text-xs font-semibold text-vj-txt3 uppercase tracking-wide mb-2">Cotação</p>
-                  <p className="font-medium text-vj-txt">{card.quotations.destination}</p>
-                </div>
-              )}
-              {card.trips?.title && (
-                <div className="surface-muted rounded-cb-md p-4">
-                  <p className="text-xs font-semibold text-vj-txt3 uppercase tracking-wide mb-2">Viagem</p>
-                  <p className="font-medium text-vj-txt">{card.trips.title}</p>
-                </div>
-              )}
-              {!card.clients && !card.quotations && !card.trips && (
-                <EmptyState
-                  icon={Link2}
-                  title="Nenhum vínculo"
-                  description="Vincule este card a um cliente, cotação ou viagem na seção Dados Gerais."
-                />
-              )}
-            </div>
-          )}
+          {activeSection === 'vinculos' && <VinculosSection card={card} />}
         </>
       )}
     </SheetPage>

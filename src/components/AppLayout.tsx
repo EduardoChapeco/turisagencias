@@ -8,7 +8,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen w-full" style={{ background: 'var(--vj-bg, #f7f7f5)' }}>
+      <div className="flex min-h-screen w-full vj-bg">
         <AppSidebar />
         <div className="flex min-w-0 flex-1 flex-col">
           {/* Header — 50px, blur, neutro */}
@@ -30,15 +30,15 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               <NotificationPanel />
               <div
                 className="h-7 w-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
-                style={{ background: '#f0faf4', border: '1px solid rgba(26,122,74,.2)', color: '#1a7a4a' }}
+                style={{ background: 'var(--vj-green-bg)', border: '1px solid rgba(26,122,74,.2)', color: 'var(--vj-green)' }}
               >
                 {(profile?.first_name?.[0] || '?').toUpperCase()}
               </div>
               <div className="text-right hidden sm:block">
-                <p className="text-xs font-semibold leading-none" style={{ color: '#111110' }}>
+                <p className="text-xs font-semibold leading-none" style={{ color: 'var(--vj-txt)' }}>
                   {profile?.first_name || 'Usuário'}
                 </p>
-                <p className="text-[10px] mt-0.5" style={{ color: '#9b9a96' }}>
+                <p className="text-[10px] mt-0.5" style={{ color: 'var(--vj-txt3)' }}>
                   {profile?.email || ''}
                 </p>
               </div>

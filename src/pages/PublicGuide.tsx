@@ -74,18 +74,18 @@ export default function PublicGuide() {
 
   if (isLoading) {
     return (
-      <div style={{ display: 'flex', minHeight: '100vh', alignItems: 'center', justifyContent: 'center', background: '#f7f7f5' }}>
-        <Loader2 style={{ width: 32, height: 32, color: '#1a7a4a', animation: 'spin 1s linear infinite' }} />
+      <div style={{ display: 'flex', minHeight: '100vh', alignItems: 'center', justifyContent: 'center', background: 'var(--vj-bg)' }}>
+        <Loader2 style={{ width: 32, height: 32, color: 'var(--vj-green)', animation: 'spin 1s linear infinite' }} />
       </div>
     );
   }
 
   if (error || !guide) {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', background: '#f7f7f5', textAlign: 'center', padding: 24 }}>
-        <Globe2 style={{ width: 48, height: 48, color: '#9b9a96', marginBottom: 16, opacity: .5 }} />
-        <h1 style={{ fontSize: 22, fontWeight: 700, color: '#111110' }}>Guia Indisponível</h1>
-        <p style={{ color: '#6b6a66', marginTop: 8, maxWidth: 380, fontSize: 13 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', background: 'var(--vj-bg)', textAlign: 'center', padding: 24 }}>
+        <Globe2 style={{ width: 48, height: 48, color: 'var(--vj-txt3)', marginBottom: 16, opacity: .5 }} />
+        <h1 style={{ fontSize: 22, fontWeight: 700, color: 'var(--vj-txt)' }}>Guia Indisponível</h1>
+        <p style={{ color: 'var(--vj-txt2)', marginTop: 8, maxWidth: 380, fontSize: 13 }}>
           Este guia de destino foi removido, está em modo privado ou a URL é inválida. Consulte seu agente de viagens.
         </p>
       </div>
@@ -182,8 +182,8 @@ export default function PublicGuide() {
               <div className="vj-g-about-title">{guide.city}, {guide.country}</div>
               <p>{guide.intro || guide.description || `${guide.city} é um destino incrível que oferece experiências únicas para cada tipo de viajante. Prepare-se para uma aventura inesquecível com nossa curadoria especial de atrações e dicas locais.`}</p>
               {guide.climate_info && (
-                <div style={{ marginTop: 14, padding: '12px 16px', background: '#f7f7f5', border: '1px solid #e5e4e0', borderRadius: 12, fontSize: 12, color: '#6b6a66' }}>
-                  <strong style={{ display: 'block', marginBottom: 4, color: '#111110' }}>☀️ Clima</strong>
+                <div style={{ marginTop: 14, padding: '12px 16px', background: 'var(--vj-bg)', border: '1px solid var(--vj-border)', borderRadius: 12, fontSize: 12, color: 'var(--vj-txt2)' }}>
+                  <strong style={{ display: 'block', marginBottom: 4, color: 'var(--vj-txt)' }}>☀️ Clima</strong>
                   {guide.climate_info}
                 </div>
               )}
@@ -616,7 +616,7 @@ export default function PublicGuide() {
       {/* Footer */}
       <div className="vj-footer">
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#1a7a4a' }} />
+          <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--vj-green)' }} />
           <span style={{ fontWeight: 600 }}>Guia do Destino — {guide.city}</span>
         </div>
         <span>Powered by VoyageOS · Plan-Fect Harmony</span>

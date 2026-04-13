@@ -43,19 +43,19 @@ export default function PublicQuotation() {
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', minHeight: '100vh', alignItems: 'center', justifyContent: 'center', background: '#f7f7f5' }}>
-        <Loader2 style={{ width: 32, height: 32, animation: 'spin 1s linear infinite', color: '#1a7a4a' }} />
+      <div style={{ display: 'flex', minHeight: '100vh', alignItems: 'center', justifyContent: 'center', background: 'var(--vj-bg)' }}>
+        <Loader2 style={{ width: 32, height: 32, animation: 'spin 1s linear infinite', color: 'var(--vj-green)' }} />
       </div>
     );
   }
 
   if (notFound || !data) {
     return (
-      <div style={{ display: 'flex', minHeight: '100vh', alignItems: 'center', justifyContent: 'center', background: '#f7f7f5', padding: 16 }}>
-        <div style={{ textAlign: 'center', padding: 40, background: '#fff', borderRadius: 22, border: '1px solid #e5e4e0', maxWidth: 380 }}>
-          <MapPin style={{ width: 40, height: 40, color: '#9b9a96', margin: '0 auto 16px' }} />
-          <p style={{ fontSize: 18, fontWeight: 700, color: '#111110' }}>Cotação não encontrada</p>
-          <p style={{ fontSize: 13, color: '#6b6a66', marginTop: 8, lineHeight: 1.6 }}>
+      <div style={{ display: 'flex', minHeight: '100vh', alignItems: 'center', justifyContent: 'center', background: 'var(--vj-bg)', padding: 16 }}>
+        <div style={{ textAlign: 'center', padding: 40, background: 'var(--vj-white)', borderRadius: 22, border: '1px solid var(--vj-border)', maxWidth: 380 }}>
+          <MapPin style={{ width: 40, height: 40, color: 'var(--vj-txt3)', margin: '0 auto 16px' }} />
+          <p style={{ fontSize: 18, fontWeight: 700, color: 'var(--vj-txt)' }}>Cotação não encontrada</p>
+          <p style={{ fontSize: 13, color: 'var(--vj-txt2)', marginTop: 8, lineHeight: 1.6 }}>
             O link pode estar expirado, inválido ou a proposta já foi fechada.
           </p>
         </div>
@@ -158,8 +158,8 @@ export default function PublicQuotation() {
           <div className="vj-sb-agent">
             <div className="vj-av-sm">{agentInitials}</div>
             <div>
-              <div style={{ fontSize: 12, fontWeight: 700, color: '#111110' }}>{data.org_name}</div>
-              <div style={{ fontSize: 10, color: '#9b9a96' }}>Agência de Viagens</div>
+              <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--vj-txt)' }}>{data.org_name}</div>
+              <div style={{ fontSize: 10, color: 'var(--vj-txt3)' }}>Agência de Viagens</div>
             </div>
           </div>
           {validUntil && (
@@ -321,7 +321,7 @@ export default function PublicQuotation() {
                     <div className="vj-map-footer-txt">{data.destination}</div>
                     <div className="vj-map-footer-sub">Mapa ilustrativo</div>
                   </div>
-                  <span style={{ fontSize: 11, fontWeight: 600, color: '#1a5fa8' }}>Ver rota →</span>
+                  <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--vj-blue)' }}>Ver rota →</span>
                 </div>
               </div>
             </div>
@@ -367,9 +367,9 @@ export default function PublicQuotation() {
                     <div className="vj-fb-city">{t.to}</div>
                     <div className="vj-fb-code">{t.arrival ? new Date(t.arrival).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }) : ''}</div>
                   </div>
-                  <div style={{ width: 1, height: 40, background: '#e5e4e0', margin: '0 4px' }} />
+                  <div style={{ width: 1, height: 40, background: 'var(--vj-border)', margin: '0 4px' }} />
                   <div className="vj-fb-price">
-                    <div className="vj-fb-price-val" style={{ fontSize: 14, color: '#1a7a4a' }}>✓</div>
+                    <div className="vj-fb-price-val" style={{ fontSize: 14, color: 'var(--vj-green)' }}>✓</div>
                     <div className="vj-fb-price-per">Incluído</div>
                   </div>
                 </div>
@@ -498,10 +498,10 @@ export default function PublicQuotation() {
 
               {/* Não incluído */}
               {excludedItems.length > 0 && (
-                <div style={{ marginTop: 20, paddingTop: 16, borderTop: '1px solid #e5e4e0' }}>
-                  <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.5px', color: '#9b9a96', marginBottom: 10 }}>Não incluído</div>
+                <div style={{ marginTop: 20, paddingTop: 16, borderTop: '1px solid var(--vj-border)' }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.5px', color: 'var(--vj-txt3)', marginBottom: 10 }}>Não incluído</div>
                   {excludedItems.map((item, i) => (
-                    <div key={i} className="vj-pb-row" style={{ color: '#9b9a96' }}>
+                    <div key={i} className="vj-pb-row" style={{ color: 'var(--vj-txt3)' }}>
                       <span className="vj-pb-label"><span className="vj-pb-label-icon">❌</span> {item}</span>
                     </div>
                   ))}
@@ -606,7 +606,7 @@ export default function PublicQuotation() {
         )}
 
         {/* Footer nota */}
-        <div style={{ marginTop: 40, textAlign: 'center', fontSize: 11, color: '#9b9a96', padding: '20px 0', borderTop: '1px solid #e5e4e0' }}>
+        <div style={{ marginTop: 40, textAlign: 'center', fontSize: 11, color: 'var(--vj-txt3)', padding: '20px 0', borderTop: '1px solid var(--vj-border)' }}>
           Proposta gerada pela plataforma VoyageOS · Plan-Fect Harmony.
           Valores e disponibilidade sujeitos a confirmação até a emissão formal.
         </div>
@@ -615,7 +615,7 @@ export default function PublicQuotation() {
       {/* Footer */}
       <div className="vj-footer">
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#1a7a4a' }} />
+          <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--vj-green)' }} />
           <span style={{ fontWeight: 600 }}>{data.org_name}</span>
         </div>
         {data.org_whatsapp && (

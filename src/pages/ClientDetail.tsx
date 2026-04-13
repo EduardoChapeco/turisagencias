@@ -21,7 +21,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { 
   ArrowLeft, Plus, User, Mail, Phone, MapPin, Calendar, Copy, 
-  Trash2, MessageCircle, FileText, Plane, Briefcase, Globe
+  Trash2, MessageCircle, FileText, Plane, Globe, Link, Shield
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -115,10 +115,19 @@ export default function ClientDetail() {
                  </div>
                  
                  {/* Action Buttons */}
-                 <div className="flex gap-2 pb-2">
+                 <div className="flex flex-wrap gap-2 pb-2">
                     {client.phone && (
                       <Button variant="default" className="bg-green-600 hover:bg-green-700 text-white shadow-sm" onClick={() => window.open(`https://wa.me/${client.phone.replace(/\D/g, '')}`, '_blank')}>
                          <MessageCircle className="h-4 w-4 mr-2" /> WhatsApp
+                      </Button>
+                    )}
+                    {client.portal_access_enabled && (
+                      <Button variant="outline" className="border-vj-green text-vj-green hover:bg-vj-green/5" onClick={() => {
+                        const link = `${window.location.origin}/portal-trip/${client.id}`;
+                        navigator.clipboard.writeText(link);
+                        toast({ title: '🔗 Link do portal copiado!', description: 'Envie por WhatsApp para o cliente acessar.' });
+                      }}>
+                         <Link className="h-4 w-4 mr-2" /> Copiar Magic Link
                       </Button>
                     )}
                     <Button variant="outline" onClick={() => setClientSheetOpen(true)}>
@@ -340,15 +349,52 @@ export default function ClientDetail() {
           </TabsContent>
           
           <TabsContent value="docs" className="focus-visible:outline-none">
-             <div className="flex flex-col items-center justify-center py-20 border border-vj-border rounded-2xl bg-vj-bg">
-                <div className="h-16 w-16 mb-4 rounded-full bg-accent/10 flex items-center justify-center">
-                  <Briefcase className="h-8 w-8 text-accent" />
-                </div>
-                <h3 className="font-heading font-semibold text-lg">Cofre de Documentos</h3>
-                <p className="text-sm text-muted-foreground mt-1 mb-6 text-center max-w-sm">
-                  Esta aba armazena os contratos DocuSign e passaportes centralizados. (Em Breve)
-                </p>
-             </div>
+             {(() => {
+               const prefs = (client.preferences as any) || {};
+               const docs: any[] = prefs.documents || [];
+               return docs.length === 0 ? (
+                 <div className="flex flex-col items-center justify-center py-20 border border-dashed border-vj-border rounded-2xl bg-vj-bg">
+                   <div className="h-16 w-16 mb-4 rounded-full bg-vj-surface border border-vj-border flex items-center justify-center">
+                     <FileText className="h-8 w-8 text-vj-txt3" />
+                   </div>
+                   <h3 className="font-semibold text-lg text-vj-txt">Nenhum documento cadastrado</h3>
+                   <p className="text-sm text-vj-txt3 mt-1 mb-6 text-center max-w-sm">
+                     Adicione passaportes, RG, documentos profissionais e comprovantes na edição do cliente.
+                   </p>
+                   <Button variant="outline" onClick={() => setClientSheetOpen(true)}>Adicionar Documentos</Button>
+                 </div>
+               ) : (
+                 <div className="grid gap-4 md:grid-cols-2">
+                   {docs.map((doc: any, i: number) => (
+                     <div key={i} className="p-5 rounded-2xl border border-vj-border bg-white shadow-sm space-y-3">
+                       <div className="flex items-center justify-between">
+                         <span className="font-semibold text-vj-txt flex items-center gap-2">
+                           <FileText className="w-4 h-4 text-vj-green" /> {doc.type || 'Documento'}
+                         </span>
+                         {doc.url && (
+                           <a href={doc.url} target="_blank" rel="noreferrer"
+                             className="text-xs text-vj-green border border-vj-green/20 rounded-full px-3 py-1 hover:bg-vj-green/5 transition-colors">
+                             Ver Arquivo
+                           </a>
+                         )}
+                       </div>
+                       {doc.number && (
+                         <div>
+                           <p className="text-xs text-vj-txt3 uppercase tracking-wider font-semibold">Número</p>
+                           <p className="font-mono font-semibold text-vj-txt">{doc.number}</p>
+                         </div>
+                       )}
+                       {doc.expiry && (
+                         <div>
+                           <p className="text-xs text-vj-txt3 uppercase tracking-wider font-semibold">Validade</p>
+                           <p className="text-sm text-vj-txt">{new Date(doc.expiry + 'T00:00:00').toLocaleDateString('pt-BR')}</p>
+                         </div>
+                       )}
+                     </div>
+                   ))}
+                 </div>
+               );
+             })()}
           </TabsContent>
         </Tabs>
       </div>

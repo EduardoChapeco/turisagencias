@@ -9,7 +9,8 @@ import { PageHeader } from '@/components/ui/PageHeader';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { EmptyState, PageSkeleton } from '@/components/ui/EmptyState';
 import { ClientEditSheet } from '@/components/ClientEditSheet';
-import { Plus, Search, User, Mail, Phone, Trash2, Shield } from 'lucide-react';
+import { ClientQuickView } from '@/components/ClientQuickView';
+import { Plus, Search, User, Mail, Phone, Trash2, Shield, Eye, Edit } from 'lucide-react';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel,
   AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
@@ -20,12 +21,15 @@ export default function ClientsPage() {
   const [search, setSearch] = useState('');
   const [sheetOpen, setSheetOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
+  const [quickViewId, setQuickViewId] = useState<string | null>(null);
+  const [quickViewOpen, setQuickViewOpen] = useState(false);
   const navigate = useNavigate();
   const { data: clients, isLoading } = useClients(search || undefined);
   const deleteClient = useDeleteClient();
 
   const openNew = () => { setEditId(null); setSheetOpen(true); };
   const openEdit = (id: string) => { setEditId(id); setSheetOpen(true); };
+  const openQuickView = (id: string) => { setQuickViewId(id); setQuickViewOpen(true); };
 
   return (
     <AppLayout>
@@ -96,11 +100,25 @@ export default function ClientsPage() {
                     )}
                   </div>
 
-                  {/* Actions */}
+                  {/* Action Buttons — aparecem no hover */}
                   <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
-                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(client.id)}>
-                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    {/* Quick View */}
+                    <Button
+                      variant="ghost" size="icon" className="h-7 w-7 hover:text-vj-green"
+                      title="Visualização rápida"
+                      onClick={() => openQuickView(client.id)}
+                    >
+                      <Eye className="h-3.5 w-3.5" />
                     </Button>
+                    {/* Edit */}
+                    <Button
+                      variant="ghost" size="icon" className="h-7 w-7"
+                      title="Editar cliente"
+                      onClick={() => openEdit(client.id)}
+                    >
+                      <Edit className="h-3.5 w-3.5" />
+                    </Button>
+                    {/* Delete */}
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Button variant="ghost" size="icon" className="h-7 w-7 hover:text-red-500">
@@ -111,13 +129,13 @@ export default function ClientsPage() {
                         <AlertDialogHeader>
                           <AlertDialogTitle>Excluir cliente?</AlertDialogTitle>
                           <AlertDialogDescription>
-                            Esta ação não pode ser desfeita. Todos os dados serão removidos.
+                            Esta ação não pode ser desfeita. Todos os dados e documentos serão removidos.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                           <AlertDialogCancel>Cancelar</AlertDialogCancel>
                           <AlertDialogAction
-                            className="bg-vj-red text-white hover:bg-vj-red/90"
+                            className="bg-red-500 text-white hover:bg-red-600"
                             onClick={() => deleteClient.mutate(client.id)}
                           >
                             Excluir
@@ -136,6 +154,11 @@ export default function ClientsPage() {
                         {tag}
                       </Badge>
                     ))}
+                    {client.tags.length > 4 && (
+                      <Badge className="text-xs bg-vj-surface text-vj-txt3 border border-vj-border">
+                        +{client.tags.length - 4}
+                      </Badge>
+                    )}
                   </div>
                 )}
 
@@ -156,6 +179,13 @@ export default function ClientsPage() {
         open={sheetOpen}
         onClose={() => setSheetOpen(false)}
         onSuccess={(id) => { setSheetOpen(false); navigate(`/clients/${id}`); }}
+      />
+
+      <ClientQuickView
+        clientId={quickViewId}
+        open={quickViewOpen}
+        onClose={() => setQuickViewOpen(false)}
+        onEdit={(id) => { setQuickViewOpen(false); openEdit(id); }}
       />
     </AppLayout>
   );

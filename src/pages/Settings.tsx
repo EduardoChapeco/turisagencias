@@ -4,9 +4,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Key, Users, Columns, Settings as SettingsIcon, Trash2 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Key, Users, Columns, Settings as SettingsIcon, Trash2, Brain, Plus, ChevronDown, ChevronRight } from 'lucide-react';
 import { useAiKeys, useSaveAiKey, useDeleteAiKey } from '@/hooks/useAiKeys';
+import { usePolicies, useCreatePolicy, useDeletePolicy } from '@/hooks/usePoliciesAndExperiences';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function Settings() {
@@ -14,9 +17,19 @@ export default function Settings() {
   const saveKey = useSaveAiKey();
   const deleteKey = useDeleteAiKey();
 
-  const [provider, setProvider] = useState('Groq');
+  const { data: policies, isLoading: policiesLoading } = usePolicies();
+  const createPolicy = useCreatePolicy();
+  const deletePolicy = useDeletePolicy();
+
+  const [provider, setProvider] = useState('OpenRouter');
   const [apiKey, setApiKey] = useState('');
   const [limit, setLimit] = useState('');
+
+  const [policyOperadora, setPolicyOperadora] = useState('');
+  const [policyDisplay, setPolicyDisplay] = useState('');
+  const [policyTipo, setPolicyTipo] = useState('condicoes_gerais');
+  const [policyConteudo, setPolicyConteudo] = useState('');
+  const [expandedPolicy, setExpandedPolicy] = useState<string | null>(null);
 
   const handleSaveKey = async () => {
     if (!apiKey) return;
@@ -43,9 +56,10 @@ export default function Settings() {
         </div>
 
         <Tabs defaultValue="aikeys" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 max-w-2xl bg-vj-bg border border-vj-border">
+          <TabsList className="grid w-full grid-cols-4 max-w-3xl bg-vj-bg border border-vj-border">
             <TabsTrigger value="agents"><Users className="mr-2 h-4 w-4" />Agentes</TabsTrigger>
-            <TabsTrigger value="aikeys"><Key className="mr-2 h-4 w-4" />Chaves de IA (Pool)</TabsTrigger>
+            <TabsTrigger value="aikeys"><Key className="mr-2 h-4 w-4" />Chaves de IA</TabsTrigger>
+            <TabsTrigger value="policies"><Brain className="mr-2 h-4 w-4" />Cache Operadoras</TabsTrigger>
             <TabsTrigger value="kanban"><Columns className="mr-2 h-4 w-4" />Kanban</TabsTrigger>
           </TabsList>
           
@@ -146,6 +160,114 @@ export default function Settings() {
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="policies" className="mt-6">
+            <div className="grid md:grid-cols-2 gap-6">
+              {/* Formulário de nova política */}
+              <Card className="border-vj-border shadow-sm">
+                <CardHeader className="bg-vj-bg border-b border-vj-border">
+                  <CardTitle className="text-lg flex items-center gap-2"><Brain className="h-4 w-4 text-vj-green" /> Adicionar Política ao Cache</CardTitle>
+                  <CardDescription>Salve as condições gerais de uma operadora para economizar tokens de IA.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4 pt-6">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-2">
+                      <Label className="font-semibold">Operadora (slug) *</Label>
+                      <Input placeholder="ex: orinter" value={policyOperadora} onChange={e => setPolicyOperadora(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))} />
+                      <p className="text-xs text-muted-foreground">Minúsculas, sem espaços</p>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="font-semibold">Nome Exibição</Label>
+                      <Input placeholder="ex: Orinter Tour" value={policyDisplay} onChange={e => setPolicyDisplay(e.target.value)} />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="font-semibold">Tipo de Política</Label>
+                    <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={policyTipo} onChange={e => setPolicyTipo(e.target.value)}>
+                      <option value="condicoes_gerais">Condições Gerais</option>
+                      <option value="cancelamento_hotel">Cancelamento de Hotel</option>
+                      <option value="cancelamento_aereo">Cancelamento Aéreo</option>
+                      <option value="taxas_locais">Taxas Locais / Resort Fee</option>
+                      <option value="regras_tarifa">Regras de Tarifa</option>
+                      <option value="condicoes_seguro">Condições de Seguro</option>
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="font-semibold">Conteúdo JSON ou Texto *</Label>
+                    <Textarea
+                      placeholder={'{\n  "condicoes_pagamento": "...",\n  "taxas_locais_aviso": "..."\n}'}
+                      value={policyConteudo}
+                      onChange={e => setPolicyConteudo(e.target.value)}
+                      rows={7}
+                      className="font-mono text-xs resize-none"
+                    />
+                    <p className="text-xs text-muted-foreground">Cole JSON estruturado ou texto livre. A IA usará este conteúdo ao invés de re-extrair do PDF.</p>
+                  </div>
+                  <Button
+                    className="w-full mt-2 bg-vj-green text-white hover:bg-vj-green/90"
+                    disabled={!policyOperadora || !policyConteudo || createPolicy.isPending}
+                    onClick={async () => {
+                      let conteudo: any;
+                      try { conteudo = JSON.parse(policyConteudo); }
+                      catch { conteudo = { texto: policyConteudo }; }
+                      await createPolicy.mutateAsync({ operadora: policyOperadora, operadora_display: policyDisplay, tipo: policyTipo, conteudo });
+                      setPolicyOperadora(''); setPolicyDisplay(''); setPolicyConteudo('');
+                    }}
+                  >
+                    <Plus className="mr-2 h-4 w-4" />
+                    {createPolicy.isPending ? 'Salvando...' : 'Salvar no Cache'}
+                  </Button>
+                </CardContent>
+              </Card>
+
+              {/* Lista de políticas em cache */}
+              <Card className="border-vj-border shadow-sm">
+                <CardHeader className="bg-vj-bg border-b border-vj-border">
+                  <CardTitle className="text-lg">Políticas em Cache</CardTitle>
+                  <CardDescription>Cada política evita re-extração em cotações da mesma operadora.</CardDescription>
+                </CardHeader>
+                <CardContent className="pt-6">
+                  {policiesLoading ? (
+                    <div className="space-y-3"><Skeleton className="h-14 w-full" /><Skeleton className="h-14 w-full" /></div>
+                  ) : !policies?.length ? (
+                    <div className="text-center py-8 border border-dashed border-vj-border rounded-lg bg-muted/20">
+                      <Brain className="h-8 w-8 text-muted-foreground/40 mx-auto mb-2" />
+                      <p className="text-sm text-muted-foreground">Nenhuma política em cache ainda.</p>
+                      <p className="text-xs text-muted-foreground/70 mt-1">Adicione as condições gerais das operadoras que você mais usa.</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {policies.map((p: any) => (
+                        <div key={p.id} className="border border-vj-border rounded-lg overflow-hidden">
+                          <div className="flex items-center justify-between p-3 bg-vj-bg">
+                            <div className="flex items-center gap-2 flex-1 min-w-0">
+                              <button onClick={() => setExpandedPolicy(expandedPolicy === p.id ? null : p.id)} className="flex items-center gap-2 text-left flex-1 min-w-0">
+                                {expandedPolicy === p.id ? <ChevronDown size={14} className="text-vj-txt3 flex-shrink-0" /> : <ChevronRight size={14} className="text-vj-txt3 flex-shrink-0" />}
+                                <div className="min-w-0">
+                                  <p className="font-semibold text-sm text-vj-txt capitalize">{p.operadora_display || p.operadora}</p>
+                                  <Badge variant="outline" className="text-[10px] mt-0.5 border-vj-border text-vj-txt3">{p.tipo}</Badge>
+                                </div>
+                              </button>
+                            </div>
+                            <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-destructive flex-shrink-0" onClick={() => deletePolicy.mutate(p.id)}>
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
+                          {expandedPolicy === p.id && (
+                            <div className="p-3 border-t border-vj-border bg-white">
+                              <pre className="text-xs text-vj-txt3 whitespace-pre-wrap font-mono max-h-40 overflow-y-auto">
+                                {JSON.stringify(p.conteudo, null, 2)}
+                              </pre>
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>

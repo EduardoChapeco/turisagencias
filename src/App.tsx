@@ -43,6 +43,7 @@ const HotelDetail = lazy(() => import('./pages/HotelDetail'));
 
 const Tickets = lazy(() => import('./pages/Tickets'));
 const TicketDetail = lazy(() => import('./pages/TicketDetail'));
+const Experiences = lazy(() => import('./pages/Experiences'));
 
 const PortalLogin = lazy(() => import('./pages/PortalLogin'));
 const PortalHome = lazy(() => import('./pages/PortalHome'));
@@ -151,6 +152,8 @@ const App = () => (
 
               <Route path="/tickets" element={<ProtectedWithOrg><TripsRole><Tickets /></TripsRole></ProtectedWithOrg>} />
               <Route path="/tickets/:id" element={<ProtectedWithOrg><TripsRole><TicketDetail /></TripsRole></ProtectedWithOrg>} />
+
+              <Route path="/experiences" element={<ProtectedWithOrg><TripsRole><Experiences /></TripsRole></ProtectedWithOrg>} />
 
               <Route path="*" element={<NotFound />} />
             </Routes>

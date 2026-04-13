@@ -1,4 +1,5 @@
 import {
+  Anchor,
   Building2,
   Cloud,
   FileText,
@@ -38,6 +39,7 @@ const mainNav = [
   { title: 'Viagens', url: '/trips', icon: Plane },
   { title: 'Kanban Vendas', url: '/kanban/sales', icon: KanbanSquare },
   { title: 'Hotéis', url: '/hotels', icon: Building2 },
+  { title: 'Passeios & Serviços', url: '/experiences', icon: Anchor },
   { title: 'Guias de Destino', url: '/guides', icon: Globe2 },
   { title: 'Info Páginas', url: '/info', icon: Book },
   { title: 'Tickets', url: '/tickets', icon: LifeBuoy },

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AppLayout } from '@/components/AppLayout';
 import { useCreateQuotation } from '@/hooks/useQuotations';
-import { useClients } from '@/hooks/useClients';
+import { ClientSearchSelect } from '@/components/ui/ClientSearchSelect';
 import { useAuthStore } from '@/stores/authStore';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -18,7 +18,7 @@ import type { InstallmentOption, QuotationFormValues } from '@/types';
 export default function QuotationNew() {
   const navigate = useNavigate();
   const createQuotation = useCreateQuotation();
-  const { data: clients } = useClients();
+  
   const { organization } = useAuthStore();
   const { toast } = useToast();
   const [extracting, setExtracting] = useState(false);
@@ -253,12 +253,11 @@ export default function QuotationNew() {
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label>Cliente</Label>
-                <Select value={form.client_id} onValueChange={(v) => update('client_id', v)}>
-                  <SelectTrigger><SelectValue placeholder="Selecione um cliente (opcional)" /></SelectTrigger>
-                  <SelectContent>
-                    {clients?.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
-                  </SelectContent>
-                </Select>
+                <ClientSearchSelect
+                  value={form.client_id}
+                  onChange={(v) => update('client_id', v)}
+                  placeholder="Buscar cliente (opcional)"
+                />
               </div>
               <div className="space-y-2">
                 <Label>Texto WhatsApp</Label>

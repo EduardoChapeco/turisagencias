@@ -16,21 +16,21 @@
    TOKENS DE COR — Light Mode
    ───────────────────────────────────────────── */
 :root {
-  /* Brand primária — Azul profundo */
-  --cb-primary:        213 52% 24%;   /* #1E3A5F */
-  --cb-primary-hover:  213 52% 20%;
+  /* Brand primária — Verde Viaja */
+  --cb-primary:        150 64% 29%;   /* #1a7a4a */
+  --cb-primary-hover:  150 64% 24%;
   --cb-primary-fg:     0 0% 100%;
 
-  /* Brand accent — Azul água */
-  --cb-accent:         197 58% 42%;   /* #2E86AB */
-  --cb-accent-hover:   197 58% 38%;
+  /* Brand accent — Verde médio */
+  --cb-accent:         150 64% 29%;   /* #1a7a4a */
+  --cb-accent-hover:   150 64% 24%;
   --cb-accent-fg:      0 0% 100%;
 
-  /* Superfícies (do mais claro ao mais escuro) */
-  --cb-bg:             0 0% 98%;      /* canvas principal */
+  /* Superfícies — Viaja neutro bege */
+  --cb-bg:             40 6% 97%;     /* #f7f7f5 canvas */
   --cb-surface-0:      0 0% 100%;     /* cards, panels */
-  --cb-surface-1:      210 20% 97%;   /* fundos agrupados / BentoCell */
-  --cb-surface-2:      210 20% 94%;   /* hover states */
+  --cb-surface-1:      40 5% 96%;     /* fundos agrupados */
+  --cb-surface-2:      40 5% 92%;     /* hover states */
 
   /* Texto */
   --cb-text-primary:   213 52% 12%;
@@ -60,13 +60,13 @@
   --cb-info-bg:        207 70% 94%;
   --cb-info-fg:        207 70% 25%;
 
-  /* Sidebar */
-  --cb-sidebar-bg:     213 52% 16%;
-  --cb-sidebar-fg:     210 40% 88%;
-  --cb-sidebar-active: 213 52% 24%;
-  --cb-sidebar-hover:  213 52% 22%;
-  --cb-sidebar-border: 213 40% 24%;
-  --cb-sidebar-accent: 197 58% 50%;
+  /* Sidebar — Viaja neutro claro */
+  --cb-sidebar-bg:     0 0% 100%;   /* branco puro */
+  --cb-sidebar-fg:     40 3% 28%;   /* #6b6a66 */
+  --cb-sidebar-active: 40 5% 94%;   /* hover bege claro */
+  --cb-sidebar-hover:  40 5% 96%;
+  --cb-sidebar-border: 40 6% 88%;   /* #e5e4e0 */
+  --cb-sidebar-accent: 150 64% 29%; /* verde */
 
   /* Layout */
   --cb-radius-sm:   6px;

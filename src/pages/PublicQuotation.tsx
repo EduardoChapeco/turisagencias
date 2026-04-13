@@ -1,19 +1,20 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Calendar, DollarSign, Hotel, Loader2, MapPin, Plane, CheckCircle2, MessageSquare, Briefcase } from 'lucide-react';
+import { Loader2, MapPin } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { parseInstallments } from '@/lib/utils';
 import type { PublicQuotationData } from '@/types';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { BentoGrid, BentoCell } from '@/components/ui/BentoGrid';
 import { PublicLayout } from '@/components/layout/PublicLayout';
 
 const mealLabels: Record<string, string> = {
-  all_inclusive: 'All Inclusive',
+  all_inclusive: 'All Inclusive 🍽️',
   half_board: 'Meia Pensão',
-  bed_breakfast: 'Café da Manhã',
+  bed_breakfast: 'Café da Manhã ☕',
   room_only: 'Só Hospedagem',
+};
+
+const transportIcons: Record<string, string> = {
+  aereo: '✈️', maritimo: '🚢', onibus: '🚌', trem: '🚂', carro: '🚗', outro: '🚐',
 };
 
 export default function PublicQuotation() {
@@ -24,149 +25,604 @@ export default function PublicQuotation() {
 
   useEffect(() => {
     if (!token) return;
-
     supabase.rpc('get_public_quotation', { _token: token }).then(({ data: rows, error }) => {
       const row = rows?.[0] ?? null;
       setLoading(false);
-
-      if (error || !row) {
-        setNotFound(true);
-        return;
-      }
-
+      if (error || !row) { setNotFound(true); return; }
       setData({ ...row, installments: parseInstallments(row.installments) });
     });
   }, [token]);
 
-  const formatCurrency = (value: number | null, currency = 'BRL') => {
-    if (!value) return '-';
+  const fmt = (value: number | null, currency = 'BRL') => {
+    if (!value) return '—';
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency }).format(value);
   };
 
+  const fmtDate = (d: string | null) =>
+    d ? new Date(d + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' }) : '';
+
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-cb-s0">
-        <Loader2 className="h-8 w-8 animate-spin text-cb-accent" />
+      <div style={{ display: 'flex', minHeight: '100vh', alignItems: 'center', justifyContent: 'center', background: '#f7f7f5' }}>
+        <Loader2 style={{ width: 32, height: 32, animation: 'spin 1s linear infinite', color: '#1a7a4a' }} />
       </div>
     );
   }
 
   if (notFound || !data) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-cb-s0 px-4">
-        <div className="text-center p-8 bg-cb-s1 rounded-cb-lg border border-cb-border max-w-sm">
-           <MapPin className="h-10 w-10 text-cb-muted mx-auto mb-4" />
-           <p className="text-lg font-bold text-cb-text">Cotação não encontrada</p>
-           <p className="text-sm text-cb-muted mt-2">O link desta cotação pode estar expirado, inválido ou a proposta já foi fechada.</p>
+      <div style={{ display: 'flex', minHeight: '100vh', alignItems: 'center', justifyContent: 'center', background: '#f7f7f5', padding: 16 }}>
+        <div style={{ textAlign: 'center', padding: 40, background: '#fff', borderRadius: 22, border: '1px solid #e5e4e0', maxWidth: 380 }}>
+          <MapPin style={{ width: 40, height: 40, color: '#9b9a96', margin: '0 auto 16px' }} />
+          <p style={{ fontSize: 18, fontWeight: 700, color: '#111110' }}>Cotação não encontrada</p>
+          <p style={{ fontSize: 13, color: '#6b6a66', marginTop: 8, lineHeight: 1.6 }}>
+            O link pode estar expirado, inválido ou a proposta já foi fechada.
+          </p>
         </div>
       </div>
     );
   }
 
-  const installments = data.installments;
+  const installments = data.installments ?? [];
+  const itinerary: any[] = (data as any).itinerary ?? [];
+  const transports: any[] = (data as any).transports ?? [];
+  const excursions: any[] = (data as any).excursions ?? [];
+  const includedItems: string[] = (data as any).included_items ?? [];
+  const excludedItems: string[] = (data as any).excluded_items ?? [];
+  const coverImageUrl = (data as any).cover_image_url || data.hotel_photo_url;
+  const pricingMode = (data as any).pricing_mode || 'per_person';
+  const validUntil = (data as any).valid_until;
+
+  const pricingLabel = pricingMode === 'per_couple' ? 'Por casal' :
+    pricingMode === 'per_family' ? 'Por família' :
+    pricingMode === 'total' ? 'Pacote total' : 'Por pessoa';
+
   const whatsappUrl = data.org_whatsapp
-    ? `https://wa.me/55${data.org_whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(`Olá! Gostaria de conversar sobre a cotação para ${data.destination || 'a viagem'}.`)}`
+    ? `https://wa.me/55${data.org_whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(
+        data.whatsapp_text || `Olá! Gostaria de confirmar a cotação para ${data.destination || 'a viagem'}.`
+      )}`
     : null;
 
-  return (
-    <PublicLayout 
-      orgName={data.org_name} 
-      orgLogo={data.org_logo} 
-      orgPrimaryColor={data.org_primary_color}
-      orgWhatsapp={data.org_whatsapp}
-    >
-      <div className="mb-8">
-        <h2 className="text-3xl md:text-5xl font-extrabold text-cb-text tracking-tight mb-2 flex items-center gap-3">
-          <Plane className="h-8 w-8 text-cb-accent rotate-45" /> Proposta de Viagem
-        </h2>
-        <p className="text-lg md:text-xl text-cb-muted">
-          Preparamos esta cotação exclusiva. Todas as taxas já estão incluídas no valor final.
-        </p>
-      </div>
+  // Agent initials
+  const agentInitials = data.org_name
+    ? data.org_name.split(' ').slice(0, 2).map((w: string) => w[0]).join('').toUpperCase()
+    : 'AG';
 
-      <BentoGrid cols={3} gap="lg">
-        {/* Capa e Destination (2 colunas) */}
-        <BentoCell colSpan={2} rowSpan={2} padding="none" className="flex flex-col relative overflow-hidden group">
-          {data.hotel_photo_url ? (
-            <img src={data.hotel_photo_url} alt={data.hotel_name || 'Hotel'} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-          ) : (
-            <div className="w-full h-full bg-cb-s2 flex items-center justify-center">
-               <MapPin className="h-16 w-16 text-cb-muted" />
-            </div>
-          )}
-          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-6 pt-24 text-white">
-            {data.destination && (
-              <h3 className="font-heading text-3xl font-bold flex items-center gap-2 mb-2 drop-shadow-md">
-                <MapPin className="h-6 w-6" /> {data.destination}
-              </h3>
+  // Reference short
+  const ref = token ? `#${token.slice(0, 8).toUpperCase()}` : '';
+
+  const hasPriceDetails = data.total_value || installments.length > 0;
+
+  return (
+    <PublicLayout
+      orgName={data.org_name}
+      orgLogo={data.org_logo}
+      tabs={[
+        { id: 'cot', label: 'Cotação', active: true },
+        ...(itinerary.length > 0 ? [{ id: 'itin', label: 'Roteiro' }] : []),
+      ]}
+      ctaLabel={whatsappUrl ? 'Reservar →' : undefined}
+      onCtaClick={whatsappUrl ? () => window.open(whatsappUrl, '_blank') : undefined}
+      ctaSecondaryLabel={whatsappUrl ? 'Perguntar' : undefined}
+      onCtaSecondaryClick={whatsappUrl ? () => window.open(whatsappUrl, '_blank') : undefined}
+    >
+      {/* ══ COVER HERO ══ */}
+      <div className="vj-cover">
+        {coverImageUrl ? (
+          <img className="vj-cover-img" src={coverImageUrl} alt={data.destination || 'Destino'} />
+        ) : (
+          <div className="vj-cover-fake">🏝️ 🌿 ✈️</div>
+        )}
+        <div className="vj-cover-overlay" />
+        <div className="vj-cover-content">
+          <div className="vj-cover-badge">
+            <div className="vj-cover-badge-dot" />
+            Cotação {ref} {validUntil ? `· válida até ${fmtDate(validUntil)}` : ''}
+          </div>
+          <div className="vj-cover-title">
+            {data.destination || 'Sua viagem'}<br />
+            <em>
+              {data.num_nights ? `${data.num_nights} noites` : ''}
+              {data.num_nights && data.hotel_name ? ' · ' : ''}
+              {data.hotel_name || ''}
+            </em>
+          </div>
+          <div className="vj-cover-chips">
+            {data.check_in && data.check_out && (
+              <div className="vj-cover-chip">
+                📅 {fmtDate(data.check_in)} → {fmtDate(data.check_out)}
+              </div>
             )}
             {data.hotel_name && (
-              <div className="flex items-center gap-3 text-white/90">
-                <Hotel className="h-5 w-5" />
-                <span className="font-medium text-lg">{data.hotel_name}</span>
-                {data.hotel_stars && <span className="text-yellow-400">{'★'.repeat(data.hotel_stars)}</span>}
+              <div className="vj-cover-chip">
+                🏨 {data.hotel_name}{data.hotel_stars ? ` ${'★'.repeat(data.hotel_stars)}` : ''}
+              </div>
+            )}
+            {data.meal_plan && (
+              <div className="vj-cover-chip">
+                {mealLabels[data.meal_plan] || data.meal_plan}
+              </div>
+            )}
+            {transports.length > 0 && (
+              <div className="vj-cover-chip">
+                {transportIcons[transports[0].type] || '✈️'} Transfers incluídos
               </div>
             )}
           </div>
-        </BentoCell>
+        </div>
+      </div>
 
-        {/* Pricing & CTA */}
-        <BentoCell colSpan={1} rowSpan={1} padding="lg" className="border-cb-accent/20 bg-cb-accent/5 flex flex-col items-center justify-center text-center">
-           <h4 className="text-sm font-bold text-cb-muted uppercase tracking-wider mb-2">Valor Total</h4>
-           <div className="flex items-baseline gap-1 text-cb-text">
-             <DollarSign className="h-6 w-6 text-cb-accent" />
-             <span className="text-4xl lg:text-5xl font-extrabold">{formatCurrency(data.total_value, data.currency || 'BRL').replace(/^R\$\s*/, '')}</span>
-           </div>
-           
-           {installments && installments.length > 0 && (
-             <div className="mt-4 w-full space-y-2">
-                <p className="text-xs text-cb-muted uppercase font-bold text-left mb-1">Opções de Pagamento</p>
-                {installments.map((item, i) => (
-                  <div key={i} className="flex justify-between text-sm bg-cb-s0 border border-cb-border py-1.5 px-3 rounded text-cb-text shadow-sm">
-                    <span className="font-medium">{item.type}</span>
-                    <span>{item.installment_count}x de R$ {item.value?.toFixed(2)}</span>
+      {/* ══ SHARE BAR ══ */}
+      <div className="vj-sharebar">
+        <div className="vj-sb-left">
+          <div className="vj-sb-agent">
+            <div className="vj-av-sm">{agentInitials}</div>
+            <div>
+              <div style={{ fontSize: 12, fontWeight: 700, color: '#111110' }}>{data.org_name}</div>
+              <div style={{ fontSize: 10, color: '#9b9a96' }}>Agência de Viagens</div>
+            </div>
+          </div>
+          {validUntil && (
+            <div className="vj-sb-validity">⏱ Válida até {fmtDate(validUntil)}</div>
+          )}
+          {ref && (
+            <div className="vj-sb-ref">Ref <strong>{ref}</strong></div>
+          )}
+        </div>
+        <div className="vj-sb-right">
+          {whatsappUrl && (
+            <>
+              <button className="vj-tbtn" onClick={() => window.open(whatsappUrl, '_blank')}>
+                💬 Fazer pergunta
+              </button>
+              <button className="vj-tbtn vj-tbtn-solid" onClick={() => window.open(whatsappUrl, '_blank')}>
+                Confirmar reserva →
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* ══ CONTEÚDO PRINCIPAL ══ */}
+      <div className="vj-wrap">
+
+        {/* SUMMARY STRIP */}
+        <div className="vj-summary-strip vj-section-gap">
+          {data.destination && (
+            <div className="vj-ss-item">
+              <div className="vj-ss-label">Destino</div>
+              <div className="vj-ss-val">{data.destination.split(',')[0]}</div>
+              {data.destination.includes(',') && (
+                <div className="vj-ss-sub">{data.destination.split(',').slice(1).join(',').trim()}</div>
+              )}
+            </div>
+          )}
+          {data.num_nights && (
+            <div className="vj-ss-item">
+              <div className="vj-ss-label">Duração</div>
+              <div className="vj-ss-val">{data.num_nights}</div>
+              <div className="vj-ss-sub">noites</div>
+            </div>
+          )}
+          {excursions.length > 0 && (
+            <div className="vj-ss-item">
+              <div className="vj-ss-label">Passeios</div>
+              <div className="vj-ss-val">{excursions.length}</div>
+              <div className="vj-ss-sub">incluídos</div>
+            </div>
+          )}
+          {data.total_value && (
+            <div className="vj-ss-item">
+              <div className="vj-ss-label">{pricingLabel}</div>
+              <div className="vj-ss-val vj-ss-val-green">{fmt(data.total_value, data.currency ?? 'BRL')}</div>
+              {installments[0] && (
+                <div className="vj-ss-sub">ou {installments[0].installment_count}× de {fmt(installments[0].value)}</div>
+              )}
+            </div>
+          )}
+          {data.hotel_stars && (
+            <div className="vj-ss-item">
+              <div className="vj-ss-label">Categoria</div>
+              <div className="vj-ss-val">{'★'.repeat(data.hotel_stars)}</div>
+              <div className="vj-ss-sub">{data.meal_plan ? mealLabels[data.meal_plan] : 'Hotel'}</div>
+            </div>
+          )}
+        </div>
+
+        {/* DEST INFO */}
+        {(data.destination || data.hotel_name) && (
+          <div className="vj-dest-info vj-section-gap">
+            <div className="vj-di-main">
+              <div className="vj-di-photos">
+                <div
+                  className="vj-dip vj-dip-1"
+                  style={{ background: coverImageUrl ? undefined : 'linear-gradient(160deg,#0d3b24,#1a6b4a)' }}
+                >
+                  {coverImageUrl
+                    ? <img src={coverImageUrl} alt={data.destination || ''} style={{ width:'100%', height:'100%', objectFit:'cover' }} />
+                    : '🏝️'
+                  }
+                </div>
+                <div className="vj-dip" style={{ background: 'linear-gradient(135deg,#0a2a4a,#1560bd)' }}>🌊</div>
+                <div className="vj-dip" style={{ background: 'linear-gradient(135deg,#2d4a1f,#4a7c3f)' }}>🌿</div>
+              </div>
+              <div className="vj-di-about">
+                <h3>Sobre o destino</h3>
+                <p>
+                  {data.destination
+                    ? `${data.destination} é um dos destinos mais deslumbrantes da lista de viagens personalizadas que preparamos para você. Esta proposta inclui todos os detalhes para uma experiência inesquecível.`
+                    : 'Proposta de viagem personalizada preparada especialmente para você.'
+                  }
+                </p>
+                <div className="vj-di-tags">
+                  {data.hotel_name && <span className="vj-dtag">🏨 {data.hotel_name}</span>}
+                  {data.meal_plan && <span className="vj-dtag">{mealLabels[data.meal_plan]}</span>}
+                  {data.room_type && <span className="vj-dtag">{data.room_type}</span>}
+                </div>
+              </div>
+            </div>
+
+            <div className="vj-di-side">
+              <div className="vj-info-card">
+                <div className="vj-dic-title">📋 Detalhes da Proposta</div>
+                {data.check_in && (
+                  <div className="vj-dic-row">
+                    <span className="vj-dic-key">Check-in</span>
+                    <span className="vj-dic-val">{fmtDate(data.check_in)}</span>
                   </div>
-                ))}
-             </div>
-           )}
+                )}
+                {data.check_out && (
+                  <div className="vj-dic-row">
+                    <span className="vj-dic-key">Check-out</span>
+                    <span className="vj-dic-val">{fmtDate(data.check_out)}</span>
+                  </div>
+                )}
+                {data.num_nights && (
+                  <div className="vj-dic-row">
+                    <span className="vj-dic-key">Noites</span>
+                    <span className="vj-dic-val">{data.num_nights}</span>
+                  </div>
+                )}
+                {data.hotel_stars && (
+                  <div className="vj-dic-row">
+                    <span className="vj-dic-key">Categoria</span>
+                    <span className="vj-dic-val-green">{'★'.repeat(data.hotel_stars)} hotel</span>
+                  </div>
+                )}
+                {data.meal_plan && (
+                  <div className="vj-dic-row">
+                    <span className="vj-dic-key">Regime</span>
+                    <span className="vj-dic-val">{mealLabels[data.meal_plan] || data.meal_plan}</span>
+                  </div>
+                )}
+                {(data as any).valid_until && (
+                  <div className="vj-dic-row">
+                    <span className="vj-dic-key">Validade</span>
+                    <span className="vj-dic-val-orange">{fmtDate((data as any).valid_until)}</span>
+                  </div>
+                )}
+              </div>
 
-           {whatsappUrl && (
-             <Button className="w-full mt-6 shadow-lg shadow-cb-accent/20 text-white" size="lg" onClick={() => window.open(whatsappUrl, '_blank')}>
-               <MessageSquare className="mr-2 h-5 w-5" /> Falar com o Agente
-             </Button>
-           )}
-        </BentoCell>
+              {/* Map placeholder */}
+              <div className="vj-map-card">
+                <div className="vj-map-area">
+                  <svg viewBox="0 0 320 160" fill="none" style={{ width:'100%', height:'100%' }}>
+                    <rect width="320" height="160" fill="#d4e8c0"/>
+                    <ellipse cx="160" cy="80" rx="60" ry="40" fill="#a8d4a0" opacity=".5"/>
+                    <path d="M40 100 Q160 40 280 90" stroke="rgba(255,255,255,.6)" strokeWidth="3" fill="none"/>
+                    <circle cx="160" cy="80" r="8" fill="#e53935" stroke="white" strokeWidth="2"/>
+                    <circle cx="80" cy="95" r="5" fill="#1a5fa8" stroke="white" strokeWidth="1.5"/>
+                    <circle cx="240" cy="75" r="5" fill="#1a5fa8" stroke="white" strokeWidth="1.5"/>
+                  </svg>
+                  <div className="vj-map-label">📍 {data.destination || 'Destino'}</div>
+                </div>
+                <div className="vj-map-footer">
+                  <div>
+                    <div className="vj-map-footer-txt">{data.destination}</div>
+                    <div className="vj-map-footer-sub">Mapa ilustrativo</div>
+                  </div>
+                  <span style={{ fontSize: 11, fontWeight: 600, color: '#1a5fa8' }}>Ver rota →</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
-        {/* Informações Básicas */}
-        <BentoCell colSpan={1} rowSpan={1} padding="lg">
-           <h4 className="font-bold flex items-center gap-2 text-cb-text mb-4">
-             <Briefcase className="h-4 w-4 text-cb-muted" /> O que está incluído
-           </h4>
-           <div className="space-y-4">
-              {data.check_in && data.check_out && (
+        {/* VOOS / TRANSPORTES */}
+        {transports.length > 0 && (
+          <div className="vj-section-gap">
+            <div className="vj-sh">
+              <div>
+                <div className="vj-sh-title">✈️ Transportes</div>
+                <div className="vj-sh-sub">{transports.length} trecho{transports.length > 1 ? 's' : ''} planejado{transports.length > 1 ? 's' : ''}</div>
+              </div>
+            </div>
+            {transports.map((t: any, i: number) => (
+              <div key={i} className="vj-flight-card">
+                <div className="vj-flight-header">
+                  <div className="vj-fh-left">
+                    <div className="vj-airline-logo">{transportIcons[t.type] || '✈️'}</div>
+                    <div>
+                      <div className="vj-fh-name">{t.operator || t.type}</div>
+                      <div className="vj-fh-sub">{t.from} → {t.to}</div>
+                    </div>
+                  </div>
+                  <div className="vj-fh-tags">
+                    <span className="vj-tag vj-tag-green">Incluído</span>
+                  </div>
+                </div>
+                <div className="vj-flight-body">
+                  <div>
+                    <div className="vj-fb-time">{t.departure ? new Date(t.departure).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '—'}</div>
+                    <div className="vj-fb-city">{t.from}</div>
+                    <div className="vj-fb-code">{t.departure ? new Date(t.departure).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }) : ''}</div>
+                  </div>
+                  <div className="vj-fb-arrow">
+                    <div className="vj-fb-line" />
+                    <div className="vj-fb-dur">{transportIcons[t.type] || '→'}</div>
+                    <div className="vj-fb-stop-ok">Direto</div>
+                  </div>
+                  <div>
+                    <div className="vj-fb-time">{t.arrival ? new Date(t.arrival).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '—'}</div>
+                    <div className="vj-fb-city">{t.to}</div>
+                    <div className="vj-fb-code">{t.arrival ? new Date(t.arrival).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }) : ''}</div>
+                  </div>
+                  <div style={{ width: 1, height: 40, background: '#e5e4e0', margin: '0 4px' }} />
+                  <div className="vj-fb-price">
+                    <div className="vj-fb-price-val" style={{ fontSize: 14, color: '#1a7a4a' }}>✓</div>
+                    <div className="vj-fb-price-per">Incluído</div>
+                  </div>
+                </div>
+                {t.notes && (
+                  <div className="vj-flight-details">
+                    <div className="vj-fd-pill">📝 {t.notes}</div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* ITINERÁRIO */}
+        {itinerary.length > 0 && (
+          <div className="vj-section-gap">
+            <div className="vj-sh">
+              <div>
+                <div className="vj-sh-title">🗺️ Itinerário — Dia a Dia</div>
+                <div className="vj-sh-sub">{itinerary.length} dia{itinerary.length > 1 ? 's' : ''} de roteiro personalizado</div>
+              </div>
+            </div>
+            <div className="vj-itin-scroll">
+              {itinerary.map((day: any, i: number) => (
+                <div key={i} className="vj-itin-card">
+                  <div className="vj-ic-day">Dia {day.day ?? i + 1}</div>
+                  <div className="vj-ic-date">
+                    {day.date ? new Date(day.date + 'T12:00:00').toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short' }) : day.title}
+                  </div>
+                  <div className="vj-ic-city">{day.location || ''}</div>
+                  {day.description && (
+                    <div className="vj-ic-items">
+                      {day.description.split('\n').filter(Boolean).map((line: string, j: number) => (
+                        <div key={j} className="vj-ic-item">
+                          <div className="vj-ic-item-dot" />
+                          {line}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {day.accommodation && (
+                    <div className="vj-ic-hotel">🏨 {day.accommodation}</div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* PASSEIOS */}
+        {excursions.length > 0 && (
+          <div className="vj-section-gap">
+            <div className="vj-sh">
+              <div>
+                <div className="vj-sh-title">🎯 Passeios & Serviços</div>
+                <div className="vj-sh-sub">Experiências selecionadas para você</div>
+              </div>
+            </div>
+            <div className="vj-hotel-scroll">
+              {excursions.map((exc: any, i: number) => (
+                <div key={i} className="vj-hotel-card">
+                  <div className="vj-hotel-img" style={{ background: 'linear-gradient(135deg,#0a2a4a,#1565c0)' }}>
+                    🎯
+                    {exc.included && <div className="vj-hotel-img-badge">INCLUSO</div>}
+                  </div>
+                  <div className="vj-hotel-info">
+                    <div className="vj-hotel-name">{exc.title}</div>
+                    {exc.duration && <div className="vj-hotel-loc">⏱ {exc.duration}</div>}
+                    <div className="vj-hotel-row">
+                      <div className="vj-hotel-feats">
+                        {exc.price_per_person && <span className="vj-hf-pill">👤 {exc.price_per_person}/pp</span>}
+                      </div>
+                      {exc.price_per_couple && (
+                        <span className="vj-hotel-price">{exc.price_per_couple}/casal</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* PREÇOS */}
+        {hasPriceDetails && (
+          <div className="vj-price-section vj-section-gap">
+            {/* Breakdown */}
+            <div className="vj-price-breakdown">
+              <div className="vj-sh" style={{ marginBottom: 16 }}>
                 <div>
-                   <p className="text-[10px] uppercase tracking-wide font-bold text-cb-muted">Período da Viagem</p>
-                   <p className="text-sm font-medium mt-1">
-                     {new Date(data.check_in).toLocaleDateString('pt-BR')} até {new Date(data.check_out).toLocaleDateString('pt-BR')}  
-                   </p>
-                   {data.num_nights && <span className="text-xs text-cb-muted">{data.num_nights} noites no destino</span>}
+                  <div className="vj-sh-title">💰 Detalhes do Valor</div>
+                </div>
+              </div>
+
+              {transports.length > 0 && (
+                <div className="vj-pb-row">
+                  <span className="vj-pb-label"><span className="vj-pb-label-icon">✈️</span> Transportes</span>
+                  <span className="vj-pb-val">incluído</span>
                 </div>
               )}
-              {data.meal_plan && (
-                <div>
-                  <p className="text-[10px] uppercase tracking-wide font-bold text-cb-muted">Regime de Alimentação</p>
-                  <p className="text-sm font-medium mt-1 flex items-center gap-1.5">
-                    <CheckCircle2 className="h-4 w-4 text-cb-success" />
-                    {mealLabels[data.meal_plan] || data.meal_plan}
-                  </p>
+              {data.hotel_name && data.num_nights && (
+                <div className="vj-pb-row">
+                  <span className="vj-pb-label"><span className="vj-pb-label-icon">🏨</span> {data.hotel_name} ({data.num_nights} noites)</span>
+                  <span className="vj-pb-val">incluído</span>
                 </div>
               )}
-           </div>
-        </BentoCell>
-      </BentoGrid>
-      
-      <div className="mt-8 text-center bg-cb-s1 border border-cb-border p-4 rounded-cb-md text-xs text-cb-muted">
-         Proposta gerada através da plataforma CloudBlock OS. Os valores e disponibilidade estão sujeitos a alteração até o momento formal da emissão.
+              {excursions.filter((e: any) => e.included).map((exc: any, i: number) => (
+                <div key={i} className="vj-pb-row">
+                  <span className="vj-pb-label"><span className="vj-pb-label-icon">🎯</span> {exc.title}</span>
+                  <span className="vj-pb-val">incluído</span>
+                </div>
+              ))}
+              {includedItems.map((item, i) => (
+                <div key={i} className="vj-pb-row">
+                  <span className="vj-pb-label"><span className="vj-pb-label-icon">✅</span> {item}</span>
+                  <span className="vj-pb-val">incluído</span>
+                </div>
+              ))}
+
+              {data.total_value && (
+                <div className="vj-pb-total">
+                  <span className="vj-pb-total-l">Total ({pricingLabel.toLowerCase()})</span>
+                  <span className="vj-pb-total-v">{fmt(data.total_value, data.currency ?? 'BRL')}</span>
+                </div>
+              )}
+
+              {/* Não incluído */}
+              {excludedItems.length > 0 && (
+                <div style={{ marginTop: 20, paddingTop: 16, borderTop: '1px solid #e5e4e0' }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.5px', color: '#9b9a96', marginBottom: 10 }}>Não incluído</div>
+                  {excludedItems.map((item, i) => (
+                    <div key={i} className="vj-pb-row" style={{ color: '#9b9a96' }}>
+                      <span className="vj-pb-label"><span className="vj-pb-label-icon">❌</span> {item}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* CTA Card */}
+            <div className="vj-price-cta">
+              <div className="vj-price-total-card">
+                <div className="vj-ptc-label">Valor total</div>
+                <div className="vj-ptc-val">{fmt(data.total_value, data.currency ?? 'BRL')}</div>
+                <div className="vj-ptc-sub">{pricingLabel} · todos os serviços</div>
+                {installments.length > 0 && (
+                  <>
+                    <div className="vj-ptc-divider" />
+                    <div className="vj-ptc-parc">Parcelamento em até</div>
+                    {installments.map((inst, i) => (
+                      <div key={i} className="vj-ptc-parc-val">
+                        {inst.installment_count}× de {fmt(inst.value)}
+                        <span style={{ fontSize: 11, opacity: .6, marginLeft: 6 }}>{inst.type}</span>
+                      </div>
+                    ))}
+                  </>
+                )}
+                {whatsappUrl && (
+                  <>
+                    <button className="vj-btn-block vj-btn-white" onClick={() => window.open(whatsappUrl, '_blank')}>
+                      Confirmar reserva →
+                    </button>
+                    <button className="vj-btn-block vj-btn-outline-w" onClick={() => window.open(whatsappUrl, '_blank')}>
+                      Fazer pergunta
+                    </button>
+                  </>
+                )}
+              </div>
+
+              <div className="vj-note-card">
+                <div className="vj-nc-icon">✅</div>
+                <div className="vj-nc-title">Proposta personalizada</div>
+                <div className="vj-nc-text">
+                  Esta cotação foi elaborada exclusivamente para você. Entre em contato para ajustes, dúvidas ou para confirmar sua reserva.
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* INCLUDES GRID */}
+        {(includedItems.length > 0 || excursions.length > 0) && (
+          <div className="vj-includes-grid vj-section-gap">
+            {transports.length > 0 && (
+              <div className="vj-inc-card">
+                <div className="vj-inc-icon">✈️</div>
+                <div>
+                  <div className="vj-inc-title">Transportes</div>
+                  <div className="vj-inc-sub">{transports.map((t: any) => `${t.from} → ${t.to}`).join(' · ')}</div>
+                </div>
+              </div>
+            )}
+            {data.hotel_name && (
+              <div className="vj-inc-card">
+                <div className="vj-inc-icon">🏨</div>
+                <div>
+                  <div className="vj-inc-title">{data.hotel_name}</div>
+                  <div className="vj-inc-sub">
+                    {data.num_nights} noites · {data.meal_plan ? mealLabels[data.meal_plan] : 'Hospedagem'}
+                    {data.room_type ? ` · ${data.room_type}` : ''}
+                  </div>
+                </div>
+              </div>
+            )}
+            {excursions.filter((e: any) => e.included).map((exc: any, i: number) => (
+              <div key={i} className="vj-inc-card">
+                <div className="vj-inc-icon">🎯</div>
+                <div>
+                  <div className="vj-inc-title">{exc.title}</div>
+                  <div className="vj-inc-sub">{exc.description || ''}</div>
+                </div>
+              </div>
+            ))}
+            {includedItems.map((item, i) => (
+              <div key={i} className="vj-inc-card">
+                <div className="vj-inc-icon">✅</div>
+                <div>
+                  <div className="vj-inc-title">{item}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* WHATSAPP TEXT (se preenchido) */}
+        {data.whatsapp_text && whatsappUrl && (
+          <div className="vj-note-card vj-note-card-blue vj-section-gap">
+            <div className="vj-nc-icon">💬</div>
+            <div className="vj-nc-title vj-nc-title-blue">Mensagem personalizada do agente</div>
+            <div className="vj-nc-text vj-nc-text-blue" style={{ whiteSpace: 'pre-wrap' }}>
+              {data.whatsapp_text}
+            </div>
+          </div>
+        )}
+
+        {/* Footer nota */}
+        <div style={{ marginTop: 40, textAlign: 'center', fontSize: 11, color: '#9b9a96', padding: '20px 0', borderTop: '1px solid #e5e4e0' }}>
+          Proposta gerada pela plataforma VoyageOS · Plan-Fect Harmony.
+          Valores e disponibilidade sujeitos a confirmação até a emissão formal.
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div className="vj-footer">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#1a7a4a' }} />
+          <span style={{ fontWeight: 600 }}>{data.org_name}</span>
+        </div>
+        {data.org_whatsapp && (
+          <a href={`https://wa.me/55${data.org_whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noreferrer">
+            📱 {data.org_whatsapp}
+          </a>
+        )}
       </div>
     </PublicLayout>
   );

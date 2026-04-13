@@ -69,7 +69,7 @@ export default function AIChat() {
     <AppLayout>
       <div className="flex h-[calc(100vh-8rem)] flex-col space-y-4 max-w-5xl mx-auto">
         <div>
-          <h1 className="font-heading text-2xl font-bold flex items-center gap-2 text-primary">
+          <h1 className="font-heading text-2xl font-bold flex items-center gap-2 text-vj-green">
             <Sparkles className="h-6 w-6 text-accent" />
             V-Agent: Squad & RAG
           </h1>
@@ -78,14 +78,14 @@ export default function AIChat() {
           </p>
         </div>
 
-        <Card className="flex-1 flex flex-col overflow-hidden border-border/50 shadow-sm rounded-2xl">
-          <CardHeader className="border-b border-border/30 px-6 py-4 bg-surface/40">
+        <Card className="flex-1 flex flex-col overflow-hidden border-vj-border shadow-sm rounded-2xl">
+          <CardHeader className="border-b border-vj-border px-6 py-4 bg-vj-bg">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
                <span className="w-2 h-2 rounded-full bg-success animate-pulse"></span>
                Sessão Criptografada
             </CardTitle>
           </CardHeader>
-          <CardContent className="flex-1 p-0 relative overflow-hidden flex flex-col bg-surface/20">
+          <CardContent className="flex-1 p-0 relative overflow-hidden flex flex-col bg-vj-bg">
             <ScrollArea className="flex-1 p-6 h-full">
               <div className="space-y-6 pb-4">
                 {messages.map(m => (
@@ -97,14 +97,14 @@ export default function AIChat() {
                     )}
                     <div className={`rounded-2xl p-4 text-sm leading-relaxed max-w-[85%] shadow-sm ${
                        m.role === 'user' 
-                       ? 'bg-primary text-primary-foreground rounded-tr-sm' 
-                       : 'bg-card border border-border/50 rounded-tl-sm'
+                       ? 'bg-vj-green text-vj-green-foreground rounded-tr-sm' 
+                       : 'bg-white border border-vj-border rounded-tl-sm'
                     }`}>
                       {m.content}
                     </div>
                     {m.role === 'user' && (
-                      <div className="w-8 h-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0 shadow-sm mt-1">
-                        <User className="h-4 w-4 text-primary" />
+                      <div className="w-8 h-8 rounded-full bg-vj-green/10 border border-vj-green/20 flex items-center justify-center shrink-0 shadow-sm mt-1">
+                        <User className="h-4 w-4 text-vj-green" />
                       </div>
                     )}
                   </div>
@@ -114,7 +114,7 @@ export default function AIChat() {
                     <div className="w-8 h-8 rounded-full bg-accent/10 border border-accent/20 flex items-center justify-center shrink-0 mt-1">
                       <Bot className="h-4 w-4 text-accent animate-pulse" />
                     </div>
-                    <div className="rounded-2xl p-4 bg-card border border-border/50 text-sm flex gap-1.5 items-center rounded-tl-sm shadow-sm h-[52px]">
+                    <div className="rounded-2xl p-4 bg-white border border-vj-border text-sm flex gap-1.5 items-center rounded-tl-sm shadow-sm h-[52px]">
                       <span className="w-1.5 h-1.5 bg-muted-foreground/40 rounded-full animate-bounce"></span>
                       <span className="w-1.5 h-1.5 bg-muted-foreground/40 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
                       <span className="w-1.5 h-1.5 bg-muted-foreground/40 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
@@ -123,14 +123,14 @@ export default function AIChat() {
                 )}
               </div>
             </ScrollArea>
-            <div className="p-4 border-t border-border/30 bg-surface/50 backdrop-blur-sm">
+            <div className="p-4 border-t border-vj-border bg-vj-bg backdrop-blur-sm">
               <form onSubmit={(e) => { e.preventDefault(); sendMessage(); }} className="flex gap-2 max-w-4xl mx-auto">
                 <Input 
                   value={input} 
                   onChange={e => setInput(e.target.value)} 
                   placeholder="Pergunte sobre um manual, guia de destino ou rota..."
                   disabled={isLoading}
-                  className="rounded-full shadow-sm bg-background border-border"
+                  className="rounded-full shadow-sm bg-background border-vj-border"
                 />
                 <Button type="submit" size="icon" disabled={!input.trim() || isLoading} className="rounded-full shadow-sm shrink-0">
                   <Send className="h-4 w-4 -ml-0.5" />

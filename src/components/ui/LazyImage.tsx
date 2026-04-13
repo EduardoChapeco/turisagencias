@@ -61,12 +61,12 @@ export function LazyImage({
   return (
     <div
       ref={wrapperRef}
-      className={cn('relative overflow-hidden bg-cb-s2', wrapperClassName)}
+      className={cn('relative overflow-hidden bg-vj-bg', wrapperClassName)}
       style={{ aspectRatio }}
     >
       {/* Skeleton */}
       {!isLoaded && !hasError && (
-        <div className="absolute inset-0 bg-cb-s2 animate-pulse" aria-hidden="true" />
+        <div className="absolute inset-0 bg-vj-bg animate-pulse" aria-hidden="true" />
       )}
 
       {/* Image */}
@@ -89,7 +89,7 @@ export function LazyImage({
 
       {/* Error fallback */}
       {hasError && (
-        <div className="absolute inset-0 flex items-center justify-center bg-cb-s2 text-cb-muted text-xs">
+        <div className="absolute inset-0 flex items-center justify-center bg-vj-bg text-vj-txt3 text-xs">
           {fallback ?? <span>Imagem indisponível</span>}
         </div>
       )}

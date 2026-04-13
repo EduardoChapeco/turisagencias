@@ -85,10 +85,10 @@ const paddingMap: Record<string, string> = {
 };
 
 const variantMap: Record<string, string> = {
-  default: 'bg-cb-s0 border border-cb-border',
-  muted:   'bg-cb-s1 border border-cb-border',
-  raised:  'bg-cb-s0 border border-cb-border',
-  accent:  'bg-cb-accent/5 border border-cb-accent/20',
+  default: 'bg-white border border-vj-border',
+  muted:   'bg-vj-bg border border-vj-border',
+  raised:  'bg-white border border-vj-border',
+  accent:  'bg-vj-green/5 border border-vj-green/20',
 };
 
 export function BentoCell({
@@ -108,7 +108,7 @@ export function BentoCell({
         rowSpanMap[rowSpan] ?? 'row-span-1',
         paddingMap[padding],
         variantMap[variant],
-        onClick && 'cursor-pointer hover:bg-cb-s1',
+        onClick && 'cursor-pointer hover:bg-vj-bg',
         className,
       )}
       onClick={onClick}

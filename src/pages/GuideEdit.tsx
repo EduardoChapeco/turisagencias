@@ -134,7 +134,7 @@ export function GuideEdit({ id, open, onClose, onSuccess }: GuideEditProps) {
           <Button
             onClick={() => void handleSave()}
             disabled={loading || !form.city || !form.country || saveGuide.isPending}
-            className="bg-cb-accent text-white"
+            className="bg-vj-green text-white"
           >
             <Save className="mr-2 h-4 w-4" />
             {isUpdate ? 'Atualizar Guia' : 'Criar Guia'}
@@ -143,15 +143,15 @@ export function GuideEdit({ id, open, onClose, onSuccess }: GuideEditProps) {
       }
     >
       {(activeSection) => {
-        if (loading) return <div className="text-sm text-cb-muted animate-pulse">Carregando dados...</div>;
+        if (loading) return <div className="text-sm text-vj-txt3 animate-pulse">Carregando dados...</div>;
 
         return (
           <div className="space-y-8">
             {activeSection === 'identidade' && (
               <div className="space-y-6">
                  <div className="space-y-4">
-                  <Label className="text-cb-text font-semibold flex items-center gap-2">
-                    <ImageIcon className="h-4 w-4 text-cb-accent" /> Imagem de Capa Principal
+                  <Label className="text-vj-txt font-semibold flex items-center gap-2">
+                    <ImageIcon className="h-4 w-4 text-vj-green" /> Imagem de Capa Principal
                   </Label>
                   <MediaUploader 
                     multiple={false} 
@@ -164,17 +164,17 @@ export function GuideEdit({ id, open, onClose, onSuccess }: GuideEditProps) {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <Label>País *</Label>
-                    <Input value={form.country} onChange={(e) => update('country', e.target.value)} onBlur={generateSlug} className="border-cb-border bg-cb-s1" placeholder="Ex: França" />
+                    <Input value={form.country} onChange={(e) => update('country', e.target.value)} onBlur={generateSlug} className="border-vj-border bg-vj-bg" placeholder="Ex: França" />
                   </div>
                   <div className="space-y-1.5">
                     <Label>Cidade *</Label>
-                    <Input value={form.city} onChange={(e) => update('city', e.target.value)} onBlur={generateSlug} className="border-cb-border bg-cb-s1" placeholder="Ex: Paris" />
+                    <Input value={form.city} onChange={(e) => update('city', e.target.value)} onBlur={generateSlug} className="border-vj-border bg-vj-bg" placeholder="Ex: Paris" />
                   </div>
                 </div>
                 <div className="space-y-1.5">
                   <Label>Link Público (Slug) *</Label>
-                  <Input value={form.slug} onChange={(e) => update('slug', e.target.value)} className="border-cb-border bg-cb-s1 font-mono text-sm" placeholder="franca-paris" />
-                  <p className="text-[10px] text-cb-muted">URL: /p/guide/{form.slug || '...'}</p>
+                  <Input value={form.slug} onChange={(e) => update('slug', e.target.value)} className="border-vj-border bg-vj-bg font-mono text-sm" placeholder="franca-paris" />
+                  <p className="text-[10px] text-vj-txt3">URL: /p/guide/{form.slug || '...'}</p>
                 </div>
               </div>
             )}
@@ -182,8 +182,8 @@ export function GuideEdit({ id, open, onClose, onSuccess }: GuideEditProps) {
             {activeSection === 'master' && (
               <div className="space-y-8">
                 <div className="space-y-4">
-                  <Label className="text-cb-text font-semibold flex items-center gap-2">
-                    <ImageIcon className="h-4 w-4 text-cb-accent" /> Galeria Adicional do Destino
+                  <Label className="text-vj-txt font-semibold flex items-center gap-2">
+                    <ImageIcon className="h-4 w-4 text-vj-green" /> Galeria Adicional do Destino
                   </Label>
                   <MediaUploader 
                     multiple 
@@ -194,10 +194,10 @@ export function GuideEdit({ id, open, onClose, onSuccess }: GuideEditProps) {
                 </div>
 
                 <div className="space-y-4">
-                  <Label className="text-cb-text font-semibold flex items-center gap-2">
-                    <Video className="h-4 w-4 text-cb-accent" /> Link de Vídeo/Documentário (YouTube)
+                  <Label className="text-vj-txt font-semibold flex items-center gap-2">
+                    <Video className="h-4 w-4 text-vj-green" /> Link de Vídeo/Documentário (YouTube)
                   </Label>
-                  <Input value={form.video_url} onChange={(e) => update('video_url', e.target.value)} placeholder="https://..." className="border-cb-border bg-cb-s1" />
+                  <Input value={form.video_url} onChange={(e) => update('video_url', e.target.value)} placeholder="https://..." className="border-vj-border bg-vj-bg" />
                 </div>
 
                 <div className="space-y-1.5">
@@ -205,13 +205,13 @@ export function GuideEdit({ id, open, onClose, onSuccess }: GuideEditProps) {
                   <Textarea 
                     value={form.intro} 
                     onChange={(e) => update('intro', e.target.value)} 
-                    className="border-cb-border bg-cb-s1 resize-none" 
+                    className="border-vj-border bg-vj-bg resize-none" 
                     rows={6}
                     placeholder="Vibe local, história e cultura..."
                   />
                 </div>
 
-                <div className="pt-6 border-t border-cb-border">
+                <div className="pt-6 border-t border-vj-border">
                   <div className="flex items-center justify-between mb-6">
                     <Label className="font-bold text-lg">Seções Dinâmicas</Label>
                     <div className="flex gap-2">
@@ -226,7 +226,7 @@ export function GuideEdit({ id, open, onClose, onSuccess }: GuideEditProps) {
 
                   <div className="space-y-6">
                     {form.sections.map((section: any) => (
-                      <div key={section.id} className="relative p-5 rounded-2xl border border-cb-accent/10 bg-cb-s1/50 group">
+                      <div key={section.id} className="relative p-5 rounded-2xl border border-vj-green/10 bg-vj-bg/50 group">
                         <button 
                           onClick={() => removeSection(section.id)}
                           className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg z-10"
@@ -239,7 +239,7 @@ export function GuideEdit({ id, open, onClose, onSuccess }: GuideEditProps) {
                             value={section.title} 
                             onChange={(e) => updateSection(section.id, { title: e.target.value })}
                             placeholder="Título da Seção"
-                            className="border-none bg-transparent font-bold text-cb-text focus:ring-0 p-0 shadow-none h-auto text-base"
+                            className="border-none bg-transparent font-bold text-vj-txt focus:ring-0 p-0 shadow-none h-auto text-base"
                           />
 
                           {section.type === 'text' ? (
@@ -248,7 +248,7 @@ export function GuideEdit({ id, open, onClose, onSuccess }: GuideEditProps) {
                               onChange={(e) => updateSection(section.id, { content: e.target.value })}
                               placeholder="Conteúdo textual..."
                               rows={4}
-                              className="bg-cb-s1 border-cb-border text-sm"
+                              className="bg-vj-bg border-vj-border text-sm"
                             />
                           ) : (
                             <MediaUploader 
@@ -270,31 +270,31 @@ export function GuideEdit({ id, open, onClose, onSuccess }: GuideEditProps) {
               <div className="space-y-4">
                 <div className="space-y-1.5">
                   <Label>Clima e Melhor Época</Label>
-                  <Textarea value={form.climate_info} onChange={(e) => update('climate_info', e.target.value)} className="border-cb-border bg-cb-s1" rows={3} />
+                  <Textarea value={form.climate_info} onChange={(e) => update('climate_info', e.target.value)} className="border-vj-border bg-vj-bg" rows={3} />
                 </div>
                 <div className="space-y-1.5">
                   <Label>Moeda e Dicas Financeiras</Label>
-                  <Textarea value={form.currency_info} onChange={(e) => update('currency_info', e.target.value)} className="border-cb-border bg-cb-s1" rows={3} />
+                  <Textarea value={form.currency_info} onChange={(e) => update('currency_info', e.target.value)} className="border-vj-border bg-vj-bg" rows={3} />
                 </div>
                 <div className="space-y-1.5">
                   <Label>Transporte</Label>
-                  <Textarea value={form.transportation} onChange={(e) => update('transportation', e.target.value)} className="border-cb-border bg-cb-s1" rows={3} />
+                  <Textarea value={form.transportation} onChange={(e) => update('transportation', e.target.value)} className="border-vj-border bg-vj-bg" rows={3} />
                 </div>
                 <div className="space-y-1.5">
                   <Label>Idioma e Comunicação</Label>
-                  <Textarea value={form.language_tips} onChange={(e) => update('language_tips', e.target.value)} className="border-cb-border bg-cb-s1" rows={3} />
+                  <Textarea value={form.language_tips} onChange={(e) => update('language_tips', e.target.value)} className="border-vj-border bg-vj-bg" rows={3} />
                 </div>
               </div>
             )}
 
             {activeSection === 'publicacao' && (
-              <div className="p-6 rounded-2xl bg-cb-accent/5 border border-cb-accent/10 flex items-center justify-between">
+              <div className="p-6 rounded-2xl bg-vj-green/5 border border-vj-green/10 flex items-center justify-between">
                 <div className="space-y-1">
-                  <h3 className="font-bold text-cb-text flex items-center gap-2">
-                    <Globe className="h-4 w-4 text-cb-accent" />
+                  <h3 className="font-bold text-vj-txt flex items-center gap-2">
+                    <Globe className="h-4 w-4 text-vj-green" />
                     Publicar Manual de Destino
                   </h3>
-                  <p className="text-xs text-cb-muted">Permite que o guia seja acessado publicamente via URL.</p>
+                  <p className="text-xs text-vj-txt3">Permite que o guia seja acessado publicamente via URL.</p>
                 </div>
                 <Switch 
                   checked={form.is_published} 

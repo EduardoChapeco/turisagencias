@@ -33,7 +33,7 @@ export default function Hotels() {
         }
       />
 
-      <div className="surface-card p-0 rounded-cb-lg border-cb-border">
+      <div className="surface-card p-0 rounded-cb-lg border-vj-border">
         <DataTable
           columns={[
             {
@@ -42,7 +42,7 @@ export default function Hotels() {
               render: (row) => (
                 <div>
                   <p className="font-semibold">{row.name}</p>
-                  <p className="text-xs text-cb-muted">{row.category ? `${row.category} Estrelas` : 'Sem categoria'}</p>
+                  <p className="text-xs text-vj-txt3">{row.category ? `${row.category} Estrelas` : 'Sem categoria'}</p>
                 </div>
               ),
             },
@@ -61,12 +61,12 @@ export default function Hotels() {
               render: (row) => (
                 <div className="flex flex-wrap gap-1">
                   {row.tags?.slice(0, 3).map((tag: string) => (
-                    <span key={tag} className="px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-cb-s2 text-cb-text border-cb-border border">
+                    <span key={tag} className="px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-vj-bg text-vj-txt border-vj-border border">
                       {tag}
                     </span>
                   ))}
                   {(row.tags?.length ?? 0) > 3 && (
-                    <span className="text-[10px] text-cb-muted">+{row.tags!.length - 3}</span>
+                    <span className="text-[10px] text-vj-txt3">+{row.tags!.length - 3}</span>
                   )}
                 </div>
               ),

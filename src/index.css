@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@300;400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap');
 @import './styles/viaja-public.css';
 
 @tailwind base;
@@ -6,109 +6,136 @@
 @tailwind utilities;
 
 @layer base {
+
+  /* Variáveis e Reset PRD - Template CSS Base */
   :root {
-    /* ── Shadcn/UI token bridge — mapeados para os tokens CloudBlock ── */
-    --background:            hsl(var(--cb-bg, 0 0% 98%));
-    --foreground:            hsl(var(--cb-text-primary, 213 52% 12%));
+    /* Superfícies */
+    --bg:       #f7f7f5;
+    --white:    #ffffff;
+    
+    /* Bordas */
+    --border:   #e5e4e0;
+    --border2:  #d0cfc9;
+    
+    /* Texto */
+    --txt:      #111110;
+    --txt2:     #6b6a66;
+    --txt3:     #9b9a96;
+    
+    /* Semânticos */
+    --green:     #1a7a4a;  
+    --green-bg:  #f0faf4;
+    --orange:    #d4511a;  
+    --orange-bg: #fff4ee;
+    --blue:      #1a5fa8;  
+    --blue-bg:   #f0f5ff;
+    --red:       #c0392b;  
+    --red-bg:    #fde8e6;
+    --yellow:    #a67c00;
+    
+    /* Raios */
+    --r:    16px;
+    --r-lg: 22px;
+    --r-xl: 28px;
 
-    --card:                  hsl(var(--cb-surface-0, 0 0% 100%));
-    --card-foreground:       hsl(var(--cb-text-primary, 213 52% 12%));
-
-    --popover:               hsl(var(--cb-surface-0, 0 0% 100%));
-    --popover-foreground:    hsl(var(--cb-text-primary, 213 52% 12%));
-
-    --primary:               213 52% 24%;
-    --primary-foreground:    0 0% 100%;
-
-    --secondary:             200 30% 95%;
-    --secondary-foreground:  213 52% 24%;
-
-    --muted:                 210 20% 96%;
-    --muted-foreground:      213 20% 46%;
-
-    --accent:                197 58% 42%;
-    --accent-foreground:     0 0% 100%;
-
-    --destructive:           6 78% 57%;
+    /* Shadcn/UI fallback mapping to strictly obey Viaja */
+    /* Shadcn takes HSL, we approximate via variables where possible, or just force Viaja colors */
+    --background: 40 6% 97%; /* #f7f7f5 */
+    --foreground: 0 0% 7%; /* #111110 */
+    
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 7%;
+    
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 7%;
+    
+    --primary: 150 64% 29%; /* #1a7a4a */
+    --primary-foreground: 0 0% 100%;
+    
+    --secondary: 40 5% 92%;
+    --secondary-foreground: 0 0% 7%;
+    
+    --muted: 40 5% 96%;
+    --muted-foreground: 41 3% 41%; /* #6b6a66 */
+    
+    --accent: 150 64% 29%;
+    --accent-foreground: 0 0% 100%;
+    
+    --destructive: 6 78% 46%; /* #c0392b */
     --destructive-foreground: 0 0% 100%;
+    
+    /* Ensure border variables for shadcn match Viaja --border #e5e4e0 */
+    --input: 45 4% 89%; /* #e5e4e0 */
+    --ring: 150 64% 29%;
+    --radius: 10px;
 
-    --success:               145 63% 42%;
-    --success-foreground:    0 0% 100%;
-
-    --warning:               37 90% 51%;
-    --warning-foreground:    0 0% 100%;
-
-    --border:                214 20% 88%;
-    --input:                 214 20% 88%;
-    --ring:                  197 58% 42%;
-
-    --radius:                0.625rem;
+    /* Sidebar Variables - Forced to Viaja Neutrals */
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 0 0% 7%;
+    --sidebar-primary: 150 64% 29%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 40 5% 96%;
+    --sidebar-accent-foreground: 0 0% 7%;
+    --sidebar-border: 45 4% 89%;
+    --sidebar-ring: 150 64% 29%;
   }
 
+  /* No dark mode allowed in Viaja PRD */
   .dark {
-    --background:            hsl(var(--cb-bg, 213 52% 7%));
-    --foreground:            hsl(var(--cb-text-primary, 210 40% 95%));
-
-    --card:                  hsl(var(--cb-surface-0, 213 50% 10%));
-    --card-foreground:       hsl(var(--cb-text-primary, 210 40% 95%));
-
-    --popover:               hsl(var(--cb-surface-0, 213 48% 10%));
-    --popover-foreground:    hsl(var(--cb-text-primary, 210 40% 95%));
-
-    --primary:               197 58% 50%;
-    --primary-foreground:    0 0% 100%;
-
-    --secondary:             213 40% 18%;
-    --secondary-foreground:  210 40% 95%;
-
-    --muted:                 213 40% 16%;
-    --muted-foreground:      213 20% 60%;
-
-    --accent:                197 58% 48%;
-    --accent-foreground:     0 0% 100%;
-
-    --destructive:           6 60% 48%;
-    --destructive-foreground: 210 40% 95%;
-
-    --success:               145 63% 42%;
-    --success-foreground:    0 0% 100%;
-
-    --warning:               37 90% 51%;
-    --warning-foreground:    0 0% 100%;
-
-    --border:                213 30% 22%;
-    --input:                 213 30% 22%;
-    --ring:                  197 58% 48%;
-  }
-}
-
-@layer base {
-  * {
-    @apply border-border;
+    /* Mirrored from light to prevent accidental dark mode issues */
+    --background: 40 6% 97%;
+    --foreground: 0 0% 7%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 7%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 7%;
+    --primary: 150 64% 29%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 40 5% 92%;
+    --secondary-foreground: 0 0% 7%;
+    --muted: 40 5% 96%;
+    --muted-foreground: 41 3% 41%;
+    --accent: 150 64% 29%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 6 78% 46%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 45 4% 89%;
+    --input: 45 4% 89%;
+    --ring: 150 64% 29%;
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 0 0% 7%;
+    --sidebar-primary: 150 64% 29%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 40 5% 96%;
+    --sidebar-accent-foreground: 0 0% 7%;
+    --sidebar-border: 45 4% 89%;
+    --sidebar-ring: 150 64% 29%;
   }
 
+  *, *::before, *::after { border-color: var(--border); box-sizing: border-box; margin: 0; padding: 0; }
+  
   html {
-    @apply scroll-smooth;
+    scroll-behavior: smooth;
   }
-
+  
   body {
-    @apply bg-background text-foreground antialiased;
-    font-family: var(--cb-font-body, 'Inter', system-ui, sans-serif);
+    background-color: var(--bg);
+    color: var(--txt);
+    font-family: "Inter", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    font-size: 14px;
+    line-height: 1.6;
   }
+  
+  button, input, select, textarea { font-family: inherit; }
+  button { cursor: pointer; }
 
-  h1, h2, h3, h4, h5, h6,
-  .font-heading {
-    font-family: var(--cb-font-heading, 'Sora', 'Inter', system-ui, sans-serif);
+  h1, h2, h3, h4, h5, h6, .font-heading {
+    font-family: 'Inter', sans-serif; /* Fallback until PRD exception is hit */
   }
 }
 
 @layer utilities {
-  /* Surface token utility (compat) */
-  .bg-surface {
-    background-color: hsl(var(--cb-surface-1, 210 20% 97%));
-  }
-
-  /* Scrollbar */
   .scrollbar-none {
     scrollbar-width: none;
     -ms-overflow-style: none;
@@ -118,16 +145,28 @@
   }
   .scrollbar-thin {
     scrollbar-width: thin;
-    scrollbar-color: hsl(var(--border)) transparent;
+    scrollbar-color: var(--border) transparent;
   }
-
-  /* Text balance */
   .text-balance {
     text-wrap: balance;
   }
+
+  /* Utility classes via PRD */
+  .tag-green { background-color: var(--green-bg); color: var(--green); }
+  .tag-orange { background-color: var(--orange-bg); color: var(--orange); }
+  .tag-blue { background-color: var(--blue-bg); color: var(--blue); }
+  .tag-gray { background-color: var(--bg); color: var(--txt3); }
+  .tag-red { background-color: var(--red-bg); color: var(--red); }
+  
+  .note-card { background-color: var(--green-bg); border-left: 4px solid var(--green); }
+  .note-card-orange { background-color: var(--orange-bg); border-left: 4px solid var(--orange); }
+  .note-card-blue { background-color: var(--blue-bg); border-left: 4px solid var(--blue); }
+
+  /* Surface utility */
+  .surface-card { background-color: var(--white); border: 1px solid var(--border); border-radius: var(--r); }
 }
 
-/* Smooth page transitions */
+/* Animations */
 @keyframes fade-in {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
@@ -136,9 +175,109 @@
   animation: fade-in 0.25s ease-out forwards;
 }
 
-/* Focus ring override for accessibility */
+/* Focus visibility override PRD */
 *:focus-visible {
-  outline: 2px solid hsl(var(--ring));
+  outline: 3px solid rgba(26,122,74,.15);
   outline-offset: 2px;
   border-radius: 4px;
 }
+
+/* BentoGrid legacy from design-system.css */
+.bento-grid {
+  display: grid;
+  gap: 12px;
+  width: 100%;
+}
+
+.bento-cell {
+  background-color: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  overflow: hidden;
+}
+
+.bento-cell:hover {
+  background-color: var(--bg);
+  transition: background-color 150ms ease;
+}
+
+/* Tamanhos de cell */
+.bento-cell-sm   { grid-column: span 1; }
+.bento-cell-md   { grid-column: span 2; }
+.bento-cell-lg   { grid-column: span 3; }
+.bento-cell-full { grid-column: 1 / -1; }
+.bento-cell-tall { grid-row: span 2; }
+
+/* ─────────────────────────────────────────────
+   LAZY IMAGE
+   ───────────────────────────────────────────── */
+.lazy-image-wrapper {
+  position: relative;
+  overflow: hidden;
+  background-color: var(--bg);
+  border-radius: var(--r);
+}
+
+.lazy-image-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: opacity 350ms ease;
+}
+
+.lazy-image-wrapper img.loading {
+  opacity: 0;
+}
+
+.lazy-image-skeleton {
+  position: absolute;
+  inset: 0;
+  background-color: var(--bg);
+  animation: lazy-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes lazy-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* ─────────────────────────────────────────────
+   PAGE HEADER
+   ───────────────────────────────────────────── */
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 24px;
+}
+
+.page-header-title {
+  font-family: 'Inter', sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--txt);
+  line-height: 1.2;
+}
+
+.page-header-description {
+  font-size: 14px;
+  color: var(--txt2);
+  margin-top: 4px;
+  line-height: 1.6;
+}
+
+/* Kanban utils */
+.kanban-board { display: flex; gap: 16px; overflow-x: auto; padding-bottom: 16px; }
+.kanban-column { width: 320px; flex-shrink: 0; display: flex; flex-direction: column; background-color: var(--bg); border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; }
+.kanban-column-header { padding: 12px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.kanban-column-title { font-size: 13px; font-weight: 600; color: var(--txt); }
+.kanban-column-count { font-size: 11px; color: var(--txt3); background-color: var(--border); padding: 2px 8px; border-radius: 100px; }
+.kanban-cards { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+.kanban-card { background-color: var(--white); border: 1px solid var(--border); border-radius: 12px; padding: 12px 16px; cursor: pointer; transition: border-color 150ms ease; }
+.kanban-card:hover { border-color: var(--border2); }
+.kanban-card-dragging { opacity: 0.5; border-style: dashed; }
+.kanban-quick-add { padding: 12px; border-top: 1px solid var(--border); }

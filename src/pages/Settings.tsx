@@ -33,7 +33,7 @@ export default function Settings() {
     <AppLayout>
       <div className="space-y-6 max-w-6xl mx-auto">
         <div>
-          <h1 className="font-heading text-2xl font-bold flex items-center gap-2 text-primary">
+          <h1 className="font-heading text-2xl font-bold flex items-center gap-2 text-vj-green">
             <SettingsIcon className="h-6 w-6" />
             Configurações da Agência
           </h1>
@@ -43,14 +43,14 @@ export default function Settings() {
         </div>
 
         <Tabs defaultValue="aikeys" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 max-w-2xl bg-surface border border-border/50">
+          <TabsList className="grid w-full grid-cols-3 max-w-2xl bg-vj-bg border border-vj-border">
             <TabsTrigger value="agents"><Users className="mr-2 h-4 w-4" />Agentes</TabsTrigger>
             <TabsTrigger value="aikeys"><Key className="mr-2 h-4 w-4" />Chaves de IA (Pool)</TabsTrigger>
             <TabsTrigger value="kanban"><Columns className="mr-2 h-4 w-4" />Kanban</TabsTrigger>
           </TabsList>
           
           <TabsContent value="agents" className="mt-6">
-            <Card className="border-border/50">
+            <Card className="border-vj-border">
               <CardHeader>
                 <CardTitle>Membros da Equipe</CardTitle>
                 <CardDescription>Convide novos agentes de viagens ou gerentes para sua agência.</CardDescription>
@@ -64,8 +64,8 @@ export default function Settings() {
 
           <TabsContent value="aikeys" className="mt-6">
             <div className="grid md:grid-cols-2 gap-6">
-              <Card className="border-border/50 shadow-sm">
-                <CardHeader className="bg-surface/50 border-b border-border/30">
+              <Card className="border-vj-border shadow-sm">
+                <CardHeader className="bg-vj-bg border-b border-vj-border">
                   <CardTitle className="text-lg">Adicionar Nova Chave</CardTitle>
                   <CardDescription>Forneça as chaves Groq ou OpenRouter. O V-Agent fará pool (round-robin).</CardDescription>
                 </CardHeader>
@@ -111,8 +111,8 @@ export default function Settings() {
                 </CardContent>
               </Card>
 
-              <Card className="border-border/50 shadow-sm">
-                <CardHeader className="bg-surface/50 border-b border-border/30">
+              <Card className="border-vj-border shadow-sm">
+                <CardHeader className="bg-vj-bg border-b border-vj-border">
                   <CardTitle className="text-lg">Pool Ativo</CardTitle>
                   <CardDescription>Suas chaves disponíveis para o esquadrão I.A.</CardDescription>
                 </CardHeader>
@@ -120,7 +120,7 @@ export default function Settings() {
                   {isLoading ? (
                     <div className="space-y-3"><Skeleton className="h-12 w-full" /><Skeleton className="h-12 w-full" /></div>
                   ) : !keys?.length ? (
-                    <div className="text-center py-8 border border-dashed border-border rounded-lg bg-muted/20">
+                    <div className="text-center py-8 border border-dashed border-vj-border rounded-lg bg-muted/20">
                       <Key className="h-8 w-8 text-muted-foreground/40 mx-auto mb-2" />
                       <p className="text-sm text-muted-foreground">Nenhuma chave cadastrada ainda.</p>
                       <p className="text-xs text-muted-foreground/70">O V-Agent está desativado no momento.</p>
@@ -128,7 +128,7 @@ export default function Settings() {
                   ) : (
                     <div className="space-y-3">
                       {keys.map((k: any) => (
-                        <div key={k.id} className="flex items-center justify-between p-3 rounded-lg border border-border/60 bg-surface/50">
+                        <div key={k.id} className="flex items-center justify-between p-3 rounded-lg border border-vj-border bg-vj-bg">
                           <div>
                             <p className="font-semibold text-sm capitalize">{k.provider}</p>
                             <p className="text-xs text-muted-foreground font-mono">
@@ -154,7 +154,7 @@ export default function Settings() {
           </TabsContent>
 
           <TabsContent value="kanban" className="mt-6">
-            <Card className="border-border/50">
+            <Card className="border-vj-border">
               <CardHeader>
                 <CardTitle>Colunas do Kanban</CardTitle>
                 <CardDescription>Personalize as etapas do seu pipeline de vendas e embarque.</CardDescription>

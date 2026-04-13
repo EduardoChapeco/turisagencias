@@ -126,7 +126,7 @@ function DadosSection({ card }: { card: KanbanCard }) {
           id="card-title"
           value={form.title}
           onChange={(e) => update('title', e.target.value)}
-          className="border-cb-border"
+          className="border-vj-border"
         />
       </div>
 
@@ -139,7 +139,7 @@ function DadosSection({ card }: { card: KanbanCard }) {
           onChange={(e) => update('description', e.target.value)}
           rows={3}
           placeholder="Detalhes do contato, contexto..."
-          className="border-cb-border resize-none"
+          className="border-vj-border resize-none"
         />
       </div>
 
@@ -154,7 +154,7 @@ function DadosSection({ card }: { card: KanbanCard }) {
           value={form.estimated_value}
           onChange={(e) => update('estimated_value', e.target.value)}
           placeholder="0,00"
-          className="border-cb-border"
+          className="border-vj-border"
         />
       </div>
 
@@ -167,7 +167,7 @@ function DadosSection({ card }: { card: KanbanCard }) {
             value={form.whatsapp}
             onChange={(e) => update('whatsapp', e.target.value)}
             placeholder="49999999999"
-            className="border-cb-border"
+            className="border-vj-border"
           />
         </div>
         {/* Email */}
@@ -179,7 +179,7 @@ function DadosSection({ card }: { card: KanbanCard }) {
             value={form.email}
             onChange={(e) => update('email', e.target.value)}
             placeholder="cliente@email.com"
-            className="border-cb-border"
+            className="border-vj-border"
           />
         </div>
       </div>
@@ -216,14 +216,14 @@ function DadosSection({ card }: { card: KanbanCard }) {
               if (e.key === 'Enter') { e.preventDefault(); void addTag(tagInput); }
             }}
             placeholder="Adicionar tag (Enter)"
-            className="border-cb-border text-sm h-8"
+            className="border-vj-border text-sm h-8"
           />
           <Button
             variant="outline"
             size="sm"
             onClick={() => void addTag(tagInput)}
             disabled={!tagInput.trim()}
-            className="border-cb-border"
+            className="border-vj-border"
           >
             <Plus size={14} />
           </Button>
@@ -247,23 +247,23 @@ function DadosSection({ card }: { card: KanbanCard }) {
 
       {/* Vínculos */}
       {(card.clients || card.quotations || card.trips) && (
-        <div className="pt-2 border-t border-cb-border space-y-2">
-          <p className="text-xs font-semibold text-cb-muted uppercase tracking-wide">Vínculos</p>
+        <div className="pt-2 border-t border-vj-border space-y-2">
+          <p className="text-xs font-semibold text-vj-txt3 uppercase tracking-wide">Vínculos</p>
           {card.clients && (
-            <div className="flex items-center gap-2 text-sm text-cb-text">
-              <User size={13} className="text-cb-muted shrink-0" />
+            <div className="flex items-center gap-2 text-sm text-vj-txt">
+              <User size={13} className="text-vj-txt3 shrink-0" />
               <span>Cliente: <strong>{card.clients.name}</strong></span>
             </div>
           )}
           {card.quotations?.destination && (
-            <div className="flex items-center gap-2 text-sm text-cb-text">
-              <Link2 size={13} className="text-cb-muted shrink-0" />
+            <div className="flex items-center gap-2 text-sm text-vj-txt">
+              <Link2 size={13} className="text-vj-txt3 shrink-0" />
               <span>Cotação: <strong>{card.quotations.destination}</strong></span>
             </div>
           )}
           {card.trips?.title && (
-            <div className="flex items-center gap-2 text-sm text-cb-text">
-              <Link2 size={13} className="text-cb-muted shrink-0" />
+            <div className="flex items-center gap-2 text-sm text-vj-txt">
+              <Link2 size={13} className="text-vj-txt3 shrink-0" />
               <span>Viagem: <strong>{card.trips.title}</strong></span>
             </div>
           )}
@@ -295,7 +295,7 @@ function ChecklistSection({ cardId }: { cardId: string }) {
   const [newItemText, setNewItemText] = useState<Record<string, string>>({});
 
   if (isLoading) {
-    return <div className="text-sm text-cb-muted">Carregando...</div>;
+    return <div className="text-sm text-vj-txt3">Carregando...</div>;
   }
 
   return (
@@ -326,13 +326,13 @@ function ChecklistSection({ cardId }: { cardId: string }) {
         return (
           <div key={cl.id} className="surface-muted rounded-cb-md p-4 space-y-3">
             <div className="flex items-center justify-between gap-2">
-              <p className="font-semibold text-sm text-cb-text">{cl.title}</p>
-              <span className="text-xs text-cb-muted">{checked}/{items.length}</span>
+              <p className="font-semibold text-sm text-vj-txt">{cl.title}</p>
+              <span className="text-xs text-vj-txt3">{checked}/{items.length}</span>
             </div>
             {items.length > 0 && (
-              <div className="h-1.5 bg-cb-s2 rounded-full overflow-hidden">
+              <div className="h-1.5 bg-vj-bg rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-cb-success rounded-full transition-all duration-300"
+                  className="h-full bg-vj-green rounded-full transition-all duration-300"
                   style={{ width: `${pct}%` }}
                 />
               </div>
@@ -352,14 +352,14 @@ function ChecklistSection({ cardId }: { cardId: string }) {
                           card_id: cardId,
                         })
                       }
-                      className="rounded border-cb-border accent-cb-accent"
+                      className="rounded border-vj-border accent-vj-green"
                       id={`item-${item.id}`}
                     />
                     <label
                       htmlFor={`item-${item.id}`}
                       className={cn(
                         'text-sm flex-1 cursor-pointer',
-                        item.is_checked ? 'line-through text-cb-muted' : 'text-cb-text',
+                        item.is_checked ? 'line-through text-vj-txt3' : 'text-vj-txt',
                       )}
                     >
                       {item.title}
@@ -391,7 +391,7 @@ function ChecklistSection({ cardId }: { cardId: string }) {
                   }
                 }}
                 placeholder="Novo item (Enter)"
-                className="border-cb-border text-sm h-8"
+                className="border-vj-border text-sm h-8"
               />
             </div>
           </div>
@@ -402,7 +402,7 @@ function ChecklistSection({ cardId }: { cardId: string }) {
         <Button
           variant="outline"
           size="sm"
-          className="border-cb-border"
+          className="border-vj-border"
           onClick={() => createChecklist.mutate({ card_id: cardId })}
           disabled={createChecklist.isPending}
         >
@@ -443,7 +443,7 @@ function NotasSection({ cardId }: { cardId: string }) {
     setEditingId(null);
   };
 
-  if (isLoading) return <div className="text-sm text-cb-muted">Carregando...</div>;
+  if (isLoading) return <div className="text-sm text-vj-txt3">Carregando...</div>;
 
   return (
     <div className="space-y-4">
@@ -458,7 +458,7 @@ function NotasSection({ cardId }: { cardId: string }) {
           }}
           placeholder="Escrever uma nota... (Ctrl+Enter para enviar)"
           rows={2}
-          className="border-cb-border resize-none text-sm"
+          className="border-vj-border resize-none text-sm"
         />
         <div className="flex justify-end">
           <Button
@@ -489,32 +489,32 @@ function NotasSection({ cardId }: { cardId: string }) {
             const isEditing = editingId === note.id;
 
             return (
-              <div key={note.id} className="group border border-cb-border rounded-cb-md p-3 bg-cb-s0 space-y-2">
+              <div key={note.id} className="group border border-vj-border rounded-cb-md p-3 bg-white space-y-2">
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
-                    <div className="h-6 w-6 rounded-full bg-cb-accent/15 flex items-center justify-center text-xs font-semibold text-cb-accent">
+                    <div className="h-6 w-6 rounded-full bg-vj-green/15 flex items-center justify-center text-xs font-semibold text-vj-green">
                       {authorName[0]?.toUpperCase() ?? '?'}
                     </div>
-                    <span className="text-xs font-medium text-cb-text">{authorName}</span>
-                    <span className="text-xs text-cb-muted">
+                    <span className="text-xs font-medium text-vj-txt">{authorName}</span>
+                    <span className="text-xs text-vj-txt3">
                       {new Date(note.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
                     </span>
                     {note.updated_at !== note.created_at && (
-                      <span className="text-xs text-cb-muted italic">(editado)</span>
+                      <span className="text-xs text-vj-txt3 italic">(editado)</span>
                     )}
                   </div>
                   <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button
                       type="button"
                       onClick={() => handleEdit(note)}
-                      className="text-cb-muted hover:text-cb-text p-1"
+                      className="text-vj-txt3 hover:text-vj-txt p-1"
                     >
                       <Pencil size={12} />
                     </button>
                     <button
                       type="button"
                       onClick={() => deleteNote.mutate({ id: note.id, card_id: cardId })}
-                      className="text-cb-muted hover:text-cb-danger p-1"
+                      className="text-vj-txt3 hover:text-vj-red p-1"
                     >
                       <Trash2 size={12} />
                     </button>
@@ -526,7 +526,7 @@ function NotasSection({ cardId }: { cardId: string }) {
                       value={editingBody}
                       onChange={(e) => setEditingBody(e.target.value)}
                       rows={2}
-                      className="border-cb-border resize-none text-sm"
+                      className="border-vj-border resize-none text-sm"
                       autoFocus
                     />
                     <div className="flex gap-2 justify-end">
@@ -537,7 +537,7 @@ function NotasSection({ cardId }: { cardId: string }) {
                     </div>
                   </div>
                 ) : (
-                  <p className="text-sm text-cb-text whitespace-pre-wrap">{note.body}</p>
+                  <p className="text-sm text-vj-txt whitespace-pre-wrap">{note.body}</p>
                 )}
               </div>
             );
@@ -584,7 +584,7 @@ export function KanbanCardSheet({ card, isOpen, onClose, onDeleted }: Props) {
           <Button
             variant="outline"
             size="sm"
-            className="border-cb-danger/40 text-cb-danger hover:bg-cb-danger/5"
+            className="border-vj-red/40 text-vj-red hover:bg-vj-red/5"
             onClick={() => void handleDelete()}
             disabled={deleteCard.isPending}
           >
@@ -606,21 +606,21 @@ export function KanbanCardSheet({ card, isOpen, onClose, onDeleted }: Props) {
             <div className="space-y-3">
               {card.clients && (
                 <div className="surface-muted rounded-cb-md p-4">
-                  <p className="text-xs font-semibold text-cb-muted uppercase tracking-wide mb-2">Cliente</p>
-                  <p className="font-medium text-cb-text">{card.clients.name}</p>
-                  {card.clients.phone && <p className="text-sm text-cb-muted mt-0.5">{card.clients.phone}</p>}
+                  <p className="text-xs font-semibold text-vj-txt3 uppercase tracking-wide mb-2">Cliente</p>
+                  <p className="font-medium text-vj-txt">{card.clients.name}</p>
+                  {card.clients.phone && <p className="text-sm text-vj-txt3 mt-0.5">{card.clients.phone}</p>}
                 </div>
               )}
               {card.quotations?.destination && (
                 <div className="surface-muted rounded-cb-md p-4">
-                  <p className="text-xs font-semibold text-cb-muted uppercase tracking-wide mb-2">Cotação</p>
-                  <p className="font-medium text-cb-text">{card.quotations.destination}</p>
+                  <p className="text-xs font-semibold text-vj-txt3 uppercase tracking-wide mb-2">Cotação</p>
+                  <p className="font-medium text-vj-txt">{card.quotations.destination}</p>
                 </div>
               )}
               {card.trips?.title && (
                 <div className="surface-muted rounded-cb-md p-4">
-                  <p className="text-xs font-semibold text-cb-muted uppercase tracking-wide mb-2">Viagem</p>
-                  <p className="font-medium text-cb-text">{card.trips.title}</p>
+                  <p className="text-xs font-semibold text-vj-txt3 uppercase tracking-wide mb-2">Viagem</p>
+                  <p className="font-medium text-vj-txt">{card.trips.title}</p>
                 </div>
               )}
               {!card.clients && !card.quotations && !card.trips && (

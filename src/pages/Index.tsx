@@ -14,12 +14,13 @@ import {
   ArrowRight
 } from 'lucide-react';
 import { AppLayout } from '@/components/AppLayout';
-import { Card, CardContent } from '@/components/ui/card';
 import { useAuthStore } from '@/stores/authStore';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
+import { QuotationBuilderSheet } from '@/components/QuotationBuilderSheet';
+import { useState } from 'react';
 
 function useDashboardStats(orgId: string | undefined) {
   return useQuery({
@@ -94,6 +95,8 @@ export default function Dashboard() {
   const { data: stats, isLoading } = useDashboardStats(organization?.id);
   const { data: activity } = useRecentActivity(organization?.id);
   const { data: upcoming } = useUpcomingTrips(organization?.id);
+  
+  const [quotationBuilderOpen, setQuotationBuilderOpen] = useState(false);
 
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Bom dia' : hour < 18 ? 'Boa tarde' : 'Boa noite';
@@ -105,7 +108,7 @@ export default function Dashboard() {
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
           <div>
             <h1 className="font-heading text-3xl font-bold tracking-tight">
-              {greeting}, <span className="text-primary">{profile?.first_name || 'Agente'}</span> ✈️
+              {greeting}, <span className="text-vj-green">{profile?.first_name || 'Agente'}</span> ✈️
             </h1>
             <p className="text-muted-foreground text-sm mt-1">
               Cockpit da <span className="font-semibold">{organization?.name || 'sua agência'}</span> — {new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}
@@ -115,7 +118,7 @@ export default function Dashboard() {
             <Button variant="outline" size="sm" onClick={() => navigate('/trips/new')} className="rounded-xl">
               <Plane className="h-4 w-4 mr-2" /> Nova Viagem
             </Button>
-            <Button size="sm" onClick={() => navigate('/quotations/new')} className="rounded-xl shadow-sm">
+            <Button size="sm" onClick={() => setQuotationBuilderOpen(true)}>
               <FileText className="h-4 w-4 mr-2" /> Nova Cotação
             </Button>
           </div>
@@ -127,16 +130,16 @@ export default function Dashboard() {
             {[1,2,3,4].map(i => <Skeleton key={i} className="h-[140px] rounded-2xl" />)}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 auto-rows-[140px]">
+          <div className="bento-grid auto-rows-[140px] md:grid-cols-4 grid-cols-1">
 
             {/* Embarques Hoje — clickable */}
             <BentoBlock
-              className="col-span-1 row-span-1 bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20 cursor-pointer hover:from-primary/20 hover:border-primary/40"
+              className="col-span-1 row-span-1 bg-gradient-to-br from-primary/10 to-primary/5 border-vj-green/20 cursor-pointer hover:from-primary/20 hover:border-vj-green/20"
               onClick={() => navigate('/trips')}
             >
-              <BentoHeader title="Embarques Hoje" icon={<PlaneTakeoff className="h-5 w-5 text-primary" />} />
+              <BentoHeader title="Embarques Hoje" icon={<PlaneTakeoff className="h-5 w-5 text-vj-green" />} />
               <div className="mt-auto">
-                <span className="font-heading text-5xl font-bold text-primary">{stats?.departuresToday ?? 0}</span>
+                <span className="font-heading text-5xl font-bold text-vj-green">{stats?.departuresToday ?? 0}</span>
                 <p className="text-xs text-muted-foreground mt-1">viagens partindo hoje</p>
               </div>
             </BentoBlock>
@@ -159,9 +162,9 @@ export default function Dashboard() {
               <BentoHeader title="Pipeline de Vendas" icon={<KanbanSquare className="h-5 w-5 text-accent" />} />
               <div className="mt-3 flex gap-2 flex-1 overflow-hidden">
                 {['Novo Lead', 'Proposta', 'Aprovado'].map((col, i) => (
-                  <div key={col} className="flex-1 bg-muted/40 rounded-xl p-2 border border-border/40">
+                  <div key={col} className="flex-1 bg-muted/40 rounded-xl p-2 border border-vj-border">
                     <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2 px-1">{col}</p>
-                    <div className={`h-14 rounded-lg border shadow-sm flex items-center justify-center ${i === 1 ? 'bg-accent/10 border-accent/20' : i === 2 ? 'bg-green-500/10 border-green-500/20' : 'bg-card border-border'}`}>
+                    <div className={`h-14 rounded-lg border shadow-sm flex items-center justify-center ${i === 1 ? 'bg-accent/10 border-accent/20' : i === 2 ? 'bg-green-500/10 border-green-500/20' : 'bg-card border-vj-border'}`}>
                       <span className="text-[10px] text-muted-foreground/60">Ver pipeline →</span>
                     </div>
                   </div>
@@ -218,7 +221,7 @@ export default function Dashboard() {
             </BentoBlock>
 
             {/* Feed de Atividade (2x1) */}
-            <BentoBlock className="col-span-1 md:col-span-2 row-span-1 overflow-hidden bg-surface/50">
+            <BentoBlock className="col-span-1 md:col-span-2 row-span-1 overflow-hidden bg-vj-bg">
               <BentoHeader title="Atividade Recente" icon={<Activity className="h-5 w-5 text-blue-400" />} />
               <div className="mt-2 space-y-1.5 flex-1 overflow-hidden">
                 {!activity?.length ? (
@@ -258,18 +261,23 @@ export default function Dashboard() {
           </div>
         )}
       </div>
+
+      <QuotationBuilderSheet 
+        open={quotationBuilderOpen} 
+        onClose={() => setQuotationBuilderOpen(false)} 
+      />
     </AppLayout>
   );
 }
 
 function BentoBlock({ children, className = '', onClick }: { children: React.ReactNode; className?: string; onClick?: () => void }) {
   return (
-    <Card
-      className={`rounded-2xl border-border/60 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col p-4 ${className}`}
+    <div
+      className={`bento-cell p-5 flex flex-col ${onClick ? 'cursor-pointer' : ''} ${className}`}
       onClick={onClick}
     >
       {children}
-    </Card>
+    </div>
   );
 }
 

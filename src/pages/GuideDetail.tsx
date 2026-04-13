@@ -73,7 +73,7 @@ export default function GuideDetail() {
           <>
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="outline" size="icon" className="border-cb-danger/20 text-cb-danger hover:bg-cb-danger/10">
+                <Button variant="outline" size="icon" className="border-vj-red/20 text-vj-red hover:bg-vj-red/10">
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </AlertDialogTrigger>
@@ -86,7 +86,7 @@ export default function GuideDetail() {
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleDelete} className="bg-cb-danger text-cb-s0 hover:bg-cb-danger/90">
+                  <AlertDialogAction onClick={handleDelete} className="bg-vj-red text-cb-s0 hover:bg-vj-red/90">
                     Remover
                   </AlertDialogAction>
                 </AlertDialogFooter>
@@ -108,69 +108,69 @@ export default function GuideDetail() {
             )}
             <div className="p-6 flex-1 flex flex-col">
               <h3 className="text-lg font-semibold flex items-center gap-2 mb-3">
-                <BookOpen className="h-4 w-4 text-cb-muted" /> Sobre o Destino
+                <BookOpen className="h-4 w-4 text-vj-txt3" /> Sobre o Destino
               </h3>
               {guide.intro ? (
-                <p className="text-sm text-cb-muted leading-relaxed whitespace-pre-wrap text-lg">
+                <p className="text-sm text-vj-txt3 leading-relaxed whitespace-pre-wrap text-lg">
                   {guide.intro}
                 </p>
               ) : (
-                <p className="text-sm text-cb-muted italic">Nenhuma introdução informada.</p>
+                <p className="text-sm text-vj-txt3 italic">Nenhuma introdução informada.</p>
               )}
             </div>
           </BentoCell>
 
           {/* Widgets laterais */}
           <BentoCell colSpan={1} rowSpan={1} padding="lg">
-            <h3 className="font-semibold mb-3 text-cb-text flex items-center gap-2 text-sm">
-              <Sun className="h-4 w-4 text-cb-accent" /> Clima
+            <h3 className="font-semibold mb-3 text-vj-txt flex items-center gap-2 text-sm">
+              <Sun className="h-4 w-4 text-vj-green" /> Clima
             </h3>
             {guide.climate_info ? (
-              <p className="text-xs text-cb-muted leading-relaxed whitespace-pre-wrap">
+              <p className="text-xs text-vj-txt3 leading-relaxed whitespace-pre-wrap">
                 {guide.climate_info}
               </p>
             ) : (
-              <p className="text-xs text-cb-muted italic">Sem informações</p>
+              <p className="text-xs text-vj-txt3 italic">Sem informações</p>
             )}
           </BentoCell>
 
           <BentoCell colSpan={1} rowSpan={1} padding="lg">
-            <h3 className="font-semibold mb-3 text-cb-text flex items-center gap-2 text-sm">
-              <CreditCard className="h-4 w-4 text-cb-warning" /> Moeda
+            <h3 className="font-semibold mb-3 text-vj-txt flex items-center gap-2 text-sm">
+              <CreditCard className="h-4 w-4 text-vj-orange" /> Moeda
             </h3>
             {guide.currency_info ? (
-              <p className="text-xs text-cb-muted leading-relaxed whitespace-pre-wrap">
+              <p className="text-xs text-vj-txt3 leading-relaxed whitespace-pre-wrap">
                 {guide.currency_info}
               </p>
             ) : (
-              <p className="text-xs text-cb-muted italic">Sem informações</p>
+              <p className="text-xs text-vj-txt3 italic">Sem informações</p>
             )}
           </BentoCell>
 
           <BentoCell colSpan={3} rowSpan={1} padding="lg">
             <div className="grid grid-cols-2 gap-8">
                <div>
-                  <h3 className="font-semibold mb-3 text-cb-text flex items-center gap-2 text-sm">
-                    <Car className="h-4 w-4 text-cb-muted" /> Transporte
+                  <h3 className="font-semibold mb-3 text-vj-txt flex items-center gap-2 text-sm">
+                    <Car className="h-4 w-4 text-vj-txt3" /> Transporte
                   </h3>
                   {guide.transportation ? (
-                    <p className="text-sm text-cb-muted leading-relaxed whitespace-pre-wrap">
+                    <p className="text-sm text-vj-txt3 leading-relaxed whitespace-pre-wrap">
                       {guide.transportation}
                     </p>
                   ) : (
-                    <p className="text-sm text-cb-muted italic">Sem informações de transporte</p>
+                    <p className="text-sm text-vj-txt3 italic">Sem informações de transporte</p>
                   )}
                </div>
                <div>
-                  <h3 className="font-semibold mb-3 text-cb-text flex items-center gap-2 text-sm">
-                    <Languages className="h-4 w-4 text-cb-muted" /> Idioma
+                  <h3 className="font-semibold mb-3 text-vj-txt flex items-center gap-2 text-sm">
+                    <Languages className="h-4 w-4 text-vj-txt3" /> Idioma
                   </h3>
                   {guide.language_tips ? (
-                    <p className="text-sm text-cb-muted leading-relaxed whitespace-pre-wrap">
+                    <p className="text-sm text-vj-txt3 leading-relaxed whitespace-pre-wrap">
                       {guide.language_tips}
                     </p>
                   ) : (
-                    <p className="text-sm text-cb-muted italic">Sem informações de idioma</p>
+                    <p className="text-sm text-vj-txt3 italic">Sem informações de idioma</p>
                   )}
                </div>
             </div>
@@ -183,8 +183,8 @@ export default function GuideDetail() {
         {/* Gallery Section */}
         {gallery.length > 0 && !sections.some((s: any) => s.type === 'gallery') && (
           <div className="pt-8">
-            <h2 className="text-2xl font-bold mb-6 text-cb-text flex items-center gap-3">
-              <ImageIcon className="h-6 w-6 text-cb-accent" /> Galeria do Destino
+            <h2 className="text-2xl font-bold mb-6 text-vj-txt flex items-center gap-3">
+              <ImageIcon className="h-6 w-6 text-vj-green" /> Galeria do Destino
             </h2>
             <MediaGallery images={gallery} />
           </div>
@@ -193,10 +193,10 @@ export default function GuideDetail() {
         {/* Video Section */}
         {(guide as any).video_url && (
            <div className="pt-8">
-            <h2 className="text-2xl font-bold mb-6 text-cb-text flex items-center gap-3">
-              <Video className="h-6 w-6 text-cb-accent" /> Documentário/Vídeo do Destino
+            <h2 className="text-2xl font-bold mb-6 text-vj-txt flex items-center gap-3">
+              <Video className="h-6 w-6 text-vj-green" /> Documentário/Vídeo do Destino
             </h2>
-            <div className="aspect-video rounded-3xl overflow-hidden shadow-2xl border border-cb-border">
+            <div className="aspect-video rounded-3xl overflow-hidden shadow-2xl border border-vj-border">
               <iframe 
                 src={(guide as any).video_url.replace('watch?v=', 'embed/')} 
                 className="w-full h-full" 

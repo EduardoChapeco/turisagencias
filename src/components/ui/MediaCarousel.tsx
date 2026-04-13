@@ -26,12 +26,12 @@ export function MediaCarousel({
 
   return (
     <div className={cn("relative group", className)}>
-      <div className="overflow-hidden rounded-2xl shadow-lg border border-cb-border bg-cb-s1" ref={emblaRef}>
+      <div className="overflow-hidden rounded-2xl shadow-lg border border-vj-border bg-vj-bg" ref={emblaRef}>
         <div className="flex">
           {images.map((src, index) => (
             <div key={src + index} className="flex-[0_0_100%] min-w-0">
               <div className={cn(
-                "w-full bg-cb-s2",
+                "w-full bg-vj-bg",
                 aspectRatio === "video" && "aspect-video",
                 aspectRatio === "square" && "aspect-square",
                 aspectRatio === "wide" && "aspect-[21/9]"
@@ -55,7 +55,7 @@ export function MediaCarousel({
             className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/80 hover:bg-white backdrop-blur-sm border-none shadow-md hidden md:flex"
             onClick={scrollPrev}
           >
-            <ChevronLeft className="h-5 w-5 text-cb-text" />
+            <ChevronLeft className="h-5 w-5 text-vj-txt" />
           </Button>
           <Button
             variant="outline"
@@ -63,7 +63,7 @@ export function MediaCarousel({
             className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white/80 hover:bg-white backdrop-blur-sm border-none shadow-md hidden md:flex"
             onClick={scrollNext}
           >
-            <ChevronRight className="h-5 w-5 text-cb-text" />
+            <ChevronRight className="h-5 w-5 text-vj-txt" />
           </Button>
         </>
       )}

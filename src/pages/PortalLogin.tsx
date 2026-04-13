@@ -26,7 +26,7 @@ export default function PortalLogin() {
   }, [organization]);
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center p-4 overflow-hidden selection:bg-primary/20">
+    <div className="relative flex min-h-screen items-center justify-center p-4 overflow-hidden selection:bg-vj-green/10">
       {/* Background dinâmico inspirado em viagens de luxo / World ID */}
       <div className="absolute inset-0 z-0 bg-slate-950">
         <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary/30 via-slate-900 to-slate-950 opacity-80" />
@@ -111,7 +111,7 @@ export default function PortalLogin() {
                       type="email"
                       placeholder="viajante@email.com"
                       value={email}
-                      className="h-14 bg-black/40 border-white/10 text-white placeholder:text-zinc-600 rounded-2xl px-5 focus-visible:ring-1 focus-visible:ring-primary/50 focus-visible:border-primary/50 transition-all font-medium"
+                      className="h-14 bg-black/40 border-white/10 text-white placeholder:text-zinc-600 rounded-2xl px-5 focus-visible:ring-1 focus-visible:ring-primary/50 focus-visible:border-vj-green/20 transition-all font-medium"
                       onChange={(e) => setEmail(e.target.value)}
                       required
                     />

@@ -59,8 +59,11 @@ export function ClientEditSheet({ id, open, onClose, onSuccess }: ClientEditShee
               seat_preference: prefs.seat || '',
               meal_preference: prefs.meal || '',
               loyalty_programs: prefs.loyalty || '',
-              passport_url: data.passport_url || '',
-              documents: data.documents || [],
+              passport_number: prefs.passport_number || '',
+              passport_expiry: prefs.passport_expiry || '',
+              passport_url: prefs.passport_url || '',
+              preferences: data.preferences || {},
+              documents: data.preferences?.documents || [],
               tags: data.tags || [],
             });
           }
@@ -101,6 +104,8 @@ export function ClientEditSheet({ id, open, onClose, onSuccess }: ClientEditShee
       ...(form.seat_preference ? { seat: form.seat_preference } : {}),
       ...(form.meal_preference ? { meal: form.meal_preference } : {}),
       ...(form.loyalty_programs ? { loyalty: form.loyalty_programs } : {}),
+      ...(form.passport_number ? { passport_number: form.passport_number } : {}),
+      ...(form.passport_expiry ? { passport_expiry: form.passport_expiry } : {}),
     };
 
     const payload = {
@@ -156,7 +161,7 @@ export function ClientEditSheet({ id, open, onClose, onSuccess }: ClientEditShee
           <Button
             onClick={() => void handleSave()}
             disabled={loading || !form.name || isPending}
-            className="bg-cb-accent text-white hover:bg-cb-accent/90"
+            className="bg-vj-green text-white hover:bg-vj-green/90"
           >
             <Save className="mr-2 h-4 w-4" />
             {isUpdate ? 'Atualizar Cliente' : 'Criar Cliente'}
@@ -165,15 +170,15 @@ export function ClientEditSheet({ id, open, onClose, onSuccess }: ClientEditShee
       }
     >
       {(activeSection) => {
-        if (loading) return <div className="text-sm text-cb-muted animate-pulse py-8 text-center">Carregando dados...</div>;
+        if (loading) return <div className="text-sm text-vj-txt3 animate-pulse py-8 text-center">Carregando dados...</div>;
 
         return (
           <>
             {activeSection === 'identidade' && (
               <div className="space-y-6">
                 <div className="space-y-3">
-                  <Label className="font-semibold text-cb-text flex items-center gap-2">
-                    <Camera className="h-4 w-4 text-cb-accent" /> Foto do Cliente
+                  <Label className="font-semibold text-vj-txt flex items-center gap-2">
+                    <Camera className="h-4 w-4 text-vj-green" /> Foto do Cliente
                   </Label>
                   <MediaUploader
                     multiple={false}
@@ -186,33 +191,33 @@ export function ClientEditSheet({ id, open, onClose, onSuccess }: ClientEditShee
                 <div className="space-y-4">
                   <div className="space-y-1.5">
                     <Label>Nome Completo *</Label>
-                    <Input value={form.name} onChange={(e) => update('name', e.target.value)} placeholder="Ana Carolina Silva" className="border-cb-border bg-cb-s1" />
+                    <Input value={form.name} onChange={(e) => update('name', e.target.value)} placeholder="Ana Carolina Silva" className="border-vj-border bg-vj-bg" />
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1.5">
                       <Label>E-mail</Label>
-                      <Input type="email" value={form.email} onChange={(e) => update('email', e.target.value)} className="border-cb-border bg-cb-s1" />
+                      <Input type="email" value={form.email} onChange={(e) => update('email', e.target.value)} className="border-vj-border bg-vj-bg" />
                     </div>
                     <div className="space-y-1.5">
                       <Label>Telefone / WhatsApp</Label>
-                      <Input value={form.phone} onChange={(e) => update('phone', e.target.value)} placeholder="+55 48 9..." className="border-cb-border bg-cb-s1" />
+                      <Input value={form.phone} onChange={(e) => update('phone', e.target.value)} placeholder="+55 48 9..." className="border-vj-border bg-vj-bg" />
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1.5">
                       <Label>CPF</Label>
-                      <Input value={form.cpf} onChange={(e) => update('cpf', e.target.value)} placeholder="000.000.000-00" className="border-cb-border bg-cb-s1" />
+                      <Input value={form.cpf} onChange={(e) => update('cpf', e.target.value)} placeholder="000.000.000-00" className="border-vj-border bg-vj-bg" />
                     </div>
                     <div className="space-y-1.5">
                       <Label>Data de Nascimento</Label>
-                      <Input type="date" value={form.birth_date} onChange={(e) => update('birth_date', e.target.value)} className="border-cb-border bg-cb-s1" />
+                      <Input type="date" value={form.birth_date} onChange={(e) => update('birth_date', e.target.value)} className="border-vj-border bg-vj-bg" />
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1.5">
                       <Label>Canal de Aquisição</Label>
                       <Select value={form.origin} onValueChange={(v) => update('origin', v)}>
-                        <SelectTrigger className="border-cb-border bg-cb-s1"><SelectValue placeholder="Como chegou?" /></SelectTrigger>
+                        <SelectTrigger className="border-vj-border bg-vj-bg"><SelectValue placeholder="Como chegou?" /></SelectTrigger>
                         <SelectContent>
                           {ORIGIN_OPTIONS.map((o) => <SelectItem key={o} value={o}>{o}</SelectItem>)}
                         </SelectContent>
@@ -221,7 +226,7 @@ export function ClientEditSheet({ id, open, onClose, onSuccess }: ClientEditShee
                   </div>
                   <div className="space-y-1.5">
                     <Label>Observações Internas</Label>
-                    <Textarea value={form.notes} onChange={(e) => update('notes', e.target.value)} rows={3} placeholder="Notas privadas..." className="border-cb-border bg-cb-s1 resize-none" />
+                    <Textarea value={form.notes} onChange={(e) => update('notes', e.target.value)} rows={3} placeholder="Notas privadas..." className="border-vj-border bg-vj-bg resize-none" />
                   </div>
                 </div>
               </div>
@@ -230,17 +235,17 @@ export function ClientEditSheet({ id, open, onClose, onSuccess }: ClientEditShee
             {activeSection === 'documentos' && (
               <div className="space-y-8">
                 <div className="space-y-4">
-                  <Label className="font-semibold text-cb-text flex items-center gap-2">
-                    <Globe className="h-4 w-4 text-cb-accent" /> Passaporte
+                  <Label className="font-semibold text-vj-txt flex items-center gap-2">
+                    <Globe className="h-4 w-4 text-vj-green" /> Passaporte
                   </Label>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1.5">
                       <Label>Número</Label>
-                      <Input value={form.passport_number} onChange={(e) => update('passport_number', e.target.value)} placeholder="AB123456" className="border-cb-border bg-cb-s1" />
+                      <Input value={form.passport_number} onChange={(e) => update('passport_number', e.target.value)} placeholder="AB123456" className="border-vj-border bg-vj-bg" />
                     </div>
                     <div className="space-y-1.5">
                       <Label>Validade</Label>
-                      <Input type="date" value={form.passport_expiry} onChange={(e) => update('passport_expiry', e.target.value)} className="border-cb-border bg-cb-s1" />
+                      <Input type="date" value={form.passport_expiry} onChange={(e) => update('passport_expiry', e.target.value)} className="border-vj-border bg-vj-bg" />
                     </div>
                   </div>
                   <div className="space-y-2">
@@ -254,9 +259,9 @@ export function ClientEditSheet({ id, open, onClose, onSuccess }: ClientEditShee
                   </div>
                 </div>
 
-                <div className="pt-6 border-t border-cb-border space-y-4">
-                  <Label className="font-semibold text-cb-text flex items-center gap-2">
-                    <FileText className="h-4 w-4 text-cb-accent" /> Outros Documentos (RG, CNH, Vacinas...)
+                <div className="pt-6 border-t border-vj-border space-y-4">
+                  <Label className="font-semibold text-vj-txt flex items-center gap-2">
+                    <FileText className="h-4 w-4 text-vj-green" /> Outros Documentos (RG, CNH, Vacinas...)
                   </Label>
                   <MediaUploader
                     multiple
@@ -270,22 +275,22 @@ export function ClientEditSheet({ id, open, onClose, onSuccess }: ClientEditShee
 
             {activeSection === 'preferencias' && (
               <div className="space-y-5">
-                <div className="p-4 rounded-2xl bg-cb-accent/5 border border-cb-accent/10 mb-2">
-                  <p className="text-xs text-cb-accent font-medium">✨ Estas informações alimentam o V-Agent para recomendações personalizadas</p>
+                <div className="p-4 rounded-2xl bg-vj-green/5 border border-vj-green/10 mb-2">
+                  <p className="text-xs text-vj-green font-medium">✨ Estas informações alimentam o V-Agent para recomendações personalizadas</p>
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="flex items-center gap-2"><Plane className="h-3.5 w-3.5 text-cb-muted" /> Destinos Preferidos</Label>
-                  <Input value={form.preferred_destinations} onChange={(e) => update('preferred_destinations', e.target.value)} placeholder="Europa, Caribe, Ásia..." className="border-cb-border bg-cb-s1" />
+                  <Label className="flex items-center gap-2"><Plane className="h-3.5 w-3.5 text-vj-txt3" /> Destinos Preferidos</Label>
+                  <Input value={form.preferred_destinations} onChange={(e) => update('preferred_destinations', e.target.value)} placeholder="Europa, Caribe, Ásia..." className="border-vj-border bg-vj-bg" />
                 </div>
                 <div className="space-y-1.5">
                   <Label>Companhias Aéreas Preferidas</Label>
-                  <Input value={form.preferred_airlines} onChange={(e) => update('preferred_airlines', e.target.value)} placeholder="LATAM, GOL, Emirates..." className="border-cb-border bg-cb-s1" />
+                  <Input value={form.preferred_airlines} onChange={(e) => update('preferred_airlines', e.target.value)} placeholder="LATAM, GOL, Emirates..." className="border-vj-border bg-vj-bg" />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
                     <Label>Assento Preferido</Label>
                     <Select value={form.seat_preference} onValueChange={(v) => update('seat_preference', v)}>
-                      <SelectTrigger className="border-cb-border bg-cb-s1"><SelectValue placeholder="Selecionar..." /></SelectTrigger>
+                      <SelectTrigger className="border-vj-border bg-vj-bg"><SelectValue placeholder="Selecionar..." /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="window">Janela</SelectItem>
                         <SelectItem value="aisle">Corredor</SelectItem>
@@ -296,12 +301,12 @@ export function ClientEditSheet({ id, open, onClose, onSuccess }: ClientEditShee
                   </div>
                   <div className="space-y-1.5">
                     <Label>Restrição Alimentar</Label>
-                    <Input value={form.meal_preference} onChange={(e) => update('meal_preference', e.target.value)} placeholder="Vegetariano, Kosher..." className="border-cb-border bg-cb-s1" />
+                    <Input value={form.meal_preference} onChange={(e) => update('meal_preference', e.target.value)} placeholder="Vegetariano, Kosher..." className="border-vj-border bg-vj-bg" />
                   </div>
                 </div>
                 <div className="space-y-1.5">
                   <Label>Programas de Fidelidade (Milhas)</Label>
-                  <Input value={form.loyalty_programs} onChange={(e) => update('loyalty_programs', e.target.value)} placeholder="LATAM Pass #123, Smiles #456..." className="border-cb-border bg-cb-s1" />
+                  <Input value={form.loyalty_programs} onChange={(e) => update('loyalty_programs', e.target.value)} placeholder="LATAM Pass #123, Smiles #456..." className="border-vj-border bg-vj-bg" />
                 </div>
               </div>
             )}
@@ -310,26 +315,26 @@ export function ClientEditSheet({ id, open, onClose, onSuccess }: ClientEditShee
               <div className="space-y-4">
                 <div className="space-y-1.5">
                   <Label>Logradouro</Label>
-                  <Input value={form.address} onChange={(e) => update('address', e.target.value)} className="border-cb-border bg-cb-s1" />
+                  <Input value={form.address} onChange={(e) => update('address', e.target.value)} className="border-vj-border bg-vj-bg" />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
                     <Label>Cidade</Label>
-                    <Input value={form.city} onChange={(e) => update('city', e.target.value)} className="border-cb-border bg-cb-s1" />
+                    <Input value={form.city} onChange={(e) => update('city', e.target.value)} className="border-vj-border bg-vj-bg" />
                   </div>
                   <div className="space-y-1.5">
                     <Label>Estado</Label>
-                    <Input value={form.state} onChange={(e) => update('state', e.target.value)} className="border-cb-border bg-cb-s1" />
+                    <Input value={form.state} onChange={(e) => update('state', e.target.value)} className="border-vj-border bg-vj-bg" />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
                     <Label>CEP</Label>
-                    <Input value={form.zip_code} onChange={(e) => update('zip_code', e.target.value)} className="border-cb-border bg-cb-s1" />
+                    <Input value={form.zip_code} onChange={(e) => update('zip_code', e.target.value)} className="border-vj-border bg-vj-bg" />
                   </div>
                   <div className="space-y-1.5">
                     <Label>País</Label>
-                    <Input value={form.country} onChange={(e) => update('country', e.target.value)} className="border-cb-border bg-cb-s1" />
+                    <Input value={form.country} onChange={(e) => update('country', e.target.value)} className="border-vj-border bg-vj-bg" />
                   </div>
                 </div>
               </div>
@@ -337,12 +342,12 @@ export function ClientEditSheet({ id, open, onClose, onSuccess }: ClientEditShee
 
             {activeSection === 'portal' && (
               <div className="space-y-8">
-                <div className="p-5 rounded-2xl bg-cb-accent/5 border border-cb-accent/10 flex items-center justify-between">
+                <div className="p-5 rounded-2xl bg-vj-green/5 border border-vj-green/10 flex items-center justify-between">
                   <div className="space-y-1">
-                    <h3 className="font-bold text-cb-text flex items-center gap-2">
-                      <Shield className="h-4 w-4 text-cb-accent" /> Acesso ao Portal do Cliente
+                    <h3 className="font-bold text-vj-txt flex items-center gap-2">
+                      <Shield className="h-4 w-4 text-vj-green" /> Acesso ao Portal do Cliente
                     </h3>
-                    <p className="text-xs text-cb-muted">Permite que o cliente acesse o portal personalizado da agência via Magic Link.</p>
+                    <p className="text-xs text-vj-txt3">Permite que o cliente acesse o portal personalizado da agência via Magic Link.</p>
                   </div>
                   <Switch
                     checked={form.portal_access_enabled}
@@ -351,8 +356,8 @@ export function ClientEditSheet({ id, open, onClose, onSuccess }: ClientEditShee
                 </div>
 
                 <div className="space-y-4">
-                  <Label className="font-semibold text-cb-text flex items-center gap-2">
-                    <Tag className="h-4 w-4 text-cb-accent" /> Tags de Segmentação
+                  <Label className="font-semibold text-vj-txt flex items-center gap-2">
+                    <Tag className="h-4 w-4 text-vj-green" /> Tags de Segmentação
                   </Label>
                   <div className="flex gap-2">
                     <Input
@@ -360,14 +365,14 @@ export function ClientEditSheet({ id, open, onClose, onSuccess }: ClientEditShee
                       onChange={(e) => setTagInput(e.target.value)}
                       onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addTag(); } }}
                       placeholder="VIP, Família, Corporativo..."
-                      className="flex-1 border-cb-border bg-cb-s1"
+                      className="flex-1 border-vj-border bg-vj-bg"
                     />
                     <Button type="button" variant="outline" onClick={addTag}>+ Tag</Button>
                   </div>
                   {form.tags.length > 0 && (
                     <div className="flex flex-wrap gap-2">
                       {form.tags.map((tag: string) => (
-                        <Badge key={tag} variant="secondary" className="gap-1.5 pr-1 text-sm bg-cb-accent/10 text-cb-accent border border-cb-accent/20">
+                        <Badge key={tag} variant="secondary" className="gap-1.5 pr-1 text-sm bg-vj-green/10 text-vj-green border border-vj-green/20">
                           {tag}
                           <button type="button" onClick={() => removeTag(tag)} className="hover:text-red-500 transition-colors">
                             <X className="h-3 w-3" />

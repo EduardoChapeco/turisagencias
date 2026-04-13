@@ -101,7 +101,7 @@ function SortableCard({
         className="absolute left-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-40 hover:!opacity-70 touch-none cursor-grab active:cursor-grabbing transition-opacity"
         aria-label="Arrastar card"
       >
-        <GripVertical size={14} className="text-cb-muted" />
+        <GripVertical size={14} className="text-vj-txt3" />
       </button>
 
       <div className="pl-4 space-y-2">
@@ -111,30 +111,30 @@ function SortableCard({
             {card.tags.slice(0, 3).map((t) => (
               <span
                 key={t}
-                className="px-1.5 py-0.5 rounded-full text-xs font-medium bg-cb-accent/10 text-cb-accent border border-cb-accent/20"
+                className="px-1.5 py-0.5 rounded-full text-xs font-medium bg-vj-green/10 text-vj-green border border-vj-green/20"
               >
                 {t}
               </span>
             ))}
             {card.tags.length > 3 && (
-              <span className="text-xs text-cb-muted">+{card.tags.length - 3}</span>
+              <span className="text-xs text-vj-txt3">+{card.tags.length - 3}</span>
             )}
           </div>
         )}
 
         {/* Título */}
-        <p className="font-medium text-sm text-cb-text leading-snug">{card.title}</p>
+        <p className="font-medium text-sm text-vj-txt leading-snug">{card.title}</p>
 
         {/* Subtítulo */}
         {(card.clients?.name || card.quotations?.destination) && (
-          <p className="text-xs text-cb-muted truncate">
+          <p className="text-xs text-vj-txt3 truncate">
             {card.clients?.name ?? card.quotations?.destination}
           </p>
         )}
 
         {/* Footer */}
         {card.estimated_value && (
-          <p className="text-xs font-semibold text-cb-success">
+          <p className="text-xs font-semibold text-vj-green">
             {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
               card.estimated_value,
             )}
@@ -149,9 +149,9 @@ function SortableCard({
 function CardOverlay({ card }: { card: KanbanCardData }) {
   return (
     <div className="kanban-card rotate-1 opacity-95 w-[256px]">
-      <p className="font-medium text-sm text-cb-text">{card.title}</p>
+      <p className="font-medium text-sm text-vj-txt">{card.title}</p>
       {card.clients?.name && (
-        <p className="text-xs text-cb-muted mt-1">{card.clients.name}</p>
+        <p className="text-xs text-vj-txt3 mt-1">{card.clients.name}</p>
       )}
     </div>
   );
@@ -186,7 +186,7 @@ function QuickAddForm({
         onChange={(e) => setTitle(e.target.value)}
         onKeyDown={(e) => e.key === 'Escape' && onCancel()}
         placeholder="Título do card..."
-        className="border-cb-border text-sm h-8 bg-cb-s0"
+        className="border-vj-border text-sm h-8 bg-white"
       />
       <div className="flex gap-2">
         <Button type="submit" size="sm" className="flex-1" disabled={!title.trim() || createCard.isPending}>
@@ -259,7 +259,7 @@ function KanbanColumn({
           <button
             type="button"
             onClick={() => setShowQuickAdd(true)}
-            className="flex items-center gap-1.5 w-full text-xs text-cb-muted hover:text-cb-text transition-colors py-1.5 px-2 rounded-cb-md hover:bg-cb-s2"
+            className="flex items-center gap-1.5 w-full text-xs text-vj-txt3 hover:text-vj-txt transition-colors py-1.5 px-2 rounded-cb-md hover:bg-vj-bg"
           >
             <Plus size={13} />
             Adicionar card

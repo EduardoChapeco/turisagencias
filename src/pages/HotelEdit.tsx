@@ -136,7 +136,7 @@ export function HotelEdit({ id, open, onClose, onSuccess }: HotelEditProps) {
           <Button
             onClick={() => void handleSave()}
             disabled={loading || !form.name || createHotel.isPending || updateHotel.isPending}
-            className="bg-cb-accent text-white hover:bg-cb-accent/90"
+            className="bg-vj-green text-white hover:bg-vj-green/90"
           >
             <Save className="mr-2 h-4 w-4" />
             {isUpdate ? 'Atualizar hotel' : 'Salvar hotel'}
@@ -145,15 +145,15 @@ export function HotelEdit({ id, open, onClose, onSuccess }: HotelEditProps) {
       }
     >
       {(activeSection) => {
-        if (loading) return <div className="text-sm text-cb-muted animate-pulse">Carregando dados...</div>;
+        if (loading) return <div className="text-sm text-vj-txt3 animate-pulse">Carregando dados...</div>;
 
         return (
           <>
             {activeSection === 'geral' && (
               <div className="space-y-6">
                 <div className="space-y-4">
-                  <Label className="text-cb-text font-semibold flex items-center gap-2">
-                    <ImageIcon className="h-4 w-4 text-cb-accent" /> Imagem de Capa Principal
+                  <Label className="text-vj-txt font-semibold flex items-center gap-2">
+                    <ImageIcon className="h-4 w-4 text-vj-green" /> Imagem de Capa Principal
                   </Label>
                   <MediaUploader 
                     multiple={false} 
@@ -166,15 +166,15 @@ export function HotelEdit({ id, open, onClose, onSuccess }: HotelEditProps) {
                 <div className="space-y-4">
                   <div className="space-y-1.5">
                     <Label>Nome do Hotel *</Label>
-                    <Input value={form.name} onChange={(e) => update('name', e.target.value)} className="border-cb-border bg-cb-s1 focus:ring-cb-accent" />
+                    <Input value={form.name} onChange={(e) => update('name', e.target.value)} className="border-vj-border bg-vj-bg focus:ring-vj-green" />
                   </div>
                   <div className="space-y-1.5">
                     <Label>Categoria (Estrelas)</Label>
-                    <Input type="number" min="1" max="5" value={form.category} onChange={(e) => update('category', e.target.value)} className="border-cb-border bg-cb-s1" />
+                    <Input type="number" min="1" max="5" value={form.category} onChange={(e) => update('category', e.target.value)} className="border-vj-border bg-vj-bg" />
                   </div>
                   <div className="space-y-1.5">
                     <Label>Descrição Geral</Label>
-                    <Textarea rows={5} value={form.description} onChange={(e) => update('description', e.target.value)} className="resize-none border-cb-border bg-cb-s1" />
+                    <Textarea rows={5} value={form.description} onChange={(e) => update('description', e.target.value)} className="resize-none border-vj-border bg-vj-bg" />
                   </div>
                 </div>
               </div>
@@ -183,8 +183,8 @@ export function HotelEdit({ id, open, onClose, onSuccess }: HotelEditProps) {
             {activeSection === 'midia' && (
               <div className="space-y-10">
                 <div className="space-y-4">
-                  <Label className="text-cb-text font-semibold flex items-center gap-2">
-                    <ImageIcon className="h-4 w-4 text-cb-accent" /> Galeria Adicional
+                  <Label className="text-vj-txt font-semibold flex items-center gap-2">
+                    <ImageIcon className="h-4 w-4 text-vj-green" /> Galeria Adicional
                   </Label>
                   <MediaUploader 
                     multiple 
@@ -195,15 +195,15 @@ export function HotelEdit({ id, open, onClose, onSuccess }: HotelEditProps) {
                 </div>
 
                 <div className="space-y-4">
-                  <Label className="text-cb-text font-semibold flex items-center gap-2">
-                    <Video className="h-4 w-4 text-cb-accent" /> Link do Vídeo (YouTube)
+                  <Label className="text-vj-txt font-semibold flex items-center gap-2">
+                    <Video className="h-4 w-4 text-vj-green" /> Link do Vídeo (YouTube)
                   </Label>
-                  <Input value={form.video_url} onChange={(e) => update('video_url', e.target.value)} placeholder="https://www.youtube.com/watch?v=..." className="border-cb-border bg-cb-s1" />
+                  <Input value={form.video_url} onChange={(e) => update('video_url', e.target.value)} placeholder="https://www.youtube.com/watch?v=..." className="border-vj-border bg-vj-bg" />
                 </div>
 
-                <div className="pt-6 border-t border-cb-border">
+                <div className="pt-6 border-t border-vj-border">
                   <div className="flex items-center justify-between mb-6">
-                    <Label className="text-cb-text font-bold text-lg">Seções do Site/Página</Label>
+                    <Label className="text-vj-txt font-bold text-lg">Seções do Site/Página</Label>
                     <div className="flex gap-2">
                       <Button variant="outline" size="sm" onClick={() => addSection('text')} className="text-xs">
                         <Type className="h-3 w-3 mr-1" /> + Texto
@@ -216,7 +216,7 @@ export function HotelEdit({ id, open, onClose, onSuccess }: HotelEditProps) {
 
                   <div className="space-y-6">
                     {form.sections.map((section: any, idx: number) => (
-                      <div key={section.id} className="relative p-5 rounded-2xl border border-cb-accent/10 bg-cb-s1/50 group">
+                      <div key={section.id} className="relative p-5 rounded-2xl border border-vj-green/10 bg-vj-bg/50 group">
                         <button 
                           onClick={() => removeSection(section.id)}
                           className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
@@ -226,14 +226,14 @@ export function HotelEdit({ id, open, onClose, onSuccess }: HotelEditProps) {
 
                         <div className="space-y-4">
                           <div className="flex items-center gap-3">
-                            <div className="p-2 rounded-lg bg-cb-accent/10 text-cb-accent">
+                            <div className="p-2 rounded-lg bg-vj-green/10 text-vj-green">
                               {section.type === 'text' ? <Type className="h-4 w-4" /> : <Grid className="h-4 w-4" />}
                             </div>
                             <Input 
                               value={section.title} 
                               onChange={(e) => updateSection(section.id, { title: e.target.value })}
                               placeholder="Título da Seção"
-                              className="border-none bg-transparent font-bold text-cb-text focus:ring-0 p-0 shadow-none h-auto text-base"
+                              className="border-none bg-transparent font-bold text-vj-txt focus:ring-0 p-0 shadow-none h-auto text-base"
                             />
                           </div>
 
@@ -243,7 +243,7 @@ export function HotelEdit({ id, open, onClose, onSuccess }: HotelEditProps) {
                               onChange={(e) => updateSection(section.id, { content: e.target.value })}
                               placeholder="Escreva o conteúdo desta seção..."
                               rows={4}
-                              className="bg-cb-s1 border-cb-border text-sm"
+                              className="bg-vj-bg border-vj-border text-sm"
                             />
                           ) : (
                             <MediaUploader 
@@ -258,9 +258,9 @@ export function HotelEdit({ id, open, onClose, onSuccess }: HotelEditProps) {
                     ))}
                     
                     {form.sections.length === 0 && (
-                      <div className="text-center py-10 border-2 border-dashed border-cb-border rounded-2xl">
-                        <Layout className="h-10 w-10 text-cb-muted/20 mx-auto mb-3" />
-                        <p className="text-cb-muted text-sm italic">Nenhuma seção adicional. Clique nos botões acima para adicionar.</p>
+                      <div className="text-center py-10 border-2 border-dashed border-vj-border rounded-2xl">
+                        <Layout className="h-10 w-10 text-vj-txt3/20 mx-auto mb-3" />
+                        <p className="text-vj-txt3 text-sm italic">Nenhuma seção adicional. Clique nos botões acima para adicionar.</p>
                       </div>
                     )}
                   </div>
@@ -273,36 +273,36 @@ export function HotelEdit({ id, open, onClose, onSuccess }: HotelEditProps) {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <Label>Cidade</Label>
-                    <Input value={form.city} onChange={(e) => update('city', e.target.value)} className="border-cb-border bg-cb-s1" />
+                    <Input value={form.city} onChange={(e) => update('city', e.target.value)} className="border-vj-border bg-vj-bg" />
                   </div>
                   <div className="space-y-1.5">
                     <Label>Estado</Label>
-                    <Input value={form.state} onChange={(e) => update('state', e.target.value)} className="border-cb-border bg-cb-s1" />
+                    <Input value={form.state} onChange={(e) => update('state', e.target.value)} className="border-vj-border bg-vj-bg" />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <Label>País</Label>
-                    <Input value={form.country} onChange={(e) => update('country', e.target.value)} className="border-cb-border bg-cb-s1" />
+                    <Input value={form.country} onChange={(e) => update('country', e.target.value)} className="border-vj-border bg-vj-bg" />
                   </div>
                   <div className="space-y-1.5">
                     <Label>CEP / ZipCode</Label>
-                    <Input value={form.zip_code} onChange={(e) => update('zip_code', e.target.value)} className="border-cb-border bg-cb-s1" />
+                    <Input value={form.zip_code} onChange={(e) => update('zip_code', e.target.value)} className="border-vj-border bg-vj-bg" />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <Label>Telefone</Label>
-                    <Input value={form.phone} onChange={(e) => update('phone', e.target.value)} className="border-cb-border bg-cb-s1" />
+                    <Input value={form.phone} onChange={(e) => update('phone', e.target.value)} className="border-vj-border bg-vj-bg" />
                   </div>
                   <div className="space-y-1.5">
                     <Label>E-mail</Label>
-                    <Input type="email" value={form.email} onChange={(e) => update('email', e.target.value)} className="border-cb-border bg-cb-s1" />
+                    <Input type="email" value={form.email} onChange={(e) => update('email', e.target.value)} className="border-vj-border bg-vj-bg" />
                   </div>
                 </div>
                 <div className="space-y-1.5">
                   <Label>Website</Label>
-                  <Input type="url" value={form.website} onChange={(e) => update('website', e.target.value)} placeholder="https://" className="border-cb-border bg-cb-s1" />
+                  <Input type="url" value={form.website} onChange={(e) => update('website', e.target.value)} placeholder="https://" className="border-vj-border bg-vj-bg" />
                 </div>
               </div>
             )}
@@ -311,15 +311,15 @@ export function HotelEdit({ id, open, onClose, onSuccess }: HotelEditProps) {
               <div className="space-y-4">
                 <div className="space-y-1.5">
                   <Label>Comodidades (separadas por vírgula)</Label>
-                  <Input value={form.amenities} onChange={(e) => update('amenities', e.target.value)} placeholder="Piscina, Wi-Fi, Spa..." className="border-cb-border bg-cb-s1" />
+                  <Input value={form.amenities} onChange={(e) => update('amenities', e.target.value)} placeholder="Piscina, Wi-Fi, Spa..." className="border-vj-border bg-vj-bg" />
                 </div>
                 <div className="space-y-1.5">
                   <Label>Opções de Regime (separadas por vírgula)</Label>
-                  <Input value={form.regime_options} onChange={(e) => update('regime_options', e.target.value)} placeholder="Café, Meia Pensão, All Inclusive..." className="border-cb-border bg-cb-s1" />
+                  <Input value={form.regime_options} onChange={(e) => update('regime_options', e.target.value)} placeholder="Café, Meia Pensão, All Inclusive..." className="border-vj-border bg-vj-bg" />
                 </div>
                 <div className="space-y-1.5">
                   <Label>Tags Internas (separadas por vírgula)</Label>
-                  <Input value={form.tags} onChange={(e) => update('tags', e.target.value)} placeholder="Praia, Romântico, Luxo..." className="border-cb-border bg-cb-s1" />
+                  <Input value={form.tags} onChange={(e) => update('tags', e.target.value)} placeholder="Praia, Romântico, Luxo..." className="border-vj-border bg-vj-bg" />
                 </div>
               </div>
             )}

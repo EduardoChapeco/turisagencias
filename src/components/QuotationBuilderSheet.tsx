@@ -253,7 +253,7 @@ export function QuotationBuilderSheet({ open, onClose, clientId }: QuotationBuil
           <Button
             onClick={() => void handleSave()}
             disabled={!form.destination || createQuotation.isPending}
-            className="bg-cb-accent text-white"
+            className="bg-vj-green text-white"
           >
             <Save className="mr-2 h-4 w-4" />
             {createQuotation.isPending ? 'Salvando...' : 'Salvar Cotação'}
@@ -267,18 +267,18 @@ export function QuotationBuilderSheet({ open, onClose, clientId }: QuotationBuil
           {activeSection === 'destino' && (
             <div className="space-y-6">
               {/* AI Extraction */}
-              <div className="p-4 rounded-2xl bg-cb-accent/5 border border-cb-accent/10">
-                <p className="font-semibold text-sm text-cb-text flex items-center gap-2 mb-3">
-                  <Sparkles className="h-4 w-4 text-cb-accent" /> Extração por IA (upload de imagem/PDF)
+              <div className="p-4 rounded-2xl bg-vj-green/5 border border-vj-green/10">
+                <p className="font-semibold text-sm text-vj-txt flex items-center gap-2 mb-3">
+                  <Sparkles className="h-4 w-4 text-vj-green" /> Extração por IA (upload de imagem/PDF)
                 </p>
                 <label className="cursor-pointer block">
-                  <div className="flex items-center justify-center border-2 border-dashed border-cb-accent/20 rounded-xl p-5 hover:bg-cb-accent/5 transition-colors">
+                  <div className="flex items-center justify-center border-2 border-dashed border-vj-green/20 rounded-xl p-5 hover:bg-vj-green/5 transition-colors">
                     {extracting ? (
-                      <span className="flex items-center gap-2 text-cb-accent text-sm">
+                      <span className="flex items-center gap-2 text-vj-green text-sm">
                         <Loader2 className="h-4 w-4 animate-spin" /> Extraindo com IA...
                       </span>
                     ) : (
-                      <span className="text-sm text-cb-muted flex items-center gap-2">
+                      <span className="text-sm text-vj-txt3 flex items-center gap-2">
                         <ImageIcon className="h-4 w-4" />
                         {aiExtracted ? '✅ Dados extraídos! Clique para extrair outro' : 'Clique para enviar cotação (print/PDF)'}
                       </span>
@@ -291,18 +291,18 @@ export function QuotationBuilderSheet({ open, onClose, clientId }: QuotationBuil
               <div className="space-y-4">
                 <div className="space-y-1.5">
                   <Label>Destino *</Label>
-                  <Input value={form.destination} onChange={(e) => update('destination', e.target.value)} placeholder="Cancún, México" className="border-cb-border bg-cb-s1" />
+                  <Input value={form.destination} onChange={(e) => update('destination', e.target.value)} placeholder="Cancún, México" className="border-vj-border bg-vj-bg" />
                 </div>
 
                 {/* Hotel Section */}
-                <div className="p-4 rounded-2xl bg-cb-s1 border border-cb-border space-y-3">
-                  <Label className="font-semibold flex items-center gap-2 text-cb-text">
-                    <Hotel className="h-4 w-4 text-cb-accent" /> Hospedagem
+                <div className="p-4 rounded-2xl bg-vj-bg border border-vj-border space-y-3">
+                  <Label className="font-semibold flex items-center gap-2 text-vj-txt">
+                    <Hotel className="h-4 w-4 text-vj-green" /> Hospedagem
                   </Label>
 
                   {hotels && hotels.length > 0 && (
                     <div className="space-y-1.5">
-                      <Label className="text-xs text-cb-muted">Vincular hotel cadastrado</Label>
+                      <Label className="text-xs text-vj-txt3">Vincular hotel cadastrado</Label>
                       <Select value={form.hotel_id} onValueChange={(v) => {
                         const h = hotels.find((x: any) => x.id === v);
                         if (h) {
@@ -311,7 +311,7 @@ export function QuotationBuilderSheet({ open, onClose, clientId }: QuotationBuil
                           if (h.category) update('hotel_stars', h.category.toString());
                         }
                       }}>
-                        <SelectTrigger className="border-cb-border bg-cb-s0">
+                        <SelectTrigger className="border-vj-border bg-white">
                           <SelectValue placeholder="Selecionar hotel do banco..." />
                         </SelectTrigger>
                         <SelectContent>
@@ -328,12 +328,12 @@ export function QuotationBuilderSheet({ open, onClose, clientId }: QuotationBuil
                   <div className="grid grid-cols-3 gap-3">
                     <div className="space-y-1.5 col-span-2">
                       <Label>Nome do Hotel</Label>
-                      <Input value={form.hotel_name} onChange={(e) => update('hotel_name', e.target.value)} className="border-cb-border bg-cb-s0" />
+                      <Input value={form.hotel_name} onChange={(e) => update('hotel_name', e.target.value)} className="border-vj-border bg-white" />
                     </div>
                     <div className="space-y-1.5">
                       <Label>Estrelas</Label>
                       <Select value={form.hotel_stars} onValueChange={(v) => update('hotel_stars', v)}>
-                        <SelectTrigger className="border-cb-border bg-cb-s0"><SelectValue placeholder="★" /></SelectTrigger>
+                        <SelectTrigger className="border-vj-border bg-white"><SelectValue placeholder="★" /></SelectTrigger>
                         <SelectContent>
                           {[1,2,3,4,5].map(s => <SelectItem key={s} value={s.toString()}>{s}★</SelectItem>)}
                         </SelectContent>
@@ -344,15 +344,15 @@ export function QuotationBuilderSheet({ open, onClose, clientId }: QuotationBuil
                   <div className="grid grid-cols-3 gap-3">
                     <div className="space-y-1.5">
                       <Label>Check-in</Label>
-                      <Input type="date" value={form.check_in} onChange={(e) => update('check_in', e.target.value)} className="border-cb-border bg-cb-s0" />
+                      <Input type="date" value={form.check_in} onChange={(e) => update('check_in', e.target.value)} className="border-vj-border bg-white" />
                     </div>
                     <div className="space-y-1.5">
                       <Label>Check-out</Label>
-                      <Input type="date" value={form.check_out} onChange={(e) => update('check_out', e.target.value)} className="border-cb-border bg-cb-s0" />
+                      <Input type="date" value={form.check_out} onChange={(e) => update('check_out', e.target.value)} className="border-vj-border bg-white" />
                     </div>
                     <div className="space-y-1.5">
                       <Label>Noites</Label>
-                      <Input type="number" value={form.num_nights} onChange={(e) => update('num_nights', e.target.value)} className="border-cb-border bg-cb-s0" />
+                      <Input type="number" value={form.num_nights} onChange={(e) => update('num_nights', e.target.value)} className="border-vj-border bg-white" />
                     </div>
                   </div>
 
@@ -360,7 +360,7 @@ export function QuotationBuilderSheet({ open, onClose, clientId }: QuotationBuil
                     <div className="space-y-1.5">
                       <Label>Regime</Label>
                       <Select value={form.meal_plan} onValueChange={(v) => update('meal_plan', v)}>
-                        <SelectTrigger className="border-cb-border bg-cb-s0"><SelectValue placeholder="Selecione..." /></SelectTrigger>
+                        <SelectTrigger className="border-vj-border bg-white"><SelectValue placeholder="Selecione..." /></SelectTrigger>
                         <SelectContent>
                           <SelectItem value="all_inclusive">All Inclusive</SelectItem>
                           <SelectItem value="half_board">Meia Pensão</SelectItem>
@@ -371,7 +371,7 @@ export function QuotationBuilderSheet({ open, onClose, clientId }: QuotationBuil
                     </div>
                     <div className="space-y-1.5">
                       <Label>Tipo de Quarto</Label>
-                      <Input value={form.room_type} onChange={(e) => update('room_type', e.target.value)} placeholder="Superior, Deluxe..." className="border-cb-border bg-cb-s0" />
+                      <Input value={form.room_type} onChange={(e) => update('room_type', e.target.value)} placeholder="Superior, Deluxe..." className="border-vj-border bg-white" />
                     </div>
                   </div>
                 </div>
@@ -384,8 +384,8 @@ export function QuotationBuilderSheet({ open, onClose, clientId }: QuotationBuil
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="font-bold text-cb-text">Itinerário Dia-a-Dia</h3>
-                  <p className="text-xs text-cb-muted">Crie o roteiro completo da viagem</p>
+                  <h3 className="font-bold text-vj-txt">Itinerário Dia-a-Dia</h3>
+                  <p className="text-xs text-vj-txt3">Crie o roteiro completo da viagem</p>
                 </div>
                 <Button variant="outline" size="sm" onClick={addDay}>
                   <Plus className="h-3.5 w-3.5 mr-1" /> Adicionar Dia
@@ -394,7 +394,7 @@ export function QuotationBuilderSheet({ open, onClose, clientId }: QuotationBuil
 
               <div className="space-y-4">
                 {itinerary.map((day, idx) => (
-                  <div key={day.id} className="relative p-5 rounded-2xl border border-cb-accent/10 bg-cb-s1/50 group space-y-3">
+                  <div key={day.id} className="relative p-5 rounded-2xl border border-vj-green/10 bg-vj-bg/50 group space-y-3">
                     <button
                       onClick={() => removeDay(day.id)}
                       className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow"
@@ -403,25 +403,25 @@ export function QuotationBuilderSheet({ open, onClose, clientId }: QuotationBuil
                     </button>
 
                     <div className="flex items-center gap-3">
-                      <div className="h-8 w-8 rounded-full bg-cb-accent text-white flex items-center justify-center text-sm font-bold shrink-0">
+                      <div className="h-8 w-8 rounded-full bg-vj-green text-white flex items-center justify-center text-sm font-bold shrink-0">
                         {day.day}
                       </div>
                       <Input
                         value={day.title}
                         onChange={(e) => updateDay(day.id, { title: e.target.value })}
                         placeholder="Título do dia"
-                        className="border-none bg-transparent font-bold text-cb-text focus:ring-0 shadow-none"
+                        className="border-none bg-transparent font-bold text-vj-txt focus:ring-0 shadow-none"
                       />
                     </div>
 
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-1.5">
                         <Label className="text-xs">Data</Label>
-                        <Input type="date" value={day.date} onChange={(e) => updateDay(day.id, { date: e.target.value })} className="border-cb-border bg-cb-s1 h-8 text-sm" />
+                        <Input type="date" value={day.date} onChange={(e) => updateDay(day.id, { date: e.target.value })} className="border-vj-border bg-vj-bg h-8 text-sm" />
                       </div>
                       <div className="space-y-1.5">
                         <Label className="text-xs">Local / Cidade</Label>
-                        <Input value={day.location} onChange={(e) => updateDay(day.id, { location: e.target.value })} placeholder="Paris, França" className="border-cb-border bg-cb-s1 h-8 text-sm" />
+                        <Input value={day.location} onChange={(e) => updateDay(day.id, { location: e.target.value })} placeholder="Paris, França" className="border-vj-border bg-vj-bg h-8 text-sm" />
                       </div>
                     </div>
 
@@ -430,7 +430,7 @@ export function QuotationBuilderSheet({ open, onClose, clientId }: QuotationBuil
                       onChange={(e) => updateDay(day.id, { description: e.target.value })}
                       placeholder="Descrição das atividades do dia..."
                       rows={3}
-                      className="border-cb-border bg-cb-s1 text-sm resize-none"
+                      className="border-vj-border bg-vj-bg text-sm resize-none"
                     />
 
                     <div className="space-y-1.5">
@@ -440,7 +440,7 @@ export function QuotationBuilderSheet({ open, onClose, clientId }: QuotationBuil
                           const h = hotels.find((x: any) => x.id === v);
                           updateDay(day.id, { hotel_id: v, accommodation: h?.name || '' });
                         }}>
-                          <SelectTrigger className="border-cb-border bg-cb-s1 h-8 text-sm">
+                          <SelectTrigger className="border-vj-border bg-vj-bg h-8 text-sm">
                             <SelectValue placeholder="Selecionar hotel..." />
                           </SelectTrigger>
                           <SelectContent>
@@ -448,16 +448,16 @@ export function QuotationBuilderSheet({ open, onClose, clientId }: QuotationBuil
                           </SelectContent>
                         </Select>
                       ) : (
-                        <Input value={day.accommodation} onChange={(e) => updateDay(day.id, { accommodation: e.target.value })} placeholder="Nome do hotel/pousada..." className="border-cb-border bg-cb-s1 h-8 text-sm" />
+                        <Input value={day.accommodation} onChange={(e) => updateDay(day.id, { accommodation: e.target.value })} placeholder="Nome do hotel/pousada..." className="border-vj-border bg-vj-bg h-8 text-sm" />
                       )}
                     </div>
                   </div>
                 ))}
 
                 {itinerary.length === 0 && (
-                  <div className="text-center py-10 border-2 border-dashed border-cb-border rounded-2xl">
-                    <MapPin className="h-10 w-10 text-cb-muted/20 mx-auto mb-3" />
-                    <p className="text-cb-muted text-sm italic">Clique em "Adicionar Dia" para construir o roteiro</p>
+                  <div className="text-center py-10 border-2 border-dashed border-vj-border rounded-2xl">
+                    <MapPin className="h-10 w-10 text-vj-txt3/20 mx-auto mb-3" />
+                    <p className="text-vj-txt3 text-sm italic">Clique em "Adicionar Dia" para construir o roteiro</p>
                   </div>
                 )}
               </div>
@@ -469,8 +469,8 @@ export function QuotationBuilderSheet({ open, onClose, clientId }: QuotationBuil
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="font-bold text-cb-text">Transportes</h3>
-                  <p className="text-xs text-cb-muted">Aéreo, marítimo, terrestre e conexões</p>
+                  <h3 className="font-bold text-vj-txt">Transportes</h3>
+                  <p className="text-xs text-vj-txt3">Aéreo, marítimo, terrestre e conexões</p>
                 </div>
                 <Button variant="outline" size="sm" onClick={addTransport}>
                   <Plus className="h-3.5 w-3.5 mr-1" /> Adicionar Trecho
@@ -479,13 +479,13 @@ export function QuotationBuilderSheet({ open, onClose, clientId }: QuotationBuil
 
               <div className="space-y-4">
                 {transports.map((t) => (
-                  <div key={t.id} className="relative p-5 rounded-2xl border border-cb-accent/10 bg-cb-s1/50 group space-y-3">
+                  <div key={t.id} className="relative p-5 rounded-2xl border border-vj-green/10 bg-vj-bg/50 group space-y-3">
                     <button onClick={() => removeTransport(t.id)} className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow">
                       <X className="h-3 w-3" />
                     </button>
 
                     <Select value={t.type} onValueChange={(v) => updateTransport(t.id, { type: v as any })}>
-                      <SelectTrigger className="border-cb-border bg-cb-s1">
+                      <SelectTrigger className="border-vj-border bg-vj-bg">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -498,37 +498,37 @@ export function QuotationBuilderSheet({ open, onClose, clientId }: QuotationBuil
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-1.5">
                         <Label className="text-xs">De</Label>
-                        <Input value={t.from} onChange={(e) => updateTransport(t.id, { from: e.target.value })} placeholder="Florianópolis (FLN)" className="border-cb-border bg-cb-s1 h-8 text-sm" />
+                        <Input value={t.from} onChange={(e) => updateTransport(t.id, { from: e.target.value })} placeholder="Florianópolis (FLN)" className="border-vj-border bg-vj-bg h-8 text-sm" />
                       </div>
                       <div className="space-y-1.5">
                         <Label className="text-xs">Para</Label>
-                        <Input value={t.to} onChange={(e) => updateTransport(t.id, { to: e.target.value })} placeholder="Cancún (CUN)" className="border-cb-border bg-cb-s1 h-8 text-sm" />
+                        <Input value={t.to} onChange={(e) => updateTransport(t.id, { to: e.target.value })} placeholder="Cancún (CUN)" className="border-vj-border bg-vj-bg h-8 text-sm" />
                       </div>
                     </div>
 
                     <div className="grid grid-cols-3 gap-3">
                       <div className="space-y-1.5">
                         <Label className="text-xs">Operadora</Label>
-                        <Input value={t.operator} onChange={(e) => updateTransport(t.id, { operator: e.target.value })} placeholder="LATAM" className="border-cb-border bg-cb-s1 h-8 text-sm" />
+                        <Input value={t.operator} onChange={(e) => updateTransport(t.id, { operator: e.target.value })} placeholder="LATAM" className="border-vj-border bg-vj-bg h-8 text-sm" />
                       </div>
                       <div className="space-y-1.5">
                         <Label className="text-xs">Partida</Label>
-                        <Input type="datetime-local" value={t.departure} onChange={(e) => updateTransport(t.id, { departure: e.target.value })} className="border-cb-border bg-cb-s1 h-8 text-sm" />
+                        <Input type="datetime-local" value={t.departure} onChange={(e) => updateTransport(t.id, { departure: e.target.value })} className="border-vj-border bg-vj-bg h-8 text-sm" />
                       </div>
                       <div className="space-y-1.5">
                         <Label className="text-xs">Chegada</Label>
-                        <Input type="datetime-local" value={t.arrival} onChange={(e) => updateTransport(t.id, { arrival: e.target.value })} className="border-cb-border bg-cb-s1 h-8 text-sm" />
+                        <Input type="datetime-local" value={t.arrival} onChange={(e) => updateTransport(t.id, { arrival: e.target.value })} className="border-vj-border bg-vj-bg h-8 text-sm" />
                       </div>
                     </div>
 
-                    <Input value={t.notes} onChange={(e) => updateTransport(t.id, { notes: e.target.value })} placeholder="Notas (voo, bagagem, escala...)" className="border-cb-border bg-cb-s1 text-sm" />
+                    <Input value={t.notes} onChange={(e) => updateTransport(t.id, { notes: e.target.value })} placeholder="Notas (voo, bagagem, escala...)" className="border-vj-border bg-vj-bg text-sm" />
                   </div>
                 ))}
 
                 {transports.length === 0 && (
-                  <div className="text-center py-10 border-2 border-dashed border-cb-border rounded-2xl">
-                    <Plane className="h-10 w-10 text-cb-muted/20 mx-auto mb-3" />
-                    <p className="text-cb-muted text-sm italic">Nenhum transporte adicionado</p>
+                  <div className="text-center py-10 border-2 border-dashed border-vj-border rounded-2xl">
+                    <Plane className="h-10 w-10 text-vj-txt3/20 mx-auto mb-3" />
+                    <p className="text-vj-txt3 text-sm italic">Nenhum transporte adicionado</p>
                   </div>
                 )}
               </div>
@@ -540,8 +540,8 @@ export function QuotationBuilderSheet({ open, onClose, clientId }: QuotationBuil
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="font-bold text-cb-text">Passeios & Serviços</h3>
-                  <p className="text-xs text-cb-muted">Excursões, city tours, transfers, seguros...</p>
+                  <h3 className="font-bold text-vj-txt">Passeios & Serviços</h3>
+                  <p className="text-xs text-vj-txt3">Excursões, city tours, transfers, seguros...</p>
                 </div>
                 <Button variant="outline" size="sm" onClick={addExcursion}>
                   <Plus className="h-3.5 w-3.5 mr-1" /> Adicionar Item
@@ -550,7 +550,7 @@ export function QuotationBuilderSheet({ open, onClose, clientId }: QuotationBuil
 
               <div className="space-y-4">
                 {excursions.map((exc) => (
-                  <div key={exc.id} className="relative p-5 rounded-2xl border border-cb-accent/10 bg-cb-s1/50 group space-y-3">
+                  <div key={exc.id} className="relative p-5 rounded-2xl border border-vj-green/10 bg-vj-bg/50 group space-y-3">
                     <button onClick={() => removeExcursion(exc.id)} className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow">
                       <X className="h-3 w-3" />
                     </button>
@@ -558,47 +558,47 @@ export function QuotationBuilderSheet({ open, onClose, clientId }: QuotationBuil
                     <div className="grid grid-cols-3 gap-3">
                       <div className="space-y-1.5 col-span-2">
                         <Label className="text-xs">Nome do Passeio/Serviço</Label>
-                        <Input value={exc.title} onChange={(e) => updateExcursion(exc.id, { title: e.target.value })} placeholder="City Tour Paris, Seguro Viagem..." className="border-cb-border bg-cb-s1 h-8 text-sm" />
+                        <Input value={exc.title} onChange={(e) => updateExcursion(exc.id, { title: e.target.value })} placeholder="City Tour Paris, Seguro Viagem..." className="border-vj-border bg-vj-bg h-8 text-sm" />
                       </div>
                       <div className="space-y-1.5">
                         <Label className="text-xs">Duração</Label>
-                        <Input value={exc.duration} onChange={(e) => updateExcursion(exc.id, { duration: e.target.value })} placeholder="4h, 1 dia..." className="border-cb-border bg-cb-s1 h-8 text-sm" />
+                        <Input value={exc.duration} onChange={(e) => updateExcursion(exc.id, { duration: e.target.value })} placeholder="4h, 1 dia..." className="border-vj-border bg-vj-bg h-8 text-sm" />
                       </div>
                     </div>
 
-                    <Textarea value={exc.description} onChange={(e) => updateExcursion(exc.id, { description: e.target.value })} placeholder="Descrição do passeio..." rows={2} className="border-cb-border bg-cb-s1 text-sm resize-none" />
+                    <Textarea value={exc.description} onChange={(e) => updateExcursion(exc.id, { description: e.target.value })} placeholder="Descrição do passeio..." rows={2} className="border-vj-border bg-vj-bg text-sm resize-none" />
 
                     <div className="grid grid-cols-3 gap-3">
                       <div className="space-y-1.5">
                         <Label className="text-xs flex items-center gap-1"><UserCheck className="h-3 w-3" /> Por Pessoa</Label>
-                        <Input value={exc.price_per_person} onChange={(e) => updateExcursion(exc.id, { price_per_person: e.target.value })} placeholder="R$ 0" className="border-cb-border bg-cb-s1 h-8 text-sm" />
+                        <Input value={exc.price_per_person} onChange={(e) => updateExcursion(exc.id, { price_per_person: e.target.value })} placeholder="R$ 0" className="border-vj-border bg-vj-bg h-8 text-sm" />
                       </div>
                       <div className="space-y-1.5">
                         <Label className="text-xs flex items-center gap-1"><Users className="h-3 w-3" /> Por Casal</Label>
-                        <Input value={exc.price_per_couple} onChange={(e) => updateExcursion(exc.id, { price_per_couple: e.target.value })} placeholder="R$ 0" className="border-cb-border bg-cb-s1 h-8 text-sm" />
+                        <Input value={exc.price_per_couple} onChange={(e) => updateExcursion(exc.id, { price_per_couple: e.target.value })} placeholder="R$ 0" className="border-vj-border bg-vj-bg h-8 text-sm" />
                       </div>
                       <div className="space-y-1.5">
                         <Label className="text-xs flex items-center gap-1"><Tent className="h-3 w-3" /> Por Família</Label>
-                        <Input value={exc.price_per_family} onChange={(e) => updateExcursion(exc.id, { price_per_family: e.target.value })} placeholder="R$ 0" className="border-cb-border bg-cb-s1 h-8 text-sm" />
+                        <Input value={exc.price_per_family} onChange={(e) => updateExcursion(exc.id, { price_per_family: e.target.value })} placeholder="R$ 0" className="border-vj-border bg-vj-bg h-8 text-sm" />
                       </div>
                     </div>
                   </div>
                 ))}
 
                 {excursions.length === 0 && (
-                  <div className="text-center py-10 border-2 border-dashed border-cb-border rounded-2xl">
-                    <Star className="h-10 w-10 text-cb-muted/20 mx-auto mb-3" />
-                    <p className="text-cb-muted text-sm italic">Nenhum passeio ou serviço adicionado</p>
+                  <div className="text-center py-10 border-2 border-dashed border-vj-border rounded-2xl">
+                    <Star className="h-10 w-10 text-vj-txt3/20 mx-auto mb-3" />
+                    <p className="text-vj-txt3 text-sm italic">Nenhum passeio ou serviço adicionado</p>
                   </div>
                 )}
               </div>
 
               {/* Included / Excluded */}
-              <div className="pt-6 border-t border-cb-border space-y-4">
+              <div className="pt-6 border-t border-vj-border space-y-4">
                 <div className="space-y-2">
-                  <Label className="text-cb-text font-semibold">✅ O que está incluído</Label>
+                  <Label className="text-vj-txt font-semibold">✅ O que está incluído</Label>
                   <div className="flex gap-2">
-                    <Input value={includeInput} onChange={(e) => setIncludeInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && includeInput) { e.preventDefault(); update('included_items', [...form.included_items, includeInput]); setIncludeInput(''); }}} placeholder="Traslados, Seguro..." className="border-cb-border bg-cb-s1" />
+                    <Input value={includeInput} onChange={(e) => setIncludeInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && includeInput) { e.preventDefault(); update('included_items', [...form.included_items, includeInput]); setIncludeInput(''); }}} placeholder="Traslados, Seguro..." className="border-vj-border bg-vj-bg" />
                     <Button variant="outline" size="sm" onClick={() => { if (includeInput) { update('included_items', [...form.included_items, includeInput]); setIncludeInput(''); }}}>+</Button>
                   </div>
                   <div className="flex flex-wrap gap-1.5">
@@ -611,9 +611,9 @@ export function QuotationBuilderSheet({ open, onClose, clientId }: QuotationBuil
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-cb-text font-semibold">❌ Não está incluído</Label>
+                  <Label className="text-vj-txt font-semibold">❌ Não está incluído</Label>
                   <div className="flex gap-2">
-                    <Input value={excludeInput} onChange={(e) => setExcludeInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && excludeInput) { e.preventDefault(); update('excluded_items', [...form.excluded_items, excludeInput]); setExcludeInput(''); }}} placeholder="Passagem aérea, Alimentação..." className="border-cb-border bg-cb-s1" />
+                    <Input value={excludeInput} onChange={(e) => setExcludeInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && excludeInput) { e.preventDefault(); update('excluded_items', [...form.excluded_items, excludeInput]); setExcludeInput(''); }}} placeholder="Passagem aérea, Alimentação..." className="border-vj-border bg-vj-bg" />
                     <Button variant="outline" size="sm" onClick={() => { if (excludeInput) { update('excluded_items', [...form.excluded_items, excludeInput]); setExcludeInput(''); }}}>+</Button>
                   </div>
                   <div className="flex flex-wrap gap-1.5">
@@ -634,12 +634,12 @@ export function QuotationBuilderSheet({ open, onClose, clientId }: QuotationBuil
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <Label>Valor Total</Label>
-                  <Input type="number" step="0.01" value={form.total_value} onChange={(e) => update('total_value', e.target.value)} placeholder="0.00" className="border-cb-border bg-cb-s1" />
+                  <Input type="number" step="0.01" value={form.total_value} onChange={(e) => update('total_value', e.target.value)} placeholder="0.00" className="border-vj-border bg-vj-bg" />
                 </div>
                 <div className="space-y-1.5">
                   <Label>Moeda</Label>
                   <Select value={form.currency} onValueChange={(v) => update('currency', v)}>
-                    <SelectTrigger className="border-cb-border bg-cb-s1"><SelectValue /></SelectTrigger>
+                    <SelectTrigger className="border-vj-border bg-vj-bg"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="BRL">BRL (R$)</SelectItem>
                       <SelectItem value="USD">USD ($)</SelectItem>
@@ -653,7 +653,7 @@ export function QuotationBuilderSheet({ open, onClose, clientId }: QuotationBuil
                 <div className="space-y-1.5">
                   <Label>Precificação por</Label>
                   <Select value={form.pricing_mode} onValueChange={(v) => update('pricing_mode', v)}>
-                    <SelectTrigger className="border-cb-border bg-cb-s1"><SelectValue /></SelectTrigger>
+                    <SelectTrigger className="border-vj-border bg-vj-bg"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="per_person">Por Pessoa</SelectItem>
                       <SelectItem value="per_couple">Por Casal</SelectItem>
@@ -664,26 +664,26 @@ export function QuotationBuilderSheet({ open, onClose, clientId }: QuotationBuil
                 </div>
                 <div className="space-y-1.5">
                   <Label>Válida até</Label>
-                  <Input type="date" value={form.valid_until} onChange={(e) => update('valid_until', e.target.value)} className="border-cb-border bg-cb-s1" />
+                  <Input type="date" value={form.valid_until} onChange={(e) => update('valid_until', e.target.value)} className="border-vj-border bg-vj-bg" />
                 </div>
               </div>
 
               {/* Parcelamentos */}
-              <div className="pt-4 border-t border-cb-border space-y-4">
-                <Label className="font-bold text-cb-text">Opções de Parcelamento</Label>
+              <div className="pt-4 border-t border-vj-border space-y-4">
+                <Label className="font-bold text-vj-txt">Opções de Parcelamento</Label>
 
                 <div className="grid grid-cols-3 gap-3">
                   <div className="space-y-1.5">
                     <Label className="text-xs">Tipo</Label>
-                    <Input value={instType} onChange={(e) => setInstType(e.target.value)} placeholder="Ex: Cartão" className="border-cb-border bg-cb-s1 h-8 text-sm" />
+                    <Input value={instType} onChange={(e) => setInstType(e.target.value)} placeholder="Ex: Cartão" className="border-vj-border bg-vj-bg h-8 text-sm" />
                   </div>
                   <div className="space-y-1.5">
                     <Label className="text-xs">Parcelas</Label>
-                    <Input type="number" value={instCount} onChange={(e) => setInstCount(e.target.value)} placeholder="12" className="border-cb-border bg-cb-s1 h-8 text-sm" />
+                    <Input type="number" value={instCount} onChange={(e) => setInstCount(e.target.value)} placeholder="12" className="border-vj-border bg-vj-bg h-8 text-sm" />
                   </div>
                   <div className="space-y-1.5">
                     <Label className="text-xs">Valor/parcela</Label>
-                    <Input type="number" value={instValue} onChange={(e) => setInstValue(e.target.value)} placeholder="0.00" className="border-cb-border bg-cb-s1 h-8 text-sm" />
+                    <Input type="number" value={instValue} onChange={(e) => setInstValue(e.target.value)} placeholder="0.00" className="border-vj-border bg-vj-bg h-8 text-sm" />
                   </div>
                 </div>
                 <Button variant="outline" size="sm" onClick={addInstallment} disabled={!instType || !instCount || !instValue}>
@@ -692,8 +692,8 @@ export function QuotationBuilderSheet({ open, onClose, clientId }: QuotationBuil
 
                 <div className="space-y-2">
                   {installments.map((inst, i) => (
-                    <div key={i} className="flex items-center justify-between p-3 rounded-xl bg-cb-s1 border border-cb-border text-sm">
-                      <span className="text-cb-text">{inst.type} — {inst.installment_count}x de {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: form.currency }).format(inst.value)}</span>
+                    <div key={i} className="flex items-center justify-between p-3 rounded-xl bg-vj-bg border border-vj-border text-sm">
+                      <span className="text-vj-txt">{inst.type} — {inst.installment_count}x de {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: form.currency }).format(inst.value)}</span>
                       <button onClick={() => removeInstallment(i)} className="text-red-400 hover:text-red-600">
                         <X className="h-4 w-4" />
                       </button>
@@ -704,7 +704,7 @@ export function QuotationBuilderSheet({ open, onClose, clientId }: QuotationBuil
 
               <div className="space-y-1.5">
                 <Label>Observações Internas</Label>
-                <Textarea value={form.notes_internal} onChange={(e) => update('notes_internal', e.target.value)} rows={3} placeholder="Notas privadas sobre a cotação..." className="border-cb-border bg-cb-s1 resize-none" />
+                <Textarea value={form.notes_internal} onChange={(e) => update('notes_internal', e.target.value)} rows={3} placeholder="Notas privadas sobre a cotação..." className="border-vj-border bg-vj-bg resize-none" />
               </div>
             </div>
           )}
@@ -713,8 +713,8 @@ export function QuotationBuilderSheet({ open, onClose, clientId }: QuotationBuil
           {activeSection === 'midia' && (
             <div className="space-y-8">
               <div className="space-y-4">
-                <Label className="font-semibold text-cb-text flex items-center gap-2">
-                  <ImageIcon className="h-4 w-4 text-cb-accent" /> Imagem de Capa do Orçamento
+                <Label className="font-semibold text-vj-txt flex items-center gap-2">
+                  <ImageIcon className="h-4 w-4 text-vj-green" /> Imagem de Capa do Orçamento
                 </Label>
                 <MediaUploader
                   multiple={false}
@@ -725,8 +725,8 @@ export function QuotationBuilderSheet({ open, onClose, clientId }: QuotationBuil
               </div>
 
               <div className="space-y-4">
-                <Label className="font-semibold text-cb-text flex items-center gap-2">
-                  <Camera className="h-4 w-4 text-cb-accent" /> Galeria de Fotos do Destino
+                <Label className="font-semibold text-vj-txt flex items-center gap-2">
+                  <Camera className="h-4 w-4 text-vj-green" /> Galeria de Fotos do Destino
                 </Label>
                 <MediaUploader
                   multiple
@@ -744,7 +744,7 @@ export function QuotationBuilderSheet({ open, onClose, clientId }: QuotationBuil
               <div className="space-y-1.5">
                 <Label>Cliente</Label>
                 <Select value={form.client_id} onValueChange={(v) => update('client_id', v)}>
-                  <SelectTrigger className="border-cb-border bg-cb-s1">
+                  <SelectTrigger className="border-vj-border bg-vj-bg">
                     <SelectValue placeholder="Selecione um cliente (opcional)" />
                   </SelectTrigger>
                   <SelectContent>
@@ -762,7 +762,7 @@ export function QuotationBuilderSheet({ open, onClose, clientId }: QuotationBuil
                   onChange={(e) => update('whatsapp_text', e.target.value)}
                   rows={10}
                   placeholder="Olá! Preparamos uma cotação exclusiva para você..."
-                  className="border-cb-border bg-cb-s1"
+                  className="border-vj-border bg-vj-bg"
                 />
               </div>
             </div>

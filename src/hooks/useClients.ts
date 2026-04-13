@@ -50,23 +50,25 @@ export function useCreateClient() {
 
   return useMutation({
     mutationFn: async (data: {
-      name: string;
-      email?: string;
-      phone?: string;
-      cpf?: string;
-      birth_date?: string;
-      address?: string;
-      city?: string;
-      state?: string;
-      zip_code?: string;
-      country?: string;
-      origin?: string;
-      tags?: string[];
-      notes?: string;
+      name: string; email?: string; phone?: string; cpf?: string; birth_date?: string;
+      address?: string; city?: string; state?: string; zip_code?: string; country?: string;
+      origin?: string; tags?: string[]; notes?: string; documents?: any[]; photo_url?: string;
+      passport_url?: string; portal_access_enabled?: boolean; preferences?: any;
     }) => {
+      const { documents, passport_url, preferences, ...restData } = data;
+      const insertData = { ...restData, org_id: organization!.id, created_by: user!.id } as any;
+      
+      const newPreferences = { ...(preferences || {}) };
+      if (documents && documents.length > 0) newPreferences.documents = documents;
+      if (passport_url) newPreferences.passport_url = passport_url;
+      
+      if (Object.keys(newPreferences).length > 0) {
+        insertData.preferences = newPreferences;
+      }
+
       const { data: client, error } = await supabase
         .from('clients')
-        .insert({ ...data, org_id: organization!.id, created_by: user!.id })
+        .insert(insertData)
         .select()
         .single();
       if (error) throw error;
@@ -90,11 +92,23 @@ export function useUpdateClient() {
     mutationFn: async ({ id, ...data }: { id: string } & Partial<{
       name: string; email: string; phone: string; cpf: string; birth_date: string;
       address: string; city: string; state: string; zip_code: string; country: string;
-      origin: string; tags: string[]; notes: string;
+      origin: string; tags: string[]; notes: string; documents: any[]; photo_url: string; 
+      passport_url: string; portal_access_enabled: boolean; preferences: any;
     }>) => {
+      const { documents, passport_url, preferences, ...restData } = data;
+      const updateData = { ...restData } as any;
+
+      if (documents !== undefined || passport_url !== undefined) {
+        updateData.preferences = { ...(preferences || {}) };
+        if (documents !== undefined) updateData.preferences.documents = documents;
+        if (passport_url !== undefined) updateData.preferences.passport_url = passport_url;
+      } else if (preferences !== undefined) {
+        updateData.preferences = preferences;
+      }
+
       const { data: client, error } = await supabase
         .from('clients')
-        .update(data)
+        .update(updateData)
         .eq('id', id)
         .select()
         .single();

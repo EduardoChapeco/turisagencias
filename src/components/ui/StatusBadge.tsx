@@ -23,18 +23,18 @@ interface StatusBadgeProps {
 }
 
 const variantStyles: Record<StatusVariant, string> = {
-  success: 'bg-cb-success/10 text-cb-success border-cb-success/20',
-  warning: 'bg-cb-warning/10 text-cb-warning border-cb-warning/20',
-  danger:  'bg-cb-danger/10  text-cb-danger  border-cb-danger/20',
-  info:    'bg-cb-info/10    text-cb-info    border-cb-info/20',
-  neutral: 'bg-cb-s2        text-cb-muted   border-cb-border',
+  success: 'bg-vj-green/10 text-vj-green border-vj-green/20',
+  warning: 'bg-vj-orange/10 text-vj-orange border-vj-orange/20',
+  danger:  'bg-vj-red/10  text-vj-red  border-vj-red/20',
+  info:    'bg-vj-blue/10    text-vj-blue    border-vj-blue/20',
+  neutral: 'bg-vj-bg        text-vj-txt3   border-vj-border',
 };
 
 const dotStyles: Record<StatusVariant, string> = {
-  success: 'bg-cb-success',
-  warning: 'bg-cb-warning',
-  danger:  'bg-cb-danger',
-  info:    'bg-cb-info',
+  success: 'bg-vj-green',
+  warning: 'bg-vj-orange',
+  danger:  'bg-vj-red',
+  info:    'bg-vj-blue',
   neutral: 'bg-cb-muted',
 };
 

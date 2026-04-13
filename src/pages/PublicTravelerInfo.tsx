@@ -25,18 +25,18 @@ export default function PublicTravelerInfo() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-cb-s0">
-        <Loader2 className="h-8 w-8 animate-spin text-cb-accent" />
+      <div className="flex min-h-screen items-center justify-center bg-white">
+        <Loader2 className="h-8 w-8 animate-spin text-vj-green" />
       </div>
     );
   }
 
   if (error || !page) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-cb-s0 text-center p-4">
-        <BookOpen className="h-12 w-12 text-cb-muted mb-4 opacity-50" />
-        <h1 className="text-2xl font-bold text-cb-text">Página Indisponível</h1>
-        <p className="text-cb-muted mt-2 max-w-md">
+      <div className="flex flex-col items-center justify-center min-h-screen bg-white text-center p-4">
+        <BookOpen className="h-12 w-12 text-vj-txt3 mb-4 opacity-50" />
+        <h1 className="text-2xl font-bold text-vj-txt">Página Indisponível</h1>
+        <p className="text-vj-txt3 mt-2 max-w-md">
           Este conteúdo foi removido, está em modo privado ou o link é inválido.
         </p>
       </div>
@@ -50,7 +50,7 @@ export default function PublicTravelerInfo() {
 
       if (type === 'text') {
         return (
-          <div key={idx} className="prose prose-sm md:prose-base prose-neutral max-w-none text-cb-text mb-6">
+          <div key={idx} className="prose prose-sm md:prose-base prose-neutral max-w-none text-vj-txt mb-6">
             {content.split('\n').map((paragraph: string, i: number) => (
               <p key={i} className="mb-4 leading-relaxed">{paragraph}</p>
             ))}
@@ -61,10 +61,10 @@ export default function PublicTravelerInfo() {
       if (type === 'alert') {
         const style = content.style || 'neutral';
         const config = {
-          neutral: { bg: 'bg-cb-s1', border: 'border-cb-border', text: 'text-cb-text', icon: Info, iconColor: 'text-cb-muted' },
-          danger: { bg: 'bg-cb-danger/10', border: 'border-cb-danger/20', text: 'text-cb-danger', icon: AlertCircle, iconColor: 'text-cb-danger' },
-          warning: { bg: 'bg-cb-warning/10', border: 'border-cb-warning/30', text: 'text-cb-warning text-yellow-800', icon: AlertCircle, iconColor: 'text-cb-warning font-bold' },
-          success: { bg: 'bg-cb-success/10', border: 'border-cb-success/20', text: 'text-cb-success', icon: CheckCircle2, iconColor: 'text-cb-success' },
+          neutral: { bg: 'bg-vj-bg', border: 'border-vj-border', text: 'text-vj-txt', icon: Info, iconColor: 'text-vj-txt3' },
+          danger: { bg: 'bg-vj-red/10', border: 'border-vj-red/20', text: 'text-vj-red', icon: AlertCircle, iconColor: 'text-vj-red' },
+          warning: { bg: 'bg-vj-orange/10', border: 'border-vj-orange/30', text: 'text-vj-orange text-yellow-800', icon: AlertCircle, iconColor: 'text-vj-orange font-bold' },
+          success: { bg: 'bg-vj-green/10', border: 'border-vj-green/20', text: 'text-vj-green', icon: CheckCircle2, iconColor: 'text-vj-green' },
         }[style as 'neutral'|'danger'|'warning'|'success'];
 
         const Icon = config.icon;
@@ -81,7 +81,7 @@ export default function PublicTravelerInfo() {
 
       if (type === 'image') {
         return (
-          <div key={idx} className="mb-6 rounded-cb-md overflow-hidden bg-cb-s2">
+          <div key={idx} className="mb-6 rounded-cb-md overflow-hidden bg-vj-bg">
             <img src={content} alt="Content" className="w-full h-auto object-cover max-h-[500px]" loading="lazy" />
           </div>
         );
@@ -92,9 +92,9 @@ export default function PublicTravelerInfo() {
   };
 
   return (
-    <div className="min-h-screen bg-cb-s0 font-sans pb-24">
+    <div className="min-h-screen bg-white font-sans pb-24">
       {page.cover_image_url && (
-        <div className="w-full h-48 md:h-64 lg:h-80 relative bg-cb-s1">
+        <div className="w-full h-48 md:h-64 lg:h-80 relative bg-vj-bg">
           <img 
             src={page.cover_image_url} 
             alt={page.title} 
@@ -106,21 +106,21 @@ export default function PublicTravelerInfo() {
 
       <main className={`max-w-3xl mx-auto px-5 md:px-8 ${page.cover_image_url ? '-mt-16 md:-mt-24 relative z-10' : 'pt-16'}`}>
         <header className="mb-10 text-center">
-          <h1 className="text-3xl md:text-5xl font-extrabold text-cb-text tracking-tight mb-4">
+          <h1 className="text-3xl md:text-5xl font-extrabold text-vj-txt tracking-tight mb-4">
             {page.title}
           </h1>
           {page.description && (
-            <p className="text-lg md:text-xl text-cb-muted font-medium">
+            <p className="text-lg md:text-xl text-vj-txt3 font-medium">
               {page.description}
             </p>
           )}
         </header>
 
-        <article className="bg-cb-s0 sm:bg-transparent">
+        <article className="bg-white sm:bg-transparent">
           {page.content_blocks && Array.isArray(page.content_blocks) && page.content_blocks.length > 0 ? (
              renderContentBlocks(page.content_blocks)
           ) : (
-            <div className="text-center py-12 text-cb-muted italic">
+            <div className="text-center py-12 text-vj-txt3 italic">
               Nenhum conteúdo disponível nesta página ainda.
             </div>
           )}

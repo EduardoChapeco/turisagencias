@@ -95,30 +95,30 @@ export function SheetPage({
         className={cn(
           'relative flex flex-col z-10',
           'w-[min(70vw,_900px)] h-full',
-          'bg-cb-s0 border-l border-cb-border',
+          'bg-white border-l border-vj-border',
           'cb-animate-slide',
           className,
         )}
       >
         {/* Header */}
-        <div className="flex items-center gap-3 px-6 py-4 border-b border-cb-border flex-shrink-0">
+        <div className="flex items-center gap-3 px-6 py-4 border-b border-vj-border flex-shrink-0">
           {Icon && (
-            <div className="flex h-9 w-9 items-center justify-center rounded-cb-md bg-cb-s1 border border-cb-border text-cb-muted">
+            <div className="flex h-9 w-9 items-center justify-center rounded-cb-md bg-vj-bg border border-vj-border text-vj-txt3">
               <Icon size={18} />
             </div>
           )}
           <div className="flex-1 min-w-0">
-            <h2 id="sheet-page-title" className="font-heading font-semibold text-base text-cb-text leading-tight truncate">
+            <h2 id="sheet-page-title" className="font-heading font-semibold text-base text-vj-txt leading-tight truncate">
               {title}
             </h2>
             {subtitle && (
-              <p className="text-xs text-cb-muted mt-0.5 truncate">{subtitle}</p>
+              <p className="text-xs text-vj-txt3 mt-0.5 truncate">{subtitle}</p>
             )}
           </div>
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 shrink-0 text-cb-muted hover:text-cb-text"
+            className="h-8 w-8 shrink-0 text-vj-txt3 hover:text-vj-txt"
             onClick={onClose}
             aria-label="Fechar"
           >
@@ -136,7 +136,7 @@ export function SheetPage({
           {/* Sidebar (opcional) */}
           {hasSidebar && (
             <nav
-              className="border-r border-cb-border bg-cb-s1 p-2 flex flex-col gap-0.5 overflow-y-auto"
+              className="border-r border-vj-border bg-vj-bg p-2 flex flex-col gap-0.5 overflow-y-auto"
               aria-label="Seções"
             >
               {sections.map((section) => {
@@ -150,8 +150,8 @@ export function SheetPage({
                     className={cn(
                       'flex items-center gap-2.5 w-full px-3 py-2 rounded-cb-md text-sm font-medium transition-colors duration-100 text-left',
                       isActive
-                        ? 'bg-cb-accent/10 text-cb-accent font-semibold'
-                        : 'text-cb-muted hover:bg-cb-s2 hover:text-cb-text',
+                        ? 'bg-vj-green/10 text-vj-green font-semibold'
+                        : 'text-vj-txt3 hover:bg-vj-bg hover:text-vj-txt',
                     )}
                   >
                     {SectionIcon && <SectionIcon size={15} className="shrink-0" />}
@@ -170,7 +170,7 @@ export function SheetPage({
 
         {/* Footer */}
         {footer && (
-          <div className="flex items-center justify-end gap-2 px-6 py-4 border-t border-cb-border flex-shrink-0">
+          <div className="flex items-center justify-end gap-2 px-6 py-4 border-t border-vj-border flex-shrink-0">
             {footer}
           </div>
         )}

@@ -21,8 +21,8 @@ export default function Signup() {
     <div className="flex min-h-screen items-center justify-center bg-muted/30 px-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-lg bg-primary">
-            <Cloud className="h-6 w-6 text-primary-foreground" />
+          <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-lg bg-vj-green">
+            <Cloud className="h-6 w-6 text-vj-green-foreground" />
           </div>
           <CardTitle className="font-heading text-2xl">Criar sua conta</CardTitle>
           <CardDescription>Cadastre-se para começar a usar o CloudBlock.</CardDescription>

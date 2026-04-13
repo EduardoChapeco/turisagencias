@@ -23,7 +23,7 @@ export function MediaGallery({ images, className }: MediaGalleryProps) {
       {images.map((src, index) => (
         <div 
           key={src + index}
-          className="group relative aspect-square rounded-xl overflow-hidden cursor-pointer bg-cb-s1 border border-cb-border hover:border-cb-accent/50 transition-all duration-300 shadow-sm hover:shadow-md"
+          className="group relative aspect-square rounded-xl overflow-hidden cursor-pointer bg-vj-bg border border-vj-border hover:border-vj-green/50 transition-all duration-300 shadow-sm hover:shadow-md"
           onClick={() => openLightbox(index)}
         >
           <img 

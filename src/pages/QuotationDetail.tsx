@@ -112,7 +112,7 @@ export default function QuotationDetail() {
                   {quotation.num_nights && ` (${quotation.num_nights} noites)`}
                 </p>
               )}
-              <p className="flex items-center gap-2 text-lg font-bold text-primary">
+              <p className="flex items-center gap-2 text-lg font-bold text-vj-green">
                 <DollarSign className="h-4 w-4" /> {formatCurrency(quotation.total_value, quotation.currency || 'BRL')}
               </p>
               {installments.length > 0 && (

@@ -64,7 +64,7 @@ function RowSkeleton({ cols }: { cols: number }) {
     <tr>
       {Array.from({ length: cols }).map((_, i) => (
         <td key={i} className="px-4 py-3">
-          <div className="h-4 rounded bg-cb-s2 animate-pulse" style={{ width: `${60 + (i * 20) % 40}%` }} />
+          <div className="h-4 rounded bg-vj-bg animate-pulse" style={{ width: `${60 + (i * 20) % 40}%` }} />
         </td>
       ))}
     </tr>
@@ -94,20 +94,20 @@ export function DataTable<T extends { id: string }>({
         <div className="data-table-toolbar">
           {onSearch !== undefined ? (
             <div className="relative flex-1 max-w-xs">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-cb-muted pointer-events-none" />
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-vj-txt3 pointer-events-none" />
               <Input
                 id="data-table-search"
                 type="text"
                 placeholder={searchPlaceholder}
                 value={searchValue ?? ''}
                 onChange={(e) => onSearch(e.target.value)}
-                className="pl-8 h-8 text-sm border-cb-border bg-cb-s0"
+                className="pl-8 h-8 text-sm border-vj-border bg-white"
               />
               {searchValue && (
                 <button
                   type="button"
                   onClick={() => onSearch('')}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-cb-muted hover:text-cb-text"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-vj-txt3 hover:text-vj-txt"
                   aria-label="Limpar busca"
                 >
                   <X size={12} />
@@ -127,12 +127,12 @@ export function DataTable<T extends { id: string }>({
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-cb-border bg-cb-s1">
+            <tr className="border-b border-vj-border bg-vj-bg">
               {columns.map((col) => (
                 <th
                   key={col.key}
                   className={cn(
-                    'px-4 py-3 font-semibold text-xs text-cb-muted uppercase tracking-wide',
+                    'px-4 py-3 font-semibold text-xs text-vj-txt3 uppercase tracking-wide',
                     col.width ?? '',
                     alignMap[col.align ?? 'left'],
                   )}
@@ -165,7 +165,7 @@ export function DataTable<T extends { id: string }>({
                   key={row.id}
                   className={cn(
                     'transition-colors duration-100',
-                    onRowClick ? 'cursor-pointer hover:bg-cb-s1' : '',
+                    onRowClick ? 'cursor-pointer hover:bg-vj-bg' : '',
                   )}
                   onClick={onRowClick ? () => onRowClick(row) : undefined}
                 >
@@ -173,7 +173,7 @@ export function DataTable<T extends { id: string }>({
                     <td
                       key={col.key}
                       className={cn(
-                        'px-4 py-3 text-cb-text',
+                        'px-4 py-3 text-vj-txt',
                         alignMap[col.align ?? 'left'],
                       )}
                     >

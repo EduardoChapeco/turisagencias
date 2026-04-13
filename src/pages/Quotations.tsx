@@ -19,11 +19,11 @@ import {
 } from '@/components/ui/alert-dialog';
 
 const STATUS_STYLES: Record<string, { color: string; label: string }> = {
-  draft:    { color: 'bg-cb-s2 text-cb-muted border-cb-border',           label: 'Rascunho' },
-  sent:     { color: 'bg-cb-accent/10 text-cb-accent border-cb-accent/20', label: 'Enviada' },
-  viewed:   { color: 'bg-amber-100 text-amber-700 border-amber-200',       label: 'Visualizada' },
-  accepted: { color: 'bg-emerald-100 text-emerald-700 border-emerald-200', label: 'Aceita ✅' },
-  expired:  { color: 'bg-red-100 text-red-700 border-red-200',             label: 'Expirada' },
+  draft:    { color: 'bg-vj-bg text-vj-txt2 border-vj-border',           label: 'Rascunho' },
+  sent:     { color: 'bg-vj-blue-bg text-vj-blue border-[var(--blue)]/20', label: 'Enviada' },
+  viewed:   { color: 'bg-vj-orange-bg text-vj-orange border-[var(--orange)]/20',       label: 'Visualizada' },
+  accepted: { color: 'bg-vj-green-bg text-vj-green border-[var(--green)]/20', label: 'Aceita ✅' },
+  expired:  { color: 'bg-vj-red-bg text-vj-red border-[var(--red)]/20',             label: 'Expirada' },
 };
 
 export default function Quotations() {
@@ -60,16 +60,16 @@ export default function Quotations() {
 
         <div className="flex gap-3">
           <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-cb-muted" />
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-vj-txt3" />
             <Input
               placeholder="Buscar por destino..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-10 border-cb-border bg-cb-s1"
+              className="pl-10"
             />
           </div>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-44 border-cb-border bg-cb-s1">
+            <SelectTrigger className="w-44 border-vj-border bg-vj-bg rounded-[10px] h-[42px] text-[13px] text-vj-txt">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
@@ -102,16 +102,16 @@ export default function Quotations() {
               return (
                 <div
                   key={q.id}
-                  className="group relative rounded-2xl border border-cb-border bg-cb-s0 overflow-hidden hover:border-cb-accent/30 hover:shadow-xl transition-all cursor-pointer flex flex-col"
+                  className="group relative rounded-[var(--r)] border border-vj-border bg-vj-white overflow-hidden hover:border-vj-txt3 transition-all cursor-pointer flex flex-col shadow-none"
                   onClick={() => navigate(`/quotations/${q.id}`)}
                 >
                   {/* Cover image */}
-                  <div className="relative h-36 bg-gradient-to-br from-cb-accent/20 to-cb-s2 overflow-hidden">
+                  <div className="relative h-[160px] bg-vj-bg overflow-hidden border-b border-vj-border">
                     {coverImage ? (
-                      <img src={coverImage} alt={q.destination || ''} className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                      <img src={coverImage} alt={q.destination || ''} className="h-full w-full object-cover" />
                     ) : (
                       <div className="h-full flex items-center justify-center">
-                        <MapPin className="h-12 w-12 text-cb-muted/20" />
+                        <MapPin className="h-8 w-8 text-vj-border2" />
                       </div>
                     )}
                     {/* Status badge overlay */}
@@ -144,15 +144,15 @@ export default function Quotations() {
                   </div>
 
                   {/* Content */}
-                  <div className="p-4 flex-1 space-y-2">
+                  <div className="p-5 flex-1 space-y-2">
                     <div>
                       {q.destination && (
-                        <p className="font-bold text-cb-text flex items-center gap-1.5">
-                          <MapPin className="h-3.5 w-3.5 text-cb-accent shrink-0" /> {q.destination}
+                        <p className="font-semibold text-vj-txt text-[16px] flex items-center gap-1.5 leading-tight">
+                          {q.destination}
                         </p>
                       )}
                       {q.hotel_name && (
-                        <p className="text-xs text-cb-muted flex items-center gap-1 mt-0.5">
+                        <p className="text-[13px] text-vj-txt2 flex items-center gap-1 mt-1">
                           <Hotel className="h-3 w-3 shrink-0" /> {q.hotel_name}
                           {q.hotel_stars ? ` ${'⭐'.repeat(Math.min(q.hotel_stars, 5))}` : ''}
                         </p>
@@ -160,7 +160,7 @@ export default function Quotations() {
                     </div>
 
                     {(q.check_in || q.check_out) && (
-                      <p className="text-xs text-cb-muted flex items-center gap-1">
+                      <p className="text-[13px] text-vj-txt2 flex items-center gap-1">
                         <Calendar className="h-3 w-3 shrink-0" />
                         {q.check_in && new Date(q.check_in).toLocaleDateString('pt-BR')}
                         {q.check_out && ` → ${new Date(q.check_out).toLocaleDateString('pt-BR')}`}
@@ -169,13 +169,13 @@ export default function Quotations() {
                     )}
 
                     {clientName && (
-                      <p className="text-xs text-cb-muted flex items-center gap-1">
+                      <p className="text-[13px] text-vj-txt2 flex items-center gap-1">
                         <Users className="h-3 w-3 shrink-0" /> {clientName}
                       </p>
                     )}
 
                     {q.total_value && (
-                      <p className="text-xl font-bold font-heading text-cb-accent">
+                      <p className="text-[18px] font-bold text-vj-txt mt-2">
                         {formatCurrency(q.total_value, q.currency ?? 'BRL')}
                       </p>
                     )}

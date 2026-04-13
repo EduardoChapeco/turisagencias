@@ -59,7 +59,7 @@ export default function TripDetail() {
           </Button>
           <div className="flex-1">
             <div className="flex items-center gap-3">
-              <h1 className="font-heading text-3xl font-bold tracking-tight text-primary">{trip.title}</h1>
+              <h1 className="font-heading text-3xl font-bold tracking-tight text-vj-green">{trip.title}</h1>
               <Badge variant={trip.status === 'confirmed' ? 'default' : 'secondary'} className="text-xs uppercase px-2 py-0.5 shadow-sm">
                 {trip.status}
               </Badge>
@@ -72,9 +72,9 @@ export default function TripDetail() {
         </div>
 
         <Tabs defaultValue="itinerary" className="w-full">
-          <div className="bg-surface/50 p-1.5 rounded-2xl border border-border/50 shadow-sm inline-block max-w-full overflow-x-auto scrollbar-none">
+          <div className="bg-vj-bg p-1.5 rounded-2xl border border-vj-border shadow-sm inline-block max-w-full overflow-x-auto scrollbar-none">
             <TabsList className="h-auto bg-transparent p-0 flex gap-1">
-              <TabsTrigger value="itinerary" className="rounded-xl px-4 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm"><MapPin className="h-4 w-4 mr-2" />Itinerário & Mapa</TabsTrigger>
+              <TabsTrigger value="itinerary" className="rounded-xl px-4 py-2 data-[state=active]:bg-vj-green data-[state=active]:text-vj-green-foreground data-[state=active]:shadow-sm"><MapPin className="h-4 w-4 mr-2" />Itinerário & Mapa</TabsTrigger>
               <TabsTrigger value="summary" className="rounded-xl px-4 py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm"><CalendarDays className="h-4 w-4 mr-2" />Resumo Geral</TabsTrigger>
               <TabsTrigger value="travelers" className="rounded-xl px-4 py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm"><UsersIcon className="h-4 w-4 mr-2" />Cargadores & Grupos</TabsTrigger>
               <TabsTrigger value="documents" className="rounded-xl px-4 py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm"><FileText className="h-4 w-4 mr-2" />Documentos</TabsTrigger>
@@ -87,22 +87,22 @@ export default function TripDetail() {
             {/* Timeline View */}
             <div className="flex-1 space-y-4">
                <h3 className="text-lg font-semibold flex items-center gap-2"><MapPin className="h-5 w-5 text-accent"/> Timeline Interativa</h3>
-               <div className="relative border-l-2 border-primary/20 pl-6 ml-3 space-y-8 pb-4">
+               <div className="relative border-l-2 border-vj-green/20 pl-6 ml-3 space-y-8 pb-4">
                   
                   {/* Ponto Voo */}
                   <div className="relative">
-                     <div className="absolute -left-[35px] w-8 h-8 bg-surface border-2 border-primary rounded-full flex items-center justify-center z-10 shadow-sm">
-                        <Plane className="h-4 w-4 text-primary" />
+                     <div className="absolute -left-[35px] w-8 h-8 bg-vj-bg border-2 border-vj-green/20 rounded-full flex items-center justify-center z-10 shadow-sm">
+                        <Plane className="h-4 w-4 text-vj-green" />
                      </div>
-                     <Card className="border-border/50 shadow-sm hover:shadow-md transition-all">
-                        <CardHeader className="bg-muted/20 py-3 px-4 border-b border-border/30">
+                     <Card className="border-vj-border shadow-sm hover:shadow-md transition-all">
+                        <CardHeader className="bg-muted/20 py-3 px-4 border-b border-vj-border">
                            <CardTitle className="text-sm font-medium">Voo de Ida</CardTitle>
                         </CardHeader>
                         <CardContent className="py-4 px-4 space-y-3">
                            {!trip.trip_flights?.length && <p className="text-sm text-muted-foreground italic">Nenhum voo conectado ao Itinerário.</p>}
                            {trip.trip_flights?.map((flight) => (
                              <div key={flight.id} className="flex flex-col text-sm">
-                               <span className="font-semibold text-primary">{flight.airline_name || 'Companhia'} {flight.flight_number || ''}</span>
+                               <span className="font-semibold text-vj-green">{flight.airline_name || 'Companhia'} {flight.flight_number || ''}</span>
                                <span className="text-muted-foreground">{[flight.origin_city, flight.destination_city].filter(Boolean).join(' → ')}</span>
                              </div>
                            ))}
@@ -112,17 +112,17 @@ export default function TripDetail() {
 
                   {/* Ponto Hotel */}
                   <div className="relative">
-                     <div className="absolute -left-[35px] w-8 h-8 bg-surface border-2 border-accent rounded-full flex items-center justify-center z-10 shadow-sm">
+                     <div className="absolute -left-[35px] w-8 h-8 bg-vj-bg border-2 border-accent rounded-full flex items-center justify-center z-10 shadow-sm">
                         <Hotel className="h-4 w-4 text-accent" />
                      </div>
-                     <Card className="border-border/50 shadow-sm hover:shadow-md transition-all">
-                        <CardHeader className="bg-muted/20 py-3 px-4 border-b border-border/30">
+                     <Card className="border-vj-border shadow-sm hover:shadow-md transition-all">
+                        <CardHeader className="bg-muted/20 py-3 px-4 border-b border-vj-border">
                            <CardTitle className="text-sm font-medium">Hospedagem</CardTitle>
                         </CardHeader>
                         <CardContent className="py-4 px-4">
                            {trip.hotel_name ? (
                               <div className="flex flex-col text-sm">
-                                 <span className="font-semibold text-primary">{trip.hotel_name}</span>
+                                 <span className="font-semibold text-vj-green">{trip.hotel_name}</span>
                                  <span className="text-muted-foreground">Check-in Programado</span>
                               </div>
                            ) : (
@@ -137,9 +137,9 @@ export default function TripDetail() {
 
             {/* Map Placeholder */}
             <div className="md:w-[400px] shrink-0">
-               <Card className="border-border/50 shadow-sm overflow-hidden h-full min-h-[400px] relative bg-muted/20 flex items-center justify-center group">
+               <Card className="border-vj-border shadow-sm overflow-hidden h-full min-h-[400px] relative bg-muted/20 flex items-center justify-center group">
                   <div className="absolute inset-0 bg-[url('https://api.maptiler.com/maps/basic-v2/256/0/0/0.png')] bg-cover bg-center opacity-30 grayscale group-hover:grayscale-0 group-hover:opacity-50 transition-all duration-700"></div>
-                  <div className="relative z-10 flex flex-col items-center space-y-3 bg-surface/80 p-6 rounded-2xl backdrop-blur-md border border-white/10 shadow-xl text-center">
+                  <div className="relative z-10 flex flex-col items-center space-y-3 bg-vj-bg p-6 rounded-2xl backdrop-blur-md border border-white/10 shadow-xl text-center">
                      <MapPin className="h-10 w-10 text-accent animate-bounce" />
                      <h4 className="font-heading font-semibold text-lg">Pin de Destino</h4>
                      <p className="text-sm text-muted-foreground px-4">A integração nativa de Mapas renderizará {trip.destination_city || 'sua rota'} aqui.</p>
@@ -149,15 +149,15 @@ export default function TripDetail() {
           </TabsContent>
 
           <TabsContent value="summary" className="mt-6">
-            <Card className="border-border/50 shadow-sm">
-              <CardHeader className="bg-surface/50 border-b border-border/30">
+            <Card className="border-vj-border shadow-sm">
+              <CardHeader className="bg-vj-bg border-b border-vj-border">
                 <CardTitle>Painel do Workspace</CardTitle>
                 <CardDescription>Visão sistêmica da estrutura baseada nos dados contratuais.</CardDescription>
               </CardHeader>
               <CardContent className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 p-6 pt-6">
                 <div className="space-y-1">
                   <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Comprador</p>
-                  <p className="font-semibold text-primary truncate">{trip.clients?.name || 'Vazio'}</p>
+                  <p className="font-semibold text-vj-green truncate">{trip.clients?.name || 'Vazio'}</p>
                 </div>
                 <div className="space-y-1">
                   <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Datas</p>
@@ -180,8 +180,8 @@ export default function TripDetail() {
           </TabsContent>
 
           <TabsContent value="travelers" className="mt-6">
-            <Card className="border-border/50 shadow-sm">
-              <CardHeader className="bg-surface/50 border-b border-border/30">
+            <Card className="border-vj-border shadow-sm">
+              <CardHeader className="bg-vj-bg border-b border-vj-border">
                 <CardTitle className="flex justify-between items-center">
                    Matriz de Viajantes & Grupos
                    <Button variant="outline" size="sm" disabled>Gerenciar Grupos</Button>
@@ -197,9 +197,9 @@ export default function TripDetail() {
                 ) : (
                   <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                      {trip.trip_travelers?.map((traveler) => (
-                       <div key={traveler.id} className="rounded-xl border border-border/60 bg-surface/40 p-4 shrink-0 hover:border-primary/40 transition-colors">
+                       <div key={traveler.id} className="rounded-xl border border-vj-border bg-vj-bg p-4 shrink-0 hover:border-vj-green/20 transition-colors">
                          <div className="flex items-center gap-3 mb-3">
-                            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary">
+                            <div className="w-10 h-10 rounded-full bg-vj-green/10 flex items-center justify-center font-bold text-vj-green">
                                {traveler.travelers?.full_name?.charAt(0) || 'V'}
                             </div>
                             <div>
@@ -208,7 +208,7 @@ export default function TripDetail() {
                             </div>
                          </div>
                          <div className="space-y-2 text-xs">
-                            <div className="flex justify-between border-b border-border/30 pb-1">
+                            <div className="flex justify-between border-b border-vj-border pb-1">
                                <span className="text-muted-foreground">E-ticket:</span>
                                <span className="font-mono">{traveler.ticket_number || '--'}</span>
                             </div>
@@ -226,15 +226,15 @@ export default function TripDetail() {
           </TabsContent>
 
           <TabsContent value="documents" className="mt-6">
-            <Card className="border-border/50 shadow-sm">
-              <CardHeader className="bg-surface/50 border-b border-border/30">
+            <Card className="border-vj-border shadow-sm">
+              <CardHeader className="bg-vj-bg border-b border-vj-border">
                  <CardTitle>Cofre de Documentos</CardTitle>
               </CardHeader>
               <CardContent className="p-6">
                 {!trip.trip_documents?.length && <p className="text-sm text-muted-foreground text-center py-6">O cofre digital está vazio.</p>}
                 <div className="grid gap-3 md:grid-cols-2">
                    {trip.trip_documents?.map((document) => (
-                     <div key={document.id} className="flex items-center gap-3 rounded-lg border border-border/60 p-3 bg-surface/30">
+                     <div key={document.id} className="flex items-center gap-3 rounded-lg border border-vj-border p-3 bg-vj-bg">
                        <FileText className="h-8 w-8 text-muted-foreground/60 p-1.5 bg-muted rounded-md" />
                        <div>
                           <p className="font-medium text-sm">{document.title}</p>
@@ -249,8 +249,8 @@ export default function TripDetail() {
 
           <TabsContent value="tickets" className="mt-6">
             <div className="grid gap-6 lg:grid-cols-[1fr_300px]">
-              <Card className="border-border/50 shadow-sm">
-                <CardHeader className="bg-surface/50 border-b border-border/30">
+              <Card className="border-vj-border shadow-sm">
+                <CardHeader className="bg-vj-bg border-b border-vj-border">
                    <CardTitle>Tickets (Atendimentos)</CardTitle>
                 </CardHeader>
                 <CardContent className="p-6">
@@ -260,7 +260,7 @@ export default function TripDetail() {
                        <button
                          key={ticket.id}
                          type="button"
-                         className="w-full flex items-center justify-between rounded-xl border border-border/60 p-4 text-left transition-colors hover:border-primary/50 hover:bg-surface/50"
+                         className="w-full flex items-center justify-between rounded-xl border border-vj-border p-4 text-left transition-colors hover:border-vj-green/20 hover:bg-vj-bg"
                          onClick={() => navigate(`/tickets/${ticket.id}`)}
                        >
                        <div className="flex items-start justify-between gap-3">

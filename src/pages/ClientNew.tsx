@@ -86,7 +86,7 @@ export default function ClientNew() {
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>
-            <h1 className="font-heading text-3xl font-bold text-primary flex items-center gap-3">
+            <h1 className="font-heading text-3xl font-bold text-vj-green flex items-center gap-3">
               <UserPlus className="h-8 w-8 text-accent" />
               Novo Cliente
             </h1>
@@ -97,8 +97,8 @@ export default function ClientNew() {
         <form onSubmit={handleSubmit} className="space-y-6">
           
           {/* Dados Pessoais */}
-          <Card className="border-border/50 shadow-sm">
-            <CardHeader className="bg-surface/50 border-b border-border/30">
+          <Card className="border-vj-border shadow-sm">
+            <CardHeader className="bg-vj-bg border-b border-vj-border">
               <CardTitle>Identidade do Cliente</CardTitle>
               <CardDescription>Dados obrigatórios para o cadastro no CRM e emissão de bilhetes.</CardDescription>
             </CardHeader>
@@ -127,8 +127,8 @@ export default function ClientNew() {
           </Card>
 
           {/* Passaporte */}
-          <Card className="border-border/50 shadow-sm">
-            <CardHeader className="bg-surface/50 border-b border-border/30">
+          <Card className="border-vj-border shadow-sm">
+            <CardHeader className="bg-vj-bg border-b border-vj-border">
               <CardTitle className="flex items-center gap-2"><Globe className="h-5 w-5 text-accent" /> Documentos de Viagem</CardTitle>
               <CardDescription>Passaporte e documentos para emissão de voos internacionais.</CardDescription>
             </CardHeader>
@@ -145,8 +145,8 @@ export default function ClientNew() {
           </Card>
 
           {/* Tags */}
-          <Card className="border-border/50 shadow-sm">
-            <CardHeader className="bg-surface/50 border-b border-border/30">
+          <Card className="border-vj-border shadow-sm">
+            <CardHeader className="bg-vj-bg border-b border-vj-border">
               <CardTitle className="flex items-center gap-2"><Tag className="h-5 w-5 text-accent" /> Tags de Segmentação</CardTitle>
               <CardDescription>Categorize o cliente para filtros automáticos e campanhas de marketing.</CardDescription>
             </CardHeader>
@@ -177,8 +177,8 @@ export default function ClientNew() {
           </Card>
 
           {/* Preferências de Viagem */}
-          <Card className="border-border/50 shadow-sm">
-            <CardHeader className="bg-surface/50 border-b border-border/30">
+          <Card className="border-vj-border shadow-sm">
+            <CardHeader className="bg-vj-bg border-b border-vj-border">
               <CardTitle>Perfil de Preferências de Viagem</CardTitle>
               <CardDescription>Alimenta o V-Agent com contexto para recomendações personalizadas.</CardDescription>
             </CardHeader>
@@ -215,8 +215,8 @@ export default function ClientNew() {
           </Card>
 
           {/* Endereço */}
-          <Card className="border-border/50 shadow-sm">
-            <CardHeader className="bg-surface/50 border-b border-border/30">
+          <Card className="border-vj-border shadow-sm">
+            <CardHeader className="bg-vj-bg border-b border-vj-border">
               <CardTitle>Endereço</CardTitle>
             </CardHeader>
             <CardContent className="grid gap-4 sm:grid-cols-3 p-6">
@@ -240,8 +240,8 @@ export default function ClientNew() {
           </Card>
 
           {/* Origem e Notas */}
-          <Card className="border-border/50 shadow-sm">
-            <CardHeader className="bg-surface/50 border-b border-border/30">
+          <Card className="border-vj-border shadow-sm">
+            <CardHeader className="bg-vj-bg border-b border-vj-border">
               <CardTitle>Origem e Observações</CardTitle>
             </CardHeader>
             <CardContent className="grid gap-4 sm:grid-cols-2 p-6">
@@ -262,13 +262,13 @@ export default function ClientNew() {
           </Card>
 
           {/* Portal Access */}
-          <Card className="border-border/50 shadow-sm">
-            <CardHeader className="bg-surface/50 border-b border-border/30">
-              <CardTitle className="flex items-center gap-2"><Shield className="h-5 w-5 text-primary" /> Acesso ao Portal do Cliente</CardTitle>
+          <Card className="border-vj-border shadow-sm">
+            <CardHeader className="bg-vj-bg border-b border-vj-border">
+              <CardTitle className="flex items-center gap-2"><Shield className="h-5 w-5 text-vj-green" /> Acesso ao Portal do Cliente</CardTitle>
               <CardDescription>Se ativo, o cliente poderá acessar o Portal personalizado da agência via Magic Link.</CardDescription>
             </CardHeader>
             <CardContent className="p-6">
-              <div className="flex items-center justify-between p-4 border border-border/50 rounded-xl bg-primary/5">
+              <div className="flex items-center justify-between p-4 border border-vj-border rounded-xl bg-vj-green/10">
                 <div>
                   <p className="font-semibold text-sm">Habilitar Acesso ao Portal</p>
                   <p className="text-xs text-muted-foreground mt-0.5">O cliente receberá link de acesso ao app de viagens personalizado.</p>

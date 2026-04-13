@@ -27,8 +27,8 @@ export function SectionRenderer({ sections }: SectionRendererProps) {
         <section key={section.id} className="animate-in fade-in slide-in-from-bottom-4 duration-700">
           {section.title && (
             <div className="mb-6">
-              <h2 className="text-2xl font-bold tracking-tight text-cb-text">{section.title}</h2>
-              <div className="h-1 w-12 bg-cb-accent rounded-full mt-2" />
+              <h2 className="text-2xl font-bold tracking-tight text-vj-txt">{section.title}</h2>
+              <div className="h-1 w-12 bg-vj-green rounded-full mt-2" />
             </div>
           )}
 
@@ -37,7 +37,7 @@ export function SectionRenderer({ sections }: SectionRendererProps) {
             section.layout === 'centered' && "max-w-3xl mx-auto text-center",
           )}>
             {section.type === 'text' && (
-              <div className="prose prose-slate dark:prose-invert max-w-none text-cb-muted leading-relaxed whitespace-pre-wrap text-lg">
+              <div className="prose prose-slate dark:prose-invert max-w-none text-vj-txt3 leading-relaxed whitespace-pre-wrap text-lg">
                 {section.content}
               </div>
             )}
@@ -51,7 +51,7 @@ export function SectionRenderer({ sections }: SectionRendererProps) {
             )}
 
             {section.type === 'divider' && (
-              <hr className="border-cb-border" />
+              <hr className="border-vj-border" />
             )}
           </div>
         </section>

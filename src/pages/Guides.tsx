@@ -38,8 +38,8 @@ export default function Guides() {
           }
         />
 
-        <Card className="surface-card border-cb-border overflow-hidden">
-          <div className="p-4 border-b border-cb-border bg-cb-s0 flex flex-col sm:flex-row gap-4 justify-between items-center">
+        <Card className="surface-card border-vj-border overflow-hidden">
+          <div className="p-4 border-b border-vj-border bg-white flex flex-col sm:flex-row gap-4 justify-between items-center">
             <div className="relative w-full sm:w-96">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
@@ -79,7 +79,7 @@ export default function Guides() {
                 {filteredGuides?.map((guide) => (
                   <Card 
                      key={guide.id} 
-                     className="group overflow-hidden rounded-2xl border-border/60 hover:shadow-lg hover:border-primary/50 transition-all cursor-pointer flex flex-col"
+                     className="group overflow-hidden rounded-2xl border-vj-border hover:shadow-lg hover:border-vj-green/20 transition-all cursor-pointer flex flex-col"
                      onClick={() => navigate(`/guides/${guide.id}`)}
                   >
                      <div className="h-40 bg-muted relative overflow-hidden">
@@ -108,7 +108,7 @@ export default function Guides() {
                            {guide.intro || 'Nenhuma introdução escrita ainda. Envie o contexto para a inteligência artificial ler.'}
                         </p>
                      </CardContent>
-                     <CardFooter className="pt-0 pb-4 border-t border-border/10 mt-4 flex items-center justify-between text-muted-foreground text-xs font-medium">
+                     <CardFooter className="pt-0 pb-4 border-t border-vj-border mt-4 flex items-center justify-between text-muted-foreground text-xs font-medium">
                         <span className="flex items-center gap-1.5"><BookOpen className="h-3.5 w-3.5"/> {(guide.tips as any[])?.length || 0} Dicas</span>
                         <span>Atualizado há pouco</span>
                      </CardFooter>

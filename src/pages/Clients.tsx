@@ -47,12 +47,12 @@ export default function ClientsPage() {
         />
 
         <div className="relative max-w-md">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-cb-muted" />
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-vj-txt3" />
           <Input
             placeholder="Buscar por nome..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-10 border-cb-border bg-cb-s1"
+            className="pl-10 border-vj-border bg-vj-bg"
           />
         </div>
 
@@ -70,27 +70,27 @@ export default function ClientsPage() {
             {clients.map((client) => (
               <div
                 key={client.id}
-                className="group relative rounded-2xl border border-cb-border bg-cb-s0 hover:border-cb-accent/30 hover:shadow-lg transition-all cursor-pointer p-4 flex flex-col gap-3"
+                className="group relative rounded-2xl border border-vj-border bg-white hover:border-vj-green/30 hover:shadow-lg transition-all cursor-pointer p-4 flex flex-col gap-3"
                 onClick={() => navigate(`/clients/${client.id}`)}
               >
                 {/* Header */}
                 <div className="flex items-start gap-3">
-                  <div className="h-12 w-12 shrink-0 rounded-full bg-cb-accent/10 border border-cb-accent/20 overflow-hidden flex items-center justify-center">
+                  <div className="h-12 w-12 shrink-0 rounded-full bg-vj-green/10 border border-vj-green/20 overflow-hidden flex items-center justify-center">
                     {(client as any).photo_url ? (
                       <img src={(client as any).photo_url} alt={client.name} className="h-full w-full object-cover" />
                     ) : (
-                      <span className="text-cb-accent font-bold text-lg">{client.name[0]?.toUpperCase()}</span>
+                      <span className="text-vj-green font-bold text-lg">{client.name[0]?.toUpperCase()}</span>
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-bold text-cb-text truncate">{client.name}</p>
+                    <p className="font-bold text-vj-txt truncate">{client.name}</p>
                     {client.email && (
-                      <p className="text-xs text-cb-muted flex items-center gap-1 truncate">
+                      <p className="text-xs text-vj-txt3 flex items-center gap-1 truncate">
                         <Mail className="h-3 w-3 shrink-0" /> {client.email}
                       </p>
                     )}
                     {client.phone && (
-                      <p className="text-xs text-cb-muted flex items-center gap-1">
+                      <p className="text-xs text-vj-txt3 flex items-center gap-1">
                         <Phone className="h-3 w-3 shrink-0" /> {client.phone}
                       </p>
                     )}
@@ -117,7 +117,7 @@ export default function ClientsPage() {
                         <AlertDialogFooter>
                           <AlertDialogCancel>Cancelar</AlertDialogCancel>
                           <AlertDialogAction
-                            className="bg-cb-danger text-white hover:bg-cb-danger/90"
+                            className="bg-vj-red text-white hover:bg-vj-red/90"
                             onClick={() => deleteClient.mutate(client.id)}
                           >
                             Excluir
@@ -132,7 +132,7 @@ export default function ClientsPage() {
                 {client.tags && client.tags.length > 0 && (
                   <div className="flex flex-wrap gap-1.5">
                     {client.tags.slice(0, 4).map((tag) => (
-                      <Badge key={tag} className="text-xs bg-cb-accent/10 text-cb-accent border-cb-accent/20 border">
+                      <Badge key={tag} className="text-xs bg-vj-green/10 text-vj-green border-vj-green/20 border">
                         {tag}
                       </Badge>
                     ))}
@@ -141,7 +141,7 @@ export default function ClientsPage() {
 
                 {/* Portal badge */}
                 {client.portal_access_enabled && (
-                  <div className="flex items-center gap-1 text-xs text-cb-success">
+                  <div className="flex items-center gap-1 text-xs text-vj-green">
                     <Shield className="h-3 w-3" /> Portal ativo
                   </div>
                 )}

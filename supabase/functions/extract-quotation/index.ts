@@ -35,40 +35,31 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const systemPrompt = `You are an expert travel quotation data extractor. Extract structured data from travel quotation images or text.
+    const systemPrompt = `Você é um especialista em viagens e agente de turismo focado em extrair dados de cotações para CRM.
+Sua missão é extrair informações de imagens ou textos com extrama precisão, formatar corretamente e gerar um texto de vendas persuasivo para o WhatsApp.
 
-Return a JSON object with these fields (use null for missing data):
-{
-  "destination": "city/country",
-  "hotel_name": "hotel name",
-  "hotel_stars": 5,
-  "check_in": "YYYY-MM-DD",
-  "check_out": "YYYY-MM-DD", 
-  "num_nights": 7,
-  "meal_plan": "all_inclusive|half_board|bed_breakfast|room_only",
-  "room_type": "standard|superior|deluxe|suite",
-  "total_value": 15000.00,
-  "currency": "BRL",
-  "installments": [
-    {"type": "pix", "value": 15000, "installment_count": 1},
-    {"type": "credit_10x", "value": 1500, "installment_count": 10}
-  ],
-  "flights": [
-    {"direction": "outbound", "airline_name": "Emirates", "cabin_class": "Econômica"}
-  ],
-  "itinerary": [
-    {"day_number": 1, "city": "Dubai", "label": "Chegada", "description": "Recepção no aeroporto..."}
-  ],
-  "whatsapp_text": "formatted WhatsApp message in Portuguese with emojis"
-}
+REGRAS:
+1. Extraia o máximo de campos possível da cotação.
+2. Formate as datas em YYYY-MM-DD rigorosamente. Se o ano não for mencionado, assuma o ano corrente.
+3. Se o meal_plan não for identificado claramente (Café da manhã, meia pensão, tudo incluído), use null.
+4. total_value deve ser um número exato sem formatação de moeda. Use ponto como separador decimal.
+5. Em whatsapp_text, seu texto deve ser formatado EM PORTUGUÊS (BR), com parágrafos curtos, uso inteligente de negrito (*texto*) e emojis, refletindo ESTRITAMENTE as informações extraídas. Use o seguinte padrão para o WhatsApp:
+   *Olá! Tudo bem?* 👋
+   Aqui é o seu agente de viagens. Segue a cotação incrível que preparei para você:
 
-For the whatsapp_text, create an attractive message in Portuguese with:
-- ✈️ Destination
-- 🏨 Hotel name and stars
-- 📅 Dates and nights
-- 🗺️ Intinerary briefly (if available)
-- 💰 Price and installment options
-- A friendly CTA`;
+   ✈️ *Destino:* [Destino]
+   🏨 *Hotel:* [Nome do Hotel] ([Estrelas]⭐)
+   📅 *Período:* [Data Entrada] a [Data Saída] ([Noites] noites)
+   🍽️ *Regime:* [Regime de Alimentação]
+   🛏️ *Acomodação:* [Tipo de Quarto]
+
+   [Gere um breve parágrafo vendedor sobre o destino e a hospedagem]
+
+   💰 *Investimento Total:* [Moeda] [Valor Formatado Ex: R$ 15.000,00]
+   💳 *Condições de Pagamento:*
+   [Liste as condições de parcelamento ou à vista extraídas]
+
+   O que achou dessa sugestão? Me avise para garantirmos a sua reserva! 🚀`;
 
     const messages: any[] = [{ role: "system", content: systemPrompt }];
 

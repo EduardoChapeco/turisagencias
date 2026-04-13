@@ -1,6 +1,8 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { AppLayout } from '@/components/AppLayout';
+import { ClientEditSheet } from '@/components/ClientEditSheet';
+import { QuotationBuilderSheet } from '@/components/QuotationBuilderSheet';
 import { useClient } from '@/hooks/useClients';
 import { useTravelers, useCreateTraveler, useDeleteTraveler } from '@/hooks/useTravelers';
 import { Button } from '@/components/ui/button';
@@ -33,6 +35,8 @@ export default function ClientDetail() {
   const { toast } = useToast();
   const [newTraveler, setNewTraveler] = useState({ full_name: '', cpf: '', birth_date: '', email: '', phone: '', relation: '' });
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [clientSheetOpen, setClientSheetOpen] = useState(false);
+  const [quotationBuilderOpen, setQuotationBuilderOpen] = useState(false);
 
   const handleAddTraveler = async () => {
     if (!newTraveler.full_name) return;
@@ -83,7 +87,7 @@ export default function ClientDetail() {
         </div>
 
         {/* Header Profile - "World ID / Notion Style" */}
-        <div className="relative rounded-3xl overflow-hidden shadow-sm border border-border/50 bg-surface-elevated">
+        <div className="relative rounded-3xl overflow-hidden shadow-sm border border-vj-border bg-white">
            {/* Cover Banner */}
            <div className={`h-32 w-full ${isVip ? 'bg-gradient-to-r from-purple-600 to-indigo-900' : 'bg-gradient-to-r from-primary to-accent'} opacity-90`} />
            
@@ -95,7 +99,7 @@ export default function ClientDetail() {
                        {client.photo_url ? (
                          <img src={client.photo_url} alt={client.name} className="w-full h-full object-cover" />
                        ) : (
-                         <span className="font-heading text-4xl text-primary/40 font-bold">{client.name.substring(0, 2).toUpperCase()}</span>
+                         <span className="font-heading text-4xl text-vj-green font-bold">{client.name.substring(0, 2).toUpperCase()}</span>
                        )}
                     </div>
                     <div className="pb-2">
@@ -117,7 +121,7 @@ export default function ClientDetail() {
                          <MessageCircle className="h-4 w-4 mr-2" /> WhatsApp
                       </Button>
                     )}
-                    <Button variant="outline" onClick={() => navigate(`/clients/${id}/edit`)}>
+                    <Button variant="outline" onClick={() => setClientSheetOpen(true)}>
                        Editar Ficha
                     </Button>
                  </div>
@@ -127,7 +131,7 @@ export default function ClientDetail() {
               {client.tags && client.tags.length > 0 && (
                 <div className="flex flex-wrap gap-2 mt-4 ml-1">
                   {client.tags.map((tag) => (
-                     <Badge key={tag} variant="secondary" className="bg-primary/5 text-primary hover:bg-primary/10 transition-colors font-medium rounded-md px-3">
+                     <Badge key={tag} variant="secondary" className="bg-vj-green/10 text-vj-green hover:bg-vj-green/10 transition-colors font-medium rounded-md px-3">
                        #{tag}
                      </Badge>
                   ))}
@@ -138,19 +142,19 @@ export default function ClientDetail() {
 
         {/* Tab Navigation */}
         <Tabs defaultValue="info" className="mt-8">
-          <TabsList className="bg-transparent border-b border-border/40 w-full justify-start h-auto p-0 rounded-none mb-6">
-            <TabsTrigger value="info" className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:shadow-none rounded-none px-6 py-3 font-medium">Dados Principais</TabsTrigger>
-            <TabsTrigger value="travelers" className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:shadow-none rounded-none px-6 py-3 font-medium">Viajantes Vinculados <span className="ml-2 text-xs bg-muted px-2 py-0.5 rounded-full">{travelers?.length || 0}</span></TabsTrigger>
-            <TabsTrigger value="history" className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:shadow-none rounded-none px-6 py-3 font-medium">Timeline de Viagens</TabsTrigger>
-            <TabsTrigger value="docs" className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:shadow-none rounded-none px-6 py-3 font-medium">Documentos & Contratos</TabsTrigger>
+          <TabsList className="bg-transparent border-b border-vj-border w-full justify-start h-auto p-0 rounded-none mb-6">
+            <TabsTrigger value="info" className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-vj-green/20 data-[state=active]:shadow-none rounded-none px-6 py-3 font-medium">Dados Principais</TabsTrigger>
+            <TabsTrigger value="travelers" className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-vj-green/20 data-[state=active]:shadow-none rounded-none px-6 py-3 font-medium">Viajantes Vinculados <span className="ml-2 text-xs bg-muted px-2 py-0.5 rounded-full">{travelers?.length || 0}</span></TabsTrigger>
+            <TabsTrigger value="history" className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-vj-green/20 data-[state=active]:shadow-none rounded-none px-6 py-3 font-medium">Timeline de Viagens</TabsTrigger>
+            <TabsTrigger value="docs" className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-vj-green/20 data-[state=active]:shadow-none rounded-none px-6 py-3 font-medium">Documentos & Contratos</TabsTrigger>
           </TabsList>
 
           <TabsContent value="info" className="space-y-6 focus-visible:outline-none">
             <div className="grid gap-6 md:grid-cols-3">
               {/* Personal Details Card */}
-              <Card className="md:col-span-2 border-border/50 shadow-sm rounded-2xl overflow-hidden">
-                <CardHeader className="bg-surface/50 border-b border-border/30 pb-4">
-                   <CardTitle className="text-base flex items-center gap-2"><User className="h-4 w-4 text-primary" /> Informações Pessoais</CardTitle>
+              <Card className="md:col-span-2 border-vj-border shadow-sm rounded-2xl overflow-hidden">
+                <CardHeader className="bg-vj-bg border-b border-vj-border pb-4">
+                   <CardTitle className="text-base flex items-center gap-2"><User className="h-4 w-4 text-vj-green" /> Informações Pessoais</CardTitle>
                 </CardHeader>
                 <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-y-6 gap-x-8 pt-6">
                   <div>
@@ -173,8 +177,8 @@ export default function ClientDetail() {
               </Card>
 
               {/* Address Card */}
-              <Card className="border-border/50 shadow-sm rounded-2xl overflow-hidden">
-                <CardHeader className="bg-surface/50 border-b border-border/30 pb-4">
+              <Card className="border-vj-border shadow-sm rounded-2xl overflow-hidden">
+                <CardHeader className="bg-vj-bg border-b border-vj-border pb-4">
                    <CardTitle className="text-base flex items-center gap-2"><MapPin className="h-4 w-4 text-accent" /> Localização</CardTitle>
                 </CardHeader>
                 <CardContent className="pt-6 space-y-4">
@@ -214,7 +218,7 @@ export default function ClientDetail() {
           </TabsContent>
 
           <TabsContent value="travelers" className="space-y-6 focus-visible:outline-none">
-            <div className="flex justify-between items-center bg-surface/50 p-4 rounded-xl border border-border/50">
+            <div className="flex justify-between items-center bg-vj-bg p-4 rounded-xl border border-vj-border">
                <div>
                   <h3 className="font-medium">Grupo Familiar / Companheiros</h3>
                   <p className="text-xs text-muted-foreground mt-1">Viajantes que utilizam os pacotes comprados por este cliente.</p>
@@ -255,7 +259,7 @@ export default function ClientDetail() {
             {loadingTravelers ? (
               <div className="grid md:grid-cols-2 gap-4">{[1, 2].map(i => <Skeleton key={i} className="h-32 rounded-2xl" />)}</div>
             ) : !travelers?.length ? (
-              <div className="flex flex-col items-center justify-center py-16 border-2 border-dashed border-border/50 rounded-2xl bg-surface/30">
+              <div className="flex flex-col items-center justify-center py-16 border-2 border-dashed border-vj-border rounded-2xl bg-vj-bg">
                 <UsersGroupIcon className="h-10 w-10 text-muted-foreground/30 mb-3" />
                 <p className="text-sm font-medium text-foreground">Sem viajantes extras</p>
                 <p className="text-xs text-muted-foreground text-center mt-1 max-w-sm">Este cliente costuma viajar sozinho ou os parceiros não foram cadastrados na ficha principal.</p>
@@ -263,7 +267,7 @@ export default function ClientDetail() {
             ) : (
               <div className="grid md:grid-cols-2 gap-4">
                 {travelers.map((t) => (
-                  <Card key={t.id} className="rounded-2xl border-border/60 hover:shadow-md transition-shadow group relative overflow-hidden">
+                  <Card key={t.id} className="rounded-2xl border-vj-border hover:shadow-md transition-shadow group relative overflow-hidden">
                     <div className="absolute top-0 left-0 w-1 h-full bg-accent/50" />
                     <CardContent className="p-5">
                       <div className="flex justify-between items-start mb-3">
@@ -291,17 +295,17 @@ export default function ClientDetail() {
                       </div>
                       
                       <div className="grid grid-cols-2 gap-2 text-xs mb-4">
-                         <div className="bg-surface p-2 rounded-md border border-border/40">
+                         <div className="bg-vj-bg p-2 rounded-md border border-vj-border">
                              <span className="text-muted-foreground block mb-0.5">CPF</span>
                              <span className="font-medium">{t.cpf || 'Pendente'}</span>
                          </div>
-                         <div className="bg-surface p-2 rounded-md border border-border/40">
+                         <div className="bg-vj-bg p-2 rounded-md border border-vj-border">
                              <span className="text-muted-foreground block mb-0.5">Nascimento</span>
                              <span className="font-medium">{t.birth_date ? new Date(t.birth_date).toLocaleDateString('pt-BR') : 'Pendente'}</span>
                          </div>
                       </div>
 
-                      <div className="flex items-center justify-between pt-2 border-t border-border/40">
+                      <div className="flex items-center justify-between pt-2 border-t border-vj-border">
                          <div className="flex items-center gap-1.5">
                             {t.form_completed_at ? (
                               <Badge className="bg-success/10 text-success border-success/20 hover:bg-success/20">Ficha Completa</Badge>
@@ -323,20 +327,20 @@ export default function ClientDetail() {
 
           <TabsContent value="history" className="focus-visible:outline-none">
              {/* Empty State visual para Timeline (PRD Requirement Dummy) */}
-             <div className="flex flex-col items-center justify-center py-20 border border-border/50 rounded-2xl bg-surface/20">
-                <div className="h-16 w-16 mb-4 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Plane className="h-8 w-8 text-primary" />
+             <div className="flex flex-col items-center justify-center py-20 border border-vj-border rounded-2xl bg-vj-bg">
+                <div className="h-16 w-16 mb-4 rounded-full bg-vj-green/10 flex items-center justify-center">
+                  <Plane className="h-8 w-8 text-vj-green" />
                 </div>
                 <h3 className="font-heading font-semibold text-lg">Nenhuma Viagem Registrada</h3>
                 <p className="text-sm text-muted-foreground mt-1 mb-6 text-center max-w-sm">
                   Quando este cliente fechar a primeira cotação conosco, você verá aqui uma linha do tempo mágica dos destinos.
                 </p>
-                <Button onClick={() => navigate('/quotations/new')}>Criar Cotação IA</Button>
+                <Button onClick={() => setQuotationBuilderOpen(true)}>Criar Cotação IA</Button>
              </div>
           </TabsContent>
           
           <TabsContent value="docs" className="focus-visible:outline-none">
-             <div className="flex flex-col items-center justify-center py-20 border border-border/50 rounded-2xl bg-surface/20">
+             <div className="flex flex-col items-center justify-center py-20 border border-vj-border rounded-2xl bg-vj-bg">
                 <div className="h-16 w-16 mb-4 rounded-full bg-accent/10 flex items-center justify-center">
                   <Briefcase className="h-8 w-8 text-accent" />
                 </div>
@@ -348,6 +352,19 @@ export default function ClientDetail() {
           </TabsContent>
         </Tabs>
       </div>
+      
+      <ClientEditSheet 
+        id={id} 
+        open={clientSheetOpen} 
+        onClose={() => setClientSheetOpen(false)} 
+        onSuccess={() => { setClientSheetOpen(false); window.location.reload(); }} 
+      />
+      
+      <QuotationBuilderSheet
+        open={quotationBuilderOpen}
+        onClose={() => setQuotationBuilderOpen(false)}
+        clientId={id}
+      />
     </AppLayout>
   );
 }

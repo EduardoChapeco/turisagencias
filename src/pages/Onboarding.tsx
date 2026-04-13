@@ -31,8 +31,8 @@ export default function Onboarding() {
     <div className="flex min-h-screen items-center justify-center bg-muted/30 px-4">
       <Card className="w-full max-w-lg">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-lg bg-primary">
-            <Cloud className="h-6 w-6 text-primary-foreground" />
+          <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-lg bg-vj-green">
+            <Cloud className="h-6 w-6 text-vj-green-foreground" />
           </div>
           <CardTitle className="font-heading text-2xl">Configure sua agência</CardTitle>
           <CardDescription>Preencha os dados iniciais para ativar o CloudBlock.</CardDescription>

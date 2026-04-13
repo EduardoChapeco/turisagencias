@@ -60,18 +60,18 @@ export default function TravelerInfo() {
           }
         />
 
-        <Card className="surface-card border-cb-border overflow-hidden">
-          <div className="p-4 border-b border-cb-border bg-cb-s0 flex flex-col sm:flex-row gap-4 justify-between items-center">
+        <Card className="surface-card border-vj-border overflow-hidden">
+          <div className="p-4 border-b border-vj-border bg-white flex flex-col sm:flex-row gap-4 justify-between items-center">
             <div className="relative w-full sm:w-96">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-cb-muted" />
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-vj-txt3" />
               <Input
                 placeholder="Buscar informação..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9 bg-cb-s1 border-cb-border shadow-sm rounded-xl"
+                className="pl-9 bg-vj-bg border-vj-border shadow-sm rounded-xl"
               />
             </div>
-            <div className="text-sm font-medium text-cb-muted">
+            <div className="text-sm font-medium text-vj-txt3">
                {pages?.length || 0} páginas publicadas
             </div>
           </div>
@@ -85,11 +85,11 @@ export default function TravelerInfo() {
               </div>
             ) : filteredPages?.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 text-center">
-                <div className="bg-cb-s1 p-4 rounded-full mb-4">
-                   <Book className="h-10 w-10 text-cb-muted/50" />
+                <div className="bg-vj-bg p-4 rounded-full mb-4">
+                   <Book className="h-10 w-10 text-vj-txt3/50" />
                 </div>
-                <h3 className="font-heading text-lg font-semibold text-cb-text">Nenhuma página encontrada</h3>
-                <p className="text-cb-muted mt-1 max-w-md">
+                <h3 className="font-heading text-lg font-semibold text-vj-txt">Nenhuma página encontrada</h3>
+                <p className="text-vj-txt3 mt-1 max-w-md">
                   Escreva sua primeira página de informação para enriquecer os Portais do Viajante e a inteligência do Agente.
                 </p>
                 <Button variant="outline" className="mt-6" onClick={() => setEditSheet({ open: true, id: null })}>
@@ -101,13 +101,13 @@ export default function TravelerInfo() {
                 {filteredPages?.map((page) => (
                   <Card 
                      key={page.id} 
-                     className="group overflow-hidden rounded-cb-lg border-cb-border/60 hover:shadow-lg hover:border-cb-accent/50 transition-all flex flex-col bg-cb-s0"
+                     className="group overflow-hidden rounded-cb-lg border-vj-border/60 hover:shadow-lg hover:border-vj-green/50 transition-all flex flex-col bg-white"
                   >
-                     <div className="h-32 bg-cb-s2 relative overflow-hidden">
+                     <div className="h-32 bg-vj-bg relative overflow-hidden">
                         {page.cover_image_url ? (
                            <img src={page.cover_image_url} alt={page.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                         ) : (
-                           <div className="w-full h-full flex flex-col items-center justify-center text-cb-muted/40">
+                           <div className="w-full h-full flex flex-col items-center justify-center text-vj-txt3/40">
                               <Book className="h-8 w-8 mb-2" />
                            </div>
                         )}
@@ -120,10 +120,10 @@ export default function TravelerInfo() {
                      <CardHeader className="pt-4 pb-2">
                         <div className="flex items-start justify-between gap-2">
                           <div>
-                            <CardTitle className="text-lg line-clamp-2 leading-tight group-hover:text-cb-accent transition-colors">
+                            <CardTitle className="text-lg line-clamp-2 leading-tight group-hover:text-vj-green transition-colors">
                               {page.title}
                             </CardTitle>
-                            <CardDescription className="text-xs mt-1 max-w-[200px] truncate text-cb-muted font-mono" title={page.slug}>
+                            <CardDescription className="text-xs mt-1 max-w-[200px] truncate text-vj-txt3 font-mono" title={page.slug}>
                                /p/info/{page.slug}
                             </CardDescription>
                           </div>
@@ -144,7 +144,7 @@ export default function TravelerInfo() {
                                 <Globe2 className="mr-2 h-4 w-4" /> Copiar Link
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
-                              <DropdownMenuItem onClick={() => setDeleteDialog({ open: true, id: page.id })} className="text-cb-danger focus:text-cb-danger">
+                              <DropdownMenuItem onClick={() => setDeleteDialog({ open: true, id: page.id })} className="text-vj-red focus:text-vj-red">
                                 <Trash2 className="mr-2 h-4 w-4" /> Excluir
                               </DropdownMenuItem>
                             </DropdownMenuContent>
@@ -152,11 +152,11 @@ export default function TravelerInfo() {
                         </div>
                      </CardHeader>
                      <CardContent className="flex-1">
-                        <p className="text-sm text-cb-muted line-clamp-2">
+                        <p className="text-sm text-vj-txt3 line-clamp-2">
                            {page.description || 'Nenhuma descrição fornecida. Adicione um resumo para facilitar a leitura.'}
                         </p>
                      </CardContent>
-                     <CardFooter className="pt-0 pb-4 border-t border-cb-border/30 mt-4 flex items-center justify-between text-cb-muted text-[11px] font-medium uppercase tracking-wider">
+                     <CardFooter className="pt-0 pb-4 border-t border-vj-border/30 mt-4 flex items-center justify-between text-vj-txt3 text-[11px] font-medium uppercase tracking-wider">
                         <span>{(page.content_blocks as any[])?.length || 0} blocos</span>
                         <span>{new Date(page.updated_at).toLocaleDateString('pt-BR')}</span>
                      </CardFooter>
@@ -182,7 +182,7 @@ export default function TravelerInfo() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Me arrependi</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-cb-danger text-cb-s0 hover:bg-cb-danger/90">Remover</AlertDialogAction>
+            <AlertDialogAction onClick={handleDelete} className="bg-vj-red text-cb-s0 hover:bg-vj-red/90">Remover</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

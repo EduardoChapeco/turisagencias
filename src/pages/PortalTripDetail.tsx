@@ -76,23 +76,23 @@ export default function PortalTripDetail() {
         
         {/* Quick Stats Glassmorphism Bar */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-white/70 dark:bg-zinc-900/70 backdrop-blur-xl border border-white/20 dark:border-white/5 p-4 md:p-6 rounded-3xl shadow-xl">
-           <div className="space-y-1 text-center border-r border-border/40 last:border-0 md:border-r">
+           <div className="space-y-1 text-center border-r border-vj-border last:border-0 md:border-r">
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Embarque</p>
               <p className="font-heading font-bold text-lg md:text-xl">{trip.departure_date ? new Date(trip.departure_date).toLocaleDateString('pt-BR', {day:'2-digit', month:'short'}) : '--'}</p>
            </div>
-           <div className="space-y-1 text-center border-r border-border/40 hidden md:block">
+           <div className="space-y-1 text-center border-r border-vj-border hidden md:block">
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Retorno</p>
               <p className="font-heading font-bold text-lg md:text-xl">{trip.return_date ? new Date(trip.return_date).toLocaleDateString('pt-BR', {day:'2-digit', month:'short'}) : '--'}</p>
            </div>
-           <div className="space-y-1 text-center border-r border-border/40">
+           <div className="space-y-1 text-center border-r border-vj-border">
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Passageiros</p>
               <p className="font-heading font-bold text-lg md:text-xl flex items-center justify-center gap-2">
-                 <Users className="h-5 w-5 text-primary" /> {trip.trip_travelers?.length || 0}
+                 <Users className="h-5 w-5 text-vj-green" /> {trip.trip_travelers?.length || 0}
               </p>
            </div>
            <div className="space-y-1 text-center">
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Hospedagem</p>
-              <p className="font-heading font-bold text-sm md:text-base truncate px-2 text-primary" title={trip.hotel_name || 'A definir'}>{trip.hotel_name || 'A definir'}</p>
+              <p className="font-heading font-bold text-sm md:text-base truncate px-2 text-vj-green" title={trip.hotel_name || 'A definir'}>{trip.hotel_name || 'A definir'}</p>
            </div>
         </div>
 
@@ -101,8 +101,8 @@ export default function PortalTripDetail() {
            {/* Timeline and Details Main Column */}
            <div className="space-y-8">
               <div className="space-y-6">
-                 <h2 className="text-2xl font-heading font-bold flex items-center gap-3"><Plane className="h-6 w-6 text-primary" /> Seu Itinerário</h2>
-                 <div className="relative border-l-2 border-primary/20 pl-6 ml-3 space-y-6">
+                 <h2 className="text-2xl font-heading font-bold flex items-center gap-3"><Plane className="h-6 w-6 text-vj-green" /> Seu Itinerário</h2>
+                 <div className="relative border-l-2 border-vj-green/20 pl-6 ml-3 space-y-6">
                     
                     {/* Flights */}
                     {!trip.trip_flights?.length ? (
@@ -110,12 +110,12 @@ export default function PortalTripDetail() {
                     ) : (
                        trip.trip_flights?.map((flight) => (
                          <div key={flight.id} className="relative">
-                            <div className="absolute -left-[35px] w-8 h-8 bg-blue-100 dark:bg-blue-900/30 border-2 border-primary rounded-full flex items-center justify-center z-10 shadow-md">
-                               <Plane className="h-4 w-4 text-primary" />
+                            <div className="absolute -left-[35px] w-8 h-8 bg-blue-100 dark:bg-blue-900/30 border-2 border-vj-green/20 rounded-full flex items-center justify-center z-10 shadow-md">
+                               <Plane className="h-4 w-4 text-vj-green" />
                             </div>
-                            <Card className="border border-border/40 shadow-sm rounded-2xl overflow-hidden bg-white/50 dark:bg-zinc-900/50 hover:shadow-md transition-shadow">
-                               <CardHeader className="bg-primary/5 py-4 pb-3 border-b border-border/30 flex flex-row items-center justify-between">
-                                  <CardTitle className="text-sm font-semibold text-primary uppercase tracking-wider">{flight.airline_name || 'Aéreo'}</CardTitle>
+                            <Card className="border border-vj-border shadow-sm rounded-2xl overflow-hidden bg-white/50 dark:bg-zinc-900/50 hover:shadow-md transition-shadow">
+                               <CardHeader className="bg-vj-green/10 py-4 pb-3 border-b border-vj-border flex flex-row items-center justify-between">
+                                  <CardTitle className="text-sm font-semibold text-vj-green uppercase tracking-wider">{flight.airline_name || 'Aéreo'}</CardTitle>
                                   <Badge variant="outline" className="font-mono bg-background">{flight.flight_number || 'TBA'}</Badge>
                                </CardHeader>
                                <CardContent className="p-5 flex flex-col md:flex-row justify-between md:items-center gap-4">
@@ -140,7 +140,7 @@ export default function PortalTripDetail() {
                        <div className="absolute -left-[35px] w-8 h-8 bg-emerald-100 dark:bg-emerald-900/30 border-2 border-emerald-500 rounded-full flex items-center justify-center z-10 shadow-md">
                           <Hotel className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                        </div>
-                       <Card className="border border-border/40 shadow-sm rounded-2xl overflow-hidden bg-white/50 dark:bg-zinc-900/50">
+                       <Card className="border border-vj-border shadow-sm rounded-2xl overflow-hidden bg-white/50 dark:bg-zinc-900/50">
                           <CardContent className="p-5 flex flex-col md:flex-row justify-between md:items-center gap-4">
                              <div>
                                 <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Hospedagem Confirmada</p>
@@ -157,7 +157,7 @@ export default function PortalTripDetail() {
 
            {/* Side Column: Documents & Travelers */}
            <div className="space-y-6">
-              <Card className="rounded-[2rem] border-border/40 shadow-lg bg-white/60 dark:bg-zinc-900/60 backdrop-blur-xl">
+              <Card className="rounded-[2rem] border-vj-border shadow-lg bg-white/60 dark:bg-zinc-900/60 backdrop-blur-xl">
                  <CardHeader>
                     <CardTitle className="flex items-center gap-2"><Users className="h-5 w-5 text-accent" /> Viajantes</CardTitle>
                     <CardDescription>Cargadores desta reserva</CardDescription>
@@ -165,8 +165,8 @@ export default function PortalTripDetail() {
                  <CardContent className="space-y-4">
                     {!trip.trip_travelers?.length && <p className="text-sm text-muted-foreground">Ninguém vinculado ainda.</p>}
                     {trip.trip_travelers?.map((traveler) => (
-                      <div key={traveler.id} className="flex items-center gap-3 bg-muted/40 p-3 rounded-2xl border border-border/30">
-                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary shrink-0">
+                      <div key={traveler.id} className="flex items-center gap-3 bg-muted/40 p-3 rounded-2xl border border-vj-border">
+                        <div className="w-10 h-10 rounded-full bg-vj-green/10 flex items-center justify-center font-bold text-vj-green shrink-0">
                            {traveler.travelers?.full_name?.charAt(0) || 'V'}
                         </div>
                         <div className="flex-1 min-w-0">
@@ -180,9 +180,9 @@ export default function PortalTripDetail() {
                  </CardContent>
               </Card>
 
-              <Card className="rounded-[2rem] border-border/40 shadow-lg bg-white/60 dark:bg-zinc-900/60 backdrop-blur-xl">
+              <Card className="rounded-[2rem] border-vj-border shadow-lg bg-white/60 dark:bg-zinc-900/60 backdrop-blur-xl">
                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2"><FileText className="h-5 w-5 text-primary" /> Documentação</CardTitle>
+                    <CardTitle className="flex items-center gap-2"><FileText className="h-5 w-5 text-vj-green" /> Documentação</CardTitle>
                  </CardHeader>
                  <CardContent className="space-y-3">
                     {!trip.trip_documents?.length && <p className="text-sm text-muted-foreground">Nenhum documento anexado ou liberado pela agência.</p>}
@@ -192,16 +192,16 @@ export default function PortalTripDetail() {
                          href={document.file_url} 
                          target="_blank" 
                          rel="noreferrer" 
-                         className="flex items-center justify-between bg-background p-4 rounded-2xl shadow-sm border border-border/40 hover:border-primary/40 hover:shadow-md transition-all group"
+                         className="flex items-center justify-between bg-background p-4 rounded-2xl shadow-sm border border-vj-border hover:border-vj-green/20 hover:shadow-md transition-all group"
                       >
                          <div className="flex items-center gap-3">
-                            <div className="p-2 bg-primary/10 rounded-xl text-primary group-hover:scale-110 transition-transform"><FileText className="h-5 w-5" /></div>
+                            <div className="p-2 bg-vj-green/10 rounded-xl text-vj-green group-hover:scale-110 transition-transform"><FileText className="h-5 w-5" /></div>
                             <div>
                                <p className="font-semibold text-sm line-clamp-1">{document.title}</p>
                                <p className="text-xs text-muted-foreground uppercase font-medium">{document.doc_type}</p>
                             </div>
                          </div>
-                         <Download className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                         <Download className="h-4 w-4 text-muted-foreground group-hover:text-vj-green transition-colors" />
                       </a>
                     ))}
                  </CardContent>

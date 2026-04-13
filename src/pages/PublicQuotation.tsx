@@ -66,17 +66,29 @@ export default function PublicQuotation() {
         *,
         organizations(name, logo_url, whatsapp, primary_color),
         itinerary_days(
-          day_number, date, city, label,
-          itinerary_items(description)
+          id, day_number, date, city, country, label,
+          itinerary_items(description, order_position)
         ),
         flights(
-          direction, airline_name, cabin_class, is_recommended,
-          flight_segments(departure_datetime, arrival_datetime, connection_info)
+          id, direction, airline_name, airline_code, cabin_class, is_recommended, total_price,
+          flight_segments(
+            segment_order, departure_airport_code, departure_airport_city,
+            arrival_airport_code, arrival_airport_city,
+            departure_datetime, arrival_datetime, duration_minutes,
+            is_direct, stops, connection_info
+          ),
+          flight_amenities(icon, label)
         ),
         quote_hotels(
-          hotel_bank(name, category_label, cover_emoji),
-          check_in, check_out, nights, room_type
-        )
+          id, check_in, check_out, nights, room_type, total_price,
+          hotel_id
+        ),
+        quote_transfers(
+          id, tipo, nome, fornecedor, data_inicio, data_fim,
+          instrucoes, ponto_encontro, adultos, criancas, valor_total, order_position
+        ),
+        quote_price_items(icon, label, amount, order_position),
+        quote_includes(icon, title, description, order_position)
       `)
       .eq('public_token', token)
       .single()
@@ -84,7 +96,6 @@ export default function PublicQuotation() {
         setLoading(false);
         if (error || !row) { setNotFound(true); return; }
         
-        // Map the relational data to our UI
         const mappedData: any = {
           ...row,
           org_name: (row.organizations as any)?.name,
@@ -92,9 +103,20 @@ export default function PublicQuotation() {
           org_whatsapp: (row.organizations as any)?.whatsapp,
           org_primary_color: (row.organizations as any)?.primary_color,
           installments: parseInstallments(row.installments),
-          itinerary: row.itinerary_days || [],
-          transports: row.flights || [],
-          hotels: row.quote_hotels || []
+          // Sort itinerary days by day_number
+          itinerary: ((row.itinerary_days as any[]) || []).sort((a: any, b: any) => a.day_number - b.day_number),
+          // Flights sorted: outbound first
+          flights_data: ((row.flights as any[]) || []).sort((a: any, b: any) => {
+            if (a.direction === 'outbound' && b.direction === 'return') return -1;
+            if (a.direction === 'return' && b.direction === 'outbound') return 1;
+            return 0;
+          }),
+          transfers: ((row.quote_transfers as any[]) || []).sort((a: any, b: any) => a.order_position - b.order_position),
+          price_items: ((row.quote_price_items as any[]) || []).sort((a: any, b: any) => a.order_position - b.order_position),
+          includes_items: ((row.quote_includes as any[]) || []).sort((a: any, b: any) => a.order_position - b.order_position),
+          excursions: [],
+          included_items: [],
+          excluded_items: [],
         };
         
         setData(mappedData);
@@ -133,23 +155,37 @@ export default function PublicQuotation() {
 
   const installments = data.installments ?? [];
   const itinerary: any[] = (data as any).itinerary ?? [];
-  const transports: any[] = (data as any).transports ?? [];
+  const flights: any[] = (data as any).flights_data ?? [];
+  const transfers: any[] = (data as any).transfers ?? [];
+  const priceItems: any[] = (data as any).price_items ?? [];
+  const includesItems: any[] = (data as any).includes_items ?? [];
   const excursions: any[] = (data as any).excursions ?? [];
   const includedItems: string[] = (data as any).included_items ?? [];
   const excludedItems: string[] = (data as any).excluded_items ?? [];
   const coverImageUrl = (data as any).cover_image_url || data.hotel_photo_url;
   const pricingMode = (data as any).pricing_mode || 'per_person';
   const validUntil = (data as any).valid_until;
+  const cancelamento = (data as any).cancelamento_texto_raw;
+  const cancelamentoData = (data as any).cancelamento_data_limite;
+  const paxAdultos = (data as any).pax_adultos;
+  const paxCriancas = (data as any).pax_criancas;
+  // transports kept for legacy compat
+  const transports = flights;
 
   const pricingLabel = pricingMode === 'per_couple' ? 'Por casal' :
     pricingMode === 'per_family' ? 'Por família' :
     pricingMode === 'total' ? 'Pacote total' : 'Por pessoa';
+
+  const hasPriceDetails = data.total_value || installments.length > 0 || priceItems.length > 0;
 
   const whatsappUrl = data.org_whatsapp
     ? `https://wa.me/55${data.org_whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(
         data.whatsapp_text || `Olá! Gostaria de confirmar a cotação para ${data.destination || 'a viagem'}.`
       )}`
     : null;
+
+  // Urgency: days until expiry
+  const daysLeft = validUntil ? Math.ceil((new Date(validUntil).getTime() - Date.now()) / 86400000) : null;
 
   // Agent initials
   const agentInitials = data.org_name
@@ -158,10 +194,9 @@ export default function PublicQuotation() {
 
   const ref = token ? `#${token.slice(0, 8).toUpperCase()}` : '';
 
-  const hasPriceDetails = data.total_value || installments.length > 0;
-  
   // Se o data contiver destination via db migrations
   const isDestinationValid = data.destination || data.cover_title;
+
 
   return (
     <PublicLayout
@@ -464,62 +499,121 @@ export default function PublicQuotation() {
           </div>
         )}
 
-        {/* VOOS / TRANSPORTES */}
-        {transports.length > 0 && (
+        {/* VOOS / TRANSPORTES — schema relacional correto */}
+        {flights.length > 0 && (
           <div className="vj-section-gap">
             <div className="vj-sh">
               <div>
-                <div className="vj-sh-title">✈️ Transportes</div>
-                <div className="vj-sh-sub">{transports.length} trecho{transports.length > 1 ? 's' : ''} planejado{transports.length > 1 ? 's' : ''}</div>
+                <div className="vj-sh-title">✈️ Voos</div>
+                <div className="vj-sh-sub">{flights.length} trecho{flights.length > 1 ? 's' : ''} do roteiro</div>
               </div>
             </div>
-            {transports.map((t: any, i: number) => (
-              <div key={i} className="vj-flight-card">
-                <div className="vj-flight-header">
-                  <div className="vj-fh-left">
-                    <div className="vj-airline-logo">{transportIcons[t.type] || '✈️'}</div>
-                    <div>
-                      <div className="vj-fh-name">{t.operator || t.type}</div>
-                      <div className="vj-fh-sub">{t.from} → {t.to}</div>
+            {flights.map((flight: any, i: number) => {
+              const segs: any[] = [...(flight.flight_segments || [])].sort((a: any, b: any) => a.segment_order - b.segment_order);
+              const firstSeg = segs[0];
+              const lastSeg = segs[segs.length - 1];
+              const isReturn = flight.direction === 'return';
+              return (
+                <div key={i} className="vj-flight-card">
+                  <div className="vj-flight-header">
+                    <div className="vj-fh-left">
+                      <div className="vj-airline-logo">{isReturn ? '↩️' : '✈️'}</div>
+                      <div>
+                        <div className="vj-fh-name">{flight.airline_name || 'Aéreo'}</div>
+                        <div className="vj-fh-sub">
+                          {isReturn ? 'Voo de Volta' : 'Voo de Ida'}
+                          {flight.cabin_class ? ` · ${flight.cabin_class === 'economy' ? 'Econômica' : flight.cabin_class === 'business' ? 'Executiva' : flight.cabin_class}` : ''}
+                          {segs.length > 1 ? ` · ${segs.length - 1} conexão` : ' · Direto'}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="vj-fh-tags">
+                      {flight.is_recommended && <span className="vj-tag vj-tag-blue">⭐ Recomendado</span>}
+                      <span className="vj-tag vj-tag-green">Incluído</span>
                     </div>
                   </div>
-                  <div className="vj-fh-tags">
-                    <span className="vj-tag vj-tag-green">Incluído</span>
-                  </div>
+                  {segs.length > 0 && (
+                    <div className="vj-flight-body">
+                      <div>
+                        <div className="vj-fb-time">
+                          {firstSeg.departure_datetime ? new Date(firstSeg.departure_datetime).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '—'}
+                        </div>
+                        <div className="vj-fb-city">{firstSeg.departure_airport_city || firstSeg.departure_airport_code}</div>
+                        <div className="vj-fb-code">{firstSeg.departure_airport_code}</div>
+                      </div>
+                      <div className="vj-fb-arrow">
+                        <div className="vj-fb-line" />
+                        <div className="vj-fb-dur">✈️</div>
+                        <div className="vj-fb-stop-ok">
+                          {segs.length > 1 ? `${segs.length - 1} esc.` : 'Direto'}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="vj-fb-time">
+                          {lastSeg?.arrival_datetime ? new Date(lastSeg.arrival_datetime).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '—'}
+                        </div>
+                        <div className="vj-fb-city">{lastSeg?.arrival_airport_city || lastSeg?.arrival_airport_code}</div>
+                        <div className="vj-fb-code">{lastSeg?.arrival_airport_code}</div>
+                      </div>
+                    </div>
+                  )}
+                  {/* Segments detail for connections */}
+                  {segs.length > 1 && (
+                    <div className="vj-flight-details">
+                      {segs.map((seg: any, si: number) => (
+                        <div key={si} className="vj-fd-pill">
+                          {seg.departure_airport_code} → {seg.arrival_airport_code}
+                          {seg.connection_info && ` · ${seg.connection_info}`}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
-                <div className="vj-flight-body">
-                  <div>
-                    <div className="vj-fb-time">{t.departure ? new Date(t.departure).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '—'}</div>
-                    <div className="vj-fb-city">{t.from}</div>
-                    <div className="vj-fb-code">{t.departure ? new Date(t.departure).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }) : ''}</div>
-                  </div>
-                  <div className="vj-fb-arrow">
-                    <div className="vj-fb-line" />
-                    <div className="vj-fb-dur">{transportIcons[t.type] || '→'}</div>
-                    <div className="vj-fb-stop-ok">Direto</div>
-                  </div>
-                  <div>
-                    <div className="vj-fb-time">{t.arrival ? new Date(t.arrival).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '—'}</div>
-                    <div className="vj-fb-city">{t.to}</div>
-                    <div className="vj-fb-code">{t.arrival ? new Date(t.arrival).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }) : ''}</div>
-                  </div>
-                  <div style={{ width: 1, height: 40, background: 'var(--vj-border)', margin: '0 4px' }} />
-                  <div className="vj-fb-price">
-                    <div className="vj-fb-price-val" style={{ fontSize: 14, color: 'var(--vj-green)' }}>✓</div>
-                    <div className="vj-fb-price-per">Incluído</div>
-                  </div>
-                </div>
-                {t.notes && (
-                  <div className="vj-flight-details">
-                    <div className="vj-fd-pill">📝 {t.notes}</div>
-                  </div>
-                )}
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
 
-        {/* ITINERÁRIO */}
+        {/* TRANSFERS */}
+        {transfers.length > 0 && (
+          <div className="vj-section-gap">
+            <div className="vj-sh">
+              <div>
+                <div className="vj-sh-title">🚗 Transfers & Receptivo</div>
+                <div className="vj-sh-sub">{transfers.length} serviço{transfers.length > 1 ? 's' : ''} de transfer</div>
+              </div>
+            </div>
+            <div style={{ display: 'grid', gap: 12 }}>
+              {transfers.map((t: any, i: number) => (
+                <div key={i} className="vj-flight-card">
+                  <div className="vj-flight-header">
+                    <div className="vj-fh-left">
+                      <div className="vj-airline-logo">
+                        {t.tipo === 'privativo' ? '🚐' : t.tipo === 'nautico' ? '⛵' : '🚗'}
+                      </div>
+                      <div>
+                        <div className="vj-fh-name">{t.nome || 'Transfer'}</div>
+                        <div className="vj-fh-sub">
+                          {t.fornecedor || ''}
+                          {t.tipo ? ` · ${t.tipo === 'in' ? 'Chegada' : t.tipo === 'out' ? 'Saída' : t.tipo === 'round' ? 'Ida & Volta' : t.tipo}` : ''}
+                        </div>
+                      </div>
+                    </div>
+                    <span className="vj-tag vj-tag-green">Incluído</span>
+                  </div>
+                  {(t.ponto_encontro || t.instrucoes) && (
+                    <div className="vj-flight-details">
+                      {t.ponto_encontro && <div className="vj-fd-pill">📍 {t.ponto_encontro}</div>}
+                      {t.instrucoes && <div className="vj-fd-pill" style={{ color: 'var(--vj-txt2)' }}>ℹ️ {t.instrucoes}</div>}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ITINERÁRIO — usando schema relacional correto */}
         {itinerary.length > 0 && (
           <div className="vj-section-gap">
             <div className="vj-sh">
@@ -529,28 +623,38 @@ export default function PublicQuotation() {
               </div>
             </div>
             <div className="vj-itin-scroll">
-              {itinerary.map((day: any, i: number) => (
-                <div key={i} className="vj-itin-card">
-                  <div className="vj-ic-day">Dia {day.day ?? i + 1}</div>
-                  <div className="vj-ic-date">
-                    {day.date ? new Date(day.date + 'T12:00:00').toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short' }) : day.title}
-                  </div>
-                  <div className="vj-ic-city">{day.location || ''}</div>
-                  {day.description && (
-                    <div className="vj-ic-items">
-                      {day.description.split('\n').filter(Boolean).map((line: string, j: number) => (
-                        <div key={j} className="vj-ic-item">
-                          <div className="vj-ic-item-dot" />
-                          {line}
-                        </div>
-                      ))}
+              {itinerary.map((day: any, i: number) => {
+                const items: any[] = [...(day.itinerary_items || [])].sort((a: any, b: any) => a.order_position - b.order_position);
+                return (
+                  <div key={i} className="vj-itin-card">
+                    <div className="vj-ic-day">Dia {day.day_number ?? i + 1}</div>
+                    <div className="vj-ic-date">
+                      {day.date
+                        ? new Date(day.date + 'T12:00:00').toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short' })
+                        : day.label}
                     </div>
-                  )}
-                  {day.accommodation && (
-                    <div className="vj-ic-hotel">🏨 {day.accommodation}</div>
-                  )}
-                </div>
-              ))}
+                    <div className="vj-ic-city">{day.city}{day.country ? `, ${day.country}` : ''}</div>
+                    {items.length > 0 && (
+                      <div className="vj-ic-items">
+                        {items.map((item: any, j: number) => (
+                          <div key={j} className="vj-ic-item">
+                            <div className="vj-ic-item-dot" />
+                            {item.description}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {day.label && items.length === 0 && (
+                      <div className="vj-ic-items">
+                        <div className="vj-ic-item">
+                          <div className="vj-ic-item-dot" />
+                          {day.label}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
@@ -589,7 +693,7 @@ export default function PublicQuotation() {
           </div>
         )}
 
-        {/* PREÇOS */}
+        {/* PREÇOS — usa price_items relacionais quando disponível */}
         {hasPriceDetails && (
           <div className="vj-price-section vj-section-gap">
             {/* Breakdown */}
@@ -600,35 +704,58 @@ export default function PublicQuotation() {
                 </div>
               </div>
 
-              {transports.length > 0 && (
-                <div className="vj-pb-row">
-                  <span className="vj-pb-label"><span className="vj-pb-label-icon">✈️</span> Transportes</span>
-                  <span className="vj-pb-val">incluído</span>
-                </div>
-              )}
-              {data.hotel_name && data.num_nights && (
-                <div className="vj-pb-row">
-                  <span className="vj-pb-label"><span className="vj-pb-label-icon">🏨</span> {data.hotel_name} ({data.num_nights} noites)</span>
-                  <span className="vj-pb-val">incluído</span>
-                </div>
-              )}
-              {excursions.filter((e: any) => e.included).map((exc: any, i: number) => (
+              {/* Itens relacionais */}
+              {priceItems.length > 0 ? priceItems.map((item: any, i: number) => (
                 <div key={i} className="vj-pb-row">
-                  <span className="vj-pb-label"><span className="vj-pb-label-icon">🎯</span> {exc.title}</span>
-                  <span className="vj-pb-val">incluído</span>
+                  <span className="vj-pb-label"><span className="vj-pb-label-icon">{item.icon || '—'}</span> {item.label}</span>
+                  <span className="vj-pb-val">{item.amount ? fmt(item.amount, data.currency ?? 'BRL') : 'incluído'}</span>
                 </div>
-              ))}
-              {includedItems.map((item, i) => (
-                <div key={i} className="vj-pb-row">
-                  <span className="vj-pb-label"><span className="vj-pb-label-icon">✅</span> {item}</span>
-                  <span className="vj-pb-val">incluído</span>
-                </div>
-              ))}
+              )) : (
+                <>
+                  {flights.length > 0 && (
+                    <div className="vj-pb-row">
+                      <span className="vj-pb-label"><span className="vj-pb-label-icon">✈️</span> Passagem aérea</span>
+                      <span className="vj-pb-val">incluído</span>
+                    </div>
+                  )}
+                  {data.hotel_name && data.num_nights && (
+                    <div className="vj-pb-row">
+                      <span className="vj-pb-label"><span className="vj-pb-label-icon">🏨</span> {data.hotel_name} ({data.num_nights} noites)</span>
+                      <span className="vj-pb-val">incluído</span>
+                    </div>
+                  )}
+                  {transfers.length > 0 && (
+                    <div className="vj-pb-row">
+                      <span className="vj-pb-label"><span className="vj-pb-label-icon">🚗</span> Transfers</span>
+                      <span className="vj-pb-val">incluído</span>
+                    </div>
+                  )}
+                </>
+              )}
 
               {data.total_value && (
                 <div className="vj-pb-total">
                   <span className="vj-pb-total-l">Total ({pricingLabel.toLowerCase()})</span>
                   <span className="vj-pb-total-v">{fmt(data.total_value, data.currency ?? 'BRL')}</span>
+                </div>
+              )}
+
+              {/* PAX info */}
+              {(paxAdultos || paxCriancas) && (
+                <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid var(--vj-border)', display: 'flex', gap: 16, fontSize: 12, color: 'var(--vj-txt3)' }}>
+                  {paxAdultos > 0 && <span>👤 {paxAdultos} adulto{paxAdultos > 1 ? 's' : ''}</span>}
+                  {paxCriancas > 0 && <span>👶 {paxCriancas} criança{paxCriancas > 1 ? 's' : ''}</span>}
+                </div>
+              )}
+
+              {/* Cancelamento */}
+              {cancelamento && (
+                <div style={{ marginTop: 16, padding: '12px 14px', background: '#fff8ed', border: '1px solid #f59e0b40', borderRadius: 12 }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: '#b45309', marginBottom: 4 }}>⚠️ Política de Cancelamento</div>
+                  <div style={{ fontSize: 12, color: '#92400e', lineHeight: 1.5 }}>
+                    {cancelamentoData && <strong style={{ display: 'block', marginBottom: 4 }}>Prazo sem multa: {fmtDate(cancelamentoData)}</strong>}
+                    {cancelamento}
+                  </div>
                 </div>
               )}
 
@@ -647,6 +774,18 @@ export default function PublicQuotation() {
 
             {/* CTA Card */}
             <div className="vj-price-cta">
+              {/* Urgency banner when expiry is close */}
+              {daysLeft !== null && daysLeft <= 5 && daysLeft >= 0 && (
+                <div style={{ padding: '10px 16px', background: daysLeft <= 2 ? '#fee2e2' : '#fff8ed', borderRadius: 12, marginBottom: 12, border: `1px solid ${daysLeft <= 2 ? '#fca5a5' : '#fde68a'}`, display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ fontSize: 16 }}>{daysLeft <= 2 ? '🔴' : '🟡'}</span>
+                  <div>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: daysLeft <= 2 ? '#dc2626' : '#d97706' }}>
+                      {daysLeft === 0 ? 'Expira hoje!' : `Expira em ${daysLeft} dia${daysLeft > 1 ? 's' : ''}!`}
+                    </div>
+                    <div style={{ fontSize: 11, color: daysLeft <= 2 ? '#b91c1c' : '#b45309' }}>Confirme agora para garantir a disponibilidade.</div>
+                  </div>
+                </div>
+              )}
               <div className="vj-price-total-card">
                 <div className="vj-ptc-label">Valor total</div>
                 <div className="vj-ptc-val">{fmt(data.total_value, data.currency ?? 'BRL')}</div>
@@ -665,11 +804,11 @@ export default function PublicQuotation() {
                 )}
                 {whatsappUrl && (
                   <>
-                    <button className="vj-btn-block vj-btn-white" onClick={() => window.open(whatsappUrl, '_blank')}>
-                      Confirmar reserva →
+                    <button className="vj-btn-block vj-btn-white" onClick={() => setIsConfirmOpen(true)}>
+                      ✅ Confirmar reserva
                     </button>
                     <button className="vj-btn-block vj-btn-outline-w" onClick={() => window.open(whatsappUrl, '_blank')}>
-                      Fazer pergunta
+                      💬 Fazer pergunta
                     </button>
                   </>
                 )}
@@ -686,47 +825,59 @@ export default function PublicQuotation() {
           </div>
         )}
 
-        {/* INCLUDES GRID */}
-        {(includedItems.length > 0 || excursions.length > 0) && (
+        {/* INCLUDES GRID — usa includes_items relacionais quando disponível */}
+        {(includesItems.length > 0 || includedItems.length > 0 || flights.length > 0 || data.hotel_name || transfers.length > 0) && (
           <div className="vj-includes-grid vj-section-gap">
-            {transports.length > 0 && (
-              <div className="vj-inc-card">
-                <div className="vj-inc-icon">✈️</div>
+            {includesItems.length > 0 ? includesItems.map((inc: any, i: number) => (
+              <div key={i} className="vj-inc-card">
+                <div className="vj-inc-icon">{inc.icon || '✅'}</div>
                 <div>
-                  <div className="vj-inc-title">Transportes</div>
-                  <div className="vj-inc-sub">{transports.map((t: any) => `${t.from} → ${t.to}`).join(' · ')}</div>
+                  <div className="vj-inc-title">{inc.title}</div>
+                  {inc.description && <div className="vj-inc-sub">{inc.description}</div>}
                 </div>
               </div>
-            )}
-            {data.hotel_name && (
-              <div className="vj-inc-card">
-                <div className="vj-inc-icon">🏨</div>
-                <div>
-                  <div className="vj-inc-title">{data.hotel_name}</div>
-                  <div className="vj-inc-sub">
-                    {data.num_nights} noites · {data.meal_plan ? mealLabels[data.meal_plan] : 'Hospedagem'}
-                    {data.room_type ? ` · ${data.room_type}` : ''}
+            )) : (
+              <>
+                {flights.length > 0 && (
+                  <div className="vj-inc-card">
+                    <div className="vj-inc-icon">✈️</div>
+                    <div>
+                      <div className="vj-inc-title">Passagem aérea</div>
+                      <div className="vj-inc-sub">{flights.map((f: any) => f.direction === 'outbound' ? 'Ida' : 'Volta').join(' + ')}</div>
+                    </div>
                   </div>
-                </div>
-              </div>
+                )}
+                {data.hotel_name && (
+                  <div className="vj-inc-card">
+                    <div className="vj-inc-icon">🏨</div>
+                    <div>
+                      <div className="vj-inc-title">{data.hotel_name}</div>
+                      <div className="vj-inc-sub">
+                        {data.num_nights} noites · {data.meal_plan ? mealLabels[data.meal_plan] : 'Hospedagem'}
+                        {data.room_type ? ` · ${data.room_type}` : ''}
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {transfers.length > 0 && (
+                  <div className="vj-inc-card">
+                    <div className="vj-inc-icon">🚗</div>
+                    <div>
+                      <div className="vj-inc-title">Transfers</div>
+                      <div className="vj-inc-sub">{transfers.map((t: any) => t.nome).filter(Boolean).join(' · ') || 'Receptivo local'}</div>
+                    </div>
+                  </div>
+                )}
+                {includedItems.map((item, i) => (
+                  <div key={i} className="vj-inc-card">
+                    <div className="vj-inc-icon">✅</div>
+                    <div>
+                      <div className="vj-inc-title">{item}</div>
+                    </div>
+                  </div>
+                ))}
+              </>
             )}
-            {excursions.filter((e: any) => e.included).map((exc: any, i: number) => (
-              <div key={i} className="vj-inc-card">
-                <div className="vj-inc-icon">🎯</div>
-                <div>
-                  <div className="vj-inc-title">{exc.title}</div>
-                  <div className="vj-inc-sub">{exc.description || ''}</div>
-                </div>
-              </div>
-            ))}
-            {includedItems.map((item, i) => (
-              <div key={i} className="vj-inc-card">
-                <div className="vj-inc-icon">✅</div>
-                <div>
-                  <div className="vj-inc-title">{item}</div>
-                </div>
-              </div>
-            ))}
           </div>
         )}
 

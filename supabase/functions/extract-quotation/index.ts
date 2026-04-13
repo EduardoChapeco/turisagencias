@@ -51,8 +51,13 @@ Return a JSON object with these fields (use null for missing data):
   "currency": "BRL",
   "installments": [
     {"type": "pix", "value": 15000, "installment_count": 1},
-    {"type": "credit_10x", "value": 1500, "installment_count": 10},
-    {"type": "credit_12x", "value": 1250, "installment_count": 12}
+    {"type": "credit_10x", "value": 1500, "installment_count": 10}
+  ],
+  "flights": [
+    {"direction": "outbound", "airline_name": "Emirates", "cabin_class": "Econômica"}
+  ],
+  "itinerary": [
+    {"day_number": 1, "city": "Dubai", "label": "Chegada", "description": "Recepção no aeroporto..."}
   ],
   "whatsapp_text": "formatted WhatsApp message in Portuguese with emojis"
 }
@@ -61,7 +66,7 @@ For the whatsapp_text, create an attractive message in Portuguese with:
 - ✈️ Destination
 - 🏨 Hotel name and stars
 - 📅 Dates and nights
-- 🍽️ Meal plan
+- 🗺️ Intinerary briefly (if available)
 - 💰 Price and installment options
 - A friendly CTA`;
 
@@ -122,6 +127,29 @@ For the whatsapp_text, create an attractive message in Portuguese with:
                     required: ["type", "value", "installment_count"],
                   },
                 },
+                flights: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: {
+                      direction: { type: "string", enum: ["outbound", "return"] },
+                      airline_name: { type: "string" },
+                      cabin_class: { type: "string" },
+                    }
+                  }
+                },
+                itinerary: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: {
+                      day_number: { type: "number" },
+                      city: { type: "string" },
+                      label: { type: "string" },
+                      description: { type: "string" }
+                    }
+                  }
+                },
                 whatsapp_text: { type: "string" },
               },
               required: ["destination", "hotel_name", "total_value", "whatsapp_text"],
@@ -159,7 +187,7 @@ For the whatsapp_text, create an attractive message in Portuguese with:
 
     // Contrato garantido: sempre persiste se org_id for passado
     if (org_id) {
-      const { error: insertError } = await supabaseClient
+      const { data: qData, error: insertError } = await supabaseClient
         .from('quotations')
         .insert({
           org_id,
@@ -181,12 +209,51 @@ For the whatsapp_text, create an attractive message in Portuguese with:
           installments: extracted.installments,
           whatsapp_text: extracted.whatsapp_text,
           source_file_url: source_file_url || null,
-        });
+          public_token: crypto.randomUUID()
+        })
+        .select('id')
+        .single();
 
       if (insertError) {
-        console.error("Erro ao persistir a cotacao (FALHA DE CONTRATO):", insertError);
         throw new Error("Erro Crítico: A API IA obteve os dados, mas falhou ao persistir no Supabase: " + insertError.message);
       }
+      
+      const quoteId = qData.id;
+      
+      // Inserir Roteiro Extraído (Se houver)
+      if (extracted.itinerary && Array.isArray(extracted.itinerary)) {
+        for (const item of extracted.itinerary) {
+           const { data: dayData } = await supabaseClient.from('itinerary_days').insert({
+             quote_id: quoteId,
+             day_number: item.day_number,
+             city: item.city,
+             label: item.label
+           }).select('id').single();
+           
+           if(dayData && item.description) {
+              await supabaseClient.from('itinerary_items').insert({
+                 itinerary_day_id: dayData.id,
+                 order_position: 1,
+                 description: item.description
+              });
+           }
+        }
+      }
+      
+      // Inserir Voos Extraídos (Se houver)
+      if (extracted.flights && Array.isArray(extracted.flights)) {
+         for (const flight of extracted.flights) {
+            await supabaseClient.from('flights').insert({
+               quote_id: quoteId,
+               direction: flight.direction || 'outbound',
+               airline_name: flight.airline_name,
+               cabin_class: flight.cabin_class,
+               order_position: 1
+            });
+         }
+      }
+      
+      extracted.id = quoteId; // Retorna o ID pro client
     }
 
     return new Response(JSON.stringify({ data: extracted }), {

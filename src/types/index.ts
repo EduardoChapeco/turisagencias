@@ -56,6 +56,15 @@ export interface PublicQuotationData {
   org_logo: string | null;
   org_whatsapp: string | null;
   org_primary_color: string | null;
+  whatsapp_text?: string | null;
+  cover_image_url?: string | null;
+  pricing_mode?: string | null;
+  valid_until?: string | null;
+  itinerary?: any[];
+  transports?: any[];
+  excursions?: any[];
+  included_items?: string[];
+  excluded_items?: string[];
 }
 
 export interface Organization {

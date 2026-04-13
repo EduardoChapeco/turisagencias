@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Loader2, MapPin } from 'lucide-react';
+import { Loader2, MapPin, CheckCircle2, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { parseInstallments } from '@/lib/utils';
 import type { PublicQuotationData } from '@/types';
@@ -23,14 +23,82 @@ export default function PublicQuotation() {
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
+  // Modal State
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [confirmName, setConfirmName] = useState('');
+  const [confirmEmail, setConfirmEmail] = useState('');
+  const [confirmNotes, setConfirmNotes] = useState('');
+  const [confirmLoading, setConfirmLoading] = useState(false);
+  const [confirmSuccess, setConfirmSuccess] = useState(false);
+  const [confirmError, setConfirmError] = useState('');
+
+  const handleConfirm = async () => {
+    if (!token || !confirmName) {
+      setConfirmError('Preencha seu nome para continuar.');
+      return;
+    }
+    setConfirmLoading(true);
+    setConfirmError('');
+    try {
+      const { error } = await supabase.rpc('confirm_public_quotation', {
+        p_token: token,
+        p_traveler_name: confirmName,
+        p_traveler_email: confirmEmail,
+        p_notes: confirmNotes
+      });
+      if (error) throw error;
+      setConfirmSuccess(true);
+    } catch (err: any) {
+      console.error(err);
+      setConfirmError('Ocorreu um erro ao confirmar a cotação.');
+    } finally {
+      setConfirmLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (!token) return;
-    supabase.rpc('get_public_quotation', { _token: token }).then(({ data: rows, error }) => {
-      const row = rows?.[0] ?? null;
-      setLoading(false);
-      if (error || !row) { setNotFound(true); return; }
-      setData({ ...row, installments: parseInstallments(row.installments) });
-    });
+    
+    // Using standard select now that RLS allows Anon read with valid token check
+    supabase
+      .from('quotations')
+      .select(`
+        *,
+        organizations(name, logo_url, whatsapp, primary_color),
+        itinerary_days(
+          day_number, date, city, label,
+          itinerary_items(description)
+        ),
+        flights(
+          direction, airline_name, cabin_class, is_recommended,
+          flight_segments(departure_datetime, arrival_datetime, connection_info)
+        ),
+        quote_hotels(
+          hotel_bank(name, category_label, cover_emoji),
+          check_in, check_out, nights, room_type
+        )
+      `)
+      .eq('public_token', token)
+      .single()
+      .then(({ data: row, error }) => {
+        setLoading(false);
+        if (error || !row) { setNotFound(true); return; }
+        
+        // Map the relational data to our UI
+        const mappedData: any = {
+          ...row,
+          org_name: (row.organizations as any)?.name,
+          org_logo: (row.organizations as any)?.logo_url,
+          org_whatsapp: (row.organizations as any)?.whatsapp,
+          org_primary_color: (row.organizations as any)?.primary_color,
+          installments: parseInstallments(row.installments),
+          itinerary: row.itinerary_days || [],
+          transports: row.flights || [],
+          hotels: row.quote_hotels || []
+        };
+        
+        setData(mappedData);
+      });
   }, [token]);
 
   const fmt = (value: number | null, currency = 'BRL') => {
@@ -88,10 +156,12 @@ export default function PublicQuotation() {
     ? data.org_name.split(' ').slice(0, 2).map((w: string) => w[0]).join('').toUpperCase()
     : 'AG';
 
-  // Reference short
   const ref = token ? `#${token.slice(0, 8).toUpperCase()}` : '';
 
   const hasPriceDetails = data.total_value || installments.length > 0;
+  
+  // Se o data contiver destination via db migrations
+  const isDestinationValid = data.destination || data.cover_title;
 
   return (
     <PublicLayout
@@ -101,11 +171,77 @@ export default function PublicQuotation() {
         { id: 'cot', label: 'Cotação', active: true },
         ...(itinerary.length > 0 ? [{ id: 'itin', label: 'Roteiro' }] : []),
       ]}
-      ctaLabel={whatsappUrl ? 'Reservar →' : undefined}
-      onCtaClick={whatsappUrl ? () => window.open(whatsappUrl, '_blank') : undefined}
+      ctaLabel="Reservar →"
+      onCtaClick={() => setIsConfirmOpen(true)}
       ctaSecondaryLabel={whatsappUrl ? 'Perguntar' : undefined}
       onCtaSecondaryClick={whatsappUrl ? () => window.open(whatsappUrl, '_blank') : undefined}
     >
+
+      {/* CONFIRMATION MODAL OVERLAY */}
+      {isConfirmOpen && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(17, 17, 16, 0.4)', backdropFilter: 'blur(4px)', padding: 16 }}>
+          <div style={{ background: 'var(--vj-bg)', width: '100%', maxWidth: 420, borderRadius: 24, padding: 32, position: 'relative', boxShadow: '0 24px 48px rgba(0,0,0,0.1)' }}>
+            <button 
+              onClick={() => setIsConfirmOpen(false)}
+              style={{ position: 'absolute', top: 16, right: 16, width: 32, height: 32, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--vj-txt3)' }}
+            >
+              <X size={20} />
+            </button>
+
+            {confirmSuccess ? (
+              <div style={{ textAlign: 'center', padding: '20px 0' }}>
+                <CheckCircle2 size={56} color="var(--vj-green)" style={{ margin: '0 auto 16px' }} />
+                <h3 style={{ fontSize: 20, fontWeight: 700, color: 'var(--vj-txt)', marginBottom: 8 }}>Solicitação Confirmada!</h3>
+                <p style={{ color: 'var(--vj-txt2)', fontSize: 14, lineHeight: 1.5 }}>
+                  Nossa equipe já foi notificada sobre seu interesse. Entraremos em contato em breve para prosseguir com o pagamento e a emissão.
+                </p>
+                <div style={{ marginTop: 24 }}>
+                  <button onClick={() => setIsConfirmOpen(false)} style={{ background: 'var(--vj-green)', color: '#fff', border: 'none', padding: '12px 24px', borderRadius: 100, fontWeight: 600, fontSize: 14, cursor: 'pointer' }}>
+                    Fechar
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div>
+                <h3 style={{ fontSize: 20, fontWeight: 700, color: 'var(--vj-txt)', marginBottom: 8 }}>Confirmar Reserva</h3>
+                <p style={{ color: 'var(--vj-txt2)', fontSize: 13, marginBottom: 24, lineHeight: 1.5 }}>
+                  Ótima escolha! Preencha os dados abaixo para sinalizar seu aceite. Nossa equipe cuidará do resto.
+                </p>
+
+                <div style={{ marginBottom: 16 }}>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 600, marginBottom: 6, color: 'var(--vj-txt)' }}>Nome Completo *</label>
+                  <input type="text" value={confirmName} onChange={e => setConfirmName(e.target.value)} style={{ width: '100%', padding: '12px 16px', borderRadius: 12, border: '1px solid var(--vj-border)', background: '#fff', outline: 'none', color: 'var(--vj-txt)' }} placeholder="Como devemos lhe chamar" />
+                </div>
+                
+                <div style={{ marginBottom: 16 }}>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 600, marginBottom: 6, color: 'var(--vj-txt)' }}>E-mail ou WhatsApp</label>
+                  <input type="text" value={confirmEmail} onChange={e => setConfirmEmail(e.target.value)} style={{ width: '100%', padding: '12px 16px', borderRadius: 12, border: '1px solid var(--vj-border)', background: '#fff', outline: 'none', color: 'var(--vj-txt)' }} placeholder="Para nosso retorno" />
+                </div>
+
+                <div style={{ marginBottom: 24 }}>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 600, marginBottom: 6, color: 'var(--vj-txt)' }}>Observações (Opcional)</label>
+                  <textarea rows={3} value={confirmNotes} onChange={e => setConfirmNotes(e.target.value)} style={{ width: '100%', padding: '12px 16px', borderRadius: 12, border: '1px solid var(--vj-border)', background: '#fff', outline: 'none', color: 'var(--vj-txt)', resize: 'none' }} placeholder="Algum detalhe extra sobre acompanhantes ou pagamento..." />
+                </div>
+
+                {confirmError && (
+                  <div style={{ padding: 12, background: 'var(--vj-red-bg)', color: 'var(--vj-red)', fontSize: 13, borderRadius: 12, marginBottom: 16 }}>
+                    {confirmError}
+                  </div>
+                )}
+
+                <button 
+                  disabled={confirmLoading}
+                  onClick={handleConfirm}
+                  style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: 'var(--vj-green)', color: '#fff', border: 'none', padding: 16, borderRadius: 100, fontWeight: 600, fontSize: 15, cursor: confirmLoading ? 'not-allowed' : 'pointer', opacity: confirmLoading ? 0.7 : 1 }}
+                >
+                  {confirmLoading && <Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} />}
+                  {confirmLoading ? 'Enviando...' : 'Confirmar Interesse'}
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
       {/* ══ COVER HERO ══ */}
       <div className="vj-cover">
         {coverImageUrl ? (

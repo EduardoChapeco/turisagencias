@@ -9,8 +9,9 @@ import { PageHeader } from '@/components/ui/PageHeader';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { EmptyState, PageSkeleton } from '@/components/ui/EmptyState';
 import { QuotationBuilderSheet } from '@/components/QuotationBuilderSheet';
+import { QuotationAiImportSheet } from '@/components/QuotationAiImportSheet';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Search, FileText, MapPin, Hotel, Trash2, Calendar, Users } from 'lucide-react';
+import { Plus, Search, FileText, MapPin, Hotel, Trash2, Calendar, Users, Sparkles } from 'lucide-react';
 import { getClientName } from '@/lib/utils';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel,
@@ -30,6 +31,7 @@ export default function Quotations() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [builderOpen, setBuilderOpen] = useState(false);
+  const [aiImportOpen, setAiImportOpen] = useState(false);
   const navigate = useNavigate();
 
   const { data: quotations, isLoading } = useQuotations({
@@ -52,9 +54,19 @@ export default function Quotations() {
           icon={FileText}
           badge={<StatusBadge variant="neutral" size="sm">{quotations?.length ?? 0} cotações</StatusBadge>}
           actions={
-            <Button onClick={() => setBuilderOpen(true)}>
-              <Plus className="mr-2 h-4 w-4" /> Nova Cotação
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setAiImportOpen(true)}
+                className="border-vj-green text-vj-green hover:bg-vj-green/5 gap-2"
+              >
+                <Sparkles className="h-4 w-4" />
+                Cotação PDF IA
+              </Button>
+              <Button onClick={() => setBuilderOpen(true)}>
+                <Plus className="mr-2 h-4 w-4" /> Nova Cotação
+              </Button>
+            </div>
           }
         />
 
@@ -190,6 +202,12 @@ export default function Quotations() {
       <QuotationBuilderSheet
         open={builderOpen}
         onClose={() => setBuilderOpen(false)}
+      />
+
+      <QuotationAiImportSheet
+        open={aiImportOpen}
+        onClose={() => setAiImportOpen(false)}
+        onSuccess={(id) => { setAiImportOpen(false); navigate(`/quotations/${id}`); }}
       />
     </AppLayout>
   );

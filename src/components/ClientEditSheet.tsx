@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { UserPlus, Save, Globe, Shield, Tag, X, Camera, FileText, Plane } from 'lucide-react';
+import { UserPlus, Save, Globe, Shield, Tag, X, Camera, FileText, Plane, MapPin, Plus, Trash2 } from 'lucide-react';
 import { SheetPage } from '@/components/ui/SheetPage';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,11 +8,14 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { MediaUploader } from '@/components/ui/MediaUploader';
+import { AvatarUploader } from '@/components/ui/AvatarUploader';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useCreateClient, useUpdateClient } from '@/hooks/useClients';
 import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 const ORIGIN_OPTIONS = ['Instagram', 'Indicação', 'Google', 'Facebook', 'WhatsApp', 'Site', 'Evento', 'Outro'];
+const DOC_TYPES = ['Passaporte', 'RG', 'CNH', 'CPF', 'CRM (Médico)', 'OAB (Advogado)', 'Visto', 'Outro'];
 
 export interface ClientEditSheetProps {
   id?: string | null;
@@ -25,15 +28,16 @@ export function ClientEditSheet({ id, open, onClose, onSuccess }: ClientEditShee
   const isUpdate = !!id;
   const createClient = useCreateClient();
   const updateClient = useUpdateClient?.();
+  const { toast } = useToast();
 
   const [form, setForm] = useState<any>({
     name: '', email: '', phone: '', cpf: '', birth_date: '',
     address: '', city: '', state: '', zip_code: '', country: 'Brasil',
     origin: '', notes: '',
-    passport_number: '', passport_expiry: '',
-    passport_url: '',
-    documents: [],
     photo_url: '',
+    gallery_urls: [],
+    documents: [], 
+    proof_of_address_url: '',
     portal_access_enabled: false,
     preferred_destinations: '',
     preferred_airlines: '',
@@ -44,6 +48,7 @@ export function ClientEditSheet({ id, open, onClose, onSuccess }: ClientEditShee
   });
   const [tagInput, setTagInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [cepLoading, setCepLoading] = useState(false);
 
   useEffect(() => {
     if (open && isUpdate && id) {
@@ -52,6 +57,13 @@ export function ClientEditSheet({ id, open, onClose, onSuccess }: ClientEditShee
         .then(({ data }: any) => {
           if (data) {
             const prefs = (data.preferences as any) || {};
+            
+            // Migrate legacy unstructured documents to structured blocks if needed
+            let docs = data.preferences?.documents || [];
+            if (docs.length > 0 && typeof docs[0] === 'string') {
+               docs = docs.map((url: string) => ({ type: 'Outro', url }));
+            }
+
             setForm({
               ...data,
               preferred_destinations: prefs.destinations || '',
@@ -59,11 +71,9 @@ export function ClientEditSheet({ id, open, onClose, onSuccess }: ClientEditShee
               seat_preference: prefs.seat || '',
               meal_preference: prefs.meal || '',
               loyalty_programs: prefs.loyalty || '',
-              passport_number: prefs.passport_number || '',
-              passport_expiry: prefs.passport_expiry || '',
-              passport_url: prefs.passport_url || '',
-              preferences: data.preferences || {},
-              documents: data.preferences?.documents || [],
+              proof_of_address_url: prefs.proof_of_address_url || '',
+              gallery_urls: prefs.gallery_urls || [],
+              documents: docs,
               tags: data.tags || [],
             });
           }
@@ -74,8 +84,7 @@ export function ClientEditSheet({ id, open, onClose, onSuccess }: ClientEditShee
         name: '', email: '', phone: '', cpf: '', birth_date: '',
         address: '', city: '', state: '', zip_code: '', country: 'Brasil',
         origin: '', notes: '',
-        passport_number: '', passport_expiry: '',
-        passport_url: '', documents: [], photo_url: '',
+        documents: [], photo_url: '', gallery_urls: [], proof_of_address_url: '',
         portal_access_enabled: false,
         preferred_destinations: '', preferred_airlines: '',
         seat_preference: '', meal_preference: '', loyalty_programs: '',
@@ -95,6 +104,56 @@ export function ClientEditSheet({ id, open, onClose, onSuccess }: ClientEditShee
 
   const removeTag = (tag: string) => update('tags', form.tags.filter((t: string) => t !== tag));
 
+  const fetchCep = async (cep: string) => {
+    const cleanCep = cep.replace(/\D/g, '');
+    if (cleanCep.length !== 8) return;
+    
+    setCepLoading(true);
+    try {
+      const res = await fetch(`https://viacep.com.br/ws/${cleanCep}/json/`);
+      const data = await res.json();
+      if (!data.erro) {
+        setForm((prev: any) => ({
+          ...prev,
+          address: `${data.logradouro}${data.bairro ? ` - ${data.bairro}` : ''}`,
+          city: data.localidade,
+          state: data.uf,
+          country: 'Brasil'
+        }));
+        toast({ title: 'Endereço encontrado!' });
+      } else {
+        toast({ title: 'CEP não encontrado', variant: 'destructive' });
+      }
+    } catch(err) {
+      console.error(err);
+    } finally {
+      setCepLoading(false);
+    }
+  };
+
+  const handleCepChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const v = e.target.value;
+    update('zip_code', v);
+    if (v.replace(/\D/g, '').length === 8) fetchCep(v);
+  };
+
+  const addDocumentBlock = () => {
+    const newDocs = [...form.documents, { id: crypto.randomUUID(), type: 'Passaporte', number: '', expiry: '', url: '' }];
+    update('documents', newDocs);
+  };
+
+  const updateDocumentBlock = (index: number, field: string, val: any) => {
+    const newDocs = [...form.documents];
+    newDocs[index] = { ...newDocs[index], [field]: val };
+    update('documents', newDocs);
+  };
+
+  const removeDocumentBlock = (index: number) => {
+    const newDocs = [...form.documents];
+    newDocs.splice(index, 1);
+    update('documents', newDocs);
+  };
+
   const handleSave = async () => {
     if (!form.name?.trim()) return;
 
@@ -104,8 +163,9 @@ export function ClientEditSheet({ id, open, onClose, onSuccess }: ClientEditShee
       ...(form.seat_preference ? { seat: form.seat_preference } : {}),
       ...(form.meal_preference ? { meal: form.meal_preference } : {}),
       ...(form.loyalty_programs ? { loyalty: form.loyalty_programs } : {}),
-      ...(form.passport_number ? { passport_number: form.passport_number } : {}),
-      ...(form.passport_expiry ? { passport_expiry: form.passport_expiry } : {}),
+      ...(form.proof_of_address_url ? { proof_of_address_url: form.proof_of_address_url } : {}),
+      ...(form.gallery_urls?.length ? { gallery_urls: form.gallery_urls } : {}),
+      ...(form.documents?.length ? { documents: form.documents } : {}),
     };
 
     const payload = {
@@ -122,8 +182,6 @@ export function ClientEditSheet({ id, open, onClose, onSuccess }: ClientEditShee
       origin: form.origin || null,
       notes: form.notes || null,
       photo_url: form.photo_url || null,
-      passport_url: form.passport_url || null,
-      documents: form.documents || [],
       portal_access_enabled: form.portal_access_enabled,
       tags: form.tags,
       preferences: Object.keys(preferences).length > 0 ? preferences : null,
@@ -146,14 +204,14 @@ export function ClientEditSheet({ id, open, onClose, onSuccess }: ClientEditShee
       open={open}
       onClose={onClose}
       title={isUpdate ? 'Editar Cliente' : 'Novo Cliente'}
-      subtitle="CRM da agência — dados completos do viajante"
+      subtitle="CRM Avançado — Ficha completa do viajante"
       icon={UserPlus}
       sections={[
-        { id: 'identidade', label: 'Identidade' },
-        { id: 'documentos', label: 'Documentos' },
-        { id: 'preferencias', label: 'Preferências' },
-        { id: 'endereco', label: 'Endereço' },
-        { id: 'portal', label: 'Portal & Tags' },
+        { id: 'identidade', label: 'Identidade e Fotos' },
+        { id: 'documentos', label: 'Documentos e Anuências' },
+        { id: 'preferencias', label: 'Preferências (IA)' },
+        { id: 'endereco', label: 'Endereço Completo' },
+        { id: 'portal', label: 'Acesso & Tags' },
       ]}
       footer={
         <div className="flex w-full justify-end gap-2">
@@ -164,31 +222,27 @@ export function ClientEditSheet({ id, open, onClose, onSuccess }: ClientEditShee
             className="bg-vj-green text-white hover:bg-vj-green/90"
           >
             <Save className="mr-2 h-4 w-4" />
-            {isUpdate ? 'Atualizar Cliente' : 'Criar Cliente'}
+            {isUpdate ? 'Salvar Cliente' : 'Criar Cliente'}
           </Button>
         </div>
       }
     >
       {(activeSection) => {
-        if (loading) return <div className="text-sm text-vj-txt3 animate-pulse py-8 text-center">Carregando dados...</div>;
+        if (loading) return <div className="text-sm text-vj-txt3 animate-pulse py-8 text-center">Carregando ficha do cliente...</div>;
 
         return (
           <>
             {activeSection === 'identidade' && (
-              <div className="space-y-6">
-                <div className="space-y-3">
-                  <Label className="font-semibold text-vj-txt flex items-center gap-2">
-                    <Camera className="h-4 w-4 text-vj-green" /> Foto do Cliente
-                  </Label>
-                  <MediaUploader
-                    multiple={false}
-                    existingUrls={form.photo_url ? [form.photo_url] : []}
-                    onUploadComplete={(urls) => update('photo_url', urls[0])}
-                    folder="clients/photos"
-                  />
+              <div className="space-y-8">
+                <div className="flex gap-6 items-center">
+                  <AvatarUploader url={form.photo_url} fallbackName={form.name} onUpload={(url) => update('photo_url', url)} />
+                  <div className="flex-1 space-y-1">
+                    <Label className="text-base font-semibold">Foto de Perfil Principal</Label>
+                    <p className="text-xs text-vj-txt3">Clique no avatar para recortar e enviar uma imagem perfeitamente alinhada.</p>
+                  </div>
                 </div>
 
-                <div className="space-y-4">
+                <div className="space-y-4 pt-4 border-t border-vj-border">
                   <div className="space-y-1.5">
                     <Label>Nome Completo *</Label>
                     <Input value={form.name} onChange={(e) => update('name', e.target.value)} placeholder="Ana Carolina Silva" className="border-vj-border bg-vj-bg" />
@@ -199,8 +253,8 @@ export function ClientEditSheet({ id, open, onClose, onSuccess }: ClientEditShee
                       <Input type="email" value={form.email} onChange={(e) => update('email', e.target.value)} className="border-vj-border bg-vj-bg" />
                     </div>
                     <div className="space-y-1.5">
-                      <Label>Telefone / WhatsApp</Label>
-                      <Input value={form.phone} onChange={(e) => update('phone', e.target.value)} placeholder="+55 48 9..." className="border-vj-border bg-vj-bg" />
+                      <Label>WhatsApp / Telefone</Label>
+                      <Input value={form.phone} onChange={(e) => update('phone', e.target.value)} placeholder="+55..." className="border-vj-border bg-vj-bg" />
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
@@ -213,70 +267,97 @@ export function ClientEditSheet({ id, open, onClose, onSuccess }: ClientEditShee
                       <Input type="date" value={form.birth_date} onChange={(e) => update('birth_date', e.target.value)} className="border-vj-border bg-vj-bg" />
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1.5">
-                      <Label>Canal de Aquisição</Label>
-                      <Select value={form.origin} onValueChange={(v) => update('origin', v)}>
-                        <SelectTrigger className="border-vj-border bg-vj-bg"><SelectValue placeholder="Como chegou?" /></SelectTrigger>
-                        <SelectContent>
-                          {ORIGIN_OPTIONS.map((o) => <SelectItem key={o} value={o}>{o}</SelectItem>)}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
                   <div className="space-y-1.5">
-                    <Label>Observações Internas</Label>
-                    <Textarea value={form.notes} onChange={(e) => update('notes', e.target.value)} rows={3} placeholder="Notas privadas..." className="border-vj-border bg-vj-bg resize-none" />
+                    <Label>Observações Internas (Somente Agentes)</Label>
+                    <Textarea value={form.notes} onChange={(e) => update('notes', e.target.value)} rows={3} placeholder="Notas confidenciais..." className="border-vj-border bg-vj-bg resize-none" />
                   </div>
+                </div>
+
+                <div className="space-y-3 pt-6 border-t border-vj-border">
+                  <div className="space-y-1">
+                    <Label className="text-base font-semibold flex items-center gap-2 text-vj-txt">
+                      <Camera className="w-4 h-4 text-vj-green" /> Galeria / Fotos Extras
+                    </Label>
+                    <p className="text-xs text-vj-txt3 mb-3">Guarde cópias de fotos com a família, em viagens anteriores, etc.</p>
+                  </div>
+                  <MediaUploader
+                    multiple={true}
+                    existingUrls={form.gallery_urls || []}
+                    onUploadComplete={(urls) => update('gallery_urls', [...urls])}
+                    folder="clients/gallery"
+                  />
                 </div>
               </div>
             )}
 
             {activeSection === 'documentos' && (
-              <div className="space-y-8">
-                <div className="space-y-4">
-                  <Label className="font-semibold text-vj-txt flex items-center gap-2">
-                    <Globe className="h-4 w-4 text-vj-green" /> Passaporte
+              <div className="space-y-6">
+                <div className="flex items-center justify-between pb-2 border-b border-vj-border">
+                  <Label className="text-base font-semibold text-vj-txt flex items-center gap-2">
+                    <FileText className="h-5 w-5 text-vj-green" /> Gestão de Documentos
                   </Label>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1.5">
-                      <Label>Número</Label>
-                      <Input value={form.passport_number} onChange={(e) => update('passport_number', e.target.value)} placeholder="AB123456" className="border-vj-border bg-vj-bg" />
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label>Validade</Label>
-                      <Input type="date" value={form.passport_expiry} onChange={(e) => update('passport_expiry', e.target.value)} className="border-vj-border bg-vj-bg" />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Upload da Foto do Passaporte</Label>
-                    <MediaUploader
-                      multiple={false}
-                      existingUrls={form.passport_url ? [form.passport_url] : []}
-                      onUploadComplete={(urls) => update('passport_url', urls[0])}
-                      folder="clients/passports"
-                    />
-                  </div>
+                  <Button onClick={addDocumentBlock} size="sm" variant="outline" className="border-vj-green text-vj-green hover:bg-vj-green hover:text-white transition-colors">
+                    <Plus className="w-4 h-4 mr-1" /> Adicionar Mídia/Documento
+                  </Button>
                 </div>
 
-                <div className="pt-6 border-t border-vj-border space-y-4">
-                  <Label className="font-semibold text-vj-txt flex items-center gap-2">
-                    <FileText className="h-4 w-4 text-vj-green" /> Outros Documentos (RG, CNH, Vacinas...)
-                  </Label>
-                  <MediaUploader
-                    multiple
-                    existingUrls={form.documents?.map?.((d: any) => d.url || d) || []}
-                    onUploadComplete={(urls) => update('documents', urls.map((url) => ({ url, name: url.split('/').pop() })))}
-                    folder="clients/documents"
-                  />
+                {form.documents?.length === 0 && (
+                  <div className="text-center py-8 text-vj-txt3 text-sm bg-vj-surface rounded-vj-lg border border-dashed border-vj-border">
+                    Nenhum documento cadastrado. Adicione passaportes, RGs ou registros profissionais.
+                  </div>
+                )}
+
+                <div className="space-y-6">
+                  {form.documents?.map((doc: any, index: number) => (
+                    <div key={doc.id || index} className="p-4 rounded-vj-lg border border-vj-border bg-vj-surface relative space-y-4">
+                      <button 
+                        onClick={() => removeDocumentBlock(index)}
+                        className="absolute right-3 top-3 text-vj-txt3 hover:text-red-500 transition-colors"
+                        title="Remover documento"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                      
+                      <div className="grid sm:grid-cols-2 gap-4">
+                        <div className="space-y-1.5">
+                          <Label>Tipo de Documento</Label>
+                          <Select value={doc.type} onValueChange={(v) => updateDocumentBlock(index, 'type', v)}>
+                            <SelectTrigger className="border-vj-border bg-vj-bg"><SelectValue placeholder="Tipo" /></SelectTrigger>
+                            <SelectContent>
+                              {DOC_TYPES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label>Numeração / Identificador</Label>
+                          <Input value={doc.number || ''} onChange={e => updateDocumentBlock(index, 'number', e.target.value)} placeholder="Ex: AB123456" className="border-vj-border bg-vj-bg" />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label>Validade (Opcional)</Label>
+                          <Input type="date" value={doc.expiry || ''} onChange={e => updateDocumentBlock(index, 'expiry', e.target.value)} className="border-vj-border bg-vj-bg" />
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-2 pt-2 border-t border-vj-border/50">
+                        <Label className="text-xs text-vj-txt3">Anexo Oficial (.pdf, .jpg)</Label>
+                        <MediaUploader
+                          multiple={false}
+                          accept="image/*,application/pdf"
+                          existingUrls={doc.url ? [doc.url] : []}
+                          onUploadComplete={(urls) => updateDocumentBlock(index, 'url', urls[0])}
+                          folder="clients/documents"
+                        />
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
 
             {activeSection === 'preferencias' && (
               <div className="space-y-5">
-                <div className="p-4 rounded-2xl bg-vj-green/5 border border-vj-green/10 mb-2">
-                  <p className="text-xs text-vj-green font-medium">✨ Estas informações alimentam o V-Agent para recomendações personalizadas</p>
+                <div className="p-4 rounded-vj-lg bg-vj-green/5 border border-vj-green/10 mb-2">
+                  <p className="text-xs text-vj-green font-medium">✨ Estas informações alimentam o V-Agent IA para gerar recomendações sob medida.</p>
                 </div>
                 <div className="space-y-1.5">
                   <Label className="flex items-center gap-2"><Plane className="h-3.5 w-3.5 text-vj-txt3" /> Destinos Preferidos</Label>
@@ -290,7 +371,7 @@ export function ClientEditSheet({ id, open, onClose, onSuccess }: ClientEditShee
                   <div className="space-y-1.5">
                     <Label>Assento Preferido</Label>
                     <Select value={form.seat_preference} onValueChange={(v) => update('seat_preference', v)}>
-                      <SelectTrigger className="border-vj-border bg-vj-bg"><SelectValue placeholder="Selecionar..." /></SelectTrigger>
+                      <SelectTrigger className="border-vj-border bg-vj-bg"><SelectValue placeholder="Nenhum" /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="window">Janela</SelectItem>
                         <SelectItem value="aisle">Corredor</SelectItem>
@@ -312,42 +393,56 @@ export function ClientEditSheet({ id, open, onClose, onSuccess }: ClientEditShee
             )}
 
             {activeSection === 'endereco' && (
-              <div className="space-y-4">
-                <div className="space-y-1.5">
-                  <Label>Logradouro</Label>
-                  <Input value={form.address} onChange={(e) => update('address', e.target.value)} className="border-vj-border bg-vj-bg" />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-6">
+                <div className="grid grid-cols-[1fr_2fr] gap-3">
                   <div className="space-y-1.5">
+                    <Label className="flex items-center gap-2">CEP <span className="text-[10px] bg-vj-green/10 text-vj-green px-1.5 rounded">ViaCEP</span></Label>
+                    <Input disabled={cepLoading} value={form.zip_code} onChange={handleCepChange} placeholder="00000-000" className="border-vj-border bg-vj-bg" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>Logradouro / Rua</Label>
+                    <Input value={form.address} onChange={(e) => update('address', e.target.value)} className="border-vj-border bg-vj-bg" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="space-y-1.5 col-span-2">
                     <Label>Cidade</Label>
                     <Input value={form.city} onChange={(e) => update('city', e.target.value)} className="border-vj-border bg-vj-bg" />
                   </div>
                   <div className="space-y-1.5">
                     <Label>Estado</Label>
-                    <Input value={form.state} onChange={(e) => update('state', e.target.value)} className="border-vj-border bg-vj-bg" />
+                    <Input value={form.state} onChange={(e) => update('state', e.target.value)} placeholder="UF" className="border-vj-border bg-vj-bg" />
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1.5">
-                    <Label>CEP</Label>
-                    <Input value={form.zip_code} onChange={(e) => update('zip_code', e.target.value)} className="border-vj-border bg-vj-bg" />
-                  </div>
-                  <div className="space-y-1.5">
+                <div className="space-y-1.5">
                     <Label>País</Label>
                     <Input value={form.country} onChange={(e) => update('country', e.target.value)} className="border-vj-border bg-vj-bg" />
-                  </div>
+                </div>
+                
+                <div className="pt-4 border-t border-vj-border space-y-3">
+                  <Label className="text-base font-semibold text-vj-txt flex items-center gap-2">
+                    <MapPin className="w-4 h-4 text-vj-green" /> Comprovante de Resistência
+                  </Label>
+                  <p className="text-xs text-vj-txt3">Luz, Água, Internet. Pode subir PDF ou Imagem.</p>
+                  <MediaUploader
+                      multiple={false}
+                      accept="image/*,application/pdf"
+                      existingUrls={form.proof_of_address_url ? [form.proof_of_address_url] : []}
+                      onUploadComplete={(urls) => update('proof_of_address_url', urls[0])}
+                      folder="clients/documents"
+                    />
                 </div>
               </div>
             )}
 
             {activeSection === 'portal' && (
               <div className="space-y-8">
-                <div className="p-5 rounded-2xl bg-vj-green/5 border border-vj-green/10 flex items-center justify-between">
+                <div className="p-5 rounded-vj-lg bg-vj-green/5 border border-vj-green/10 flex items-center justify-between">
                   <div className="space-y-1">
                     <h3 className="font-bold text-vj-txt flex items-center gap-2">
                       <Shield className="h-4 w-4 text-vj-green" /> Acesso ao Portal do Cliente
                     </h3>
-                    <p className="text-xs text-vj-txt3">Permite que o cliente acesse o portal personalizado da agência via Magic Link.</p>
+                    <p className="text-xs text-vj-txt3">Permite que o cliente acesse roteiros na versão Magic Link do Viaja. Se o link estourar os limites da agência, desative preventivamente.</p>
                   </div>
                   <Switch
                     checked={form.portal_access_enabled}

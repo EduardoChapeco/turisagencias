@@ -58,6 +58,7 @@ export interface PublicQuotationData {
   org_primary_color: string | null;
   whatsapp_text?: string | null;
   cover_image_url?: string | null;
+  cover_title?: string | null;
   pricing_mode?: string | null;
   valid_until?: string | null;
   itinerary?: any[];

@@ -40,7 +40,7 @@ export default function PublicQuotation() {
     setConfirmLoading(true);
     setConfirmError('');
     try {
-      const { error } = await supabase.rpc('confirm_public_quotation', {
+      const { error } = await (supabase.rpc as any)('confirm_public_quotation', {
         p_token: token,
         p_traveler_name: confirmName,
         p_traveler_email: confirmEmail,
@@ -94,7 +94,7 @@ export default function PublicQuotation() {
           adultos, criancas, valor_total, order_position
         )
       `)
-      .eq('public_token', token)
+      .eq('share_token', token)
       .single()
       .then(({ data: row, error }) => {
         setLoading(false);
@@ -108,17 +108,16 @@ export default function PublicQuotation() {
           org_primary_color: (row.organizations as any)?.primary_color,
           installments: parseInstallments(row.installments),
           // Sort itinerary days by day_number
-          itinerary: ((row.itinerary_days as any[]) || []).sort((a: any, b: any) => a.day_number - b.day_number),
-          // Flights sorted: outbound first
-          flights_data: ((row.flights as any[]) || []).sort((a: any, b: any) => {
+          itinerary: ((row as any).itinerary_days as any[] || []).sort((a: any, b: any) => a.day_number - b.day_number),
+          flights_data: ((row as any).flights as any[] || []).sort((a: any, b: any) => {
             if (a.direction === 'outbound' && b.direction === 'return') return -1;
             if (a.direction === 'return' && b.direction === 'outbound') return 1;
             return 0;
           }),
-          transfers: ((row.quote_transfers as any[]) || []).sort((a: any, b: any) => a.order_position - b.order_position),
-          price_items: ((row.quote_price_items as any[]) || []).sort((a: any, b: any) => a.order_position - b.order_position),
-          includes_items: ((row.quote_includes as any[]) || []).sort((a: any, b: any) => a.order_position - b.order_position),
-          excursions: ((row.quote_experiences as any[]) || []).sort((a: any, b: any) => a.order_position - b.order_position),
+          transfers: ((row as any).quote_transfers as any[] || []).sort((a: any, b: any) => a.order_position - b.order_position),
+          price_items: ((row as any).quote_price_items as any[] || []).sort((a: any, b: any) => a.order_position - b.order_position),
+          includes_items: ((row as any).quote_includes as any[] || []).sort((a: any, b: any) => a.order_position - b.order_position),
+          excursions: ((row as any).quote_experiences as any[] || []).sort((a: any, b: any) => a.order_position - b.order_position),
           included_items: [],
           excluded_items: [],
         };
@@ -199,7 +198,7 @@ export default function PublicQuotation() {
   const ref = token ? `#${token.slice(0, 8).toUpperCase()}` : '';
 
   // Se o data contiver destination via db migrations
-  const isDestinationValid = data.destination || data.cover_title;
+  const isDestinationValid = data.destination || (data as any).cover_title;
 
 
   return (

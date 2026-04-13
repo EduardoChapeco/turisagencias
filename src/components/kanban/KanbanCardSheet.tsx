@@ -20,11 +20,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { StatusBadge, mapStatusToVariant } from '@/components/ui/StatusBadge';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ClientSearchSelect } from '@/components/ui/ClientSearchSelect';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { StatusBadge, mapStatusToVariant } from '@/components/ui/StatusBadge';
-import { EmptyState } from '@/components/ui/EmptyState';
+import { useTrips } from '@/hooks/useTrips';
 import {
   useUpdateKanbanCard,
   useDeleteKanbanCard,

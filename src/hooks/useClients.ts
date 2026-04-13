@@ -94,6 +94,7 @@ export function useUpdateClient() {
       address: string; city: string; state: string; zip_code: string; country: string;
       origin: string; tags: string[]; notes: string; documents: any[]; photo_url: string; 
       passport_url: string; portal_access_enabled: boolean; preferences: any;
+      cover_url: string;
     }>) => {
       const { documents, passport_url, preferences, ...restData } = data;
       const updateData = { ...restData } as any;

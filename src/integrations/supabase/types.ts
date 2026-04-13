@@ -167,6 +167,7 @@ export type Database = {
           birth_date: string | null
           city: string | null
           country: string | null
+          cover_url: string | null
           cpf: string | null
           created_at: string
           created_by: string | null
@@ -192,6 +193,7 @@ export type Database = {
           birth_date?: string | null
           city?: string | null
           country?: string | null
+          cover_url?: string | null
           cpf?: string | null
           created_at?: string
           created_by?: string | null
@@ -217,6 +219,7 @@ export type Database = {
           birth_date?: string | null
           city?: string | null
           country?: string | null
+          cover_url?: string | null
           cpf?: string | null
           created_at?: string
           created_by?: string | null

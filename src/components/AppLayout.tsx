@@ -14,7 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-export function AppLayout({ children }: { children: React.ReactNode }) {
+export function AppLayout({ children, fullHeight }: { children: React.ReactNode; fullHeight?: boolean }) {
   const { profile } = useAuthStore();
   const navigate = useNavigate();
 
@@ -73,8 +73,8 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             </div>
           </header>
 
-          <main className="flex-1 overflow-auto p-5 lg:p-8">
-            <div className="mx-auto w-full max-w-7xl">
+          <main className={`flex-1 p-5 lg:p-8 ${fullHeight ? 'overflow-hidden flex flex-col min-h-0' : 'overflow-auto'}`}>
+            <div className={`mx-auto w-full ${fullHeight ? 'flex-1 min-h-0 flex flex-col' : 'max-w-7xl'}`}>
               {children}
             </div>
           </main>

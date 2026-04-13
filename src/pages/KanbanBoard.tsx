@@ -344,9 +344,9 @@ export default function KanbanBoard() {
   const totalCards = data?.cards?.length ?? 0;
 
   return (
-    <AppLayout>
-      <div className="space-y-0 h-full flex flex-col">
-        <div className="px-0 pb-0">
+    <AppLayout fullHeight>
+      <div className="flex flex-col h-full min-h-0">
+        <div className="flex-shrink-0 pb-3">
           <PageHeader
             title={title}
             description={description}
@@ -372,7 +372,7 @@ export default function KanbanBoard() {
             onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
           >
-            <div className="kanban-board flex-1">
+            <div className="kanban-board flex-1 min-h-0">
               <SortableContext items={data.columns.map((c) => c.id)}>
                 {data.columns.map((column) => (
                   <KanbanColumn

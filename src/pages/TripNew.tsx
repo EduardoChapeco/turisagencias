@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AppLayout } from '@/components/AppLayout';
-import { useClients } from '@/hooks/useClients';
+import { ClientSearchSelect } from '@/components/ui/ClientSearchSelect';
 import { useCreateTrip } from '@/hooks/useTrips';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,7 +12,7 @@ import { Textarea } from '@/components/ui/textarea';
 
 export default function TripNew() {
   const navigate = useNavigate();
-  const { data: clients } = useClients();
+  
   const createTrip = useCreateTrip();
   const [form, setForm] = useState({
     title: '',
@@ -68,14 +68,11 @@ export default function TripNew() {
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
                   <Label>Cliente principal</Label>
-                  <Select value={form.primary_client_id} onValueChange={(value) => update('primary_client_id', value)}>
-                    <SelectTrigger><SelectValue placeholder="Selecione o cliente" /></SelectTrigger>
-                    <SelectContent>
-                      {clients?.map((client) => (
-                        <SelectItem key={client.id} value={client.id}>{client.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <ClientSearchSelect
+                    value={form.primary_client_id}
+                    onChange={(value) => update('primary_client_id', value)}
+                    placeholder="Buscar cliente..."
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label>Status</Label>

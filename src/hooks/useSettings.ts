@@ -13,7 +13,7 @@ export function useTeamMembers() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, user_id, first_name, last_name, email, role, is_active, avatar_url, last_seen_at, created_at')
+        .select('id, user_id, first_name, last_name, email, is_active, avatar_url, last_seen_at, created_at')
         .eq('org_id', organization!.id)
         .order('created_at');
       if (error) throw error;

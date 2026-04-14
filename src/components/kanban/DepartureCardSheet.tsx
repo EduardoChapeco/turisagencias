@@ -40,7 +40,7 @@ import { EmptyState } from '@/components/ui/EmptyState';
 /* ── Seção: Dados do Embarque ── */
 function EmbarqueSection({ card }: { card: DepartureCardData }) {
   const updateCard = useUpdateKanbanCard();
-  const meta = card.meta ?? {};
+  const meta = (card.metadata ?? {}) as DepartureMeta;
 
   const [form, setForm] = useState({
     title: card.title,
@@ -387,7 +387,7 @@ export function DepartureCardSheet({ card, isOpen, onClose, onDeleted }: Props) 
 
   if (!card) return null;
 
-  const meta = card.meta ?? {};
+  const meta = (card.metadata ?? {}) as DepartureMeta;
 
   const handleDelete = async () => {
     if (!window.confirm(`Excluir o card "${card.title}"? Esta ação não pode ser desfeita.`)) return;

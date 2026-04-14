@@ -28,8 +28,8 @@ export type DepartureCardData = {
   client_id: string | null;
   quotation_id: string | null;
   trip_id: string | null;
-  due_date: string | null;
-  meta: DepartureMeta | null;
+  metadata?: DepartureMeta | null;
+  assigned_to?: string | null;
   clients?: { name: string; phone: string | null } | null;
   quotations?: { destination: string | null } | null;
   trips?: { title: string | null } | null;
@@ -99,7 +99,7 @@ export function DepartureBoardCard({
     opacity: isDragging ? 0.4 : 1,
   };
 
-  const meta = card.meta ?? {};
+  const meta = (card.metadata ?? {}) as DepartureMeta;
   const daysUntil = getDaysUntilCheckin(meta.check_in_date);
   const destination = meta.destination ?? card.quotations?.destination ?? card.trips?.title;
   const clientName = card.clients?.name;

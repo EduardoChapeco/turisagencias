@@ -23,10 +23,10 @@ async function getAiKey(supabaseClient: any, orgId: string): Promise<{ key: stri
     const provider = keyEntry.provider?.toLowerCase();
 
     if (provider === 'openrouter') {
-      return { key: keyEntry.api_key, provider: 'openrouter', baseUrl: 'https://openrouter.ai/api/v1', model: 'google/gemini-2.0-flash-exp' };
+      return { key: keyEntry.api_key, provider: 'openrouter', baseUrl: 'https://openrouter.ai/api/v1', model: 'google/gemini-2.5-flash' };
     }
     if (provider === 'gemini' || provider === 'google') {
-      return { key: keyEntry.api_key, provider: 'gemini', baseUrl: 'https://generativelanguage.googleapis.com/v1beta/openai', model: 'gemini-2.0-flash-exp' };
+      return { key: keyEntry.api_key, provider: 'gemini', baseUrl: 'https://generativelanguage.googleapis.com/v1beta/openai', model: 'gemini-2.5-flash' };
     }
     if (provider === 'groq') {
       return { key: keyEntry.api_key, provider: 'groq', baseUrl: 'https://api.groq.com/openai/v1', model: 'llama3-70b-8192' };
@@ -34,8 +34,7 @@ async function getAiKey(supabaseClient: any, orgId: string): Promise<{ key: stri
     if (provider === 'openai') {
       return { key: keyEntry.api_key, provider: 'openai', baseUrl: 'https://api.openai.com/v1', model: 'gpt-4o' };
     }
-    // Provider desconhecido: usa a chave com OpenRouter (mais permissivo)
-    return { key: keyEntry.api_key, provider: 'openrouter', baseUrl: 'https://openrouter.ai/api/v1', model: 'google/gemini-2.0-flash-exp' };
+    return { key: keyEntry.api_key, provider: 'openrouter', baseUrl: 'https://openrouter.ai/api/v1', model: 'google/gemini-2.5-flash' };
   }
 
   // 2. Fallback: Lovable Gateway (chave de plataforma)

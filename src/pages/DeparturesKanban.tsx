@@ -213,7 +213,7 @@ export default function DeparturesKanban() {
                   {totalCards} embarques
                 </StatusBadge>
                 {urgentCount > 0 && (
-                  <StatusBadge variant="pending" size="sm">
+                  <StatusBadge variant="warning" size="sm">
                     ⚠️ {urgentCount} em 7 dias
                   </StatusBadge>
                 )}

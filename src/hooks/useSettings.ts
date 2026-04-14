@@ -56,7 +56,7 @@ export function useUpdateMemberRole() {
       if (role !== undefined) updates.role = role;
       if (is_active !== undefined) updates.is_active = is_active;
 
-      const { error } = await supabase.from('profiles').update(updates).eq('id', profileId);
+      const { error } = await supabase.from('profiles').update(updates as any).eq('id', profileId);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -90,7 +90,7 @@ export function useKanbanBoardColumns(boardSlug: string | null) {
 
       const { data: columns, error } = await supabase
         .from('kanban_columns')
-        .select('id, name, color, position, wip_limit')
+        .select('id, name, color, position')
         .eq('board_id', board.id)
         .order('position');
 
@@ -120,7 +120,7 @@ export function useCreateKanbanColumnInBoard() {
     }) => {
       const { data, error } = await supabase
         .from('kanban_columns')
-        .insert({ board_id, org_id: organization!.id, name, color: color ?? '#6B7280', position })
+        .insert({ board_id, name, color: color ?? '#6B7280', position })
         .select()
         .single();
       if (error) throw error;

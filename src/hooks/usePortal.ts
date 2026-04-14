@@ -54,7 +54,29 @@ export function usePortalTrip(slug: string | undefined, tripId: string | undefin
 
       if (error) throw error;
       if (!data) throw new Error('Viagem não encontrada');
-      return { organization, trip: data };
+
+      // If the trip has an itinerary_id, fetch its stops
+      let itineraryStops: any[] = [];
+      let itineraryData: any = null;
+      if (data.itinerary_id) {
+        const [itin, stops] = await Promise.all([
+          supabase
+            .from('itineraries')
+            .select('*')
+            .eq('id', data.itinerary_id)
+            .maybeSingle(),
+          supabase
+            .from('itinerary_stops')
+            .select('*')
+            .eq('itinerary_id', data.itinerary_id)
+            .order('day_number', { ascending: true })
+            .order('position', { ascending: true })
+        ]);
+        itineraryData = itin.data;
+        itineraryStops = stops.data ?? [];
+      }
+
+      return { organization, trip: data, itinerary: itineraryData, itineraryStops };
     },
     enabled: !!slug && !!tripId,
   });

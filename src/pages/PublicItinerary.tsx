@@ -40,8 +40,8 @@ export default function PublicItinerary() {
         .eq('id', itin.org_id)
         .maybeSingle();
 
-      // Increment view_count (fire and forget)
-      supabase.from('itineraries').update({ view_count: (itin.view_count || 0) + 1 }).eq('id', itin.id).then(() => {});
+      // Increment view_count via SECURITY DEFINER function (safe for anon users)
+      supabase.rpc('increment_itinerary_view', { p_token: token! }).then(() => {});
 
       return { ...itin, stops: stops || [], org };
     },

@@ -3,12 +3,15 @@ import { useNavigate, useParams } from 'react-router-dom';
 import {
   ArrowLeft, MapPin, CalendarDays, Users as UsersIcon,
   FileText, CheckSquare, MessageSquare, Plane, Edit2,
-  Hotel, Clock, Users2, DollarSign, Shield, Lock,
+  Hotel, Clock, Users2, DollarSign, Shield, Lock, Map, ExternalLink,
 } from 'lucide-react';
 import { AppLayout } from '@/components/AppLayout';
 import { useTrip } from '@/hooks/useTrips';
 import { useChecklists, useCreateChecklist, useCreateChecklistItem } from '@/hooks/useChecklists';
 import { useCreateTicket, useTickets } from '@/hooks/useTickets';
+import { useItineraryDetail, useItineraryStops } from '@/hooks/useItineraries';
+import { ItinerarySplitView } from '@/components/itinerary/ItinerarySplitView';
+import type { StopCoordinate } from '@/components/itinerary/ItineraryMap';
 import { TripEditSheet } from '@/components/TripEditSheet';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -56,6 +59,23 @@ export default function TripDetail() {
   const [checklistTitle, setChecklistTitle] = useState('');
   const [checklistItemTitle, setChecklistItemTitle] = useState<Record<string, string>>({});
   const [editOpen, setEditOpen] = useState(false);
+
+  // Itinerary linked to this trip
+  const tripItineraryId = (trip as any)?.itinerary_id as string | undefined;
+  const { data: linkedItinerary } = useItineraryDetail(tripItineraryId);
+  const { stops: linkedStops } = useItineraryStops(tripItineraryId);
+
+  const mappedStops: StopCoordinate[] = (linkedStops || []).map((s: any) => ({
+    id: s.id,
+    lat: s.lat ?? 0,
+    lng: s.lng ?? 0,
+    name: s.name,
+    time: s.time_start,
+    category: s.category || s.stop_type,
+    emoji: s.emoji,
+    description: s.description,
+    day_number: s.day_number ?? 1,
+  }));
 
   if (isLoading) {
     return (
@@ -229,6 +249,7 @@ export default function TripDetail() {
                 { value: 'summary',    label: 'Resumo',       icon: MapPin },
                 { value: 'travelers',  label: 'Viajantes',    icon: UsersIcon },
                 { value: 'documents',  label: 'Documentos',   icon: FileText },
+                { value: 'roteiro',    label: 'Roteiro',      icon: Map },
                 { value: 'tickets',    label: 'Chamados',     icon: MessageSquare },
                 { value: 'checklists', label: 'Checklists',   icon: CheckSquare },
               ].map(tab => (
@@ -324,6 +345,70 @@ export default function TripDetail() {
                 <p className="text-sm text-vj-txt whitespace-pre-wrap">{trip.notes_internal}</p>
               </div>
             )}
+          </TabsContent>
+
+          {/* ── Roteiro ── */}
+          <TabsContent value="roteiro" className="mt-4">
+            <div className="rounded-xl border border-vj-border bg-white overflow-hidden">
+              <div className="flex items-center justify-between px-6 py-4 border-b border-vj-border">
+                <h3 className="font-semibold text-vj-txt flex items-center gap-2">
+                  <Map className="h-4 w-4 text-vj-green" />
+                  Roteiro com Mapa
+                </h3>
+                <div className="flex items-center gap-2">
+                  {tripItineraryId ? (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="border-vj-border gap-2"
+                      onClick={() => navigate(`/itineraries/${tripItineraryId}/builder`)}
+                    >
+                      <Edit2 className="h-3.5 w-3.5" /> Editar Roteiro
+                    </Button>
+                  ) : (
+                    <Button
+                      size="sm"
+                      className="gap-2"
+                      onClick={() => navigate('/itineraries')}
+                    >
+                      <Map className="h-3.5 w-3.5" /> Criar Roteiro
+                    </Button>
+                  )}
+                  {linkedItinerary?.public_token && linkedItinerary.is_public && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="gap-2 text-vj-green"
+                      onClick={() => window.open(`/roteiro/${linkedItinerary.public_token}`, '_blank')}
+                    >
+                      <ExternalLink className="h-3.5 w-3.5" /> Ver Público
+                    </Button>
+                  )}
+                </div>
+              </div>
+
+              {tripItineraryId && mappedStops.length > 0 ? (
+                <div className="h-[600px]">
+                  <ItinerarySplitView
+                    stops={mappedStops}
+                    isEditable={false}
+                    className="border-0 rounded-none h-full"
+                  />
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-20 text-center">
+                  <Map className="h-14 w-14 text-vj-txt3/20 mx-auto mb-4" />
+                  <p className="font-semibold text-vj-txt mb-1">
+                    {tripItineraryId ? 'Roteiro sem paradas ainda' : 'Nenhum roteiro vinculado'}
+                  </p>
+                  <p className="text-sm text-vj-txt3 max-w-xs">
+                    {tripItineraryId
+                      ? 'Abra o editor de roteiro para adicionar paradas com mapa e IA.'
+                      : 'Crie um roteiro no módulo Roteiros e vincule a esta viagem para visualizá-lo aqui.'}
+                  </p>
+                </div>
+              )}
+            </div>
           </TabsContent>
 
           {/* ── Viajantes ── */}

@@ -85,8 +85,8 @@ function DepartureColumn({
   // Sort: cards with check_in_date first, ordered by date ascending
   const sortedCards = useMemo(() => {
     return [...cards].sort((a, b) => {
-      const da = (a.metadata as any)?.check_in_date;
-      const db = (b.metadata as any)?.check_in_date;
+      const da = ((a.metadata ?? (a as any).meta) as any)?.check_in_date;
+      const db = ((b.metadata ?? (b as any).meta) as any)?.check_in_date;
       if (!da && !db) return 0;
       if (!da) return 1;
       if (!db) return -1;
@@ -157,7 +157,7 @@ export default function DeparturesKanban() {
   // Total checkins upcoming in next 7 days
   const urgentCount = useMemo(() => {
     return data?.cards?.filter((c) => {
-      const date = (c as any).metadata?.check_in_date;
+      const date = ((c as any).metadata ?? (c as any).meta)?.check_in_date;
       if (!date) return false;
       const diff = Math.ceil((new Date(date + 'T00:00:00').getTime() - Date.now()) / 86400000);
       return diff >= 0 && diff <= 7;

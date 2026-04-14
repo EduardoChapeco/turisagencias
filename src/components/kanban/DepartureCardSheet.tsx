@@ -40,7 +40,7 @@ import { EmptyState } from '@/components/ui/EmptyState';
 /* ── Seção: Dados do Embarque ── */
 function EmbarqueSection({ card }: { card: DepartureCardData }) {
   const updateCard = useUpdateKanbanCard();
-  const meta = (card.metadata ?? {}) as DepartureMeta;
+  const meta = (card.metadata ?? card.meta ?? {}) as DepartureMeta;
 
   const [form, setForm] = useState({
     title: card.title,
@@ -81,6 +81,7 @@ function EmbarqueSection({ card }: { card: DepartureCardData }) {
       whatsapp: form.whatsapp || null,
       estimated_value: form.estimated_value ? Number(form.estimated_value) : null,
       meta: newMeta,
+      metadata: newMeta,   // keep both columns in sync
     } as any);
     setDirty(false);
   };
@@ -387,7 +388,7 @@ export function DepartureCardSheet({ card, isOpen, onClose, onDeleted }: Props) 
 
   if (!card) return null;
 
-  const meta = (card.metadata ?? {}) as DepartureMeta;
+  const meta = (card.metadata ?? card.meta ?? {}) as DepartureMeta;
 
   const handleDelete = async () => {
     if (!window.confirm(`Excluir o card "${card.title}"? Esta ação não pode ser desfeita.`)) return;

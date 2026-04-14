@@ -74,7 +74,7 @@ export function useKanbanBoard(slug: string) {
 
         await supabase
           .from('kanban_columns')
-          .insert(defaultColumns.map((c) => ({ ...c, board_id: board!.id })));
+          .insert(defaultColumns.map((c) => ({ ...c, board_id: board!.id, org_id: organization.id })));
       }
 
       // Step 4: Fetch columns + cards
@@ -82,7 +82,7 @@ export function useKanbanBoard(slug: string) {
         supabase.from('kanban_columns').select('*').eq('board_id', board.id).order('position'),
         supabase
           .from('kanban_cards')
-          .select('id, board_id, column_id, title, description, client_id, quotation_id, trip_id, position, whatsapp, email, tags, estimated_value, metadata, assigned_to, created_at, updated_at, clients(name, phone), quotations(destination), trips(title)')
+          .select('id, board_id, column_id, org_id, title, description, client_id, quotation_id, trip_id, due_date, priority, position, meta, metadata, assigned_to, whatsapp, email, tags, estimated_value, created_at, updated_at, clients(name, phone), quotations(destination), trips(title)')
           .eq('board_id', board.id)
           .order('position'),
       ]);

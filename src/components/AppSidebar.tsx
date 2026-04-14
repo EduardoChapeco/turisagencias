@@ -15,6 +15,7 @@ import {
   Sparkles,
   Book,
   Bell,
+  Map,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { NavLink } from '@/components/NavLink';
@@ -51,9 +52,10 @@ const navGroups: NavGroup[] = [
     title: 'Operacional & Gestão',
     items: [
       { title: 'Tarefas do Dia', url: '/kanban/tasks',      icon: KanbanSquare },
-      { title: 'Viagens',        url: '/trips',              icon: Plane },
-      { title: 'Embarques',      url: '/kanban/departures',  icon: Anchor },
-      { title: 'Chamados',       url: '/tickets',            icon: LifeBuoy },
+      { title: 'Viagens',        url: '/trips',             icon: Plane },
+      { title: 'Roteiros',       url: '/itineraries',       icon: Map },
+      { title: 'Embarques',      url: '/kanban/departures', icon: Anchor },
+      { title: 'Chamados',       url: '/tickets',           icon: LifeBuoy },
     ],
   },
   {

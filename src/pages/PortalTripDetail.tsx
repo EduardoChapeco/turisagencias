@@ -5,6 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ItinerarySplitView } from '@/components/itinerary/ItinerarySplitView';
 
 export default function PortalTripDetail() {
   const { org_slug, id } = useParams<{ org_slug: string; id: string }>();
@@ -96,7 +98,16 @@ export default function PortalTripDetail() {
            </div>
         </div>
 
-        <div className="grid md:grid-cols-[1fr_350px] gap-8">
+        <Tabs defaultValue="geral" className="w-full">
+           <TabsList className="w-full sm:w-auto grid grid-cols-2 rounded-2xl p-1 bg-white/70 dark:bg-zinc-900/70 backdrop-blur-xl border border-white/20 dark:border-white/5 shadow-sm mb-6 max-w-sm mx-auto">
+             <TabsTrigger value="geral" className="rounded-xl data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-medium">Resumo Resumo</TabsTrigger>
+             <TabsTrigger value="roteiro" className="rounded-xl data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-medium gap-2">
+                 <MapPin className="w-4 h-4" /> Roteiro
+             </TabsTrigger>
+           </TabsList>
+
+           <TabsContent value="geral" className="mt-0">
+             <div className="grid md:grid-cols-[1fr_350px] gap-8">
            
            {/* Timeline and Details Main Column */}
            <div className="space-y-8">
@@ -208,7 +219,31 @@ export default function PortalTripDetail() {
               </Card>
            </div>
 
-        </div>
+             </div>
+           </TabsContent>
+           
+           <TabsContent value="roteiro" className="mt-0">
+             <div className="bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl rounded-[2.5rem] shadow-xl border border-white/20 dark:border-white/5 p-4 md:p-6 overflow-hidden h-[800px] relative">
+                {/* 
+                   Aqui tentamos renderizar o roteiro. 
+                   Se tiver um quotation_id linkado, pegamos os days/items. 
+                   Se tiver um Itinerary linkado diretamente (roteiro premium), pegamos de lá.
+                */}
+                <div className="absolute inset-0 flex items-center justify-center bg-slate-50 dark:bg-zinc-950">
+                    <p className="text-muted-foreground flex flex-col items-center gap-4">
+                        <MapPin className="w-12 h-12 opacity-30" />
+                        Nenhum roteiro detalhado foi adicionado a esta viagem.
+                    </p>
+                </div>
+                {trip.quotations?.itinerary_days && trip.quotations.itinerary_days.length > 0 && (
+                   <div className="absolute inset-0 bg-background z-10">
+                      {/* TODO: converter itinerary_days no formato StopCoordinate ou já exibir */}
+                      <div className="p-8"><p className="text-muted-foreground">Roteiro proveniente da Cotação em breve adaptado a esta nova interface (Map+Timeline).</p></div>
+                   </div>
+                )}
+             </div>
+           </TabsContent>
+        </Tabs>
       </div>
     </div>
   );

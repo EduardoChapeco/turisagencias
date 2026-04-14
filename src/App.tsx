@@ -30,6 +30,10 @@ const Trips = lazy(() => import('./pages/Trips'));
 const TripNew = lazy(() => import('./pages/TripNew'));
 const TripDetail = lazy(() => import('./pages/TripDetail'));
 
+const Itineraries = lazy(() => import('./pages/Itineraries'));
+const ItineraryBuilder = lazy(() => import('./pages/ItineraryBuilder'));
+const PublicItinerary = lazy(() => import('./pages/PublicItinerary'));
+
 const KanbanBoard = lazy(() => import('./pages/KanbanBoard'));
 const DeparturesKanban = lazy(() => import('./pages/DeparturesKanban'));
 const TasksKanban = lazy(() => import('./pages/TasksKanban'));
@@ -140,6 +144,10 @@ const App = () => (
               <Route path="/trips" element={<ProtectedWithOrg><Trips /></ProtectedWithOrg>} />
               <Route path="/trips/new" element={<ProtectedWithOrg><TripsRole><TripNew /></TripsRole></ProtectedWithOrg>} />
               <Route path="/trips/:id" element={<ProtectedWithOrg><TripsRole><TripDetail /></TripsRole></ProtectedWithOrg>} />
+
+              <Route path="/itineraries" element={<ProtectedWithOrg><Itineraries /></ProtectedWithOrg>} />
+              <Route path="/itineraries/:id/builder" element={<ProtectedWithOrg><ItineraryBuilder /></ProtectedWithOrg>} />
+              <Route path="/roteiro/:token" element={<PublicItinerary />} />
 
               <Route path="/kanban/sales" element={<ProtectedWithOrg><TripsRole><KanbanBoard /></TripsRole></ProtectedWithOrg>} />
               <Route path="/kanban/departures" element={<ProtectedWithOrg><TripsRole><DeparturesKanban /></TripsRole></ProtectedWithOrg>} />

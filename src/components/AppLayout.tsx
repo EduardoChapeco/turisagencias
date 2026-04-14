@@ -73,8 +73,8 @@ export function AppLayout({ children, fullHeight }: { children: React.ReactNode;
             </div>
           </header>
 
-          <main className={`flex-1 p-5 lg:p-8 ${fullHeight ? 'overflow-hidden flex flex-col min-h-0' : 'overflow-auto'}`}>
-            <div className={`mx-auto w-full ${fullHeight ? 'flex-1 min-h-0 flex flex-col' : 'max-w-7xl'}`}>
+          <main className={`flex-1 p-3 sm:p-5 lg:p-8 ${fullHeight ? 'overflow-hidden flex flex-col min-h-0' : 'overflow-auto'}`}>
+            <div className={`mx-auto w-full animate-in ${fullHeight ? 'flex-1 min-h-0 flex flex-col' : 'max-w-[1400px]'}`}>
               {children}
             </div>
           </main>

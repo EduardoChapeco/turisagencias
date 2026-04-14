@@ -615,8 +615,9 @@ export default function PublicGuide() {
           <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--vj-green)' }} />
           <span style={{ fontWeight: 600 }}>Guia do Destino — {guide.city}</span>
         </div>
-        <span>Powered by VoyageOS · Plan-Fect Harmony</span>
+        <span>Powered by Turis Agencias · Turis Agencias</span>
       </div>
     </PublicLayout>
   );
 }
+

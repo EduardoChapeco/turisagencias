@@ -6,7 +6,7 @@ import { Search, X } from 'lucide-react';
 import { EmptyState } from '@/components/ui/EmptyState';
 
 /**
- * DataTable — Tabela padronizada CloudBlock com toolbar de busca.
+ * DataTable — Tabela padronizada Turis Agencias com toolbar de busca.
  *
  * Uso:
  * <DataTable
@@ -188,3 +188,4 @@ export function DataTable<T extends { id: string }>({
     </div>
   );
 }
+

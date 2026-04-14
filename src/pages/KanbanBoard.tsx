@@ -7,6 +7,8 @@ import { StatusBadge } from '@/components/ui/StatusBadge';
 import { EmptyState, PageSkeleton } from '@/components/ui/EmptyState';
 import { KanbanCardSheet } from '@/components/kanban/KanbanCardSheet';
 import { useCreateKanbanCard, useKanbanBoard, useUpdateKanbanCard } from '@/hooks/useKanbanBoards';
+import { useAuthStore } from '@/stores/authStore';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { KanbanSquare, X } from 'lucide-react';
@@ -286,6 +288,8 @@ export default function KanbanBoard() {
   const [activeCard, setActiveCard] = useState<KanbanCardData | null>(null);
   const [selectedCard, setSelectedCard] = useState<KanbanCardData | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const { user } = useAuthStore();
+  const [viewMode, setViewMode] = useState<'me' | 'all'>('me');
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -296,12 +300,13 @@ export default function KanbanBoard() {
     const byColumn = new Map<string, KanbanCardData[]>();
     data?.columns?.forEach((col) => byColumn.set(col.id, []));
     data?.cards?.forEach((card) => {
+      if (viewMode === 'me' && card.assigned_to !== user?.id) return;
       const list = byColumn.get(card.column_id) ?? [];
       list.push(card as KanbanCardData);
       byColumn.set(card.column_id, list);
     });
     return byColumn;
-  }, [data]);
+  }, [data, viewMode, user?.id]);
 
   const handleDragStart = (event: DragStartEvent) => {
     if (event.active.data.current?.type === 'Card') {
@@ -341,12 +346,14 @@ export default function KanbanBoard() {
     );
   }
 
-  const totalCards = data?.cards?.length ?? 0;
+  const totalCards = viewMode === 'me' 
+    ? (data?.cards?.filter(c => c.assigned_to === user?.id).length ?? 0)
+    : (data?.cards?.length ?? 0);
 
   return (
     <AppLayout fullHeight>
       <div className="flex flex-col h-full min-h-0">
-        <div className="flex-shrink-0 pb-3">
+        <div className="flex-shrink-0 pb-3 flex justify-between items-end">
           <PageHeader
             title={title}
             description={description}
@@ -357,6 +364,16 @@ export default function KanbanBoard() {
               </StatusBadge>
             }
           />
+          <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as 'me' | 'all')} className="w-[300px]">
+             <TabsList className="grid w-full grid-cols-2">
+                 <TabsTrigger value="me" className="flex items-center gap-2 text-xs">
+                     <Eye size={14}/> Meu Board
+                 </TabsTrigger>
+                 <TabsTrigger value="all" className="flex items-center gap-2 text-xs">
+                     <Users size={14}/> Geral (Todos)
+                 </TabsTrigger>
+             </TabsList>
+          </Tabs>
         </div>
 
         {!data?.columns?.length ? (

@@ -35,20 +35,43 @@ import {
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 
-const mainNav = [
-  { title: 'Dashboard', url: '/', icon: LayoutDashboard },
-  { title: 'Clientes', url: '/clients', icon: Users },
-  { title: 'Cotações', url: '/quotations', icon: FileText },
-  { title: 'Viagens', url: '/trips', icon: Plane },
-  { title: 'Gestor de Embarques', url: '/kanban/departures', icon: Plane },
-  { title: 'Kanban Vendas', url: '/kanban/sales', icon: KanbanSquare },
-  { title: 'Hotéis', url: '/hotels', icon: Building2 },
-  { title: 'Passeios & Serviços', url: '/experiences', icon: Anchor },
-  { title: 'Guias de Destino', url: '/guides', icon: Globe2 },
-  { title: 'Info Páginas', url: '/info', icon: Book },
-  { title: 'Tickets', url: '/tickets', icon: LifeBuoy },
-  { title: 'V-Agent (IA)', url: '/ai-chat', icon: Sparkles },
-  { title: 'Configurações', url: '/settings', icon: SettingsIcon },
+type NavGroup = { title: string; items: { title: string; url: string; icon: any }[] };
+
+const navGroups: NavGroup[] = [
+  {
+    title: 'CRM & Vendas',
+    items: [
+      { title: 'Dashboard', url: '/', icon: LayoutDashboard },
+      { title: 'Clientes', url: '/clients', icon: Users },
+      { title: 'Kanban Vendas', url: '/kanban/sales', icon: KanbanSquare },
+      { title: 'Cotações', url: '/quotations', icon: FileText },
+    ],
+  },
+  {
+    title: 'Operacional & Gestão',
+    items: [
+      { title: 'Viagens', url: '/trips', icon: Plane },
+      { title: 'Gestor de Embarques', url: '/kanban/departures', icon: Plane },
+      { title: 'Tickets & Chamados', url: '/tickets', icon: LifeBuoy },
+      { title: 'Kanban Tarefas', url: '/kanban/tasks', icon: KanbanSquare },
+    ],
+  },
+  {
+    title: 'Wiki & Operadoras',
+    items: [
+      { title: 'Hotéis', url: '/hotels', icon: Building2 },
+      { title: 'Passeios', url: '/experiences', icon: Anchor },
+      { title: 'Guias de Destino', url: '/guides', icon: Globe2 },
+      { title: 'Links Úteis', url: '/info', icon: Book },
+    ],
+  },
+  {
+    title: 'Ajustes & IA',
+    items: [
+      { title: 'Agente IA', url: '/ai-chat', icon: Sparkles },
+      { title: 'Configurações', url: '/settings', icon: SettingsIcon },
+    ],
+  },
 ];
 
 export function AppSidebar() {
@@ -76,34 +99,39 @@ export function AppSidebar() {
           </div>
           {!collapsed && (
             <span className="truncate font-heading text-sm font-semibold text-sidebar-foreground">
-              {organization?.name || 'CloudBlock'}
+              {organization?.name || 'Turis Agencias'}
             </span>
           )}
         </div>
 
-        <SidebarGroup>
-          <SidebarGroupLabel>Menu</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {mainNav.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <NavLink
-                      to={item.url}
-                      end={item.url === '/'}
-                      className="hover:bg-sidebar-accent/50"
-                      activeClassName="bg-sidebar-accent font-medium text-sidebar-primary"
-                    >
-                      <item.icon className="mr-2 h-4 w-4" />
-                      {!collapsed && <span>{item.title}</span>}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarContent>
+        <div className="flex-1 overflow-y-auto scrollbar-none py-2 pb-24">
+          {navGroups.map((group) => (
+            <SidebarGroup key={group.title} className="mb-2">
+              <SidebarGroupLabel className="text-[10px] uppercase font-bold text-vj-txt3 tracking-wider px-4 mb-2">
+                {!collapsed && group.title}
+              </SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {group.items.map((item) => (
+                    <SidebarMenuItem key={item.title}>
+                      <SidebarMenuButton asChild>
+                        <NavLink
+                          to={item.url}
+                          end={item.url === '/'}
+                          className="hover:bg-sidebar-accent/50 transition-colors mx-2 rounded-lg"
+                          activeClassName="bg-sidebar-accent font-semibold text-sidebar-primary shadow-sm"
+                        >
+                          <item.icon className="mr-3 h-[18px] w-[18px]" />
+                          {!collapsed && <span>{item.title}</span>}
+                        </NavLink>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          ))}
+        </div>
 
       <SidebarFooter>
         <div className="flex items-center gap-2 px-2 py-2">
@@ -164,3 +192,4 @@ export function AppSidebar() {
     </Sidebar>
   );
 }
+

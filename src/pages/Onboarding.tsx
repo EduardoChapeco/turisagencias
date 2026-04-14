@@ -35,7 +35,7 @@ export default function Onboarding() {
             <Cloud className="h-6 w-6 text-vj-green-foreground" />
           </div>
           <CardTitle className="font-heading text-2xl">Configure sua agência</CardTitle>
-          <CardDescription>Preencha os dados iniciais para ativar o CloudBlock.</CardDescription>
+          <CardDescription>Preencha os dados iniciais para ativar o Turis Agencias.</CardDescription>
         </CardHeader>
         <CardContent>
           <form
@@ -148,3 +148,4 @@ export default function Onboarding() {
     </div>
   );
 }
+

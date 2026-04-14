@@ -1,5 +1,37 @@
 import type { Tables, TablesInsert } from '@/integrations/supabase/types';
 
+/** Typed content block for hotel sections (amenities, policies, etc.) */
+export interface HotelSection {
+  title: string;
+  content: string;
+  icon?: string;
+}
+
+/** Itinerary day in a public quotation */
+export interface QuotationItineraryDay {
+  day_number: number;
+  title: string;
+  description?: string | null;
+  items?: { order_position: number; title: string; description?: string | null }[];
+}
+
+/** Transport segment in a public quotation */
+export interface QuotationTransport {
+  type: string;
+  from: string;
+  to: string;
+  departure_time?: string | null;
+  arrival_time?: string | null;
+}
+
+/** Excursion/experience in a public quotation */
+export interface QuotationExcursion {
+  name: string;
+  description?: string | null;
+  photo_url?: string | null;
+  order_position?: number;
+}
+
 export type AppRole = 'super_admin' | 'org_admin' | 'agent' | 'support' | 'client';
 
 export interface InstallmentOption {
@@ -33,9 +65,9 @@ export type TripFormValues = Omit<
 export type HotelFormValues = Omit<
   TablesInsert<'hotels_bank'>,
   'id' | 'org_id' | 'created_at' | 'updated_at'
-> & {
+} & {
   gallery_urls?: string[];
-  sections?: any[];
+  sections?: HotelSection[];
   video_url?: string | null;
 };
 
@@ -61,9 +93,9 @@ export interface PublicQuotationData {
   cover_title?: string | null;
   pricing_mode?: string | null;
   valid_until?: string | null;
-  itinerary?: any[];
-  transports?: any[];
-  excursions?: any[];
+  itinerary?: QuotationItineraryDay[];
+  transports?: QuotationTransport[];
+  excursions?: QuotationExcursion[];
   included_items?: string[];
   excluded_items?: string[];
 }

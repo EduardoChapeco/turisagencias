@@ -23,11 +23,11 @@ interface StatusBadgeProps {
 }
 
 const variantStyles: Record<StatusVariant, string> = {
-  success: 'bg-vj-green/10 text-vj-green border-vj-green/20',
-  warning: 'bg-vj-orange/10 text-vj-orange border-vj-orange/20',
-  danger:  'bg-vj-red/10  text-vj-red  border-vj-red/20',
-  info:    'bg-vj-blue/10    text-vj-blue    border-vj-blue/20',
-  neutral: 'bg-vj-bg        text-vj-txt3   border-vj-border',
+  success: 'bg-vj-green-bg text-vj-green border-vj-green/20 shadow-sm',
+  warning: 'bg-vj-orange-bg text-vj-orange border-vj-orange/20 shadow-sm',
+  danger:  'bg-vj-red-bg  text-vj-red  border-vj-red/20 shadow-sm',
+  info:    'bg-vj-blue-bg text-vj-blue border-vj-blue/20 shadow-sm',
+  neutral: 'bg-vj-bg text-vj-txt3 border-vj-border',
 };
 
 const dotStyles: Record<StatusVariant, string> = {
@@ -42,8 +42,8 @@ export function StatusBadge({ variant, children, pulse = false, size = 'sm', cla
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1.5 border rounded-full font-semibold whitespace-nowrap',
-        size === 'sm' ? 'px-2 py-0.5 text-xs' : 'px-3 py-1 text-sm',
+        'inline-flex items-center gap-1.5 border rounded-full font-medium tracking-tight whitespace-nowrap transition-colors',
+        size === 'sm' ? 'px-2 py-0.5 text-[11px]' : 'px-3 py-1 text-xs',
         variantStyles[variant],
         className,
       )}

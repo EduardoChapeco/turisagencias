@@ -82,7 +82,7 @@ export function useKanbanBoard(slug: string) {
         supabase.from('kanban_columns').select('*').eq('board_id', board.id).order('position'),
         supabase
           .from('kanban_cards')
-          .select('id, board_id, column_id, org_id, title, description, client_id, quotation_id, trip_id, due_date, priority, position, meta, metadata, assigned_to, whatsapp, email, tags, estimated_value, created_at, updated_at, clients(name, phone), quotations(destination), trips(title)')
+          .select('id, board_id, column_id, org_id, title, description, client_id, quotation_id, trip_id, ticket_id, linked_card_ids, task_type, due_date, priority, position, meta, metadata, assigned_to, whatsapp, email, tags, estimated_value, created_at, updated_at, clients(name, phone), quotations(destination), trips(title)')
           .eq('board_id', board.id)
           .order('position'),
       ]);
@@ -111,6 +111,9 @@ export function useCreateKanbanCard() {
       client_id?: string | null;
       quotation_id?: string | null;
       trip_id?: string | null;
+      ticket_id?: string | null;
+      task_type?: string | null;
+      linked_card_ids?: string[];
       estimated_value?: number | null;
       whatsapp?: string | null;
       email?: string | null;
@@ -154,6 +157,10 @@ export function useUpdateKanbanCard() {
       client_id?: string | null;
       quotation_id?: string | null;
       trip_id?: string | null;
+      ticket_id?: string | null;
+      task_type?: string | null;
+      linked_card_ids?: string[];
+      assigned_to?: string | null;
     }) => {
       const { data, error } = await supabase
         .from('kanban_cards')

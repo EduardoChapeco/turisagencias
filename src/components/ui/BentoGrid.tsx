@@ -2,7 +2,7 @@ import React from 'react';
 import { cn } from '@/lib/utils';
 
 /**
- * BentoGrid — Layouts em grade Bento estilo CloudBlock.
+ * BentoGrid — Layouts em grade Bento estilo Turis Agencias.
  *
  * Uso:
  * <BentoGrid cols={3} gap="md">
@@ -117,3 +117,4 @@ export function BentoCell({
     </div>
   );
 }
+

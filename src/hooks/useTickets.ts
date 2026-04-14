@@ -30,7 +30,7 @@ export function useTicket(id: string | undefined) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('tickets')
-        .select('*, clients(name), trips(title), ticket_messages(*)')
+        .select('*, clients(name), trips(title), ticket_messages(*), email_messages(*)')
         .eq('id', id!)
         .maybeSingle();
       if (error) throw error;

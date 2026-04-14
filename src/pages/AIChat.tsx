@@ -48,12 +48,12 @@ export default function AIChat() {
          throw new Error(data.error);
       }
       
-    } catch (e: any) {
-      console.error(e);
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : 'Verifique se você habilitou chaves no Pool de IA das Configurações.';
       toast({
          variant: 'destructive',
          title: 'Erro de Conexão com Agente',
-         description: e.message || 'Verifique se você habilitou chaves no Pool de IA das Configurações.'
+         description: message
       });
       setMessages(prev => [...prev, {
          id: (Date.now() + 1).toString(),

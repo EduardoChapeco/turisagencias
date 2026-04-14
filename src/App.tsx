@@ -6,6 +6,7 @@ import { AuthProvider } from '@/components/AuthProvider';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { RoleGuard } from '@/components/RoleGuard';
 import { Toaster } from '@/components/ui/toaster';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { Toaster as Sonner } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { useAuthStore } from '@/stores/authStore';
@@ -31,6 +32,7 @@ const TripDetail = lazy(() => import('./pages/TripDetail'));
 
 const KanbanBoard = lazy(() => import('./pages/KanbanBoard'));
 const DeparturesKanban = lazy(() => import('./pages/DeparturesKanban'));
+const TasksKanban = lazy(() => import('./pages/TasksKanban'));
 const Settings = lazy(() => import('./pages/Settings'));
 const AIChat = lazy(() => import('./pages/AIChat'));
 
@@ -102,6 +104,7 @@ function TripsRole({ children }: { children: React.ReactNode }) {
 }
 
 const App = () => (
+  <ErrorBoundary>
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
@@ -140,6 +143,7 @@ const App = () => (
 
               <Route path="/kanban/sales" element={<ProtectedWithOrg><TripsRole><KanbanBoard /></TripsRole></ProtectedWithOrg>} />
               <Route path="/kanban/departures" element={<ProtectedWithOrg><TripsRole><DeparturesKanban /></TripsRole></ProtectedWithOrg>} />
+              <Route path="/kanban/tasks" element={<ProtectedWithOrg><TripsRole><TasksKanban /></TripsRole></ProtectedWithOrg>} />
               <Route path="/ai-chat" element={<ProtectedWithOrg><TripsRole><AIChat /></TripsRole></ProtectedWithOrg>} />
               <Route path="/settings" element={<ProtectedWithOrg><TripsRole><Settings /></TripsRole></ProtectedWithOrg>} />
               
@@ -163,6 +167,7 @@ const App = () => (
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
+  </ErrorBoundary>
 );
 
 export default App;

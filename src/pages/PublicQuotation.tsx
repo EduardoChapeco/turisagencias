@@ -40,7 +40,7 @@ export default function PublicQuotation() {
     setConfirmLoading(true);
     setConfirmError('');
     try {
-      const { error } = await (supabase.rpc as any)('confirm_public_quotation', {
+      const { error } = await supabase.rpc('confirm_public_quotation', {
         p_token: token,
         p_traveler_name: confirmName,
         p_traveler_email: confirmEmail,
@@ -48,8 +48,7 @@ export default function PublicQuotation() {
       });
       if (error) throw error;
       setConfirmSuccess(true);
-    } catch (err: any) {
-      console.error(err);
+    } catch (err: unknown) {
       setConfirmError('Ocorreu um erro ao confirmar a cotação.');
     } finally {
       setConfirmLoading(false);
@@ -897,7 +896,7 @@ export default function PublicQuotation() {
 
         {/* Footer nota */}
         <div style={{ marginTop: 40, textAlign: 'center', fontSize: 11, color: 'var(--vj-txt3)', padding: '20px 0', borderTop: '1px solid var(--vj-border)' }}>
-          Proposta gerada pela plataforma VoyageOS · Plan-Fect Harmony.
+          Proposta gerada pela plataforma Turis Agencias · Turis Agencias.
           Valores e disponibilidade sujeitos a confirmação até a emissão formal.
         </div>
       </div>
@@ -917,3 +916,4 @@ export default function PublicQuotation() {
     </PublicLayout>
   );
 }
+

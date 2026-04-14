@@ -2,7 +2,7 @@ import React from 'react';
 import { cn } from '@/lib/utils';
 
 /**
- * PageHeader — Cabeçalho padronizado de páginas CloudBlock.
+ * PageHeader — Cabeçalho padronizado de páginas Turis Agencias.
  *
  * Uso:
  * <PageHeader
@@ -46,7 +46,7 @@ export function PageHeader({
   className,
 }: PageHeaderProps) {
   return (
-    <div className={cn('flex items-start justify-between gap-4 pb-6 border-b border-vj-border mb-6', className)}>
+    <div className={cn('flex flex-col md:flex-row md:items-start justify-between gap-4 pb-6 border-b border-vj-border mb-6', className)}>
       <div className="flex items-start gap-3 min-w-0">
         {Icon && (
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-cb-md bg-vj-bg border border-vj-border text-vj-txt3 mt-0.5">
@@ -95,3 +95,4 @@ export function PageHeader({
     </div>
   );
 }
+

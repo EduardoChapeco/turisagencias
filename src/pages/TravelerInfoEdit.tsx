@@ -8,6 +8,17 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { useSaveTravelerInfoPage, useTravelerInfoPage } from '@/hooks/useTravelerInfo';
 
+interface AlertContent {
+  text: string;
+  style: 'neutral' | 'danger' | 'warning' | 'success';
+}
+
+interface ContentBlock {
+  id: string;
+  type: 'text' | 'alert' | 'image';
+  content: string | AlertContent;
+}
+
 export interface TravelerInfoEditProps {
   id: string | null;
   open: boolean;
@@ -26,7 +37,7 @@ export function TravelerInfoEdit({ id, open, onClose, onSuccess }: TravelerInfoE
     description: '',
     cover_image_url: '',
     is_published: false,
-    content_blocks: [] as any[],
+    content_blocks: [] as ContentBlock[],
   });
 
   useEffect(() => {
@@ -37,7 +48,7 @@ export function TravelerInfoEdit({ id, open, onClose, onSuccess }: TravelerInfoE
         description: pageData.description || '',
         cover_image_url: pageData.cover_image_url || '',
         is_published: pageData.is_published || false,
-        content_blocks: (pageData.content_blocks as any[]) || [],
+        content_blocks: (pageData.content_blocks as ContentBlock[]) || [],
       });
     } else if (open && !isUpdate) {
       setForm({
@@ -47,7 +58,7 @@ export function TravelerInfoEdit({ id, open, onClose, onSuccess }: TravelerInfoE
     }
   }, [open, isUpdate, pageData]);
 
-  const update = (field: string, value: any) => {
+  const update = (field: string, value: string | boolean | ContentBlock[]) => {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
@@ -68,7 +79,7 @@ export function TravelerInfoEdit({ id, open, onClose, onSuccess }: TravelerInfoE
     }));
   };
 
-  const updateBlock = (index: number, content: any) => {
+  const updateBlock = (index: number, content: string | AlertContent) => {
     setForm(p => {
       const blocks = [...p.content_blocks];
       blocks[index].content = content;

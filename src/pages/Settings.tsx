@@ -313,6 +313,7 @@ export default function Settings() {
             <TabsTrigger value="aikeys"><Key className="mr-2 h-4 w-4" />Chaves IA</TabsTrigger>
             <TabsTrigger value="policies"><Brain className="mr-2 h-4 w-4" />Operadoras</TabsTrigger>
             <TabsTrigger value="kanban"><Columns className="mr-2 h-4 w-4" />Kanban</TabsTrigger>
+            <TabsTrigger value="integrations"><Mail className="mr-2 h-4 w-4" />Integrações</TabsTrigger>
           </TabsList>
 
           {/* ── TAB: Agentes ── */}
@@ -477,6 +478,37 @@ export default function Settings() {
               </CardHeader>
               <CardContent className="pt-6">
                 <KanbanTab />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* ── TAB: Integrações (Email) ── */}
+          <TabsContent value="integrations" className="mt-6">
+            <Card className="border-vj-border shadow-sm">
+              <CardHeader className="bg-vj-bg border-b border-vj-border">
+                <CardTitle className="text-lg flex items-center gap-2"><Mail className="h-4 w-4 text-vj-green" /> Email Intelligence (GMail)</CardTitle>
+                <CardDescription>Configure a ingestão de emails para o Turis Agências gerenciar e criar tickets automáticos com IA.</CardDescription>
+              </CardHeader>
+              <CardContent className="pt-6 space-y-4">
+                <div className="bg-blue-50/50 border border-blue-200 p-4 rounded-md text-sm text-blue-900">
+                  <p className="font-semibold mb-1">Endpoint de Ingestão (Webhook URL)</p>
+                  <code className="text-xs bg-white px-2 py-1 rounded border border-blue-100 select-all font-mono block mb-2 break-all">
+                    https://xhdoupxnpjbzkzuhucpp.supabase.co/functions/v1/email-webhook-ingest
+                  </code>
+                  <p className="text-xs text-blue-700">Aponte o forwarding do seu Gmail ou serviços de automação (Make/Zapier) para esta URL enviando o payload JSON.</p>
+                </div>
+                <div className="border border-vj-border rounded-md p-4 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-semibold text-vj-txt">Abertura de Ticket Inteligente (IA)</p>
+                      <p className="text-xs text-vj-txt3 mt-0.5 max-w-[80%]">A IA analisa todos os emails e gera Tickets de urgência automaticamente (Ex: Cancelamentos).</p>
+                    </div>
+                    {/* Placeholder switch visual in enabled state */}
+                    <div className="w-10 h-5 bg-vj-green rounded-full relative shadow-inner">
+                       <div className="absolute right-1 top-0.5 w-4 h-4 bg-white rounded-full transition-all shadow-sm"></div>
+                    </div>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>

@@ -100,6 +100,15 @@ export default function PublicTravelerForm() {
       _nationality: form.nationality || null,
       _phone: form.phone || null,
       _email: form.email || null,
+      _rg: form.rg || null,
+      _passport_number: form.passport_number || null,
+      _passport_expiry: form.passport_expiry || null,
+      _emergency_contact_name: form.emergency_contact_name || null,
+      _emergency_contact_phone: form.emergency_contact_phone || null,
+      _special_needs: form.special_needs || null,
+      _seat_preference: form.seat_preference || null,
+      _meal_preference: form.meal_preference || null,
+      _loyalty_programs: form.loyalty_programs || null,
     });
 
     setLoading(false);

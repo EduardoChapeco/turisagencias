@@ -193,21 +193,21 @@ export default function ClientDetail() {
                 <CardContent className="pt-6 space-y-4">
                   <div>
                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Endereço</p>
-                    <p className="text-sm">{client.address || 'Não preenchido'}</p>
+                    <p className="text-sm">{(client.address as any)?.street || 'Não preenchido'}</p>
                   </div>
                   <div className="grid grid-cols-2 gap-2">
                      <div>
                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Cidade</p>
-                       <p className="text-sm">{client.city || '—'}</p>
+                       <p className="text-sm">{(client.address as any)?.city || '—'}</p>
                      </div>
                      <div>
                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Estado</p>
-                       <p className="text-sm">{client.state || '—'}</p>
+                       <p className="text-sm">{(client.address as any)?.state || '—'}</p>
                      </div>
                   </div>
                   <div>
                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">CEP e País</p>
-                    <p className="text-sm">{[client.zip_code, client.country].filter(Boolean).join(' • ') || '—'}</p>
+                    <p className="text-sm">{[(client.address as any)?.zip_code, (client.address as any)?.country].filter(Boolean).join(' • ') || '—'}</p>
                   </div>
                 </CardContent>
               </Card>

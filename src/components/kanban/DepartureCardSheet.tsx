@@ -6,13 +6,13 @@ import {
   Package,
   Globe,
   Link2,
-  User,
   Trash2,
   CheckSquare,
   FileText,
-  AlignLeft,
   ExternalLink,
-  Clock,
+  Send,
+  Plus,
+  X,
 } from 'lucide-react';
 import { SheetPage } from '@/components/ui/SheetPage';
 import { Button } from '@/components/ui/button';
@@ -33,9 +33,9 @@ import {
   useDeleteChecklistItem,
 } from '@/hooks/useKanbanBoards';
 import type { DepartureCardData, DepartureMeta } from './DepartureBoardCard';
-import { Send, Plus, X, Pencil, Trash2 as Trash } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { EmptyState } from '@/components/ui/EmptyState';
+
 
 /* ── Seção: Dados do Embarque ── */
 function EmbarqueSection({ card }: { card: DepartureCardData }) {
@@ -409,7 +409,7 @@ export function DepartureCardSheet({ card, isOpen, onClose, onDeleted }: Props) 
         <div className="flex items-center justify-between w-full">
           <Button variant="outline" size="sm" className="border-red-200 text-red-500 hover:bg-red-50"
             onClick={() => void handleDelete()} disabled={deleteCard.isPending}>
-            <Trash size={14} className="mr-1.5" />
+            <Trash2 size={14} className="mr-1.5" />
             Excluir
           </Button>
           {meta.airline_checkin_url && (

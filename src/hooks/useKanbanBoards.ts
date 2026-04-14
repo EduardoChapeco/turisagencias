@@ -82,7 +82,7 @@ export function useKanbanBoard(slug: string) {
         supabase.from('kanban_columns').select('*').eq('board_id', board.id).order('position'),
         supabase
           .from('kanban_cards')
-          .select('*, clients(name, phone), quotations(destination), trips(title)')
+          .select('id, board_id, column_id, org_id, title, description, client_id, quotation_id, trip_id, due_date, priority, position, meta, whatsapp, email, tags, estimated_value, created_at, updated_at, clients(name, phone), quotations(destination), trips(title)')
           .eq('board_id', board.id)
           .order('position'),
       ]);

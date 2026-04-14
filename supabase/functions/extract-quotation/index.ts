@@ -8,13 +8,7 @@ const corsHeaders = {
 
 // ─── Orchestrador de chaves por round-robin ────────────────────────────────
 async function getAiKey(supabaseClient: any, orgId: string): Promise<{ key: string; provider: string; baseUrl: string; model: string } | null> {
-  // 1. Prioridade: Lovable Gateway (gratuito, sem limite de créditos externos)
-  const lovableKey = Deno.env.get("LOVABLE_API_KEY");
-  if (lovableKey) {
-    return { key: lovableKey, provider: 'lovable', baseUrl: 'https://ai.gateway.lovable.dev/v1', model: 'google/gemini-2.5-flash' };
-  }
-
-  // 2. Fallback: chaves do pool da organização
+  // 1. Prioridade: chaves cadastradas no pool da organização
   const { data: keys } = await supabaseClient
     .from('ai_keys_pool')
     .select('id, provider, api_key')
@@ -43,7 +37,7 @@ async function getAiKey(supabaseClient: any, orgId: string): Promise<{ key: stri
     return { key: keyEntry.api_key, provider: 'openrouter', baseUrl: 'https://openrouter.ai/api/v1', model: 'google/gemini-2.5-flash' };
   }
 
-  // 2. Fallback final: Lovable Gateway (chave de plataforma)
+  // 2. Fallback final: Lovable Gateway (chave de plataforma — apenas se org não tem pool)
   const lovableKey = Deno.env.get("LOVABLE_API_KEY");
   if (lovableKey) {
     return { key: lovableKey, provider: 'lovable', baseUrl: 'https://ai.gateway.lovable.dev/v1', model: 'google/gemini-2.5-flash' };

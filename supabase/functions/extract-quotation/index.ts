@@ -309,7 +309,7 @@ serve(async (req) => {
         .insert({
           org_id,
           client_id: client_id || null,
-          agent_id: agent_id || user.id,
+          agent_id: agent_id || userId,
           status: 'draft',
           ai_extracted: true,
           ai_raw_response: extracted,

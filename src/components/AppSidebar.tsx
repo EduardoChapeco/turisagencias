@@ -37,6 +37,7 @@ const mainNav = [
   { title: 'Clientes', url: '/clients', icon: Users },
   { title: 'Cotações', url: '/quotations', icon: FileText },
   { title: 'Viagens', url: '/trips', icon: Plane },
+  { title: 'Gestor de Embarques', url: '/kanban/departures', icon: Plane },
   { title: 'Kanban Vendas', url: '/kanban/sales', icon: KanbanSquare },
   { title: 'Hotéis', url: '/hotels', icon: Building2 },
   { title: 'Passeios & Serviços', url: '/experiences', icon: Anchor },

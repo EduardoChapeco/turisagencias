@@ -30,6 +30,7 @@ const TripNew = lazy(() => import('./pages/TripNew'));
 const TripDetail = lazy(() => import('./pages/TripDetail'));
 
 const KanbanBoard = lazy(() => import('./pages/KanbanBoard'));
+const DeparturesKanban = lazy(() => import('./pages/DeparturesKanban'));
 const Settings = lazy(() => import('./pages/Settings'));
 const AIChat = lazy(() => import('./pages/AIChat'));
 
@@ -138,7 +139,7 @@ const App = () => (
               <Route path="/trips/:id" element={<ProtectedWithOrg><TripsRole><TripDetail /></TripsRole></ProtectedWithOrg>} />
 
               <Route path="/kanban/sales" element={<ProtectedWithOrg><TripsRole><KanbanBoard /></TripsRole></ProtectedWithOrg>} />
-              <Route path="/kanban/departures" element={<ProtectedWithOrg><TripsRole><KanbanBoard /></TripsRole></ProtectedWithOrg>} />
+              <Route path="/kanban/departures" element={<ProtectedWithOrg><TripsRole><DeparturesKanban /></TripsRole></ProtectedWithOrg>} />
               <Route path="/ai-chat" element={<ProtectedWithOrg><TripsRole><AIChat /></TripsRole></ProtectedWithOrg>} />
               <Route path="/settings" element={<ProtectedWithOrg><TripsRole><Settings /></TripsRole></ProtectedWithOrg>} />
               

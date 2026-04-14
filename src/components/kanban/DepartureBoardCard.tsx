@@ -99,7 +99,7 @@ export function DepartureBoardCard({
     opacity: isDragging ? 0.4 : 1,
   };
 
-  const meta = card.meta ?? {};
+  const meta = (card.metadata ?? {}) as DepartureMeta;
   const daysUntil = getDaysUntilCheckin(meta.check_in_date);
   const destination = meta.destination ?? card.quotations?.destination ?? card.trips?.title;
   const clientName = card.clients?.name;

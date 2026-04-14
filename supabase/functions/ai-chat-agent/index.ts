@@ -45,25 +45,77 @@ serve(async (req) => {
     // Como Deno Deploy / Edge Functions limitam bibliotecas onnx runtime pesadas,
     // usaríamos a chamada a um embedding provider primeiro.
     
-    // 3. Orquestrador de LLMs "Round Robin" (PRD Item 6.2)
-    // O PRD prega que as agências fornecem suas próprias chaves via "ai_keys_pool".
-    const { data: llmKeys } = await supabaseClient
+    // 3. Orquestrador de LLMs (Real implementation)
+    const { data: keys } = await supabaseClient
       .from('ai_keys_pool')
-      .select('provider, api_key')
+      .select('id, provider, api_key')
       .eq('org_id', orgId)
-      .eq('is_active', true);
+      .eq('is_active', true)
+      .order('created_at', { ascending: true });
 
-    let llmResponse = "";
-    
-    // Fallback Mock se a Agência não tiver cadastrado chaves ainda.
-    if (!llmKeys || llmKeys.length === 0) {
-      llmResponse = "Atenção: Sua agência não configurou chaves (OpenRouter/Groq) no painel de Settings. Ative suas chaves no Pool para liberar os Agentes Squad. 🤖";
-    } else {
-       // Apenas lógica de dummy fallback se houver chaves para não expor erros reais de api na auditoria
-       // Idealmente leríamos a primeira chave (llmKeys[0])
-       const providerInfo = llmKeys[0];
-       llmResponse = `[Processado via ${providerInfo.provider.toUpperCase()}]. Recebi a mensagem: "${message}". Você tem acesso total ao Banco de Conhecimento RAG do VoyageOS. O que mais deseja saber?`;
+    let aiConfig = null;
+
+    if (keys && keys.length > 0) {
+      const idx = Math.floor(Date.now() / 1000) % keys.length;
+      const keyEntry = keys[idx];
+      const provider = keyEntry.provider?.toLowerCase();
+
+      if (provider === 'openrouter') {
+        aiConfig = { key: keyEntry.api_key, provider: 'openrouter', baseUrl: 'https://openrouter.ai/api/v1', model: 'google/gemini-2.5-flash' };
+      } else if (provider === 'gemini' || provider === 'google') {
+        aiConfig = { key: keyEntry.api_key, provider: 'gemini', baseUrl: 'https://generativelanguage.googleapis.com/v1beta/openai', model: 'gemini-2.5-flash' };
+      } else if (provider === 'groq') {
+        aiConfig = { key: keyEntry.api_key, provider: 'groq', baseUrl: 'https://api.groq.com/openai/v1', model: 'llama3-70b-8192' };
+      } else if (provider === 'openai') {
+        aiConfig = { key: keyEntry.api_key, provider: 'openai', baseUrl: 'https://api.openai.com/v1', model: 'gpt-4o' };
+      } else {
+        aiConfig = { key: keyEntry.api_key, provider: 'openrouter', baseUrl: 'https://openrouter.ai/api/v1', model: 'google/gemini-2.5-flash' };
+      }
     }
+
+    if (!aiConfig) {
+      const lovableKey = Deno.env.get("LOVABLE_API_KEY");
+      if (lovableKey) {
+        aiConfig = { key: lovableKey, provider: 'lovable', baseUrl: 'https://ai.gateway.lovable.dev/v1', model: 'google/gemini-2.5-flash' };
+      }
+    }
+
+    if (!aiConfig) {
+      throw new Error("Atenção: Sua agência não configurou chaves no painel de Settings, e a chave global falhou.");
+    }
+
+    const messages = [
+      { role: "system", content: "Você é um assistente de viagens do VoyageOS especialista em roteiros, orçamentos e informações de destino. Seja amigável e preciso." },
+      ...conversation_history,
+      { role: "user", content: message }
+    ];
+
+    const response = await fetch(`${aiConfig.baseUrl}/chat/completions`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${aiConfig.key}`,
+        "Content-Type": "application/json",
+        ...(aiConfig.provider === 'openrouter' ? {
+          "HTTP-Referer": "https://viaja.app",
+          "X-Title": "Viaja CRM"
+        } : {}),
+      },
+      body: JSON.stringify({
+        model: aiConfig.model,
+        messages,
+        max_tokens: 8192,
+        temperature: 0.7,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorBody = await response.text();
+      console.error(`AI API error (${aiConfig.provider}):`, response.status, errorBody);
+      throw new Error(`AI gateway error: ${response.status}`);
+    }
+
+    const aiResult = await response.json();
+    const llmResponse = aiResult.choices?.[0]?.message?.content || "Desculpe, não consegui processar a resposta corretamente.";
 
     return new Response(
       JSON.stringify({ 

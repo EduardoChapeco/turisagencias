@@ -115,33 +115,23 @@ export function QuotationAiImportSheet({ open, onClose, onSuccess }: QuotationAi
         }
       }
 
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) throw new Error('Sessão inválida. Faça login novamente.');
+      const payload = {
+        imageBase64,
+        text: additionalText || undefined,
+        org_id: organization?.id,
+        agent_id: profile?.id,
+        source_file_url: fileUrl,
+      };
 
-      const response = await fetch(
-        'https://yfofiwxeprlwqgjnqwyw.supabase.co/functions/v1/extract-quotation',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session.access_token}`,
-          },
-          body: JSON.stringify({
-            imageBase64,
-            text: additionalText || undefined,
-            org_id: organization?.id,
-            agent_id: profile?.id,
-            source_file_url: fileUrl,
-          }),
-        }
-      );
+      const { data, error } = await supabase.functions.invoke('extract-quotation', {
+        body: payload,
+      });
 
-      if (!response.ok) {
-        const err = await response.json();
-        throw new Error(err.error || 'Falha na extração pela IA.');
+      if (error) {
+        throw new Error(error.message || 'Falha na extração pela IA.');
       }
-
-      const result = await response.json();
+      
+      const result = data;
       setExtracted(result.data);
       setStep('review');
 

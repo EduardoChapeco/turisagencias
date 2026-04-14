@@ -39,7 +39,14 @@ async function getAiKey(supabaseClient: any, orgId: string): Promise<{ key: stri
     if (provider === 'openai') {
       return { key: keyEntry.api_key, provider: 'openai', baseUrl: 'https://api.openai.com/v1', model: 'gpt-4o' };
     }
+    // Provider desconhecido: usa a chave com OpenRouter (mais permissivo)
     return { key: keyEntry.api_key, provider: 'openrouter', baseUrl: 'https://openrouter.ai/api/v1', model: 'google/gemini-2.5-flash' };
+  }
+
+  // 2. Fallback final: Lovable Gateway (chave de plataforma)
+  const lovableKey = Deno.env.get("LOVABLE_API_KEY");
+  if (lovableKey) {
+    return { key: lovableKey, provider: 'lovable', baseUrl: 'https://ai.gateway.lovable.dev/v1', model: 'google/gemini-2.5-flash' };
   }
 
   return null;
@@ -267,6 +274,7 @@ serve(async (req) => {
       body: JSON.stringify({
         model: aiConfig.model,
         messages,
+        max_tokens: 8192,
         tools: [{
           type: "function",
           function: {

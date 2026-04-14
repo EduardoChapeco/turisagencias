@@ -8,7 +8,13 @@ const corsHeaders = {
 
 // ─── Orchestrador de chaves por round-robin ────────────────────────────────
 async function getAiKey(supabaseClient: any, orgId: string): Promise<{ key: string; provider: string; baseUrl: string; model: string } | null> {
-  // 1. Tenta usar chaves do pool da organização
+  // 1. Prioridade: Lovable Gateway (gratuito, sem limite de créditos externos)
+  const lovableKey = Deno.env.get("LOVABLE_API_KEY");
+  if (lovableKey) {
+    return { key: lovableKey, provider: 'lovable', baseUrl: 'https://ai.gateway.lovable.dev/v1', model: 'google/gemini-2.5-flash' };
+  }
+
+  // 2. Fallback: chaves do pool da organização
   const { data: keys } = await supabaseClient
     .from('ai_keys_pool')
     .select('id, provider, api_key')
@@ -17,7 +23,6 @@ async function getAiKey(supabaseClient: any, orgId: string): Promise<{ key: stri
     .order('created_at', { ascending: true });
 
   if (keys && keys.length > 0) {
-    // Round-robin simples: usa timestamp para selecionar
     const idx = Math.floor(Date.now() / 1000) % keys.length;
     const keyEntry = keys[idx];
     const provider = keyEntry.provider?.toLowerCase();
@@ -35,12 +40,6 @@ async function getAiKey(supabaseClient: any, orgId: string): Promise<{ key: stri
       return { key: keyEntry.api_key, provider: 'openai', baseUrl: 'https://api.openai.com/v1', model: 'gpt-4o' };
     }
     return { key: keyEntry.api_key, provider: 'openrouter', baseUrl: 'https://openrouter.ai/api/v1', model: 'google/gemini-2.5-flash' };
-  }
-
-  // 2. Fallback: Lovable Gateway (chave de plataforma)
-  const lovableKey = Deno.env.get("LOVABLE_API_KEY");
-  if (lovableKey) {
-    return { key: lovableKey, provider: 'lovable', baseUrl: 'https://ai.gateway.lovable.dev/v1', model: 'google/gemini-2.5-flash' };
   }
 
   return null;
@@ -277,7 +276,8 @@ serve(async (req) => {
           },
         }],
         tool_choice: { type: "function", function: { name: "extract_quotation" } },
-        temperature: 0.1, // Baixa temperatura = mais determinístico/preciso
+        temperature: 0.1,
+        max_tokens: 8192,
       }),
     });
 

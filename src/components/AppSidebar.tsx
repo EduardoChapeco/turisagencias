@@ -41,38 +41,39 @@ const navGroups: NavGroup[] = [
   {
     title: 'CRM & Vendas',
     items: [
-      { title: 'Dashboard', url: '/', icon: LayoutDashboard },
-      { title: 'Clientes', url: '/clients', icon: Users },
-      { title: 'Kanban Vendas', url: '/kanban/sales', icon: KanbanSquare },
-      { title: 'Cotações', url: '/quotations', icon: FileText },
+      { title: 'Início',    url: '/',            icon: LayoutDashboard },
+      { title: 'Clientes',  url: '/clients',     icon: Users },
+      { title: 'CRM',       url: '/kanban/sales',icon: KanbanSquare },
+      { title: 'Cotações',  url: '/quotations',  icon: FileText },
     ],
   },
   {
     title: 'Operacional & Gestão',
     items: [
-      { title: 'Viagens', url: '/trips', icon: Plane },
-      { title: 'Gestor de Embarques', url: '/kanban/departures', icon: Plane },
-      { title: 'Tickets & Chamados', url: '/tickets', icon: LifeBuoy },
-      { title: 'Kanban Tarefas', url: '/kanban/tasks', icon: KanbanSquare },
+      { title: 'Tarefas do Dia', url: '/kanban/tasks',      icon: KanbanSquare },
+      { title: 'Viagens',        url: '/trips',              icon: Plane },
+      { title: 'Embarques',      url: '/kanban/departures',  icon: Anchor },
+      { title: 'Chamados',       url: '/tickets',            icon: LifeBuoy },
     ],
   },
   {
     title: 'Wiki & Operadoras',
     items: [
-      { title: 'Hotéis', url: '/hotels', icon: Building2 },
-      { title: 'Passeios', url: '/experiences', icon: Anchor },
-      { title: 'Guias de Destino', url: '/guides', icon: Globe2 },
-      { title: 'Links Úteis', url: '/info', icon: Book },
+      { title: 'Hotéis',          url: '/hotels',      icon: Building2 },
+      { title: 'Passeios',        url: '/experiences', icon: Globe2 },
+      { title: 'Guias de Destino',url: '/guides',      icon: Book },
+      { title: 'Links Úteis',     url: '/info',        icon: Cloud },
     ],
   },
   {
     title: 'Ajustes & IA',
     items: [
-      { title: 'Agente IA', url: '/ai-chat', icon: Sparkles },
-      { title: 'Configurações', url: '/settings', icon: SettingsIcon },
+      { title: 'Agente IA',      url: '/ai-chat',   icon: Sparkles },
+      { title: 'Configurações',  url: '/settings',  icon: SettingsIcon },
     ],
   },
 ];
+
 
 export function AppSidebar() {
   const { state } = useSidebar();

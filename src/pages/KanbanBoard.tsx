@@ -276,7 +276,7 @@ function KanbanColumn({
 export default function KanbanBoard() {
   const location = useLocation();
   const slug = location.pathname.includes('/departures') ? 'departures' : 'sales';
-  const title = slug === 'departures' ? 'Kanban de Embarques' : 'Kanban de Vendas';
+  const title = slug === 'departures' ? 'Embarques' : 'CRM';
   const description =
     slug === 'departures'
       ? 'Acompanhe o status dos embarques em andamento.'
@@ -338,7 +338,7 @@ export default function KanbanBoard() {
     setSheetOpen(true);
   };
 
-  if (isLoading) {
+  if (isLoading || !data) {
     return (
       <AppLayout>
         <PageSkeleton />
@@ -379,8 +379,8 @@ export default function KanbanBoard() {
         {!data?.columns?.length ? (
           <EmptyState
             icon={KanbanSquare}
-            title="Nenhuma coluna encontrada"
-            description="O board está sendo configurado. Tente recarregar a página."
+            title="Board sendo preparado..."
+            description="As colunas estão sendo criadas automaticamente. Recarregue em instantes."
           />
         ) : (
           <DndContext

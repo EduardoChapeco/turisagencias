@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { parseInstallments } from '@/lib/utils';
 import type { PublicQuotationData } from '@/types';
 import { PublicLayout } from '@/components/layout/PublicLayout';
+import { TurisBadge } from '@/components/ui/TurisBadge';
 
 const mealLabels: Record<string, string> = {
   all_inclusive: 'All Inclusive 🍽️',
@@ -201,6 +202,7 @@ export default function PublicQuotation() {
 
 
   return (
+    <>
     <PublicLayout
       orgName={data.org_name}
       orgLogo={data.org_logo}
@@ -914,6 +916,8 @@ export default function PublicQuotation() {
         )}
       </div>
     </PublicLayout>
+    <TurisBadge />
+    </>
   );
 }
 

@@ -13,7 +13,7 @@ export function useKanbanBoard(slug: string) {
   return useQuery({
     queryKey: ['kanban-board', organization?.id, slug],
     queryFn: async () => {
-      if (!organization?.id) throw new Error('Organização não encontrada');
+      if (!organization?.id) return null;  // Guard: org not loaded yet
 
       // Step 1: Try to find the board
       let { data: board, error: boardError } = await supabase
@@ -45,7 +45,10 @@ export function useKanbanBoard(slug: string) {
 
       // Step 3: If still no board, create it directly (last resort)
       if (!board) {
-        const boardName = slug === 'departures' ? 'Gestor de Embarques' : 'Pipeline de Vendas';
+        const boardName =
+          slug === 'departures' ? 'Embarques' :
+          slug === 'tasks'      ? 'Tarefas do Dia' :
+                                  'CRM — Pipeline de Vendas';
         const { data: newBoard, error: createErr } = await supabase
           .from('kanban_boards')
           .insert({ org_id: organization.id, name: boardName, slug })
@@ -55,22 +58,30 @@ export function useKanbanBoard(slug: string) {
         board = newBoard;
 
         // Seed default columns
-        const defaultColumns = slug === 'departures'
-          ? [
-              { name: 'Documentação Pendente', color: '#F59E0B', position: 0 },
-              { name: 'Check-in Aberto',        color: '#3B82F6', position: 1 },
-              { name: 'Prontos para Embarcar',  color: '#10B981', position: 2 },
-              { name: 'Em Viagem ✈️',           color: '#8B5CF6', position: 3 },
-              { name: 'Retornaram',             color: '#94a3b8', position: 4 },
-            ]
-          : [
-              { name: 'Novo Lead',        color: '#6B7280', position: 0 },
-              { name: 'Em Contato',       color: '#3B82F6', position: 1 },
-              { name: 'Proposta Enviada', color: '#F59E0B', position: 2 },
-              { name: 'Negociando',       color: '#8B5CF6', position: 3 },
-              { name: 'Fechado ✅',       color: '#10B981', position: 4 },
-              { name: 'Perdido ❌',       color: '#EF4444', position: 5 },
-            ];
+        const defaultColumns =
+          slug === 'departures'
+            ? [
+                { name: 'Documentação Pendente', color: '#F59E0B', position: 0 },
+                { name: 'Check-in Aberto',        color: '#3B82F6', position: 1 },
+                { name: 'Prontos para Embarcar',  color: '#10B981', position: 2 },
+                { name: 'Em Viagem',              color: '#8B5CF6', position: 3 },
+                { name: 'Retornaram',             color: '#94a3b8', position: 4 },
+              ]
+            : slug === 'tasks'
+            ? [
+                { name: 'A Fazer',      color: '#6B7280', position: 0 },
+                { name: 'Em Progresso', color: '#3B82F6', position: 1 },
+                { name: 'Revisão',      color: '#F59E0B', position: 2 },
+                { name: 'Concluído',    color: '#10B981', position: 3 },
+              ]
+            : [
+                { name: 'Novo Lead',        color: '#6B7280', position: 0 },
+                { name: 'Em Contato',       color: '#3B82F6', position: 1 },
+                { name: 'Proposta Enviada', color: '#F59E0B', position: 2 },
+                { name: 'Negociando',       color: '#8B5CF6', position: 3 },
+                { name: 'Fechado',          color: '#10B981', position: 4 },
+                { name: 'Perdido',          color: '#EF4444', position: 5 },
+              ];
 
         await supabase
           .from('kanban_columns')

@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { PublicLayout } from '@/components/layout/PublicLayout';
+import { TurisBadge } from '@/components/ui/TurisBadge';
 import { Loader2, Globe2 } from 'lucide-react';
 
 const NAV_SECTIONS = [
@@ -120,6 +121,7 @@ export default function PublicGuide() {
   const GALLERY_EMOJIS = ['🌊', '🛕', '🌅', '🏄', '🐘', '🌺', '🤿', '🌴'];
 
   return (
+    <>
     <PublicLayout
       orgName="Guia do Destino"
       tabs={visibleNav.map(({ id, label, emoji }) => ({
@@ -618,6 +620,8 @@ export default function PublicGuide() {
         <span>Powered by Turis Agencias · Turis Agencias</span>
       </div>
     </PublicLayout>
+    <TurisBadge />
+    </>
   );
 }
 

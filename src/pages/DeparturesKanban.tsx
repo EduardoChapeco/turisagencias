@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Plus, GripVertical, X, Plane, KanbanSquare, Eye, Users } from 'lucide-react';
+import { Plus, GripVertical, X, Plane, KanbanSquare, Eye, Users, CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react';
 import { AppLayout } from '@/components/AppLayout';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { StatusBadge } from '@/components/ui/StatusBadge';
@@ -31,6 +31,114 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { cn } from '@/lib/utils';
+
+/* ── Calendar View ── */
+function CalendarView({
+  cards,
+  onCardClick,
+}: {
+  cards: DepartureCardData[];
+  onCardClick: (card: DepartureCardData) => void;
+}) {
+  const today = new Date();
+  const [month, setMonth] = useState(today.getMonth());
+  const [year, setYear]   = useState(today.getFullYear());
+
+  const firstDay = new Date(year, month, 1).getDay(); // 0=sun
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const prevMonth = () => { if (month === 0) { setMonth(11); setYear(y => y - 1); } else setMonth(m => m - 1); };
+  const nextMonth = () => { if (month === 11) { setMonth(0); setYear(y => y + 1); } else setMonth(m => m + 1); };
+
+  // Map date string (YYYY-MM-DD) -> cards
+  const byDate = useMemo(() => {
+    const m = new Map<string, DepartureCardData[]>();
+    cards.forEach(card => {
+      const raw = (card as Record<string, unknown>).due_date as string | null
+        ?? ((card as Record<string, unknown>).metadata as Record<string, unknown> | null)?.check_in_date as string | null;
+      if (!raw) return;
+      const d = raw.slice(0, 10);
+      const list = m.get(d) ?? [];
+      list.push(card);
+      m.set(d, list);
+    });
+    return m;
+  }, [cards]);
+
+  const MONTHS_PT = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  const DAYS_PT   = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+
+  const cells: Array<{ day: number | null; dateStr: string | null }> = [];
+  for (let i = 0; i < firstDay; i++) cells.push({ day: null, dateStr: null });
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    cells.push({ day: d, dateStr });
+  }
+
+  return (
+    <div className="rounded-xl border border-vj-border bg-white overflow-hidden">
+      {/* Month navigation */}
+      <div className="flex items-center justify-between px-5 py-3 border-b border-vj-border">
+        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={prevMonth}>
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
+        <span className="font-bold text-vj-txt">{MONTHS_PT[month]} {year}</span>
+        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={nextMonth}>
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+      </div>
+
+      {/* Day headers */}
+      <div className="grid grid-cols-7 border-b border-vj-border">
+        {DAYS_PT.map(d => (
+          <div key={d} className="py-2 text-center text-[11px] font-semibold text-vj-txt3 uppercase tracking-wide">{d}</div>
+        ))}
+      </div>
+
+      {/* Calendar cells */}
+      <div className="grid grid-cols-7">
+        {cells.map((cell, i) => {
+          const isToday = cell.dateStr === today.toISOString().slice(0, 10);
+          const dayCards = cell.dateStr ? (byDate.get(cell.dateStr) ?? []) : [];
+          return (
+            <div
+              key={i}
+              className={[
+                'min-h-[80px] p-1 border-r border-b border-vj-border text-sm relative',
+                !cell.day ? 'bg-vj-bg/50' : 'bg-white hover:bg-vj-bg/30 transition-colors',
+                isToday ? 'bg-green-50' : '',
+              ].join(' ')}
+            >
+              {cell.day && (
+                <div className={[
+                  'mb-1 h-6 w-6 rounded-full flex items-center justify-center text-xs font-semibold ml-auto',
+                  isToday ? 'bg-vj-green text-white' : 'text-vj-txt3',
+                ].join(' ')}>
+                  {cell.day}
+                </div>
+              )}
+              <div className="space-y-0.5">
+                {dayCards.slice(0, 2).map(card => (
+                  <button
+                    key={card.id}
+                    type="button"
+                    onClick={() => onCardClick(card)}
+                    className="w-full text-left rounded-md px-1.5 py-0.5 text-[10px] leading-snug font-medium bg-vj-green/10 text-vj-green hover:bg-vj-green/20 transition-colors truncate block"
+                    title={card.title}
+                  >
+                    ✈ {card.title}
+                  </button>
+                ))}
+                {dayCards.length > 2 && (
+                  <p className="text-[10px] text-vj-txt3 pl-1">+{dayCards.length - 2} mais</p>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 
 /* ── Column type ── */
 type KanbanColumnData = {
@@ -141,6 +249,7 @@ export default function DeparturesKanban() {
   const [sheetOpen, setSheetOpen] = useState(false);
   const { user } = useAuthStore();
   const [viewMode, setViewMode] = useState<'me' | 'all'>('me');
+  const [displayMode, setDisplayMode] = useState<'kanban' | 'calendar'>('kanban');
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -211,9 +320,9 @@ export default function DeparturesKanban() {
     <AppLayout fullHeight>
       <div className="flex flex-col h-full min-h-0">
         <div className="flex-shrink-0 pb-3">
-          <div className="flex w-full justify-between items-end">
+          <div className="flex w-full justify-between items-end gap-3 flex-wrap">
             <PageHeader
-              title="Gestor de Embarques"
+              title="Embarques"
               description="Acompanhe check-ins, localizadores aéreos e pacotes de viagem em tempo real."
               icon={Plane}
               badge={
@@ -230,24 +339,59 @@ export default function DeparturesKanban() {
               }
             />
 
-            <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as 'me' | 'all')} className="w-[300px]">
-               <TabsList className="grid w-full grid-cols-2">
-                   <TabsTrigger value="me" className="flex items-center gap-2 text-xs">
-                       <Eye size={14}/> Meu Board
-                   </TabsTrigger>
-                   <TabsTrigger value="all" className="flex items-center gap-2 text-xs">
-                       <Users size={14}/> Geral (Todos)
-                   </TabsTrigger>
-               </TabsList>
-            </Tabs>
+            <div className="flex items-center gap-2 flex-wrap">
+              {/* Kanban | Calendar toggle */}
+              <div className="flex rounded-lg border border-vj-border overflow-hidden">
+                <button
+                  type="button"
+                  onClick={() => setDisplayMode('kanban')}
+                  className={[
+                    'flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors',
+                    displayMode === 'kanban' ? 'bg-vj-green text-white' : 'text-vj-txt3 hover:bg-vj-bg',
+                  ].join(' ')}
+                >
+                  <KanbanSquare className="h-3.5 w-3.5" /> Kanban
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDisplayMode('calendar')}
+                  className={[
+                    'flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border-l border-vj-border transition-colors',
+                    displayMode === 'calendar' ? 'bg-vj-green text-white' : 'text-vj-txt3 hover:bg-vj-bg',
+                  ].join(' ')}
+                >
+                  <CalendarDays className="h-3.5 w-3.5" /> Calendário
+                </button>
+              </div>
+
+              <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as 'me' | 'all')} className="w-[240px]">
+                 <TabsList className="grid w-full grid-cols-2">
+                     <TabsTrigger value="me" className="flex items-center gap-2 text-xs">
+                         <Eye size={14}/> Meu Board
+                     </TabsTrigger>
+                     <TabsTrigger value="all" className="flex items-center gap-2 text-xs">
+                         <Users size={14}/> Geral
+                     </TabsTrigger>
+                 </TabsList>
+              </Tabs>
+            </div>
           </div>
         </div>
 
-        {!data?.columns?.length ? (
+        {displayMode === 'calendar' ? (
+          <div className="flex-1 overflow-auto pb-6">
+            <CalendarView
+              cards={[...(data?.cards ?? [])].filter(c =>
+                viewMode === 'all' || c.assigned_to === user?.id
+              ) as DepartureCardData[]}
+              onCardClick={openCard}
+            />
+          </div>
+        ) : !data?.columns?.length ? (
           <EmptyState
             icon={Plane}
-            title="Nenhuma coluna configurada"
-            description="O board de embarques está sendo preparado. Tente recarregar a página."
+            title="Board sendo preparado..."
+            description="As colunas estão sendo criadas automaticamente. Recarregue em instantes."
           />
         ) : (
           <DndContext

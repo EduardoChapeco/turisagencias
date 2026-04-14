@@ -104,3 +104,52 @@ export function useTripDocuments(tripId: string | undefined) {
     enabled: !!tripId,
   });
 }
+
+export function useUpdateTrip() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async ({ id, ...updates }: Partial<{
+      title: string;
+      destination_city: string | null;
+      destination_country: string | null;
+      departure_date: string | null;
+      return_date: string | null;
+      hotel_name: string | null;
+      hotel_regime: string | null;
+      meal_plan: string | null;
+      room_type: string | null;
+      airline: string | null;
+      flight_number: string | null;
+      locator_code: string | null;
+      pax_count: number | null;
+      num_nights: number | null;
+      total_value: number | null;
+      insurance_company: string | null;
+      insurance_policy: string | null;
+      status: string;
+      notes_internal: string | null;
+      primary_client_id: string | null;
+      assigned_agent_id: string | null;
+    }> & { id: string }) => {
+      const { data, error } = await supabase
+        .from('trips')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['trips'] });
+      queryClient.invalidateQueries({ queryKey: ['trip', data.id] });
+      toast({ title: 'Viagem atualizada!' });
+    },
+    onError: (err: Error) => {
+      toast({ title: 'Erro ao atualizar viagem', description: err.message, variant: 'destructive' });
+    },
+  });
+}
+

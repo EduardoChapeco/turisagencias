@@ -14,16 +14,18 @@ serve(async (req) => {
 
   try {
     const authHeader = req.headers.get('Authorization');
-    if (!authHeader) throw new Error("Acesso negado: Bearer token is missing");
+    if (!authHeader?.startsWith('Bearer ')) throw new Error("Acesso negado: Bearer token is missing");
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
+    // Service-role is used here because we just need an admin client to read profiles and ai_keys_pool
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
     const supabaseClient = createClient(supabaseUrl, supabaseKey);
 
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(
-      authHeader.replace('Bearer ', '')
-    );
-    if (authError || !user) throw new Error("Não autorizado");
+    const token = authHeader.replace('Bearer ', '');
+    const { data: claimsData, error: claimsError } = await supabaseClient.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims?.sub) throw new Error("Não autorizado");
+    
+    const userId = claimsData.claims.sub as string;
 
     const { message, conversation_history = [] } = await req.json();
 
@@ -33,7 +35,7 @@ serve(async (req) => {
     const { data: profile } = await supabaseClient
       .from('profiles')
       .select('org_id')
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .single();
       
     if (!profile?.org_id) throw new Error("Organização não encontrada");

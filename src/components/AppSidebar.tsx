@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import {
   Anchor,
   Building2,
@@ -35,7 +35,7 @@ import {
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 
-type NavGroup = { title: string; items: { title: string; url: string; icon: any }[] };
+type NavGroup = { title: string; items: { title: string; url: string; icon: React.ComponentType<{ className?: string }> }[] };
 
 const navGroups: NavGroup[] = [
   {
@@ -83,7 +83,7 @@ export function AppSidebar() {
   const markRead = useMarkNotificationAsRead();
   const [showNotif, setShowNotif] = useState(false);
 
-  const unreadCount = (notifications ?? []).filter((n: any) => !n.read_at).length;
+  const unreadCount = (notifications ?? []).filter((n) => !n.read_at).length;
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -132,6 +132,7 @@ export function AppSidebar() {
             </SidebarGroup>
           ))}
         </div>
+      </SidebarContent>
 
       <SidebarFooter>
         <div className="flex items-center gap-2 px-2 py-2">
@@ -170,14 +171,14 @@ export function AppSidebar() {
               <p className="text-xs font-bold uppercase tracking-wide text-vj-txt3">Notificações</p>
               {unreadCount > 0 && (
                 <button className="text-[10px] text-vj-green font-semibold" onClick={() => {
-                  notifications?.filter((n: any) => !n.read_at).forEach((n: any) => markRead.mutate(n.id));
+                  notifications?.filter((n) => !n.read_at).forEach((n) => markRead.mutate(n.id));
                 }}>Marcar todas como lidas</button>
               )}
             </div>
             {!notifications?.length ? (
               <p className="text-xs text-muted-foreground p-4 text-center">Nenhuma notificação.</p>
             ) : (
-              notifications.slice(0, 8).map((n: any) => (
+              notifications.slice(0, 8).map((n) => (
                 <div key={n.id} className={`px-4 py-3 border-b border-vj-border/50 cursor-pointer hover:bg-muted/30 transition-colors ${!n.read_at ? 'bg-vj-green/5' : ''}`}
                   onClick={() => { if (!n.read_at) markRead.mutate(n.id); setShowNotif(false); }}>
                   <p className={`text-xs font-medium ${!n.read_at ? 'text-vj-txt' : 'text-vj-txt3'}`}>{n.title}</p>

@@ -98,8 +98,8 @@ export function useUpdateClient() {
       name: string; email: string; phone: string; cpf: string; birth_date: string;
       address: string; city: string; state: string; zip_code: string; country: string;
       origin: string; tags: string[]; notes: string; documents: any[]; photo_url: string; 
-      passport_url: string; portal_access_enabled: boolean; preferences: any;
       passport_number: string; passport_expiry: string;
+      cover_url: string;
     }>) => {
       const { documents, passport_url, preferences, address, city, state, zip_code, country, ...restData } = data;
       const updateData = { ...restData } as any;

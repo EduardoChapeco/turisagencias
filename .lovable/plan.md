@@ -1,99 +1,90 @@
 
 
-# Auditoria Completa do Sistema VoyageOS
+# Plano de Correção: Build Errors
 
-## Problemas Encontrados
+## Contexto
+O sistema foi refatorado externamente com novas tabelas (`flights`, `itinerary_days`, `quote_hotels`, etc.) e RPCs (`confirm_public_quotation`), mas o `types.ts` auto-gerado ainda não reflete essas tabelas. Isso causa erros de tipo em 3 arquivos + 1 import faltando.
 
-### CRITICO 1: Types.ts desalinhado com o banco de dados real
-O arquivo `src/integrations/supabase/types.ts` (auto-gerado) contém colunas que **não existem** no banco de dados real:
+## Correções
 
-- **profiles**: types tem `bio`, `email`, `is_active`, `last_seen_at`, `notification_prefs`, `whatsapp` — DB real só tem: `id, user_id, org_id, first_name, last_name, avatar_url, phone, created_at, updated_at`
-- **organizations**: types tem `email`, `phone`, `address`, `ai_keys_config`, `is_active` — DB real só tem: `id, name, slug, logo_url, primary_color, whatsapp, plan, settings, created_at, updated_at`
-- **clients**: types tem `assigned_agent_id`, `photo_url`, `portal_access_enabled`, `portal_user_id`, `preferences` — DB real não tem essas colunas
+### 1. `src/hooks/useHotels.ts` — Propriedades extras no insert
+`HotelFormValues` inclui `gallery_urls`, `sections`, `video_url` que não existem na tabela `hotels_bank`. O spread `{ ...payload, org_id }` injeta essas propriedades extras.
 
-**Impacto**: Qualquer query que selecione `*` funciona (retorna o que existe), mas qualquer INSERT/UPDATE que envie essas colunas fantasma vai quebrar com erro `PGRST204`.
-
-### CRITICO 2: Tabelas faltando completamente no banco
-As seguintes tabelas são referenciadas por hooks e páginas mas **não existem** no DB:
-
-```text
-trips            → useTrips.ts, Trips.tsx, TripNew.tsx, TripDetail.tsx
-kanban_boards    → useKanbanBoards.ts, KanbanBoard.tsx
-kanban_columns   → useKanbanBoards.ts
-kanban_cards     → useKanbanCards.ts
-hotels_bank      → useHotels.ts, Hotels.tsx, HotelNew.tsx, HotelDetail.tsx
-tickets          → useTickets.ts, Tickets.tsx, TicketDetail.tsx
-ticket_messages  → useTickets.ts
-checklists       → useChecklists.ts, PublicChecklist.tsx
-checklist_items  → useChecklists.ts
-notifications    → useNotifications.ts, NotificationPanel.tsx
+**Fix:** Desestruturar o payload antes do insert, separando os campos extras:
+```ts
+const { gallery_urls, sections, video_url, ...dbPayload } = payload;
+// usar dbPayload no insert
 ```
 
-**Impacto**: Qualquer navegação para Viagens, Kanban, Hotéis, Tickets ou Checklists vai crashar. Sidebar tem links ativos para todas essas features quebradas.
+### 2. `src/hooks/usePoliciesAndExperiences.ts` — Tabelas inexistentes
+As tabelas `policy_cache` e `experiences` não existem no banco. São necessárias 2 migrations para criá-las.
 
-### CRITICO 3: Onboarding envia colunas inexistentes
-O Onboarding envia `email` e `phone` para `organizations` — colunas que não existem. O workaround `isMissingSchemaColumnError` tenta um fallback, mas esse padrão é frágil e depende da mensagem de erro.
+**Migration:** Criar tabelas `policy_cache` e `experiences` com RLS `org_id = get_my_org_id()`.
 
-### CRITICO 4: `ensure_default_kanban_boards` chamado sem tabelas
-Onboarding chama `supabase.rpc('ensure_default_kanban_boards')` mas as tabelas `kanban_boards` e `kanban_columns` não existem — vai falhar silenciosamente.
+### 3. `src/pages/HotelEdit.tsx` (linha 224) — `X` não importado
+O componente usa `<X>` do lucide-react mas não está no import.
 
-### MODERADO 5: Trigger duplicado
-Existem 2 triggers para `promote_first_user` em `auth.users`: `on_first_user_promote` e `trg_promote_first_user`. O super_admin será promovido 2x (sem dano pelo ON CONFLICT, mas é lixo).
+**Fix:** Adicionar `X` ao import do lucide-react.
 
-### MODERADO 6: Build errors nos testes
-Mocks de profile nos testes (`auth-store.test.ts`, `onboarding.test.tsx`) não incluem as colunas fantasma do types.ts (`bio`, `email`, `is_active`, etc.), causando erros TS2740.
+### 4. `src/pages/PublicQuotation.tsx` — Múltiplos problemas
+- **RPC `confirm_public_quotation`**: Não existe. Criar migration com a função.
+- **Coluna `public_token`**: Não existe na tabela `quotations`. A tabela usa `share_token`. Fix: trocar `.eq('public_token', token)` por `.eq('share_token', token)`.
+- **Relações inexistentes** (`itinerary_days`, `flights`, `quote_transfers`, etc.): Essas tabelas não existem no banco. Como o usuário disse que foram criadas externamente mas o types.ts não reflete, a solução é fazer cast `as unknown as any[]` nos acessos a essas relações e usar try/catch no select para fallback ao RPC `get_public_quotation` existente.
+- **`cover_title`**: Não existe no tipo `PublicQuotationData`. Adicionar ao interface ou remover referência.
 
-### OK: Fluxos que funcionam corretamente
-- Auth: Login, Signup, trigger `handle_new_user`, trigger `promote_first_user` — todos ativos e corretos
-- RLS: Todas as 8 tabelas existentes têm RLS habilitado com policies para `authenticated`
-- Clients CRUD: Hook, pages, form fields todos alinham com colunas reais da tabela
-- Quotations CRUD: Hook, pages, form fields corretos; installments serialização OK
-- Travelers: CRUD + form público via RPC `submit_traveler_form` — OK
-- Public pages: `/q/:token` e `/f/:token` — funcionais
-- Edge function `extract-quotation`: Corretamente usa LOVABLE_API_KEY, CORS OK
+**Abordagem pragmática para PublicQuotation:** Como as sub-tabelas podem ou não existir dependendo do estado do banco, refatorar para usar a RPC `get_public_quotation` como fallback e fazer o select relacional com cast `as any` para evitar erros de tipo até que types.ts se sincronize.
 
----
+### 5. Migrations necessárias
 
-## Plano de Correção
+**Migration A — `policy_cache`:**
+```sql
+CREATE TABLE public.policy_cache (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  org_id uuid NOT NULL,
+  criado_por uuid,
+  operadora text NOT NULL,
+  operadora_display text,
+  tipo text DEFAULT 'condicoes_gerais',
+  conteudo jsonb NOT NULL DEFAULT '{}',
+  notas_internas text,
+  criado_em timestamptz DEFAULT now(),
+  updated_at timestamptz DEFAULT now()
+);
+ALTER TABLE public.policy_cache ENABLE ROW LEVEL SECURITY;
+-- 4 RLS policies (select/insert/update/delete) com org_id = get_my_org_id()
+```
 
-### Passo 1: Adicionar colunas faltantes nas tabelas existentes
-Migration SQL para alinhar o DB com o types.ts:
+**Migration B — `experiences`:**
+```sql
+CREATE TABLE public.experiences (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  org_id uuid NOT NULL,
+  nome text NOT NULL,
+  tipo text,
+  descricao text,
+  preco numeric,
+  is_active boolean DEFAULT true,
+  created_at timestamptz DEFAULT now(),
+  updated_at timestamptz DEFAULT now()
+);
+ALTER TABLE public.experiences ENABLE ROW LEVEL SECURITY;
+-- 4 RLS policies
+```
 
-- **organizations**: ADD `email text`, `phone text`, `address jsonb`, `ai_keys_config jsonb`, `is_active boolean DEFAULT true`
-- **profiles**: ADD `bio text`, `email text`, `is_active boolean DEFAULT true`, `last_seen_at timestamptz`, `notification_prefs jsonb DEFAULT '{}'`, `whatsapp text`
-- **clients**: ADD `assigned_agent_id uuid`, `photo_url text`, `portal_access_enabled boolean DEFAULT false`, `portal_user_id uuid`, `preferences jsonb DEFAULT '{}'`
+**Migration C — RPC `confirm_public_quotation`:**
+```sql
+CREATE FUNCTION public.confirm_public_quotation(
+  p_token uuid, p_traveler_name text,
+  p_traveler_email text DEFAULT NULL, p_notes text DEFAULT NULL
+) RETURNS void ...
+-- Updates quotation status to 'confirmed' where share_token = p_token
+```
 
-### Passo 2: Criar tabelas faltantes (Fases 4-7)
-Migration para criar as 10 tabelas ausentes com RLS:
-
-- `trips` (com `primary_client_id`, `departure_date`, `return_date`, `status`, etc.)
-- `kanban_boards`, `kanban_columns`, `kanban_cards`
-- `hotels_bank` (banco de hotéis)
-- `tickets`, `ticket_messages`
-- `checklists`, `checklist_items`
-- `notifications`
-
-Todas com `org_id`, RLS usando `get_my_org_id()`, e updated_at triggers.
-
-### Passo 3: Remover trigger duplicado e fix Onboarding
-- DROP trigger `trg_promote_first_user` (mantém `on_first_user_promote`)
-- Remover workaround `isMissingSchemaColumnError` do Onboarding — enviar email/phone diretamente já que as colunas existirão
-- Remover chamada `ensure_default_kanban_boards` se as tabelas kanban forem criadas com seed automático
-
-### Passo 4: Corrigir testes
-- Atualizar mocks de profile nos testes para incluir todas as colunas do schema real
-
-### Passo 5: Validar sidebar e rotas
-- Manter todos os links no sidebar (já estão registrados)
-- Garantir que as pages placeholder mostrem estados vazios adequados em vez de crashar
-
----
-
-## Detalhes Técnicos
-
-### Migration 1: Colunas faltantes (~20 ALTER TABLE statements)
-### Migration 2: Tabelas novas (~10 CREATE TABLE + ~40 RLS policies + ~10 triggers)
-### Arquivos editados: Onboarding.tsx, auth-store.test.ts, onboarding.test.tsx
-
-Estimativa: 2 migrations + 3 arquivos editados.
+### Resumo de arquivos editados
+- `src/hooks/useHotels.ts` — desestruturar extras do payload
+- `src/hooks/usePoliciesAndExperiences.ts` — sem mudanças (tabelas criadas via migration)
+- `src/pages/HotelEdit.tsx` — adicionar `X` ao import
+- `src/pages/PublicQuotation.tsx` — trocar `public_token` → `share_token`, cast relações como `any`, adicionar `cover_title` ao tipo, usar fallback seguro
+- `src/types/index.ts` — adicionar `cover_title` ao `PublicQuotationData`
+- 3 migrations SQL
 

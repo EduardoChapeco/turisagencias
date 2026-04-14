@@ -1,10 +1,11 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { AppLayout } from '@/components/AppLayout';
 import { ClientEditSheet } from '@/components/ClientEditSheet';
 import { QuotationBuilderSheet } from '@/components/QuotationBuilderSheet';
-import { useClient } from '@/hooks/useClients';
+import { useClient, useUpdateClient } from '@/hooks/useClients';
 import { useTravelers, useCreateTraveler, useDeleteTraveler } from '@/hooks/useTravelers';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -21,7 +22,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { 
   ArrowLeft, Plus, User, Mail, Phone, MapPin, Calendar, Copy, 
-  Trash2, MessageCircle, FileText, Plane, Globe, Link, Shield
+  Trash2, MessageCircle, FileText, Plane, Globe, Link, Shield, Camera, ImageIcon
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -32,11 +33,16 @@ export default function ClientDetail() {
   const { data: travelers, isLoading: loadingTravelers } = useTravelers(id);
   const createTraveler = useCreateTraveler();
   const deleteTraveler = useDeleteTraveler();
+  const updateClient = useUpdateClient();
   const { toast } = useToast();
   const [newTraveler, setNewTraveler] = useState({ full_name: '', cpf: '', birth_date: '', email: '', phone: '', relation: '' });
   const [dialogOpen, setDialogOpen] = useState(false);
   const [clientSheetOpen, setClientSheetOpen] = useState(false);
   const [quotationBuilderOpen, setQuotationBuilderOpen] = useState(false);
+  const [uploadingCover, setUploadingCover] = useState(false);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const coverInputRef = useRef<HTMLInputElement>(null);
+  const photoInputRef = useRef<HTMLInputElement>(null);
 
   const handleAddTraveler = async () => {
     if (!newTraveler.full_name) return;
@@ -89,19 +95,85 @@ export default function ClientDetail() {
         {/* Header Profile - "World ID / Notion Style" */}
         <div className="relative rounded-3xl overflow-hidden shadow-sm border border-vj-border bg-white">
            {/* Cover Banner */}
-           <div className={`h-32 w-full ${isVip ? 'bg-gradient-to-r from-purple-600 to-indigo-900' : 'bg-gradient-to-r from-primary to-accent'} opacity-90`} />
+           <div 
+             className={`h-32 w-full relative group cursor-pointer ${!(client as any).cover_url ? (isVip ? 'bg-gradient-to-r from-purple-600 to-indigo-900' : 'bg-gradient-to-r from-primary to-accent') : ''} opacity-90`}
+             onClick={() => coverInputRef.current?.click()}
+           >
+             {(client as any).cover_url && (
+               <img src={(client as any).cover_url} alt="Cover" className="w-full h-full object-cover" />
+             )}
+             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
+               <span className="text-white opacity-0 group-hover:opacity-100 transition-opacity text-sm font-medium flex items-center gap-2">
+                 <ImageIcon className="h-4 w-4" /> Alterar capa
+               </span>
+             </div>
+           </div>
+           <input 
+             ref={coverInputRef}
+             type="file"
+             accept="image/*"
+             className="hidden"
+             onChange={async (e) => {
+               const file = e.target.files?.[0];
+               if (!file) return;
+               setUploadingCover(true);
+               try {
+                 const ext = file.name.split('.').pop();
+                 const path = `covers/${client.id}.${ext}`;
+                 const { error: upErr } = await supabase.storage.from('client-media').upload(path, file, { upsert: true });
+                 if (upErr) throw upErr;
+                 const { data: urlData } = supabase.storage.from('client-media').getPublicUrl(path);
+                 await updateClient.mutateAsync({ id: client.id, cover_url: urlData.publicUrl } as any);
+                 toast({ title: 'Capa atualizada!' });
+               } catch (err: any) {
+                 toast({ title: 'Erro ao enviar capa', description: err.message, variant: 'destructive' });
+               } finally {
+                 setUploadingCover(false);
+               }
+             }}
+           />
            
            <div className="px-6 sm:px-10 pb-6 relative">
               <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 -mt-12 sm:-mt-16 mb-4">
                  {/* Avatar & Title */}
-                 <div className="flex items-end gap-5">
-                    <div className="h-24 w-24 sm:h-32 sm:w-32 rounded-2xl border-4 border-background bg-accent/10 flex items-center justify-center overflow-hidden shadow-md">
-                       {client.photo_url ? (
-                         <img src={client.photo_url} alt={client.name} className="w-full h-full object-cover" />
-                       ) : (
-                         <span className="font-heading text-4xl text-vj-green font-bold">{client.name.substring(0, 2).toUpperCase()}</span>
-                       )}
-                    </div>
+                  <div className="flex items-end gap-5">
+                     <div 
+                       className="h-24 w-24 sm:h-32 sm:w-32 rounded-2xl border-4 border-background bg-accent/10 flex items-center justify-center overflow-hidden shadow-md relative group cursor-pointer"
+                       onClick={() => photoInputRef.current?.click()}
+                     >
+                        {client.photo_url ? (
+                          <img src={client.photo_url} alt={client.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <span className="font-heading text-4xl text-vj-green font-bold">{client.name.substring(0, 2).toUpperCase()}</span>
+                        )}
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center">
+                          <Camera className="h-5 w-5 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                        </div>
+                     </div>
+                     <input
+                       ref={photoInputRef}
+                       type="file"
+                       accept="image/*"
+                       className="hidden"
+                       onChange={async (e) => {
+                         const file = e.target.files?.[0];
+                         if (!file) return;
+                         setUploadingPhoto(true);
+                         try {
+                           const ext = file.name.split('.').pop();
+                           const path = `photos/${client.id}.${ext}`;
+                           const { error: upErr } = await supabase.storage.from('client-media').upload(path, file, { upsert: true });
+                           if (upErr) throw upErr;
+                           const { data: urlData } = supabase.storage.from('client-media').getPublicUrl(path);
+                           await updateClient.mutateAsync({ id: client.id, photo_url: urlData.publicUrl });
+                           toast({ title: 'Foto atualizada!' });
+                         } catch (err: any) {
+                           toast({ title: 'Erro ao enviar foto', description: err.message, variant: 'destructive' });
+                         } finally {
+                           setUploadingPhoto(false);
+                         }
+                       }}
+                     />
                     <div className="pb-2">
                        <h1 className="font-heading text-3xl sm:text-4xl font-bold tracking-tight text-foreground flex items-center gap-3">
                          {client.name}

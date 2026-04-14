@@ -28,7 +28,7 @@ export function useKanbanBoard(slug: string) {
       // Step 2: If no board, try RPC seeding (best effort)
       if (!board) {
         try {
-          await supabase.rpc('ensure_default_kanban_boards', { _org_id: organization.id });
+          await supabase.rpc('provision_default_kanban_boards', { p_org_id: organization.id });
         } catch (_) {
           // RPC might not exist yet — proceed gracefully
         }
@@ -43,9 +43,9 @@ export function useKanbanBoard(slug: string) {
         board = seededBoard;
       }
 
-      // Step 3: If still no board, create it directly
+      // Step 3: If still no board, create it directly (last resort)
       if (!board) {
-        const boardName = slug === 'departures' ? 'Embarques' : 'Vendas';
+        const boardName = slug === 'departures' ? 'Gestor de Embarques' : 'Pipeline de Vendas';
         const { data: newBoard, error: createErr } = await supabase
           .from('kanban_boards')
           .insert({ org_id: organization.id, name: boardName, slug })
@@ -57,24 +57,24 @@ export function useKanbanBoard(slug: string) {
         // Seed default columns
         const defaultColumns = slug === 'departures'
           ? [
-              { name: 'Confirmado',     color: '#60a5fa', position: 0 },
-              { name: 'Docs Pendentes', color: '#fb923c', position: 1 },
-              { name: 'Pronto para IR', color: '#34d399', position: 2 },
-              { name: 'Em Viagem ✈️',  color: '#a78bfa', position: 3 },
-              { name: 'Retornou',       color: '#94a3b8', position: 4 },
+              { name: 'Documentação Pendente', color: '#F59E0B', position: 0 },
+              { name: 'Check-in Aberto',        color: '#3B82F6', position: 1 },
+              { name: 'Prontos para Embarcar',  color: '#10B981', position: 2 },
+              { name: 'Em Viagem ✈️',           color: '#8B5CF6', position: 3 },
+              { name: 'Retornaram',             color: '#94a3b8', position: 4 },
             ]
           : [
-              { name: 'Leads',       color: '#94a3b8', position: 0 },
-              { name: 'Qualificado', color: '#60a5fa', position: 1 },
-              { name: 'Proposta',    color: '#a78bfa', position: 2 },
-              { name: 'Negociação',  color: '#fb923c', position: 3 },
-              { name: 'Fechado ✅',  color: '#34d399', position: 4 },
-              { name: 'Perdido ❌',  color: '#f87171', position: 5 },
+              { name: 'Novo Lead',        color: '#6B7280', position: 0 },
+              { name: 'Em Contato',       color: '#3B82F6', position: 1 },
+              { name: 'Proposta Enviada', color: '#F59E0B', position: 2 },
+              { name: 'Negociando',       color: '#8B5CF6', position: 3 },
+              { name: 'Fechado ✅',       color: '#10B981', position: 4 },
+              { name: 'Perdido ❌',       color: '#EF4444', position: 5 },
             ];
 
         await supabase
           .from('kanban_columns')
-          .insert(defaultColumns.map((c) => ({ ...c, board_id: board!.id })));
+          .insert(defaultColumns.map((c) => ({ ...c, board_id: board!.id, org_id: organization.id })));
       }
 
       // Step 4: Fetch columns + cards

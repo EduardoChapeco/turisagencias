@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
   Anchor,
   Building2,
@@ -12,12 +13,14 @@ import {
   Users,
   Settings as SettingsIcon,
   Sparkles,
-  Book
+  Book,
+  Bell,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { NavLink } from '@/components/NavLink';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthStore } from '@/stores/authStore';
+import { useNotifications, useMarkNotificationAsRead } from '@/hooks/useNotifications';
 import {
   Sidebar,
   SidebarContent,
@@ -53,6 +56,11 @@ export function AppSidebar() {
   const collapsed = state === 'collapsed';
   const navigate = useNavigate();
   const { organization, profile } = useAuthStore();
+  const { data: notifications } = useNotifications();
+  const markRead = useMarkNotificationAsRead();
+  const [showNotif, setShowNotif] = useState(false);
+
+  const unreadCount = (notifications ?? []).filter((n: any) => !n.read_at).length;
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -109,10 +117,49 @@ export function AppSidebar() {
               </p>
             </div>
           )}
+          {/* Notification Bell */}
+          <Button
+            variant="ghost" size="icon"
+            className="h-8 w-8 shrink-0 text-sidebar-foreground relative"
+            onClick={() => setShowNotif(v => !v)}
+            title="Notificações"
+          >
+            <Bell className="h-4 w-4" />
+            {unreadCount > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-destructive text-[9px] font-bold text-white flex items-center justify-center">
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </span>
+            )}
+          </Button>
           <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 text-sidebar-foreground" onClick={handleLogout}>
             <LogOut className="h-4 w-4" />
           </Button>
         </div>
+        {/* Notification Dropdown */}
+        {showNotif && (
+          <div className="absolute bottom-14 left-2 right-2 z-50 bg-white rounded-xl border border-vj-border shadow-xl max-h-72 overflow-y-auto">
+            <div className="px-4 py-3 border-b border-vj-border flex items-center justify-between">
+              <p className="text-xs font-bold uppercase tracking-wide text-vj-txt3">Notificações</p>
+              {unreadCount > 0 && (
+                <button className="text-[10px] text-vj-green font-semibold" onClick={() => {
+                  notifications?.filter((n: any) => !n.read_at).forEach((n: any) => markRead.mutate(n.id));
+                }}>Marcar todas como lidas</button>
+              )}
+            </div>
+            {!notifications?.length ? (
+              <p className="text-xs text-muted-foreground p-4 text-center">Nenhuma notificação.</p>
+            ) : (
+              notifications.slice(0, 8).map((n: any) => (
+                <div key={n.id} className={`px-4 py-3 border-b border-vj-border/50 cursor-pointer hover:bg-muted/30 transition-colors ${!n.read_at ? 'bg-vj-green/5' : ''}`}
+                  onClick={() => { if (!n.read_at) markRead.mutate(n.id); setShowNotif(false); }}>
+                  <p className={`text-xs font-medium ${!n.read_at ? 'text-vj-txt' : 'text-vj-txt3'}`}>{n.title}</p>
+                  {n.message && <p className="text-[10px] text-vj-txt3 mt-0.5 truncate">{n.message}</p>}
+                  <p className="text-[9px] text-vj-txt3/60 mt-1">{new Date(n.created_at).toLocaleString('pt-BR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}</p>
+                </div>
+              ))
+            )}
+          </div>
+        )}
       </SidebarFooter>
     </Sidebar>
   );

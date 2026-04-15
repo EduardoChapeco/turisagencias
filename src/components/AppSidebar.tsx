@@ -114,7 +114,7 @@ export function AppSidebar() {
           </div>
           {!collapsed && (
             <span className="truncate font-heading text-sm font-semibold text-sidebar-foreground">
-              {organization?.name || 'Turis Agencias'}
+              {organization?.name || 'Excelência Tour'}
             </span>
           )}
         </div>

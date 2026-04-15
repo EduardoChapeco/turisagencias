@@ -8,22 +8,36 @@ import { Card, CardDescription, CardHeader, CardTitle, CardFooter } from '@/comp
 import { MapPin, Plus, Map, Eye, Users } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
 
 export default function Itineraries() {
   const navigate = useNavigate();
   const { profile } = useAuthStore();
   const { itineraries, isLoading, createItinerary } = useItineraries(profile?.org_id);
   const [isCreating, setIsCreating] = useState(false);
+  const [showDialog, setShowDialog] = useState(false);
+  
+  // Form State
+  const [isGroup, setIsGroup] = useState(false);
+  const [title, setTitle] = useState('Novo Roteiro');
+  const [groupName, setGroupName] = useState('');
+  const [maxPax, setMaxPax] = useState('');
 
   const handleCreate = async () => {
     try {
       setIsCreating(true);
       const newItinerary = await createItinerary({
-        title: 'Novo Roteiro',
+        title: title || 'Novo Roteiro',
         is_public: false,
         status: 'draft',
-        is_group_itinerary: false,
+        is_group_itinerary: isGroup,
+        group_name: isGroup ? groupName : null,
+        max_pax: isGroup && maxPax ? parseInt(maxPax, 10) : null,
       });
+      setShowDialog(false);
       navigate(`/itineraries/${newItinerary.id}/builder`);
     } catch (e) {
       console.error(e);
@@ -46,7 +60,7 @@ export default function Itineraries() {
             </p>
           </div>
           <Button
-            onClick={handleCreate}
+            onClick={() => setShowDialog(true)}
             disabled={isCreating}
             className="rounded-full px-6 gap-2"
           >
@@ -70,7 +84,7 @@ export default function Itineraries() {
             <p className="text-vj-txt3 mb-8 max-w-md">
               Crie seu primeiro roteiro. Use nossa IA para gerar rotas completas com mapas e dicas.
             </p>
-            <Button onClick={handleCreate} disabled={isCreating} size="lg" className="rounded-full px-8 gap-2">
+            <Button onClick={() => setShowDialog(true)} disabled={isCreating} size="lg" className="rounded-full px-8 gap-2">
               <Plus className="w-5 h-5" /> Começar a Criar
             </Button>
           </div>
@@ -126,6 +140,64 @@ export default function Itineraries() {
           </div>
         )}
       </div>
+
+      <Dialog open={showDialog} onOpenChange={setShowDialog}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Criar Novo Roteiro</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="title">Nome do Roteiro</Label>
+              <Input
+                id="title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Ex: Viagem Europa 2026"
+              />
+            </div>
+            <div className="flex items-center justify-between mt-2">
+              <Label htmlFor="is-group" className="cursor-pointer">Este é um Roteiro de Grupo?</Label>
+              <Switch
+                id="is-group"
+                checked={isGroup}
+                onCheckedChange={setIsGroup}
+              />
+            </div>
+            
+            {isGroup && (
+              <div className="space-y-4 p-4 border rounded-xl bg-vj-surface mt-2 animate-in fade-in">
+                <div className="grid gap-2">
+                  <Label htmlFor="group_name">Nome do Grupo (Comercial)</Label>
+                  <Input
+                    id="group_name"
+                    value={groupName}
+                    onChange={(e) => setGroupName(e.target.value)}
+                    placeholder="Ex: Grupo Turquia VIP"
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="max_pax">Total de Vagas</Label>
+                  <Input
+                    id="max_pax"
+                    type="number"
+                    min="1"
+                    value={maxPax}
+                    onChange={(e) => setMaxPax(e.target.value)}
+                    placeholder="Ex: 25"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowDialog(false)}>Cancelar</Button>
+            <Button onClick={handleCreate} disabled={isCreating || !title}>
+              {isCreating ? 'Criando...' : 'Criar Roteiro'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AppLayout>
   );
 }

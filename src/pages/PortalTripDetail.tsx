@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { Calendar, FileText, Plane, MapPin, Hotel, ArrowLeft, Users, Download, Globe2 } from 'lucide-react';
+import { Calendar, FileText, Plane, MapPin, Hotel, ArrowLeft, Users, Download, Globe2, Sparkles } from 'lucide-react';
 import { usePortalTrip } from '@/hooks/usePortal';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -65,14 +65,25 @@ export default function PortalTripDetail() {
         <div className="absolute inset-0 bg-gradient-to-t from-slate-50 dark:from-zinc-950 via-transparent to-transparent" />
 
         <div className="relative z-10 h-full max-w-6xl mx-auto px-6 pt-8 flex flex-col">
-          <Button
-            variant="outline"
-            className="self-start rounded-full bg-white/10 border-white/20 text-white hover:bg-white/20 hover:text-white backdrop-blur-md"
-            onClick={() => navigate(`/portal/${org_slug}/home`)}
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Voltar ao Início
-          </Button>
+          <div className="flex items-start justify-between w-full">
+            <Button
+              variant="outline"
+              className="rounded-full bg-white/10 border-white/20 text-white hover:bg-white/20 hover:text-white backdrop-blur-md"
+              onClick={() => navigate(`/portal/${org_slug}/home`)}
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Voltar ao Início
+            </Button>
+
+            <Button
+              variant="default"
+              className="rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700 text-white border-0 shadow-lg gap-2 font-semibold"
+              onClick={() => navigate(`/portal/${org_slug}/trip/${id}/ai-photos`)}
+            >
+              <Sparkles className="h-4 w-4" />
+              Fotos Mágicas IA
+            </Button>
+          </div>
 
           <div className="mt-auto pb-10">
             <div className="flex items-center gap-3 mb-3">

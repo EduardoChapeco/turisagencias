@@ -31,7 +31,7 @@ export function AppLayout({ children, fullHeight }: { children: React.ReactNode;
           {/* Header — 50px, blur, neutro */}
           <header
             className="flex h-[50px] items-center gap-3 px-4 shrink-0 border-b border-vj-border bg-vj-bg/90 backdrop-blur-md"
-            style={{ position: 'sticky', top: 0, zIndex: 90 }}
+            style={{ position: 'sticky', top: 0, zIndex: 40 }}
           >
             <SidebarTrigger className="h-8 w-8 text-vj-txt3 hover:text-vj-txt" />
 

@@ -55,6 +55,11 @@ const Experiences = lazy(() => import('./pages/Experiences'));
 const PortalLogin = lazy(() => import('./pages/PortalLogin'));
 const PortalHome = lazy(() => import('./pages/PortalHome'));
 const PortalTripDetail = lazy(() => import('./pages/PortalTripDetail'));
+const PortalAiPhotos = lazy(() => import('./pages/PortalAiPhotos'));
+const Suppliers = lazy(() => import('./pages/finance/Suppliers'));
+const Transactions = lazy(() => import('./pages/finance/Transactions'));
+const ContractTemplates = lazy(() => import('./pages/legal/ContractTemplates'));
+const Automations = lazy(() => import('./pages/automations/Automations'));
 
 const PublicTravelerForm = lazy(() => import('./pages/PublicTravelerForm'));
 const PublicQuotation = lazy(() => import('./pages/PublicQuotation'));
@@ -127,6 +132,7 @@ const App = () => (
               <Route path="/portal/:org_slug" element={<PortalLogin />} />
               <Route path="/portal/:org_slug/home" element={<ProtectedRoute><PortalHome /></ProtectedRoute>} />
               <Route path="/portal/:org_slug/trip/:id" element={<ProtectedRoute><PortalTripDetail /></ProtectedRoute>} />
+              <Route path="/portal/:org_slug/trip/:trip_id/ai-photos" element={<ProtectedRoute><PortalAiPhotos /></ProtectedRoute>} />
 
               <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
 
@@ -154,7 +160,13 @@ const App = () => (
               <Route path="/kanban/tasks" element={<ProtectedWithOrg><TripsRole><TasksKanban /></TripsRole></ProtectedWithOrg>} />
               <Route path="/ai-chat" element={<ProtectedWithOrg><TripsRole><AIChat /></TripsRole></ProtectedWithOrg>} />
               <Route path="/settings" element={<ProtectedWithOrg><TripsRole><Settings /></TripsRole></ProtectedWithOrg>} />
-              
+              {/* ERP v3 Financeiro & Jurídico */}
+              <Route path="/finance/suppliers" element={<ProtectedRoute><Suppliers /></ProtectedRoute>} />
+              <Route path="/finance/transactions" element={<ProtectedRoute><Transactions /></ProtectedRoute>} />
+              <Route path="/legal/contracts" element={<ProtectedRoute><ContractTemplates /></ProtectedRoute>} />
+              <Route path="/automations" element={<ProtectedRoute><Automations /></ProtectedRoute>} />
+
+              {/* CRM Legacy */}
               <Route path="/guides" element={<ProtectedWithOrg><TripsRole><Guides /></TripsRole></ProtectedWithOrg>} />
               <Route path="/guides/:id" element={<ProtectedWithOrg><TripsRole><GuideDetail /></TripsRole></ProtectedWithOrg>} />
 

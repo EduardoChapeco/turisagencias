@@ -4,9 +4,15 @@ import { supabase } from '@/integrations/supabase/client';
 import { ItinerarySplitView } from '@/components/itinerary/ItinerarySplitView';
 import { StopCoordinate } from '@/components/itinerary/ItineraryMap';
 import { TurisBadge } from '@/components/ui/TurisBadge';
-import { Loader2, Calendar, MapPin, Share2, Download, AlertCircle, Users } from 'lucide-react';
+import { Loader2, Calendar, MapPin, Share2, Download, AlertCircle, Users, ImageIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import React, { useRef, useState } from 'react';
+import html2canvas from 'html2canvas';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { toast } from 'sonner';
 
 export default function PublicItinerary() {
   const { token } = useParams<{ token: string }>();
@@ -83,6 +89,12 @@ export default function PublicItinerary() {
     day_number: s.day_number ?? 1,
   }));
 
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [isExporting, setIsExporting] = useState(false);
+  const [formData, setFormData] = useState({ name: '', email: '', whatsapp: '' });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+
   const handleShare = () => {
     if (navigator.share) {
       navigator.share({
@@ -96,8 +108,65 @@ export default function PublicItinerary() {
     }
   };
 
+  const handleSubmitLead = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.name || !formData.whatsapp) {
+      toast.error('Preencha seu nome e whatsapp!');
+      return;
+    }
+    
+    setIsSubmitting(true);
+    try {
+      const { error } = await supabase.from('itinerary_leads').insert({
+        itinerary_id: itinerary.id,
+        org_id: itinerary.org_id,
+        name: formData.name,
+        email: formData.email,
+        whatsapp: formData.whatsapp,
+        action: itinerary.is_group_itinerary ? 'group_interest' : 'general_interest',
+        utm_source: token
+      });
+      
+      if (error) throw error;
+      
+      // Update local pax count artificially to seem reactive
+      if (itinerary.current_pax !== undefined) {
+         itinerary.current_pax += 1;
+      }
+      setIsSuccess(true);
+      toast.success('Interesse registrado com sucesso! Em breve entraremos em contato.');
+    } catch (err) {
+      console.error(err);
+      toast.error('Ocorreu um erro ao registrar seu interesse.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDownloadImage = async () => {
+    if (!containerRef.current) return;
+    setIsExporting(true);
+    try {
+      const canvas = await html2canvas(containerRef.current, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#09090b', // dark background matching zinc-950
+      });
+      const dataUrl = canvas.toDataURL('image/png');
+      const link = document.createElement('a');
+      link.download = `roteiro-${itinerary.title.replace(/\s+/g, '-').toLowerCase()}.png`;
+      link.href = dataUrl;
+      link.click();
+    } catch (err) {
+      console.error('Erro ao exportar imagem:', err);
+      alert('Não foi possível exportar a imagem. Tente novamente.');
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 flex flex-col overflow-x-hidden font-sans pb-20">
+    <div ref={containerRef} className="min-h-screen bg-slate-50 dark:bg-zinc-950 flex flex-col overflow-x-hidden font-sans pb-20">
       {/* Hero */}
       <div className="relative w-full h-[45vh] min-h-[300px] flex flex-col justify-end p-6 md:p-12 overflow-hidden shrink-0">
         <div
@@ -114,6 +183,16 @@ export default function PublicItinerary() {
             {itinerary.org?.name || 'Turis Agências'}
           </div>
           <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={handleDownloadImage}
+              disabled={isExporting}
+              title="Salvar como Imagem"
+              className="rounded-full bg-white/10 border-white/20 text-white hover:bg-white/20 hover:text-white backdrop-blur-md"
+            >
+              {isExporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <ImageIcon className="w-4 h-4" />}
+            </Button>
             <Button
               variant="outline"
               size="icon"
@@ -175,6 +254,97 @@ export default function PublicItinerary() {
             </div>
           )}
         </div>
+
+        {/* Group Registration / Interest Form */}
+        {itinerary.is_group_itinerary && (
+          <div className="mt-8 max-w-2xl mx-auto w-full">
+            <Card className="rounded-3xl border-vj-green/20 shadow-xl bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md overflow-hidden relative">
+               <div className="absolute top-0 right-0 w-32 h-32 bg-violet-500/10 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none" />
+               <div className="absolute bottom-0 left-0 w-32 h-32 bg-fuchsia-500/10 rounded-full blur-3xl -ml-10 -mb-10 pointer-events-none" />
+               
+               <CardHeader className="text-center relative z-10 pb-4">
+                 <div className="mx-auto w-12 h-12 bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 rounded-full flex items-center justify-center mb-3 shadow-inner">
+                   <Users className="w-6 h-6" />
+                 </div>
+                 <Badge className="bg-violet-500 text-white w-fit mx-auto mb-2 pointer-events-none">Vagas Abertas</Badge>
+                 <CardTitle className="text-3xl font-extrabold tracking-tight">Garanta Sua Vaga no Grupo</CardTitle>
+                 <CardDescription className="text-base mt-2">
+                   {itinerary.group_name || itinerary.title}
+                 </CardDescription>
+                 
+               </CardHeader>
+
+               <CardContent className="relative z-10">
+                 {isSuccess ? (
+                   <div className="bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 p-6 rounded-2xl text-center font-medium border border-green-200 dark:border-green-900/50">
+                     ✨ Inscrição prévia realizada com sucesso!<br/>
+                     Nossa equipe do WhatsApp oficial vai entrar em contato com você em breve para alinhar os detalhes.
+                   </div>
+                 ) : (
+                   <form onSubmit={handleSubmitLead} className="space-y-4">
+                     <div className="grid gap-2">
+                       <Label>Nome Completo*</Label>
+                       <Input 
+                         required 
+                         placeholder="Como você gostaria de ser chamado?" 
+                         value={formData.name}
+                         onChange={e => setFormData({ ...formData, name: e.target.value })}
+                         className="rounded-xl border-border/50"
+                       />
+                     </div>
+                     <div className="grid md:grid-cols-2 gap-4">
+                       <div className="grid gap-2">
+                         <Label>WhatsApp*</Label>
+                         <Input 
+                           required 
+                           placeholder="(00) 00000-0000" 
+                           value={formData.whatsapp}
+                           onChange={e => setFormData({ ...formData, whatsapp: e.target.value })}
+                           className="rounded-xl border-border/50"
+                         />
+                       </div>
+                       <div className="grid gap-2">
+                         <Label>E-mail (Opcional)</Label>
+                         <Input 
+                           type="email" 
+                           placeholder="seu@email.com" 
+                           value={formData.email}
+                           onChange={e => setFormData({ ...formData, email: e.target.value })}
+                           className="rounded-xl border-border/50"
+                         />
+                       </div>
+                     </div>
+                     <Button 
+                       type="submit" 
+                       disabled={isSubmitting}
+                       className="w-full rounded-xl py-6 bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700 text-white font-bold text-lg shadow-lg border-0 mt-2 transition-all hover:scale-[1.01]"
+                     >
+                       {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin mx-auto"/> : 'Tenho Interesse Nesta Viagem'}
+                     </Button>
+                   </form>
+                 )}
+               </CardContent>
+
+               {itinerary.max_pax && itinerary.max_pax > 0 && (
+                 <CardFooter className="bg-muted/30 border-t justify-center relative z-10 rounded-b-3xl">
+                   <p className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                      <span className="relative flex h-3 w-3">
+                        {(itinerary.max_pax - (itinerary.current_pax || 0)) < 5 ? (
+                          <>
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                          </>
+                        ) : (
+                          <span className="relative inline-flex rounded-full h-3 w-3 bg-violet-400"></span>
+                        )}
+                      </span>
+                     Restam apenas <strong>{Math.max(0, itinerary.max_pax - (itinerary.current_pax || 0))} vagas</strong> de {itinerary.max_pax}
+                   </p>
+                 </CardFooter>
+               )}
+            </Card>
+          </div>
+        )}
 
         {/* Footer */}
         <div className="mt-8 flex flex-col md:flex-row gap-6 justify-between items-start md:items-center px-2">

@@ -43,7 +43,6 @@ export function useKanbanBoard(slug: string) {
         board = seededBoard;
       }
 
-      // Step 3: If still no board, create it directly (last resort)
       if (!board) {
         const boardName =
           slug === 'departures' ? 'Embarques' :
@@ -51,7 +50,7 @@ export function useKanbanBoard(slug: string) {
                                   'CRM — Pipeline de Vendas';
         const { data: newBoard, error: createErr } = await supabase
           .from('kanban_boards')
-          .insert({ org_id: organization.id, name: boardName, slug })
+          .insert({ org_id: organization.id, name: boardName, slug, board_type: slug })
           .select()
           .single();
         if (createErr) throw createErr;

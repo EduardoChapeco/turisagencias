@@ -16,9 +16,10 @@ import {
   Book,
   Bell,
   Map,
+  FileSignature,
+  Bot
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { NavLink } from '@/components/NavLink';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthStore } from '@/stores/authStore';
 import { useNotifications, useMarkNotificationAsRead } from '@/hooks/useNotifications';
@@ -59,12 +60,20 @@ const navGroups: NavGroup[] = [
     ],
   },
   {
-    title: 'Wiki & Operadoras',
+    title: 'Financeiro V3',
     items: [
-      { title: 'Hotéis',          url: '/hotels',      icon: Building2 },
-      { title: 'Passeios',        url: '/experiences', icon: Globe2 },
-      { title: 'Guias de Destino',url: '/guides',      icon: Book },
-      { title: 'Links Úteis',     url: '/info',        icon: Cloud },
+      { title: 'Transações',     url: '/finance/transactions', icon: Book },
+      { title: 'Fornecedores',   url: '/finance/suppliers',    icon: Building2 },
+    ],
+  },
+  {
+    title: 'Automações & Inteligência',
+    items: [
+      { title: 'Regras de Automação', url: '/automations',   icon: Bot },
+      { title: 'Contratos Legais', url: '/legal/contracts', icon: FileSignature },
+      { title: 'Hotéis da Rede',   url: '/hotels',          icon: Building2 },
+      { title: 'Passeios',         url: '/experiences',     icon: Globe2 },
+      { title: 'Guias de Destino', url: '/guides',          icon: Book },
     ],
   },
   {
@@ -81,6 +90,7 @@ export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === 'collapsed';
   const navigate = useNavigate();
+  const location = useLocation();
   const { organization, profile } = useAuthStore();
   const { data: notifications } = useNotifications();
   const markRead = useMarkNotificationAsRead();
@@ -115,21 +125,23 @@ export function AppSidebar() {
               </SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
-                  {group.items.map((item) => (
-                    <SidebarMenuItem key={item.title}>
-                      <SidebarMenuButton asChild>
-                        <NavLink
-                          to={item.url}
-                          end={item.url === '/'}
-                          className="hover:bg-sidebar-accent/50 transition-colors mx-2 rounded-lg"
-                          activeClassName="bg-sidebar-accent font-semibold text-sidebar-primary shadow-sm"
+                  {group.items.map((item) => {
+                    const isActive = item.url === '/' ? location.pathname === '/' : location.pathname.startsWith(item.url);
+                    return (
+                      <SidebarMenuItem key={item.title}>
+                        <SidebarMenuButton 
+                          asChild 
+                          isActive={isActive} 
+                          className={`hover:bg-sidebar-accent/50 transition-all font-medium border border-transparent ${isActive ? 'bg-vj-green/10 text-vj-green font-semibold border-vj-green/20' : 'text-vj-txt'}`}
                         >
-                          <item.icon className="mr-3 h-[18px] w-[18px]" />
-                          {!collapsed && <span>{item.title}</span>}
-                        </NavLink>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  ))}
+                          <Link to={item.url} className="flex items-center gap-3">
+                            <item.icon className={`h-[18px] w-[18px] ${isActive ? 'text-vj-green' : 'text-vj-txt3'}`} />
+                            {!collapsed && <span>{item.title}</span>}
+                          </Link>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    );
+                  })}
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>

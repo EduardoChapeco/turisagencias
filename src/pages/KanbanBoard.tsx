@@ -11,7 +11,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { KanbanSquare, X } from 'lucide-react';
+import { KanbanSquare, X, Eye, Users } from 'lucide-react';
 
 import {
   DndContext,

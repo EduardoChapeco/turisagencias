@@ -326,109 +326,12 @@ serve(async (req) => {
           installments: extracted.installments || null,
           whatsapp_text: extracted.whatsapp_text,
           source_file_url: source_file_url || null,
-          public_token: crypto.randomUUID(),
-          // Campos expandidos do PRD (FIX: antes eram descartados)
-          cancelamento_data_limite: extracted.cancelamento_data_limite || null,
-          cancelamento_valor_multa: extracted.cancelamento_valor_multa || null,
-          cancelamento_texto_raw: extracted.cancelamento_texto_raw || null,
-          pax_adultos: extracted.pax_adultos || 1,
-          pax_criancas: extracted.pax_criancas || 0,
-          pax_infantil: extracted.pax_infantil || 0,
-          pax_seniores: extracted.pax_seniores || 0,
-          id_operadora: extracted.id_operadora || null,
-          operadora_nome: extracted.operadora || null,
-          tarifa_base: extracted.tarifa_base || null,
-          taxas: extracted.taxas || null,
-          impostos: extracted.impostos || null,
-          notes_internal: [
-            extracted.cancelamento_texto_raw ? `⚠️ Cancelamento: ${extracted.cancelamento_texto_raw}` : null,
-            extracted.campos_ambiguos?.length ? `🔍 Campos para revisão: ${extracted.campos_ambiguos.join(', ')}` : null,
-            extracted.operadora ? `🏢 Operadora: ${extracted.operadora} (ID: ${extracted.id_operadora || '—'})` : null,
-          ].filter(Boolean).join('\n') || null,
         })
         .select('id')
         .single();
 
       if (insertError) throw new Error("Erro ao salvar cotação: " + insertError.message);
-      const quoteId = qData.id;
-
-      // Insere roteiro
-      if (extracted.itinerary?.length) {
-        for (const item of extracted.itinerary) {
-          const { data: dayData } = await supabaseClient.from('itinerary_days').insert({
-            quote_id: quoteId,
-            day_number: item.day_number,
-            city: item.city,
-            label: item.label,
-          }).select('id').single();
-
-          if (dayData && item.description) {
-            await supabaseClient.from('itinerary_items').insert({
-              itinerary_day_id: dayData.id,
-              order_position: 1,
-              description: item.description,
-            });
-          }
-        }
-      }
-
-      // Insere voos com segmentos relacionais
-      if (extracted.flights?.length) {
-        for (let fi = 0; fi < extracted.flights.length; fi++) {
-          const flight = extracted.flights[fi];
-          const { data: flightData } = await supabaseClient.from('flights').insert({
-            quote_id: quoteId,
-            direction: flight.direction || 'outbound',
-            airline_name: flight.airline_name,
-            cabin_class: flight.cabin_class || 'economy',
-            total_price: flight.total_price || null,
-            order_position: fi,
-          }).select('id').single();
-
-          // Insere segmentos de voo (conexões)
-          if (flightData && flight.segments?.length) {
-            for (let si = 0; si < flight.segments.length; si++) {
-              const seg = flight.segments[si];
-              await supabaseClient.from('flight_segments').insert({
-                flight_id: flightData.id,
-                segment_order: si,
-                departure_airport_code: seg.origem_iata,
-                departure_airport_city: seg.origem_cidade,
-                arrival_airport_code: seg.destino_iata,
-                arrival_airport_city: seg.destino_cidade,
-                departure_datetime: seg.partida_datetime || null,
-                arrival_datetime: seg.chegada_datetime || null,
-                duration_minutes: seg.duracao_minutos || null,
-                is_direct: (flight.segments.length === 1),
-                stops: flight.segments.length - 1,
-              });
-            }
-          }
-        }
-      }
-
-      // Insere transfers (FIX: antes eram descartados — apenas em ai_raw_response)
-      if (extracted.transfers?.length) {
-        for (let ti = 0; ti < extracted.transfers.length; ti++) {
-          const tr = extracted.transfers[ti];
-          await supabaseClient.from('quote_transfers').insert({
-            quote_id: quoteId,
-            tipo: tr.tipo || 'round',
-            nome: tr.nome || null,
-            fornecedor: tr.fornecedor || null,
-            data_inicio: tr.data_inicio || null,
-            data_fim: tr.data_fim || null,
-            instrucoes: tr.instrucoes || null,
-            ponto_encontro: tr.ponto_encontro || null,
-            limite_bagagem_kg: tr.limite_bagagem_kg || null,
-            adultos: tr.adultos || 1,
-            criancas: tr.criancas || 0,
-            order_position: ti,
-          });
-        }
-      }
-
-      extracted.id = quoteId;
+      extracted.id = qData.id;
     }
 
     return new Response(JSON.stringify({ data: extracted }), {

@@ -9,7 +9,6 @@ import { Bot, Save, Mail, CalendarClock, PlaneTakeoff, HeartHandshake } from 'lu
 import { useAuthStore } from '@/stores/authStore';
 import { useCommunicationRules, useUpdateCommunicationRule, CommunicationRule } from '@/hooks/useAutomations';
 import { PageSkeleton } from '@/components/ui/EmptyState';
-import { toast } from 'sonner';
 
 const EVENT_DETAILS = {
   trip_created: { title: '1. Roteiro Fechado (Boas vindas)', icon: HandshakeIcon, desc: 'Dispara quando o status de uma cotação muda para Fechado/Viagem e é enviado ao Portal do Cliente.' },

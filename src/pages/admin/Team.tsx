@@ -71,7 +71,7 @@ export default function Team() {
           title="Equipe & Comissionamento" 
           description="Controle de acesso, papéis e taxas de comissionamento de rede."
           icon={Users}
-          action={
+          actions={
             <Button onClick={handleOpenNew} className="rounded-full gap-2 px-6">
               <UserPlus size={16}/> Convidar Membro
             </Button>

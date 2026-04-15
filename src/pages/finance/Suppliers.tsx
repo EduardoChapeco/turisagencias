@@ -10,7 +10,7 @@ import { Plus, Building2, Search, MoreVertical, Edit2, Trash2 } from 'lucide-rea
 import { useAuthStore } from '@/stores/authStore';
 import { useSuppliers, useCreateSupplier, useUpdateSupplier, useDeleteSupplier, Supplier } from '@/hooks/useFinance';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { PageSkeleton, EmptyState } from '@/components/ui/EmptyState';
+import { PageSkeleton } from '@/components/ui/EmptyState';
 
 export default function Suppliers() {
   const { profile } = useAuthStore();
@@ -70,7 +70,7 @@ export default function Suppliers() {
           title="Fornecedores" 
           description="Gestão de operadoras, hotéis e parceiros comerciais."
           icon={Building2}
-          action={
+          actions={
             <Button onClick={handleOpenNew} className="rounded-full gap-2 px-6">
               <Plus size={16}/> Novo Fornecedor
             </Button>

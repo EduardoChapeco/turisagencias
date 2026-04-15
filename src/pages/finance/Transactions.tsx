@@ -2,17 +2,45 @@ import { useState } from 'react';
 import { AppLayout } from '@/components/AppLayout';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Wallet, Search, TrendingUp, TrendingDown, RefreshCw } from 'lucide-react';
+import { Wallet, TrendingUp, TrendingDown, RefreshCw, Plus } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
-import { useTransactions } from '@/hooks/useFinance';
+import { useTransactions, useCreateTransaction, Transaction } from '@/hooks/useFinance';
 import { PageSkeleton } from '@/components/ui/EmptyState';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 export default function Transactions() {
   const { profile } = useAuthStore();
   const [filterType, setFilterType] = useState<'receivable' | 'payable' | undefined>();
   const { data: transactions, isLoading } = useTransactions(profile?.org_id, { type: filterType });
+  const createTransaction = useCreateTransaction();
+
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    type: 'receivable' as Transaction['type'],
+    status: 'pending' as Transaction['status'],
+    amount: 0,
+    due_date: '',
+    notes: '',
+    payment_method: '',
+  });
+
+  const handleSubmit = async () => {
+    if (!formData.amount || !formData.due_date) return;
+    await createTransaction.mutateAsync({
+      org_id: profile!.org_id!,
+      trip_id: null,
+      client_id: null,
+      supplier_id: null,
+      ...formData,
+      paid_date: null,
+    });
+    setIsDialogOpen(false);
+    setFormData({ type: 'receivable', status: 'pending', amount: 0, due_date: '', notes: '', payment_method: '' });
+  };
 
   if (isLoading) return <AppLayout><PageSkeleton /></AppLayout>;
 
@@ -20,12 +48,18 @@ export default function Transactions() {
   const totalPayables = transactions?.filter(t => t.type === 'payable' && t.status !== 'canceled').reduce((acc, t) => acc + t.amount, 0) || 0;
 
   return (
-    <AppLayout fullHeight>
+    <>
+      <AppLayout fullHeight>
       <div className="flex flex-col h-full gap-4">
         <PageHeader 
           title="Financeiro" 
           description="Controle de recebimentos de clientes e pagamentos a fornecedores."
           icon={Wallet}
+          actions={
+            <Button onClick={() => setIsDialogOpen(true)} className="rounded-full gap-2 px-6">
+              <Plus size={16}/> Novo Lançamento
+            </Button>
+          }
         />
 
         {/* Dashboard Cards */}
@@ -122,5 +156,56 @@ export default function Transactions() {
         
       </div>
     </AppLayout>
+
+    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+      <DialogContent className="sm:max-w-md rounded-3xl">
+        <DialogHeader>
+          <DialogTitle>Novo Lançamento Financeiro</DialogTitle>
+        </DialogHeader>
+        <div className="grid gap-4 py-4">
+          <div className="grid gap-2">
+            <Label>Tipo</Label>
+            <Select value={formData.type} onValueChange={(v: any) => setFormData({...formData, type: v})}>
+              <SelectTrigger className="rounded-xl"><SelectValue /></SelectTrigger>
+              <SelectContent className="rounded-xl">
+                <SelectItem value="receivable">Entrada (A Receber)</SelectItem>
+                <SelectItem value="payable">Saída (A Pagar)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="grid gap-2">
+            <Label>Valor (R$)</Label>
+            <Input type="number" min="0" step="0.01" value={formData.amount} onChange={e => setFormData({...formData, amount: Number(e.target.value)})} className="rounded-xl" />
+          </div>
+          <div className="grid gap-2">
+            <Label>Vencimento</Label>
+            <Input type="date" value={formData.due_date} onChange={e => setFormData({...formData, due_date: e.target.value})} className="rounded-xl" />
+          </div>
+          <div className="grid gap-2">
+            <Label>Forma de Pagamento</Label>
+            <Select value={formData.payment_method || ''} onValueChange={(v) => setFormData({...formData, payment_method: v})}>
+              <SelectTrigger className="rounded-xl"><SelectValue placeholder="Selecione..." /></SelectTrigger>
+              <SelectContent className="rounded-xl">
+                <SelectItem value="pix">PIX</SelectItem>
+                <SelectItem value="transferencia">Transferência Bancária</SelectItem>
+                <SelectItem value="boleto">Boleto</SelectItem>
+                <SelectItem value="cartao">Cartão de Crédito</SelectItem>
+                <SelectItem value="dinheiro">Dinheiro</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="grid gap-2">
+            <Label>Observação (opcional)</Label>
+            <Input value={formData.notes} onChange={e => setFormData({...formData, notes: e.target.value})} className="rounded-xl" placeholder="Ex: Pagamento parcela 1/3 viagem..." />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button disabled={!formData.amount || !formData.due_date} onClick={handleSubmit} className="rounded-xl w-full">
+            Registrar Lançamento
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  </>
   );
 }

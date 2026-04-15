@@ -59,7 +59,7 @@ export default function ContractTemplates() {
           title="Gestão de Contratos Jurídicos" 
           description="Modelos dinâmicos de contrato que serão assinados digitalmente pelos passageiros."
           icon={FileSignature}
-          action={
+          actions={
             <Button onClick={handleOpenNew} className="rounded-full gap-2 px-6">
               <Plus size={16}/> Novo Modelo
             </Button>
@@ -77,9 +77,12 @@ export default function ContractTemplates() {
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 overflow-auto pb-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 overflow-auto pb-6 flex-1">
              {filtered.length === 0 ? (
-                <div colSpan={3} className="text-center text-muted-foreground mt-10">Nenhum contrato encontrado.</div>
+                <div className="col-span-full flex flex-col items-center justify-center py-20 text-muted-foreground gap-3">
+                  <FileSignature size={40} className="opacity-30" />
+                  <p className="text-sm">Nenhum contrato encontrado. Crie o primeiro modelo acima.</p>
+                </div>
              ) : (
                 filtered.map(tpl => (
                    <div key={tpl.id} className="border rounded-2xl p-5 hover:border-vj-green/50 transition-colors flex flex-col justify-between h-[200px] shadow-sm">

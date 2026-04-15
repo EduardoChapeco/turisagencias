@@ -2080,6 +2080,7 @@ export type Database = {
       }
       trips: {
         Row: {
+          airline: string | null
           assigned_agent_id: string | null
           created_at: string
           created_by: string | null
@@ -2087,19 +2088,30 @@ export type Database = {
           destination: string | null
           destination_city: string | null
           destination_country: string | null
+          flight_number: string | null
           hotel_name: string | null
           hotel_regime: string | null
           id: string
+          insurance_company: string | null
+          insurance_policy: string | null
+          itinerary_id: string | null
+          locator_code: string | null
+          meal_plan: string | null
           notes: string | null
           notes_internal: string | null
+          num_nights: number | null
           org_id: string
+          pax_count: number | null
           primary_client_id: string | null
           return_date: string | null
+          room_type: string | null
           status: string
           title: string | null
+          total_value: number | null
           updated_at: string
         }
         Insert: {
+          airline?: string | null
           assigned_agent_id?: string | null
           created_at?: string
           created_by?: string | null
@@ -2107,19 +2119,30 @@ export type Database = {
           destination?: string | null
           destination_city?: string | null
           destination_country?: string | null
+          flight_number?: string | null
           hotel_name?: string | null
           hotel_regime?: string | null
           id?: string
+          insurance_company?: string | null
+          insurance_policy?: string | null
+          itinerary_id?: string | null
+          locator_code?: string | null
+          meal_plan?: string | null
           notes?: string | null
           notes_internal?: string | null
+          num_nights?: number | null
           org_id: string
+          pax_count?: number | null
           primary_client_id?: string | null
           return_date?: string | null
+          room_type?: string | null
           status?: string
           title?: string | null
+          total_value?: number | null
           updated_at?: string
         }
         Update: {
+          airline?: string | null
           assigned_agent_id?: string | null
           created_at?: string
           created_by?: string | null
@@ -2127,19 +2150,36 @@ export type Database = {
           destination?: string | null
           destination_city?: string | null
           destination_country?: string | null
+          flight_number?: string | null
           hotel_name?: string | null
           hotel_regime?: string | null
           id?: string
+          insurance_company?: string | null
+          insurance_policy?: string | null
+          itinerary_id?: string | null
+          locator_code?: string | null
+          meal_plan?: string | null
           notes?: string | null
           notes_internal?: string | null
+          num_nights?: number | null
           org_id?: string
+          pax_count?: number | null
           primary_client_id?: string | null
           return_date?: string | null
+          room_type?: string | null
           status?: string
           title?: string | null
+          total_value?: number | null
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "trips_itinerary_id_fkey"
+            columns: ["itinerary_id"]
+            isOneToOne: false
+            referencedRelation: "itineraries"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "trips_org_id_fkey"
             columns: ["org_id"]

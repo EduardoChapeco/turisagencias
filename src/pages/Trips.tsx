@@ -11,13 +11,13 @@ import {
   Plane, Plus, MapPin, CalendarDays, Users2, Search,
 } from 'lucide-react';
 
-const STATUS_MAP: Record<string, { label: string; variant: 'success' | 'info' | 'warning' | 'neutral' | 'destructive' }> = {
+const STATUS_MAP: Record<string, { label: string; variant: 'success' | 'info' | 'warning' | 'neutral' | 'danger' }> = {
   quoting:   { label: 'Em Cotação',  variant: 'warning' },
   booked:    { label: 'Reservado',   variant: 'info' },
   confirmed: { label: 'Confirmado',  variant: 'success' },
   traveling: { label: 'Em Viagem',   variant: 'info' },
   completed: { label: 'Concluído',   variant: 'neutral' },
-  cancelled: { label: 'Cancelado',   variant: 'destructive' },
+  cancelled: { label: 'Cancelado',   variant: 'danger' },
 };
 
 const fmt = (date: string | null | undefined) =>

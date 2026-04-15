@@ -25,15 +25,16 @@ export default function Suppliers() {
 
   const [formData, setFormData] = useState({
     name: '',
-    type: 'operator' as Supplier['type'],
-    contact_info: '',
-    bank_details: '',
-    default_commission_rate: 0,
+    category: '' as string,
+    contact_name: '',
+    contact_email: '',
+    contact_phone: '',
+    notes: '',
   });
 
   const handleOpenNew = () => {
     setEditingSupplier(null);
-    setFormData({ name: '', type: 'operator', contact_info: '', bank_details: '', default_commission_rate: 0 });
+    setFormData({ name: '', category: '', contact_name: '', contact_email: '', contact_phone: '', notes: '' });
     setIsDialogOpen(true);
   };
 
@@ -41,10 +42,11 @@ export default function Suppliers() {
     setEditingSupplier(sup);
     setFormData({
       name: sup.name,
-      type: sup.type,
-      contact_info: sup.contact_info || '',
-      bank_details: sup.bank_details || '',
-      default_commission_rate: sup.default_commission_rate,
+      category: sup.category || '',
+      contact_name: sup.contact_name || '',
+      contact_email: sup.contact_email || '',
+      contact_phone: sup.contact_phone || '',
+      notes: sup.notes || '',
     });
     setIsDialogOpen(true);
   };
@@ -52,9 +54,9 @@ export default function Suppliers() {
   const handleSubmit = async () => {
     if (!formData.name) return;
     if (editingSupplier) {
-      await updateSupplier.mutateAsync({ id: editingSupplier.id, ...formData });
+      await updateSupplier.mutateAsync({ id: editingSupplier.id, ...formData } as any);
     } else {
-      await createSupplier.mutateAsync({ org_id: profile!.org_id!, ...formData });
+      await createSupplier.mutateAsync({ org_id: profile!.org_id!, ...formData } as any);
     }
     setIsDialogOpen(false);
   };
@@ -110,9 +112,9 @@ export default function Suppliers() {
                   filtered.map(sup => (
                     <tr key={sup.id} className="border-b last:border-0 hover:bg-muted/50 transition-colors">
                       <td className="px-4 py-3 font-medium">{sup.name}</td>
-                      <td className="px-4 py-3 capitalize">{sup.type === 'insurance' ? 'Seguro' : sup.type}</td>
-                      <td className="px-4 py-3">{sup.default_commission_rate}%</td>
-                      <td className="px-4 py-3 text-muted-foreground max-w-[200px] truncate">{sup.contact_info || '-'}</td>
+                      <td className="px-4 py-3 capitalize">{sup.category || '-'}</td>
+                      <td className="px-4 py-3">-</td>
+                      <td className="px-4 py-3 text-muted-foreground max-w-[200px] truncate">{sup.contact_email || sup.contact_phone || '-'}</td>
                       <td className="px-4 py-3 text-right">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
@@ -154,28 +156,23 @@ export default function Suppliers() {
             </div>
             <div className="grid gap-2">
               <Label>Categoria</Label>
-              <Select value={formData.type} onValueChange={(v: any) => setFormData({...formData, type: v})}>
-                <SelectTrigger className="rounded-xl"><SelectValue /></SelectTrigger>
-                <SelectContent className="rounded-xl">
-                  <SelectItem value="operator">Operadora Turística</SelectItem>
-                  <SelectItem value="hotel">Hotel / Acomodação</SelectItem>
-                  <SelectItem value="airline">Cia Aérea</SelectItem>
-                  <SelectItem value="insurance">Seguro Viagem</SelectItem>
-                  <SelectItem value="other">Outros Locais</SelectItem>
-                </SelectContent>
-              </Select>
+              <Input value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})} placeholder="Ex: Operadora, Hotel, Seguro..." className="rounded-xl" />
             </div>
             <div className="grid gap-2">
-              <Label>Comissão Oculta (Padrão %)</Label>
-              <Input type="number" min="0" max="100" value={formData.default_commission_rate} onChange={e => setFormData({...formData, default_commission_rate: Number(e.target.value)})} className="rounded-xl" />
+              <Label>Nome do Contato</Label>
+              <Input value={formData.contact_name} onChange={e => setFormData({...formData, contact_name: e.target.value})} className="rounded-xl" />
             </div>
             <div className="grid gap-2">
-              <Label>Infos de Contato</Label>
-              <Input value={formData.contact_info} placeholder="Email, telefone de reservas..." onChange={e => setFormData({...formData, contact_info: e.target.value})} className="rounded-xl" />
+              <Label>Email do Contato</Label>
+              <Input value={formData.contact_email} onChange={e => setFormData({...formData, contact_email: e.target.value})} className="rounded-xl" />
             </div>
             <div className="grid gap-2">
-              <Label>Dados Bancários (Confidencial)</Label>
-              <Input value={formData.bank_details} placeholder="PIX ou Chave Bancária" onChange={e => setFormData({...formData, bank_details: e.target.value})} className="rounded-xl" />
+              <Label>Telefone do Contato</Label>
+              <Input value={formData.contact_phone} onChange={e => setFormData({...formData, contact_phone: e.target.value})} className="rounded-xl" />
+            </div>
+            <div className="grid gap-2">
+              <Label>Notas</Label>
+              <Input value={formData.notes} onChange={e => setFormData({...formData, notes: e.target.value})} placeholder="Observações sobre o fornecedor..." className="rounded-xl" />
             </div>
           </div>
           <DialogFooter>

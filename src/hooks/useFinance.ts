@@ -8,10 +8,14 @@ export type Supplier = {
   id: string;
   org_id: string;
   name: string;
-  type: 'hotel' | 'insurance' | 'airline' | 'operator' | 'other';
-  contact_info: string | null;
-  bank_details: string | null;
-  default_commission_rate: number;
+  category: string | null;
+  contact_name: string | null;
+  contact_email: string | null;
+  contact_phone: string | null;
+  notes: string | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
 };
 
 export const useSuppliers = (orgId: string | undefined) => {
@@ -88,13 +92,18 @@ export type Transaction = {
   trip_id: string | null;
   client_id: string | null;
   supplier_id: string | null;
-  type: 'receivable' | 'payable';
-  status: 'pending' | 'paid' | 'overdue' | 'canceled';
+  type: string;
+  status: string;
   amount: number;
-  due_date: string;
-  paid_date: string | null;
+  currency: string;
+  category: string | null;
+  due_date: string | null;
+  paid_at: string | null;
   payment_method: string | null;
-  notes: string | null;
+  description: string | null;
+  reference_number: string | null;
+  created_at: string;
+  updated_at: string;
   suppliers?: { name: string } | null;
   clients?: { name: string } | null;
   trips?: { title: string } | null;
@@ -130,8 +139,8 @@ export const useTransactions = (orgId: string | undefined, filters?: { type?: 'r
 export const useCreateTransaction = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (payload: Omit<Transaction, 'id' | 'org_id' | 'suppliers' | 'clients' | 'trips'> & { org_id: string }) => {
-      const { data, error } = await supabase.from('financial_transactions').insert(payload).select().single();
+    mutationFn: async (payload: Omit<Transaction, 'id' | 'org_id' | 'suppliers' | 'clients' | 'trips' | 'created_at' | 'updated_at'> & { org_id: string }) => {
+      const { data, error } = await supabase.from('financial_transactions').insert(payload as any).select().single();
       if (error) throw error;
       return data;
     },
@@ -146,7 +155,8 @@ export const useUpdateTransaction = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, ...payload }: Partial<Transaction> & { id: string }) => {
-      const { data, error } = await supabase.from('financial_transactions').update(payload).eq('id', id).select().single();
+      const { clients, suppliers, trips, ...dbPayload } = payload as any;
+      const { data, error } = await supabase.from('financial_transactions').update(dbPayload).eq('id', id).select().single();
       if (error) throw error;
       return data;
     },

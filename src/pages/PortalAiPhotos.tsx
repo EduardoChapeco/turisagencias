@@ -8,7 +8,7 @@ import { Image as ImageIcon, Upload, Loader2, Sparkles, Download, ArrowRight } f
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { motion } from 'framer-motion';
+const motion = { div: 'div' as any }; // framer-motion placeholder
 
 const AI_STYLES = [
   { id: 'pixel_art', name: 'Pixel Art', desc: 'Estilo retro 8-bits' },

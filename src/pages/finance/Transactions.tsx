@@ -24,7 +24,7 @@ export default function Transactions() {
     status: 'pending' as Transaction['status'],
     amount: 0,
     due_date: '',
-    notes: '',
+    description: '',
     payment_method: '',
   });
 
@@ -36,10 +36,10 @@ export default function Transactions() {
       client_id: null,
       supplier_id: null,
       ...formData,
-      paid_date: null,
-    });
+      paid_at: null,
+    } as any);
     setIsDialogOpen(false);
-    setFormData({ type: 'receivable', status: 'pending', amount: 0, due_date: '', notes: '', payment_method: '' });
+    setFormData({ type: 'receivable', status: 'pending', amount: 0, due_date: '', description: '', payment_method: '' });
   };
 
   if (isLoading) return <AppLayout><PageSkeleton /></AppLayout>;
@@ -135,7 +135,7 @@ export default function Transactions() {
                          </Badge>
                       </td>
                       <td className="px-4 py-3">
-                         {t.type === 'receivable' ? t.clients?.name || '-' : t.suppliers?.name || t.notes || '-'}
+                         {t.type === 'receivable' ? t.clients?.name || '-' : t.suppliers?.name || t.description || '-'}
                       </td>
                       <td className="px-4 py-3 text-muted-foreground truncate max-w-[200px]">
                          {t.trips?.title || '-'}
@@ -196,7 +196,7 @@ export default function Transactions() {
           </div>
           <div className="grid gap-2">
             <Label>Observação (opcional)</Label>
-            <Input value={formData.notes} onChange={e => setFormData({...formData, notes: e.target.value})} className="rounded-xl" placeholder="Ex: Pagamento parcela 1/3 viagem..." />
+            <Input value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} className="rounded-xl" placeholder="Ex: Pagamento parcela 1/3 viagem..." />
           </div>
         </div>
         <DialogFooter>

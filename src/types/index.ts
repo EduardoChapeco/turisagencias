@@ -65,7 +65,7 @@ export type TripFormValues = Omit<
 export type HotelFormValues = Omit<
   TablesInsert<'hotels_bank'>,
   'id' | 'org_id' | 'created_at' | 'updated_at'
-} & {
+> & {
   gallery_urls?: string[];
   sections?: HotelSection[];
   video_url?: string | null;

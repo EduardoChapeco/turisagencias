@@ -46,8 +46,8 @@ export default function PublicItinerary() {
         .eq('id', itin.org_id)
         .maybeSingle();
 
-      // Increment view_count via SECURITY DEFINER function (safe for anon users)
-      supabase.rpc('increment_itinerary_view', { p_token: token! }).then(() => {});
+      // Increment view_count (best effort, ignore if RPC doesn't exist)
+      supabase.rpc('increment_itinerary_view' as any, { p_token: token! }).then(() => {});
 
       return { ...itin, stops: stops || [], org };
     },
@@ -117,7 +117,7 @@ export default function PublicItinerary() {
     
     setIsSubmitting(true);
     try {
-      const { error } = await supabase.from('itinerary_leads').insert({
+      const { error } = await supabase.from('itinerary_leads' as any).insert({
         itinerary_id: itinerary.id,
         org_id: itinerary.org_id,
         name: formData.name,
@@ -125,7 +125,7 @@ export default function PublicItinerary() {
         whatsapp: formData.whatsapp,
         action: itinerary.is_group_itinerary ? 'group_interest' : 'general_interest',
         utm_source: token
-      });
+      } as any);
       
       if (error) throw error;
       

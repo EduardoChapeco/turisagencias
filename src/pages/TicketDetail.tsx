@@ -44,11 +44,6 @@ export default function TicketDetail() {
           <div className="min-w-0">
             <h1 className="truncate font-heading text-2xl font-bold flex items-center gap-2">
                {ticket.title}
-               {ticket.ticket_code && (
-                  <span className="text-sm border border-vj-border bg-gray-50 text-gray-500 px-2 py-0.5 rounded-md font-mono select-all" title="Ticket Code para vinculo por email">
-                     [{ticket.ticket_code}]
-                  </span>
-               )}
             </h1>
             <p className="text-sm text-muted-foreground">{ticket.description}</p>
           </div>
@@ -71,21 +66,15 @@ export default function TicketDetail() {
 
         {/* --- Unified Timeline Builder --- */}
         {(() => {
-          // Flatten messages & emails
-          const msgs = (ticket.ticket_messages || []).map((m: Record<string, unknown>) => ({
+          // Flatten messages
+          const msgs = ((ticket as any).ticket_messages || []).map((m: Record<string, unknown>) => ({
              _type: 'msg',
-             id: m.id,
-             date: new Date(m.created_at),
+             id: m.id as string,
+             date: new Date(m.created_at as string),
              original: m
           }));
-          const emails = (ticket.email_messages || []).map((e: Record<string, unknown>) => ({
-             _type: 'email',
-             id: e.id,
-             date: new Date(e.received_at || e.created_at),
-             original: e
-          }));
 
-          const timeline = [...msgs, ...emails].sort((a, b) => a.date.getTime() - b.date.getTime());
+          const timeline = [...msgs].sort((a: any, b: any) => a.date.getTime() - b.date.getTime());
           
           return (
 

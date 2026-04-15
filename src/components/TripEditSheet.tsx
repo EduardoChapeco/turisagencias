@@ -107,7 +107,7 @@ export function TripEditSheet({ trip, open, onClose, onSuccess }: TripEditSheetP
       departure_date: form.departure_date || null,
       return_date: form.return_date || null,
       num_nights: form.num_nights !== '' ? Number(form.num_nights) : null,
-      pax_count: form.pax_count !== '' ? Number(form.pax_count) : null,
+      pax_count: form.pax_count != null && form.pax_count !== '' ? Number(form.pax_count) : null,
       hotel_name: form.hotel_name || null,
       hotel_regime: form.hotel_regime || null,
       meal_plan: form.meal_plan || null,

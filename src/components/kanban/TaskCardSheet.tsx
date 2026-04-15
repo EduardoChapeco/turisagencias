@@ -52,12 +52,10 @@ export function TaskCardSheet({ card, isOpen, onClose, onDeleted }: Props) {
       id: card.id,
       title: form.title,
       description: form.description,
-      task_type: form.task_type,
-      priority: form.priority,
-      due_date: form.due_date ? new Date(form.due_date).toISOString() : null,
       client_id: form.client_id || null,
       trip_id: form.trip_id || null,
-    });
+      metadata: { task_type: form.task_type, priority: form.priority, due_date: form.due_date || null },
+    } as any);
     onClose();
   };
 
@@ -70,7 +68,7 @@ export function TaskCardSheet({ card, isOpen, onClose, onDeleted }: Props) {
   };
 
   return (
-    <SheetPage isOpen={isOpen} onClose={onClose} title="Detalhes da Tarefa">
+    <SheetPage open={isOpen} onClose={onClose} title="Detalhes da Tarefa">
       <div className="space-y-6 p-1">
         <div className="space-y-4">
           <div>

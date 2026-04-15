@@ -650,6 +650,221 @@ export type Database = {
           },
         ]
       }
+      itineraries: {
+        Row: {
+          ai_generated: boolean | null
+          ai_prompt_used: string | null
+          cover_emoji: string | null
+          cover_image_url: string | null
+          created_at: string
+          created_by: string | null
+          current_pax: number | null
+          departure_date: string | null
+          destination: string | null
+          destination_lat: number | null
+          destination_lng: number | null
+          excludes_text: string[] | null
+          group_name: string | null
+          id: string
+          important_notes: string | null
+          includes_text: string[] | null
+          is_group_itinerary: boolean
+          is_public: boolean
+          lead_count: number | null
+          max_pax: number | null
+          num_days: number | null
+          org_id: string
+          origin: string | null
+          pdf_requires_lead: boolean | null
+          pdf_url: string | null
+          public_token: string
+          quotation_id: string | null
+          return_date: string | null
+          share_count: number | null
+          status: string
+          subtitle: string | null
+          title: string
+          updated_at: string
+          view_count: number | null
+        }
+        Insert: {
+          ai_generated?: boolean | null
+          ai_prompt_used?: string | null
+          cover_emoji?: string | null
+          cover_image_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          current_pax?: number | null
+          departure_date?: string | null
+          destination?: string | null
+          destination_lat?: number | null
+          destination_lng?: number | null
+          excludes_text?: string[] | null
+          group_name?: string | null
+          id?: string
+          important_notes?: string | null
+          includes_text?: string[] | null
+          is_group_itinerary?: boolean
+          is_public?: boolean
+          lead_count?: number | null
+          max_pax?: number | null
+          num_days?: number | null
+          org_id: string
+          origin?: string | null
+          pdf_requires_lead?: boolean | null
+          pdf_url?: string | null
+          public_token?: string
+          quotation_id?: string | null
+          return_date?: string | null
+          share_count?: number | null
+          status?: string
+          subtitle?: string | null
+          title?: string
+          updated_at?: string
+          view_count?: number | null
+        }
+        Update: {
+          ai_generated?: boolean | null
+          ai_prompt_used?: string | null
+          cover_emoji?: string | null
+          cover_image_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          current_pax?: number | null
+          departure_date?: string | null
+          destination?: string | null
+          destination_lat?: number | null
+          destination_lng?: number | null
+          excludes_text?: string[] | null
+          group_name?: string | null
+          id?: string
+          important_notes?: string | null
+          includes_text?: string[] | null
+          is_group_itinerary?: boolean
+          is_public?: boolean
+          lead_count?: number | null
+          max_pax?: number | null
+          num_days?: number | null
+          org_id?: string
+          origin?: string | null
+          pdf_requires_lead?: boolean | null
+          pdf_url?: string | null
+          public_token?: string
+          quotation_id?: string | null
+          return_date?: string | null
+          share_count?: number | null
+          status?: string
+          subtitle?: string | null
+          title?: string
+          updated_at?: string
+          view_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "itineraries_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "itineraries_quotation_id_fkey"
+            columns: ["quotation_id"]
+            isOneToOne: false
+            referencedRelation: "quotations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      itinerary_stops: {
+        Row: {
+          address: string | null
+          category: string | null
+          city: string | null
+          country: string | null
+          created_at: string
+          day_number: number
+          description: string | null
+          destination_id: string | null
+          duration_minutes: number | null
+          emoji: string | null
+          experience_id: string | null
+          hotel_id: string | null
+          id: string
+          is_optional: boolean | null
+          itinerary_id: string
+          lat: number | null
+          lng: number | null
+          name: string
+          photo_url: string | null
+          position: number
+          rating: number | null
+          stop_type: string | null
+          time_start: string | null
+          tips: string[] | null
+        }
+        Insert: {
+          address?: string | null
+          category?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          day_number?: number
+          description?: string | null
+          destination_id?: string | null
+          duration_minutes?: number | null
+          emoji?: string | null
+          experience_id?: string | null
+          hotel_id?: string | null
+          id?: string
+          is_optional?: boolean | null
+          itinerary_id: string
+          lat?: number | null
+          lng?: number | null
+          name: string
+          photo_url?: string | null
+          position?: number
+          rating?: number | null
+          stop_type?: string | null
+          time_start?: string | null
+          tips?: string[] | null
+        }
+        Update: {
+          address?: string | null
+          category?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          day_number?: number
+          description?: string | null
+          destination_id?: string | null
+          duration_minutes?: number | null
+          emoji?: string | null
+          experience_id?: string | null
+          hotel_id?: string | null
+          id?: string
+          is_optional?: boolean | null
+          itinerary_id?: string
+          lat?: number | null
+          lng?: number | null
+          name?: string
+          photo_url?: string | null
+          position?: number
+          rating?: number | null
+          stop_type?: string | null
+          time_start?: string | null
+          tips?: string[] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "itinerary_stops_itinerary_id_fkey"
+            columns: ["itinerary_id"]
+            isOneToOne: false
+            referencedRelation: "itineraries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       kanban_boards: {
         Row: {
           board_type: string | null

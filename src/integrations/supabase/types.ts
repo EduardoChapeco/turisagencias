@@ -1526,6 +1526,53 @@ export type Database = {
           },
         ]
       }
+      team_members: {
+        Row: {
+          commission_rate: number
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          org_id: string
+          role: string
+          status: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          commission_rate?: number
+          created_at?: string
+          email: string
+          full_name?: string
+          id?: string
+          org_id: string
+          role?: string
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          commission_rate?: number
+          created_at?: string
+          email?: string
+          full_name?: string
+          id?: string
+          org_id?: string
+          role?: string
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_members_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ticket_messages: {
         Row: {
           body: string

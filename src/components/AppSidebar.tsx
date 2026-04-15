@@ -17,7 +17,8 @@ import {
   Bell,
   Map,
   FileSignature,
-  Bot
+  Bot,
+  UserPlus
 } from 'lucide-react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -52,6 +53,7 @@ const navGroups: NavGroup[] = [
   {
     title: 'Operacional & Gestão',
     items: [
+      { title: 'Gestão da Equipe', url: '/team',              icon: Users },
       { title: 'Tarefas do Dia', url: '/kanban/tasks',      icon: KanbanSquare },
       { title: 'Viagens',        url: '/trips',             icon: Plane },
       { title: 'Roteiros',       url: '/itineraries',       icon: Map },

@@ -60,6 +60,7 @@ const Suppliers = lazy(() => import('./pages/finance/Suppliers'));
 const Transactions = lazy(() => import('./pages/finance/Transactions'));
 const ContractTemplates = lazy(() => import('./pages/legal/ContractTemplates'));
 const Automations = lazy(() => import('./pages/automations/Automations'));
+const Team = lazy(() => import('./pages/admin/Team'));
 
 const PublicTravelerForm = lazy(() => import('./pages/PublicTravelerForm'));
 const PublicQuotation = lazy(() => import('./pages/PublicQuotation'));
@@ -165,6 +166,7 @@ const App = () => (
               <Route path="/finance/transactions" element={<ProtectedRoute><Transactions /></ProtectedRoute>} />
               <Route path="/legal/contracts" element={<ProtectedRoute><ContractTemplates /></ProtectedRoute>} />
               <Route path="/automations" element={<ProtectedRoute><Automations /></ProtectedRoute>} />
+              <Route path="/team" element={<ProtectedRoute><Team /></ProtectedRoute>} />
 
               {/* CRM Legacy */}
               <Route path="/guides" element={<ProtectedWithOrg><TripsRole><Guides /></TripsRole></ProtectedWithOrg>} />

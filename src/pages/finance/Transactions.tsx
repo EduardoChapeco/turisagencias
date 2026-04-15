@@ -36,10 +36,10 @@ export default function Transactions() {
       client_id: null,
       supplier_id: null,
       ...formData,
-      paid_date: null,
-    });
+      paid_at: null,
+    } as any);
     setIsDialogOpen(false);
-    setFormData({ type: 'receivable', status: 'pending', amount: 0, due_date: '', notes: '', payment_method: '' });
+    setFormData({ type: 'receivable', status: 'pending', amount: 0, due_date: '', description: '', payment_method: '' });
   };
 
   if (isLoading) return <AppLayout><PageSkeleton /></AppLayout>;

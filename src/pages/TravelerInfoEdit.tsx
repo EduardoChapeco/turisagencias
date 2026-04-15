@@ -178,7 +178,7 @@ export function TravelerInfoEdit({ id, open, onClose, onSuccess }: TravelerInfoE
                         {block.type === 'text' && (
                           <div className="space-y-2 pt-2">
                             <Label className="text-xs text-vj-txt3 font-bold uppercase tracking-wide">Bloco de Texto</Label>
-                            <Textarea value={block.content} onChange={e => updateBlock(i, e.target.value)} placeholder="Escreva o texto aqui..." className="min-h-[120px] resize-y" />
+                            <Textarea value={block.content as string} onChange={e => updateBlock(i, e.target.value)} placeholder="Escreva o texto aqui..." className="min-h-[120px] resize-y" />
                           </div>
                         )}
                         {block.type === 'alert' && (
@@ -186,8 +186,8 @@ export function TravelerInfoEdit({ id, open, onClose, onSuccess }: TravelerInfoE
                             <div className="flex items-center justify-between">
                               <Label className="text-xs text-vj-txt3 font-bold uppercase tracking-wide">Caixa de Alerta</Label>
                               <select 
-                                value={block.content?.style || 'neutral'} 
-                                onChange={e => updateBlock(i, { ...block.content, style: e.target.value })}
+                                value={(block.content as any)?.style || 'neutral'} 
+                                onChange={e => updateBlock(i, { ...(block.content as any), style: e.target.value } as any)}
                                 className="text-xs border border-vj-border bg-vj-bg rounded px-2 py-1 outline-none"
                               >
                                 <option value="neutral">Nota (Neutro)</option>
@@ -196,13 +196,13 @@ export function TravelerInfoEdit({ id, open, onClose, onSuccess }: TravelerInfoE
                                 <option value="success">Dica (Verde)</option>
                               </select>
                             </div>
-                            <Textarea value={block.content?.text || ''} onChange={e => updateBlock(i, { ...block.content, text: e.target.value })} placeholder="Texto do alerta..." className="h-20" />
+                            <Textarea value={(block.content as any)?.text || ''} onChange={e => updateBlock(i, { ...(block.content as any), text: e.target.value } as any)} placeholder="Texto do alerta..." className="h-20" />
                           </div>
                         )}
                         {block.type === 'image' && (
                           <div className="space-y-2 pt-2">
                             <Label className="text-xs text-vj-txt3 font-bold uppercase tracking-wide">Link da Imagem</Label>
-                            <Input value={block.content} onChange={e => updateBlock(i, e.target.value)} placeholder="https://..." />
+                            <Input value={block.content as string} onChange={e => updateBlock(i, e.target.value)} placeholder="https://..." />
                           </div>
                         )}
                       </div>

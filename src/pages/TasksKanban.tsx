@@ -38,8 +38,7 @@ function QuickAddForm({ boardId, columnId, onCancel }: { boardId: string; column
       board_id: boardId, 
       column_id: columnId, 
       title: title.trim(),
-      assigned_to: user?.id 
-    });
+    } as any);
     setTitle('');
     onCancel();
   };
@@ -137,7 +136,7 @@ export default function TasksKanban() {
       }
 
       const list = byColumn.get(card.column_id) ?? [];
-      list.push(card as TaskCardData);
+      list.push(card as unknown as TaskCardData);
       byColumn.set(card.column_id, list);
     });
     return byColumn;

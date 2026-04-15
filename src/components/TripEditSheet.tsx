@@ -52,7 +52,7 @@ export function TripEditSheet({ trip, open, onClose, onSuccess }: TripEditSheetP
     departure_date: str(trip.departure_date),
     return_date: str(trip.return_date),
     num_nights: num(trip.num_nights) ?? '',
-    pax_count: num(trip.pax_count) ?? 1,
+    pax_count: num(trip.pax_count) ?? '',
     hotel_name: str(trip.hotel_name),
     hotel_regime: str(trip.hotel_regime),
     meal_plan: str(trip.meal_plan),

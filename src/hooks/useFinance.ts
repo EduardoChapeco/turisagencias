@@ -139,8 +139,8 @@ export const useTransactions = (orgId: string | undefined, filters?: { type?: 'r
 export const useCreateTransaction = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (payload: Omit<Transaction, 'id' | 'org_id' | 'suppliers' | 'clients' | 'trips'> & { org_id: string }) => {
-      const { data, error } = await supabase.from('financial_transactions').insert(payload).select().single();
+    mutationFn: async (payload: Omit<Transaction, 'id' | 'org_id' | 'suppliers' | 'clients' | 'trips' | 'created_at' | 'updated_at'> & { org_id: string }) => {
+      const { data, error } = await supabase.from('financial_transactions').insert(payload as any).select().single();
       if (error) throw error;
       return data;
     },
@@ -155,7 +155,8 @@ export const useUpdateTransaction = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, ...payload }: Partial<Transaction> & { id: string }) => {
-      const { data, error } = await supabase.from('financial_transactions').update(payload).eq('id', id).select().single();
+      const { clients, suppliers, trips, ...dbPayload } = payload as any;
+      const { data, error } = await supabase.from('financial_transactions').update(dbPayload).eq('id', id).select().single();
       if (error) throw error;
       return data;
     },

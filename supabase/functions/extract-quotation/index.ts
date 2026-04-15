@@ -220,8 +220,8 @@ serve(async (req) => {
     if (claimsError || !claimsData?.claims?.sub) throw new Error("Unauthorized");
     const userId = claimsData.claims.sub as string;
 
-    // Service-role client for inserts (bypasses RLS for sub-table writes)
-    const adminClient = createClient(supabaseUrl, supabaseServiceKey);
+    // Service-role key available for future sub-table writes
+    const _serviceKey = supabaseServiceKey;
 
     const { imageBase64, text, client_id, org_id, agent_id, source_file_url } = await req.json();
 
@@ -286,12 +286,22 @@ serve(async (req) => {
       const errorBody = await response.text();
       console.error(`AI API error (${aiConfig.provider}):`, response.status, errorBody);
       
+      if (response.status === 400) {
+        return new Response(JSON.stringify({ error: "Não foi possível processar o arquivo enviado. Tente com uma imagem mais nítida, em formato JPEG/PNG, ou cole o texto manualmente." }), {
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      if (response.status === 402) {
+        return new Response(JSON.stringify({ error: "Créditos insuficientes na chave de IA configurada. Verifique seu saldo no provedor ou adicione outra chave no Pool de IA." }), {
+          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
       if (response.status === 429) {
         return new Response(JSON.stringify({ error: "Rate limit atingido. Tente novamente em instantes ou cadastre mais chaves no Pool de IA." }), {
           status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      throw new Error(`AI gateway error: ${response.status} - ${errorBody.slice(0, 200)}`);
+      throw new Error(`Erro da IA (${response.status}): ${errorBody.slice(0, 200)}`);
     }
 
     const aiResult = await response.json();

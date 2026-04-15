@@ -223,7 +223,7 @@ serve(async (req) => {
     // Service-role key available for future sub-table writes
     const _serviceKey = supabaseServiceKey;
 
-    const { imageBase64, text, client_id, org_id, agent_id, source_file_url } = await req.json();
+    const { imageBase64, mimeType, text, client_id, org_id, agent_id, source_file_url } = await req.json();
 
     if (!imageBase64 && !text) {
       return new Response(JSON.stringify({ error: "No image or text provided" }), {
@@ -241,13 +241,23 @@ serve(async (req) => {
     const messages: any[] = [{ role: "system", content: SYSTEM_PROMPT }];
 
     if (imageBase64) {
-      const mimeType = imageBase64.startsWith('/9j/') ? 'image/jpeg' : 
-                       imageBase64.startsWith('iVBOR') ? 'image/png' : 'image/jpeg';
+      // Detect MIME type: use provided mimeType, or infer from base64 header
+      const detectedMime = mimeType || (
+        imageBase64.startsWith('JVBERi0') ? 'application/pdf' :
+        imageBase64.startsWith('/9j/') ? 'image/jpeg' : 
+        imageBase64.startsWith('iVBOR') ? 'image/png' : 'image/jpeg'
+      );
+      
+      const isPdf = detectedMime === 'application/pdf';
+      console.log(`[extract-quotation] File type: ${detectedMime}, isPdf: ${isPdf}, base64 length: ${imageBase64.length}`);
+
       messages.push({
         role: "user",
         content: [
-          { type: "text", text: text ? `${text}\n\nExtract from this document:` : "Extract all quotation data from this document:" },
-          { type: "image_url", image_url: { url: `data:${mimeType};base64,${imageBase64}`, detail: "high" } },
+          { type: "text", text: text 
+            ? `${text}\n\nExtract ALL quotation data from this ${isPdf ? 'PDF' : 'image'} document. Analyze every page carefully:` 
+            : `Extract ALL quotation data from this ${isPdf ? 'PDF' : 'image'} document. Analyze every page carefully:` },
+          { type: "image_url", image_url: { url: `data:${detectedMime};base64,${imageBase64}`, detail: "high" } },
         ],
       });
     } else {

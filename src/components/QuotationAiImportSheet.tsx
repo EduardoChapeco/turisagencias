@@ -117,6 +117,7 @@ export function QuotationAiImportSheet({ open, onClose, onSuccess }: QuotationAi
 
       const payload = {
         imageBase64,
+        mimeType: file?.type || undefined,
         text: additionalText || undefined,
         org_id: organization?.id,
         agent_id: profile?.id,

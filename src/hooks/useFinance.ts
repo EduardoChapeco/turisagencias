@@ -8,10 +8,14 @@ export type Supplier = {
   id: string;
   org_id: string;
   name: string;
-  type: 'hotel' | 'insurance' | 'airline' | 'operator' | 'other';
-  contact_info: string | null;
-  bank_details: string | null;
-  default_commission_rate: number;
+  category: string | null;
+  contact_name: string | null;
+  contact_email: string | null;
+  contact_phone: string | null;
+  notes: string | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
 };
 
 export const useSuppliers = (orgId: string | undefined) => {

@@ -22,7 +22,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 
-const STATUS_MAP: Record<string, { label: string; variant: 'success' | 'info' | 'warning' | 'neutral' | 'destructive' }> = {
+const STATUS_MAP: Record<string, { label: string; variant: 'success' | 'info' | 'warning' | 'neutral' | 'danger' }> = {
   quoting:   { label: 'Em Cotação',  variant: 'warning' },
   booked:    { label: 'Reservado',   variant: 'info' },
   confirmed: { label: 'Confirmado',  variant: 'success' },

@@ -25,15 +25,16 @@ export default function Suppliers() {
 
   const [formData, setFormData] = useState({
     name: '',
-    type: 'operator' as Supplier['type'],
-    contact_info: '',
-    bank_details: '',
-    default_commission_rate: 0,
+    category: '' as string,
+    contact_name: '',
+    contact_email: '',
+    contact_phone: '',
+    notes: '',
   });
 
   const handleOpenNew = () => {
     setEditingSupplier(null);
-    setFormData({ name: '', type: 'operator', contact_info: '', bank_details: '', default_commission_rate: 0 });
+    setFormData({ name: '', category: '', contact_name: '', contact_email: '', contact_phone: '', notes: '' });
     setIsDialogOpen(true);
   };
 
@@ -41,10 +42,11 @@ export default function Suppliers() {
     setEditingSupplier(sup);
     setFormData({
       name: sup.name,
-      type: sup.type,
-      contact_info: sup.contact_info || '',
-      bank_details: sup.bank_details || '',
-      default_commission_rate: sup.default_commission_rate,
+      category: sup.category || '',
+      contact_name: sup.contact_name || '',
+      contact_email: sup.contact_email || '',
+      contact_phone: sup.contact_phone || '',
+      notes: sup.notes || '',
     });
     setIsDialogOpen(true);
   };

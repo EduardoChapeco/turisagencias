@@ -72,8 +72,8 @@ export function TravelerInfoEdit({ id, open, onClose, onSuccess }: TravelerInfoE
   };
 
   const addBlock = (type: 'text' | 'alert' | 'image') => {
-    const defaultContent = type === 'text' ? '' : type === 'alert' ? { text: '', style: 'neutral' } : '';
-    setForm(p => ({
+    const defaultContent: any = type === 'text' ? '' : type === 'alert' ? { text: '', style: 'neutral' } : '';
+    setForm((p: any) => ({
       ...p,
       content_blocks: [...p.content_blocks, { id: Date.now().toString(), type, content: defaultContent }]
     }));

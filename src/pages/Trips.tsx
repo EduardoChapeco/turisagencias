@@ -11,7 +11,7 @@ import {
   Plane, Plus, MapPin, CalendarDays, Users2, Search,
 } from 'lucide-react';
 
-const STATUS_MAP: Record<string, { label: string; variant: 'success' | 'info' | 'warning' | 'neutral' | 'destructive' }> = {
+const STATUS_MAP: Record<string, { label: string; variant: 'success' | 'info' | 'warning' | 'neutral' | 'danger' }> = {
   quoting:   { label: 'Em Cotação',  variant: 'warning' },
   booked:    { label: 'Reservado',   variant: 'info' },
   confirmed: { label: 'Confirmado',  variant: 'success' },

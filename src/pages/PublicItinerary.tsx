@@ -47,7 +47,7 @@ export default function PublicItinerary() {
         .maybeSingle();
 
       // Increment view_count (best effort, ignore if RPC doesn't exist)
-      supabase.rpc('increment_itinerary_view' as any, { p_token: token! }).then(() => {}).catch(() => {});
+      supabase.rpc('increment_itinerary_view' as any, { p_token: token! }).then(() => {});
 
       return { ...itin, stops: stops || [], org };
     },

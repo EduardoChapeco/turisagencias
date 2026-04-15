@@ -119,7 +119,8 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const { organization, profile } = useAuthStore();
   const { data: stats, isLoading } = useDashboardStats(organization?.id);
-  const { data: activity } = useRecentActivity(organization?.id);
+  const { data: _activity } = useRecentActivity(organization?.id);
+  const { data: financialChartData } = useFinancialChart(organization?.id);
   const { data: upcoming } = useUpcomingTrips(organization?.id);
   
   const [quotationBuilderOpen, setQuotationBuilderOpen] = useState(false);

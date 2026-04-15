@@ -249,6 +249,82 @@ export type Database = {
           },
         ]
       }
+      communication_rules: {
+        Row: {
+          created_at: string
+          event_type: string
+          id: string
+          is_active: boolean
+          org_id: string
+          template_body: string
+          template_subject: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          id?: string
+          is_active?: boolean
+          org_id: string
+          template_body?: string
+          template_subject?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          is_active?: boolean
+          org_id?: string
+          template_body?: string
+          template_subject?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "communication_rules_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contract_templates: {
+        Row: {
+          content_html: string
+          created_at: string
+          id: string
+          name: string
+          org_id: string
+          updated_at: string
+        }
+        Insert: {
+          content_html?: string
+          created_at?: string
+          id?: string
+          name: string
+          org_id: string
+          updated_at?: string
+        }
+        Update: {
+          content_html?: string
+          created_at?: string
+          id?: string
+          name?: string
+          org_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_templates_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       destination_guides: {
         Row: {
           city: string
@@ -361,6 +437,145 @@ export type Database = {
           },
         ]
       }
+      financial_suppliers: {
+        Row: {
+          category: string | null
+          contact_email: string | null
+          contact_name: string | null
+          contact_phone: string | null
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          notes: string | null
+          org_id: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          notes?: string | null
+          org_id: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          notes?: string | null
+          org_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financial_suppliers_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      financial_transactions: {
+        Row: {
+          amount: number
+          category: string | null
+          client_id: string | null
+          created_at: string
+          currency: string
+          description: string | null
+          due_date: string | null
+          id: string
+          org_id: string
+          paid_at: string | null
+          payment_method: string | null
+          reference_number: string | null
+          status: string
+          supplier_id: string | null
+          trip_id: string | null
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          category?: string | null
+          client_id?: string | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          org_id: string
+          paid_at?: string | null
+          payment_method?: string | null
+          reference_number?: string | null
+          status?: string
+          supplier_id?: string | null
+          trip_id?: string | null
+          type?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          category?: string | null
+          client_id?: string | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          org_id?: string
+          paid_at?: string | null
+          payment_method?: string | null
+          reference_number?: string | null
+          status?: string
+          supplier_id?: string | null
+          trip_id?: string | null
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financial_transactions_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financial_transactions_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financial_transactions_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "financial_suppliers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financial_transactions_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       hotels_bank: {
         Row: {
           address: string | null
@@ -437,6 +652,7 @@ export type Database = {
       }
       kanban_boards: {
         Row: {
+          board_type: string | null
           created_at: string
           description: string | null
           id: string
@@ -446,6 +662,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          board_type?: string | null
           created_at?: string
           description?: string | null
           id?: string
@@ -455,6 +672,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          board_type?: string | null
           created_at?: string
           description?: string | null
           id?: string
@@ -481,13 +699,18 @@ export type Database = {
           column_id: string
           created_at: string
           description: string | null
+          due_date: string | null
           email: string | null
           estimated_value: number | null
           id: string
+          linked_card_ids: string[] | null
           metadata: Json | null
           position: number
+          priority: string | null
           quotation_id: string | null
           tags: string[] | null
+          task_type: string | null
+          ticket_id: string | null
           title: string
           trip_id: string | null
           updated_at: string
@@ -500,13 +723,18 @@ export type Database = {
           column_id: string
           created_at?: string
           description?: string | null
+          due_date?: string | null
           email?: string | null
           estimated_value?: number | null
           id?: string
+          linked_card_ids?: string[] | null
           metadata?: Json | null
           position?: number
+          priority?: string | null
           quotation_id?: string | null
           tags?: string[] | null
+          task_type?: string | null
+          ticket_id?: string | null
           title: string
           trip_id?: string | null
           updated_at?: string
@@ -519,13 +747,18 @@ export type Database = {
           column_id?: string
           created_at?: string
           description?: string | null
+          due_date?: string | null
           email?: string | null
           estimated_value?: number | null
           id?: string
+          linked_card_ids?: string[] | null
           metadata?: Json | null
           position?: number
+          priority?: string | null
           quotation_id?: string | null
           tags?: string[] | null
+          task_type?: string | null
+          ticket_id?: string | null
           title?: string
           trip_id?: string | null
           updated_at?: string
@@ -558,6 +791,13 @@ export type Database = {
             columns: ["quotation_id"]
             isOneToOne: false
             referencedRelation: "quotations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "kanban_cards_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "tickets"
             referencedColumns: ["id"]
           },
           {

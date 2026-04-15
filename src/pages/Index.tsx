@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import {
-  FileText, Plane, PlaneTakeoff, TicketCheck, CalendarHeart, Activity,
-  KanbanSquare, Users, Globe2, TrendingUp, AlertTriangle, ArrowRight, DollarSign, ArrowUpRight, ArrowDownRight
+  FileText, Plane, PlaneTakeoff, CalendarHeart,
+  KanbanSquare, ArrowRight, DollarSign, ArrowUpRight, ArrowDownRight
 } from 'lucide-react';
 import { AppLayout } from '@/components/AppLayout';
 import { useAuthStore } from '@/stores/authStore';
@@ -13,16 +13,33 @@ import { QuotationBuilderSheet } from '@/components/QuotationBuilderSheet';
 import { useState } from 'react';
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
-// Simulated Financial Data for the Chart (Real world would group by month)
-const financialChartData = [
-  { month: 'Jan', receivable: 4000, payable: 2400 },
-  { month: 'Fev', receivable: 3000, payable: 1398 },
-  { month: 'Mar', receivable: 2000, payable: 9800 },
-  { month: 'Abr', receivable: 2780, payable: 3908 },
-  { month: 'Mai', receivable: 1890, payable: 4800 },
-  { month: 'Jun', receivable: 2390, payable: 3800 },
-  { month: 'Jul', receivable: 3490, payable: 4300 },
-];
+const MONTH_LABELS = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+
+function useFinancialChart(orgId: string | undefined) {
+  return useQuery({
+    queryKey: ['dashboard-chart', orgId],
+    queryFn: async () => {
+      if (!orgId) return MONTH_LABELS.map(m => ({ month: m, receivable: 0, payable: 0 }));
+      const year = new Date().getFullYear();
+      const { data } = await supabase
+        .from('financial_transactions')
+        .select('amount, type, due_date')
+        .eq('org_id', orgId)
+        .gte('due_date', `${year}-01-01`)
+        .lte('due_date', `${year}-12-31`);
+      const buckets = MONTH_LABELS.map(m => ({ month: m, receivable: 0, payable: 0 }));
+      (data || []).forEach((t: any) => {
+        if (!t.due_date) return;
+        const mi = new Date(t.due_date).getMonth();
+        if (t.type === 'receivable' || t.type === 'income') buckets[mi].receivable += Number(t.amount) || 0;
+        else buckets[mi].payable += Number(t.amount) || 0;
+      });
+      return buckets;
+    },
+    enabled: !!orgId,
+    staleTime: 60_000,
+  });
+}
 
 function useDashboardStats(orgId: string | undefined) {
   return useQuery({
@@ -86,7 +103,7 @@ function useUpcomingTrips(orgId: string | undefined) {
       const in7days = new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0];
       const { data } = await supabase
         .from('trips')
-        .select('id, title, departure_date, destination_city, destination_country, clients(name)')
+        .select('id, title, departure_date, destination_city, destination_country')
         .eq('org_id', orgId)
         .gte('departure_date', today)
         .lte('departure_date', in7days)
@@ -102,7 +119,8 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const { organization, profile } = useAuthStore();
   const { data: stats, isLoading } = useDashboardStats(organization?.id);
-  const { data: activity } = useRecentActivity(organization?.id);
+  const { data: _activity } = useRecentActivity(organization?.id);
+  const { data: financialChartData } = useFinancialChart(organization?.id);
   const { data: upcoming } = useUpcomingTrips(organization?.id);
   
   const [quotationBuilderOpen, setQuotationBuilderOpen] = useState(false);

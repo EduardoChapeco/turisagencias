@@ -55,6 +55,137 @@ export type Database = {
           },
         ]
       }
+      booking_installments: {
+        Row: {
+          amount: number
+          booking_id: string
+          created_at: string
+          due_date: string
+          id: string
+          installment_number: number
+          paid_at: string | null
+          payment_method: string | null
+          reference: string | null
+          status: string
+        }
+        Insert: {
+          amount: number
+          booking_id: string
+          created_at?: string
+          due_date: string
+          id?: string
+          installment_number: number
+          paid_at?: string | null
+          payment_method?: string | null
+          reference?: string | null
+          status?: string
+        }
+        Update: {
+          amount?: number
+          booking_id?: string
+          created_at?: string
+          due_date?: string
+          id?: string
+          installment_number?: number
+          paid_at?: string | null
+          payment_method?: string | null
+          reference?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_installments_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "group_bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bus_layouts: {
+        Row: {
+          cols: number
+          created_at: string
+          id: string
+          name: string
+          notes: string | null
+          org_id: string
+          rows: number
+          seat_map: Json
+          updated_at: string
+          vehicle_type: string
+        }
+        Insert: {
+          cols?: number
+          created_at?: string
+          id?: string
+          name: string
+          notes?: string | null
+          org_id: string
+          rows?: number
+          seat_map?: Json
+          updated_at?: string
+          vehicle_type?: string
+        }
+        Update: {
+          cols?: number
+          created_at?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          org_id?: string
+          rows?: number
+          seat_map?: Json
+          updated_at?: string
+          vehicle_type?: string
+        }
+        Relationships: []
+      }
+      bus_seat_assignments: {
+        Row: {
+          booking_id: string | null
+          created_at: string
+          group_trip_id: string
+          id: string
+          is_blocked: boolean
+          seat_label: string
+          traveler_name: string | null
+        }
+        Insert: {
+          booking_id?: string | null
+          created_at?: string
+          group_trip_id: string
+          id?: string
+          is_blocked?: boolean
+          seat_label: string
+          traveler_name?: string | null
+        }
+        Update: {
+          booking_id?: string | null
+          created_at?: string
+          group_trip_id?: string
+          id?: string
+          is_blocked?: boolean
+          seat_label?: string
+          traveler_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bus_seat_assignments_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "group_bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bus_seat_assignments_group_trip_id_fkey"
+            columns: ["group_trip_id"]
+            isOneToOne: false
+            referencedRelation: "group_trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       checklist_items: {
         Row: {
           checked_at: string | null
@@ -286,6 +417,65 @@ export type Database = {
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contract_signatures: {
+        Row: {
+          booking_id: string
+          contract_html: string
+          created_at: string
+          facial_photo_url: string | null
+          geolocation: Json | null
+          hash_sha256: string
+          id: string
+          org_id: string
+          signed_at: string
+          signer_cpf: string | null
+          signer_email: string | null
+          signer_ip: string | null
+          signer_name: string
+          user_agent: string | null
+        }
+        Insert: {
+          booking_id: string
+          contract_html: string
+          created_at?: string
+          facial_photo_url?: string | null
+          geolocation?: Json | null
+          hash_sha256: string
+          id?: string
+          org_id: string
+          signed_at?: string
+          signer_cpf?: string | null
+          signer_email?: string | null
+          signer_ip?: string | null
+          signer_name: string
+          user_agent?: string | null
+        }
+        Update: {
+          booking_id?: string
+          contract_html?: string
+          created_at?: string
+          facial_photo_url?: string | null
+          geolocation?: Json | null
+          hash_sha256?: string
+          id?: string
+          org_id?: string
+          signed_at?: string
+          signer_cpf?: string | null
+          signer_email?: string | null
+          signer_ip?: string | null
+          signer_name?: string
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_signatures_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "group_bookings"
             referencedColumns: ["id"]
           },
         ]
@@ -572,6 +762,248 @@ export type Database = {
             columns: ["trip_id"]
             isOneToOne: false
             referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      group_bookings: {
+        Row: {
+          client_id: string | null
+          created_at: string
+          group_trip_id: string
+          id: string
+          internal_notes: string | null
+          lead_cpf: string | null
+          lead_email: string | null
+          lead_name: string
+          lead_phone: string | null
+          org_id: string
+          pax_count: number
+          public_token: string
+          seat_numbers: string[] | null
+          status: string
+          total_amount: number
+          updated_at: string
+          voucher_code: string | null
+          voucher_url: string | null
+        }
+        Insert: {
+          client_id?: string | null
+          created_at?: string
+          group_trip_id: string
+          id?: string
+          internal_notes?: string | null
+          lead_cpf?: string | null
+          lead_email?: string | null
+          lead_name: string
+          lead_phone?: string | null
+          org_id: string
+          pax_count?: number
+          public_token?: string
+          seat_numbers?: string[] | null
+          status?: string
+          total_amount?: number
+          updated_at?: string
+          voucher_code?: string | null
+          voucher_url?: string | null
+        }
+        Update: {
+          client_id?: string | null
+          created_at?: string
+          group_trip_id?: string
+          id?: string
+          internal_notes?: string | null
+          lead_cpf?: string | null
+          lead_email?: string | null
+          lead_name?: string
+          lead_phone?: string | null
+          org_id?: string
+          pax_count?: number
+          public_token?: string
+          seat_numbers?: string[] | null
+          status?: string
+          total_amount?: number
+          updated_at?: string
+          voucher_code?: string | null
+          voucher_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_bookings_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_bookings_group_trip_id_fkey"
+            columns: ["group_trip_id"]
+            isOneToOne: false
+            referencedRelation: "group_trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      group_trip_days: {
+        Row: {
+          created_at: string
+          day_number: number
+          description_md: string | null
+          group_trip_id: string
+          highlights: string[] | null
+          id: string
+          media: Json
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          day_number?: number
+          description_md?: string | null
+          group_trip_id: string
+          highlights?: string[] | null
+          id?: string
+          media?: Json
+          title?: string
+        }
+        Update: {
+          created_at?: string
+          day_number?: number
+          description_md?: string | null
+          group_trip_id?: string
+          highlights?: string[] | null
+          id?: string
+          media?: Json
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_trip_days_group_trip_id_fkey"
+            columns: ["group_trip_id"]
+            isOneToOne: false
+            referencedRelation: "group_trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      group_trips: {
+        Row: {
+          booking_count: number
+          bus_layout_id: string | null
+          contract_template_id: string | null
+          cover_image_url: string | null
+          created_at: string
+          created_by: string | null
+          currency: string
+          current_pax: number
+          departure_date: string | null
+          description_md: string | null
+          destination: string | null
+          excludes: string[] | null
+          gallery_urls: string[] | null
+          id: string
+          important_notes: string | null
+          includes: string[] | null
+          installments_count: number
+          is_public: boolean
+          max_pax: number
+          num_days: number | null
+          num_nights: number | null
+          org_id: string
+          origin_city: string | null
+          payment_due_offset_days: number
+          price_per_pax: number
+          return_date: string | null
+          slug: string | null
+          status: string
+          subtitle: string | null
+          title: string
+          transport_type: string | null
+          updated_at: string
+          view_count: number
+        }
+        Insert: {
+          booking_count?: number
+          bus_layout_id?: string | null
+          contract_template_id?: string | null
+          cover_image_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          current_pax?: number
+          departure_date?: string | null
+          description_md?: string | null
+          destination?: string | null
+          excludes?: string[] | null
+          gallery_urls?: string[] | null
+          id?: string
+          important_notes?: string | null
+          includes?: string[] | null
+          installments_count?: number
+          is_public?: boolean
+          max_pax?: number
+          num_days?: number | null
+          num_nights?: number | null
+          org_id: string
+          origin_city?: string | null
+          payment_due_offset_days?: number
+          price_per_pax?: number
+          return_date?: string | null
+          slug?: string | null
+          status?: string
+          subtitle?: string | null
+          title?: string
+          transport_type?: string | null
+          updated_at?: string
+          view_count?: number
+        }
+        Update: {
+          booking_count?: number
+          bus_layout_id?: string | null
+          contract_template_id?: string | null
+          cover_image_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          current_pax?: number
+          departure_date?: string | null
+          description_md?: string | null
+          destination?: string | null
+          excludes?: string[] | null
+          gallery_urls?: string[] | null
+          id?: string
+          important_notes?: string | null
+          includes?: string[] | null
+          installments_count?: number
+          is_public?: boolean
+          max_pax?: number
+          num_days?: number | null
+          num_nights?: number | null
+          org_id?: string
+          origin_city?: string | null
+          payment_due_offset_days?: number
+          price_per_pax?: number
+          return_date?: string | null
+          slug?: string | null
+          status?: string
+          subtitle?: string | null
+          title?: string
+          transport_type?: string | null
+          updated_at?: string
+          view_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_trips_bus_layout_id_fkey"
+            columns: ["bus_layout_id"]
+            isOneToOne: false
+            referencedRelation: "bus_layouts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_trips_contract_template_id_fkey"
+            columns: ["contract_template_id"]
+            isOneToOne: false
+            referencedRelation: "contract_templates"
             referencedColumns: ["id"]
           },
         ]
@@ -2233,6 +2665,10 @@ export type Database = {
         Args: { _org_id: string }
         Returns: undefined
       }
+      generate_booking_installments: {
+        Args: { _booking_id: string }
+        Returns: undefined
+      }
       get_my_org_id: { Args: never; Returns: string }
       get_public_checklist: {
         Args: { _token: string }
@@ -2247,6 +2683,37 @@ export type Database = {
           org_logo: string
           org_name: string
           org_primary_color: string
+        }[]
+      }
+      get_public_group_trip: {
+        Args: { _slug: string }
+        Returns: {
+          cover_image_url: string
+          currency: string
+          current_pax: number
+          departure_date: string
+          description_md: string
+          destination: string
+          excludes: string[]
+          gallery_urls: string[]
+          id: string
+          important_notes: string
+          includes: string[]
+          installments_count: number
+          max_pax: number
+          num_days: number
+          num_nights: number
+          org_logo: string
+          org_name: string
+          org_primary_color: string
+          org_whatsapp: string
+          origin_city: string
+          price_per_pax: number
+          return_date: string
+          slug: string
+          subtitle: string
+          title: string
+          transport_type: string
         }[]
       }
       get_public_organization_by_slug: {

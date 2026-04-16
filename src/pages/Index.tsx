@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import {
   FileText, Plane, PlaneTakeoff, CalendarHeart,
-  KanbanSquare, ArrowRight, DollarSign, ArrowUpRight, ArrowDownRight
+  KanbanSquare, ArrowRight, DollarSign, ArrowUpRight, ArrowDownRight, Users2
 } from 'lucide-react';
 import { AppLayout } from '@/components/AppLayout';
 import { useAuthStore } from '@/stores/authStore';

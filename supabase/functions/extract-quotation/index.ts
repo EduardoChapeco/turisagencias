@@ -173,7 +173,7 @@ const EXTRACTION_SCHEMA = {
   required: ["destination", "hotel_name", "total_value", "whatsapp_text"],
 };
 
-const SYSTEM_PROMPT = `Você é um especialista sênior em extração de cotações de viagem para o sistema Viaja CRM.
+const SYSTEM_PROMPT = `Você é um especialista sênior em extração de cotações de viagem para o sistema Turis Agências (antigo VoyageOS).
 
 MISSÃO: Extraia TODOS os dados com máxima precisão do documento de cotação fornecido.
 
@@ -322,8 +322,10 @@ serve(async (req) => {
 
     const extracted = JSON.parse(toolCall.function.arguments);
 
-    // 4. Persiste no banco se org_id disponível
+    // 4. Persiste no banco se org_id disponível (MODELO RELACIONAL - ZERO TEATRO)
     if (org_id) {
+      console.log(`[extract-quotation] Persisting relational data for quote in org: ${org_id}`);
+      
       const { data: qData, error: insertError } = await supabaseClient
         .from('quotations')
         .insert({
@@ -346,12 +348,97 @@ serve(async (req) => {
           installments: extracted.installments || null,
           whatsapp_text: extracted.whatsapp_text,
           source_file_url: source_file_url || null,
+          // Novos campos mapeados do PRD
+          id_operadora: extracted.id_operadora || null,
+          operadora_nome: extracted.operadora || null,
+          tarifa_base: extracted.tarifa_base || null,
+          taxas: extracted.taxas || null,
+          impostos: extracted.impostos || null,
+          cancelamento_data_limite: extracted.cancelamento_data_limite || null,
+          cancelamento_valor_multa: extracted.cancelamento_valor_multa || null,
+          cancelamento_texto_raw: extracted.cancelamento_texto_raw || null,
         })
         .select('id')
         .single();
 
       if (insertError) throw new Error("Erro ao salvar cotação: " + insertError.message);
-      extracted.id = qData.id;
+      const quoteId = qData.id;
+      extracted.id = quoteId;
+
+      // 4.1 Persiste Voos e Trechos (Segments)
+      if (extracted.flights && Array.isArray(extracted.flights)) {
+        for (const flight of extracted.flights) {
+          const { data: fData, error: fError } = await supabaseClient
+            .from('flights')
+            .insert({
+              quote_id: quoteId,
+              airline_name: flight.airline_name,
+              cabin_class: flight.cabin_class,
+              direction: flight.direction, // "outbound" | "return"
+              total_price: flight.total_price || null,
+            })
+            .select('id')
+            .single();
+          
+          if (!fError && fData && flight.segments && Array.isArray(flight.segments)) {
+             const segments = flight.segments.map((s: any, idx: number) => ({
+                flight_id: fData.id,
+                departure_airport_code: s.origem_iata,
+                departure_airport_city: s.origem_cidade,
+                arrival_airport_code: s.destino_iata,
+                arrival_airport_city: s.destino_cidade,
+                departure_datetime: s.partida_datetime,
+                arrival_datetime: s.chegada_datetime,
+                duration_minutes: s.duracao_minutos,
+                segment_order: idx + 1
+             }));
+             await supabaseClient.from('flight_segments').insert(segments);
+          }
+        }
+      }
+
+      // 4.2 Persiste Roteiro (Days and Items)
+      if (extracted.itinerary && Array.isArray(extracted.itinerary)) {
+        for (const day of extracted.itinerary) {
+          const { data: dData, error: dError } = await supabaseClient
+            .from('itinerary_days')
+            .insert({
+              quote_id: quoteId,
+              day_number: day.day_number,
+              city: day.city,
+              label: day.label
+            })
+            .select('id')
+            .single();
+          
+          if (!dError && dData && day.description) {
+            await supabaseClient.from('itinerary_items').insert({
+              itinerary_day_id: dData.id,
+              description: day.description as string,
+              order_position: 1
+            });
+          }
+        }
+      }
+
+      // 4.3 Persiste Transfers
+      if (extracted.transfers && Array.isArray(extracted.transfers)) {
+         const transfers = extracted.transfers.map((t: any, idx: number) => ({
+            quote_id: quoteId,
+            tipo: t.tipo,
+            nome: t.nome,
+            fornecedor: t.fornecedor,
+            data_inicio: t.data_inicio,
+            data_fim: t.data_fim,
+            instrucoes: t.instrucoes,
+            ponto_encontro: t.ponto_encontro,
+            limite_bagagem_kg: t.limite_bagagem_kg,
+            adultos: t.adultos,
+            criancas: t.criancas,
+            order_position: idx + 1
+         }));
+         await supabaseClient.from('quote_transfers').insert(transfers);
+      }
     }
 
     return new Response(JSON.stringify({ data: extracted }), {

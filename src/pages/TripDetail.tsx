@@ -108,520 +108,297 @@ export default function TripDetail() {
 
   return (
     <AppLayout>
-      <div className="space-y-6 max-w-7xl mx-auto">
-        {/* ── Header ── */}
-        <div className="flex items-start gap-4">
-          <Button variant="outline" size="icon" className="shrink-0 rounded-xl border-vj-border h-10 w-10" onClick={() => navigate('/trips')}>
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <div className="flex-1 min-w-0">
-            <div className="flex flex-wrap items-center gap-3 mb-1">
-              <h1 className="font-heading text-2xl font-bold text-vj-txt leading-tight">{trip.title}</h1>
-              <StatusBadge variant={statusInfo.variant}>{statusInfo.label}</StatusBadge>
+      <div className="space-y-8 max-w-[1400px] mx-auto pb-20 px-4 sm:px-6">
+        
+        {/* Header: Identity & Actions */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <div className="flex items-start gap-4">
+            <Button variant="outline" size="icon" className="shrink-0 premium-button border-vj-border h-12 w-12 bg-white" onClick={() => navigate('/trips')}>
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-3 mb-2">
+                <h1 className="font-heading text-4xl font-extrabold text-vj-txt tracking-tight leading-none">{trip.title}</h1>
+                <div className="scale-110 origin-left">
+                  <StatusBadge variant={statusInfo.variant}>{statusInfo.label}</StatusBadge>
+                </div>
+              </div>
+              <p className="text-sm text-vj-txt3 font-medium flex items-center gap-2">
+                <MapPin className="h-4 w-4 text-vj-green" /> {destination} • #{trip.id.slice(0, 8)}
+              </p>
             </div>
-            <p className="text-sm text-vj-txt3 flex items-center gap-1.5">
-              <MapPin className="h-3.5 w-3.5" /> {destination}
-            </p>
           </div>
-          <Button
-            onClick={() => setEditOpen(true)}
-            variant="outline"
-            className="shrink-0 border-vj-border gap-2"
-          >
-            <Edit2 className="h-4 w-4" /> Editar Viagem
-          </Button>
-        </div>
-
-        {/* ── KPI Strip ── */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <div className="rounded-xl border border-vj-border bg-white p-4">
-            <p className="text-xs text-vj-txt3 uppercase tracking-wider font-medium mb-1 flex items-center gap-1.5"><CalendarDays className="h-3.5 w-3.5" />Ida</p>
-            <p className="font-semibold text-vj-txt text-sm">{fmt(trip.departure_date)}</p>
-          </div>
-          <div className="rounded-xl border border-vj-border bg-white p-4">
-            <p className="text-xs text-vj-txt3 uppercase tracking-wider font-medium mb-1 flex items-center gap-1.5"><CalendarDays className="h-3.5 w-3.5" />Volta</p>
-            <p className="font-semibold text-vj-txt text-sm">{fmt(trip.return_date)}</p>
-          </div>
-          <div className="rounded-xl border border-vj-border bg-white p-4">
-            <p className="text-xs text-vj-txt3 uppercase tracking-wider font-medium mb-1 flex items-center gap-1.5"><Clock className="h-3.5 w-3.5" />Noites</p>
-            <p className="font-semibold text-vj-txt text-sm">{numNights != null ? `${numNights} noites` : '—'}</p>
-          </div>
-          <div className="rounded-xl border border-vj-border bg-white p-4">
-            <p className="text-xs text-vj-txt3 uppercase tracking-wider font-medium mb-1 flex items-center gap-1.5"><Users2 className="h-3.5 w-3.5" />Pax</p>
-            <p className="font-semibold text-vj-txt text-sm">
-              {((trip as Record<string, unknown>).pax_count as number | null) ?? '—'} passageiros
-            </p>
+          
+          <div className="flex items-center gap-3 shrink-0">
+             <Button variant="outline" className="premium-button border-vj-border bg-white" onClick={() => navigate('/itineraries')}>
+               <Map className="w-4 h-4 mr-2" /> Roteiros
+             </Button>
+             <Button onClick={() => setEditOpen(true)} className="premium-button bg-vj-txt text-white hover:bg-zinc-800 shadow-xl">
+               <Edit2 className="h-4 w-4 mr-2" /> Gerenciar Viagem
+             </Button>
           </div>
         </div>
 
-        {/* ── Route Map Card ── */}
-        {(trip.destination_city || trip.destination_country) && (
-          <div className="grid md:grid-cols-[1fr_340px] gap-4">
-            {/* OSM Map iframe — free, no API key */}
-            <div className="rounded-xl border border-vj-border bg-white overflow-hidden" style={{ minHeight: 240 }}>
-              <div className="px-4 pt-4 pb-2 flex items-center gap-2 border-b border-vj-border">
-                <MapPin className="h-4 w-4 text-vj-green" />
-                <span className="text-sm font-semibold text-vj-txt">{destination}</span>
-                <span className="text-xs text-vj-txt3 ml-auto">OpenStreetMap</span>
+        {/* The Premium Bento Grid */}
+        <div className="bento-grid-premium auto-rows-auto">
+          
+          {/* Main Info Block (Wide) */}
+          <div className="col-span-1 md:col-span-2 premium-card p-8 flex flex-col justify-between bg-gradient-to-br from-white to-zinc-50/50">
+            <div className="flex items-center justify-between mb-10">
+              <span className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-vj-txt3">Cronograma & Logística</span>
+              <CalendarDays className="w-5 h-5 text-vj-green/40" />
+            </div>
+            
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-8">
+              <div className="space-y-1">
+                <p className="text-[10px] font-bold text-vj-txt3 uppercase tracking-wider">Partida</p>
+                <p className="text-xl font-bold">{new Date(trip.departure_date!).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}</p>
+                <p className="text-xs text-vj-txt3 font-medium">{new Date(trip.departure_date!).getFullYear()}</p>
               </div>
-              <iframe
-                title="Mapa do destino"
-                loading="lazy"
-                style={{ width: '100%', height: 220, border: 'none', display: 'block' }}
-                src={`https://www.openstreetmap.org/export/embed.html?layer=mapnik&marker=${encodeURIComponent(`${trip.destination_city ?? ''}, ${trip.destination_country ?? ''}`)}`}
-              />
+              <div className="space-y-1">
+                <p className="text-[10px] font-bold text-vj-txt3 uppercase tracking-wider">Retorno</p>
+                <p className="text-xl font-bold">{new Date(trip.return_date!).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}</p>
+                <p className="text-xs text-vj-txt3 font-medium">{new Date(trip.return_date!).getFullYear()}</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-[10px] font-bold text-vj-txt3 uppercase tracking-wider">Duração</p>
+                <p className="text-xl font-bold">{numNights} Noites</p>
+                <p className="text-xs text-vj-txt3 font-medium">Estadia total</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-[10px] font-bold text-vj-txt3 uppercase tracking-wider">Passageiros</p>
+                <p className="text-xl font-bold">{((trip as any).pax_count) ?? 0} Pax</p>
+                <p className="text-xs text-vj-txt3 font-medium">Ocupação total</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Voo & Rota SVG (Card) */}
+          <div className="col-span-1 premium-card bg-zinc-950 p-6 text-white flex flex-col justify-between overflow-hidden relative group">
+            <div className="absolute inset-0 bg-gradient-to-br from-green-500/20 to-transparent opacity-30 group-hover:opacity-50 transition-opacity" />
+            <div className="relative z-10 flex items-center justify-between">
+              <span className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-zinc-500 text-balance">Logística Aérea</span>
+              <Plane className="w-4 h-4 text-green-400" />
             </div>
 
-            {/* SVG Flight Route */}
-            <div className="rounded-xl border border-vj-border bg-white p-5 flex flex-col justify-between">
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-xs font-semibold text-vj-txt3 uppercase tracking-wider flex items-center gap-1.5">
-                  <Plane className="h-3.5 w-3.5" /> Rota do Voo
-                </span>
-              </div>
-
-              {/* Route SVG arc */}
-              <div className="flex-1 flex flex-col items-center justify-center py-2">
-                <div className="flex items-end justify-between w-full gap-2 mb-2">
+            <div className="relative z-10 py-6">
+               <div className="flex items-center justify-between gap-4">
                   <div className="text-center">
-                    <p className="text-xs text-vj-txt3 uppercase tracking-wider">Origem</p>
-                    <p className="font-bold text-vj-txt text-lg leading-tight">
-                      {((trip as Record<string, unknown>).airline as string) || 'BR'}
-                    </p>
-                    <p className="text-xs text-vj-txt3 mt-0.5">Brasil</p>
+                    <p className="text-[32px] font-bold leading-none">BR</p>
+                    <p className="text-[9px] font-bold uppercase tracking-widest text-zinc-500 mt-1">SAO</p>
                   </div>
-                  <div className="flex-1 flex flex-col items-center">
-                    <svg viewBox="0 0 160 60" className="w-full max-w-[160px]" style={{ overflow: 'visible' }}>
-                      {/* Arc */}
-                      <path d="M 8 50 Q 80 4 152 50" stroke="#22c55e" strokeWidth="1.5" fill="none" strokeDasharray="4 3" />
-                      {/* Plane icon at midpoint */}
-                      <g transform="translate(80,18) rotate(-5)">
-                        <circle cx="0" cy="0" r="8" fill="white" stroke="#22c55e" strokeWidth="1.5" />
-                        <text x="0" y="4" textAnchor="middle" fontSize="9" fill="#166534">✈</text>
-                      </g>
-                      {/* Origin dot */}
-                      <circle cx="8" cy="50" r="4" fill="#22c55e" />
-                      {/* Dest dot */}
-                      <circle cx="152" cy="50" r="4" fill="#166534" />
+                  <div className="flex-1 relative flex flex-col items-center">
+                    <svg viewBox="0 0 100 40" className="w-full h-10 overflow-visible">
+                      <path d="M 5 35 Q 50 0 95 35" stroke="rgba(34, 197, 94, 0.4)" strokeWidth="1" fill="none" strokeDasharray="3 2" />
+                      <circle cx="5" cy="35" r="2" fill="#22c55e" />
+                      <circle cx="95" cy="35" r="2" fill="#22c55e" />
+                      <text x="50" y="20" textAnchor="middle" fontSize="12" fill="#22c55e" className="animate-pulse">✈</text>
                     </svg>
-                    {trip.departure_date && trip.return_date && numNights && (
-                      <p className="text-[10px] text-vj-txt3 mt-1">{numNights} noites</p>
-                    )}
                   </div>
                   <div className="text-center">
-                    <p className="text-xs text-vj-txt3 uppercase tracking-wider">Destino</p>
-                    <p className="font-bold text-vj-green text-lg leading-tight">{trip.destination_city || '—'}</p>
-                    <p className="text-xs text-vj-txt3 mt-0.5">{trip.destination_country || ''}</p>
+                    <p className="text-[32px] font-bold leading-none text-green-400">{trip.destination_city?.slice(0, 3).toUpperCase() || 'DST'}</p>
+                    <p className="text-[9px] font-bold uppercase tracking-widest text-zinc-500 mt-1">{trip.destination_city || 'Destino'}</p>
                   </div>
-                </div>
-              </div>
+               </div>
+            </div>
 
-              {/* Extra flight info */}
-              <div className="space-y-2 pt-3 border-t border-vj-border">
-                {(trip as Record<string, unknown>).flight_number as string && (
-                  <div className="flex justify-between text-xs">
-                    <span className="text-vj-txt3">Voo</span>
-                    <span className="font-mono font-semibold">{(trip as Record<string, unknown>).flight_number as string}</span>
-                  </div>
-                )}
-                {(trip as Record<string, unknown>).locator_code as string && (
-                  <div className="flex justify-between text-xs">
-                    <span className="text-vj-txt3">Localizador</span>
-                    <span className="font-mono font-bold text-vj-green uppercase">{(trip as Record<string, unknown>).locator_code as string}</span>
-                  </div>
-                )}
-                {trip.hotel_name && (
-                  <div className="flex justify-between text-xs">
-                    <span className="text-vj-txt3">Hotel</span>
-                    <span className="font-medium text-right max-w-[60%] truncate">{trip.hotel_name}</span>
-                  </div>
-                )}
+            <div className="relative z-10 pt-4 border-t border-zinc-800 grid grid-cols-2 gap-2 text-[10px] font-bold uppercase tracking-widest text-zinc-500">
+               <div>LOC: <span className="text-white ml-1">{(trip as any).locator_code || '---'}</span></div>
+               <div className="text-right font-mono">{(trip as any).flight_number || 'S/V'}</div>
+            </div>
+          </div>
+
+          {/* Hotel Block (Mini) */}
+          <div className="col-span-1 premium-card p-6 flex flex-col justify-between card-gradient-green border-vj-green/10">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-vj-green">Hospedagem Selecionada</span>
+              <Hotel className="w-5 h-5 text-vj-green/60" />
+            </div>
+            
+            <div className="mt-8">
+              <h4 className="text-lg font-bold truncate max-w-full text-vj-txt">{trip.hotel_name || "Sem Hotel Definido"}</h4>
+              <p className="text-xs text-vj-txt3 font-medium mt-1">{(trip as any).meal_plan || "Regime não informado"}</p>
+              
+              <div className="flex items-center gap-1 mt-3">
+                {[1,2,3,4,5].map(s => <div key={s} className="w-1.5 h-1.5 rounded-full bg-vj-green/20" />)}
               </div>
             </div>
           </div>
-        )}
 
-        {/* ── Tabs ── */}
-        <Tabs defaultValue="summary" className="w-full">
-          <div className="bg-vj-bg p-1 rounded-xl border border-vj-border inline-flex max-w-full overflow-x-auto scrollbar-none">
-            <TabsList className="h-auto bg-transparent p-0 flex gap-0.5">
-              {[
-                { value: 'summary',    label: 'Resumo',       icon: MapPin },
-                { value: 'travelers',  label: 'Viajantes',    icon: UsersIcon },
-                { value: 'documents',  label: 'Documentos',   icon: FileText },
-                { value: 'roteiro',    label: 'Roteiro',      icon: Map },
-                { value: 'tickets',    label: 'Chamados',     icon: MessageSquare },
-                { value: 'checklists', label: 'Checklists',   icon: CheckSquare },
-              ].map(tab => (
-                <TabsTrigger
-                  key={tab.value}
-                  value={tab.value}
-                  className="rounded-lg px-4 py-2 text-sm flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-vj-txt data-[state=active]:shadow-none data-[state=inactive]:text-vj-txt3 transition-colors"
-                >
-                  <tab.icon className="h-3.5 w-3.5" />
-                  <span className="hidden sm:inline">{tab.label}</span>
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </div>
-
-          {/* ── Resumo Geral ── */}
-          <TabsContent value="summary" className="mt-4">
-            <div className="grid gap-4 md:grid-cols-2">
-              {/* Destino & Datas */}
-              <div className="rounded-xl border border-vj-border bg-white p-5 space-y-4">
-                <h3 className="font-semibold text-vj-txt flex items-center gap-2 text-sm uppercase tracking-wider text-vj-txt3"><MapPin className="h-4 w-4" />Destino & Datas</h3>
-                <div className="grid grid-cols-2 gap-y-3 text-sm">
-                  <span className="text-vj-txt3">Destino</span>
-                  <span className="font-medium text-vj-txt text-right">{destination}</span>
-                  <span className="text-vj-txt3">Ida</span>
-                  <span className="font-medium text-right">{fmt(trip.departure_date)}</span>
-                  <span className="text-vj-txt3">Volta</span>
-                  <span className="font-medium text-right">{fmt(trip.return_date)}</span>
-                  <span className="text-vj-txt3">Noites</span>
-                  <span className="font-medium text-right">{numNights != null ? `${numNights}` : '—'}</span>
-                  <span className="text-vj-txt3">Pax</span>
-                  <span className="font-medium text-right">{((trip as Record<string, unknown>).pax_count as number | null) ?? '—'}</span>
-                </div>
-              </div>
-
-              {/* Hospedagem */}
-              <div className="rounded-xl border border-vj-border bg-white p-5 space-y-4">
-                <h3 className="font-semibold text-sm uppercase tracking-wider text-vj-txt3 flex items-center gap-2"><Hotel className="h-4 w-4" />Hospedagem</h3>
-                <div className="grid grid-cols-2 gap-y-3 text-sm">
-                  <span className="text-vj-txt3">Hotel</span>
-                  <span className="font-medium text-right truncate">{trip.hotel_name || '—'}</span>
-                  <span className="text-vj-txt3">Regime</span>
-                  <span className="font-medium text-right">{(trip as Record<string, unknown>).meal_plan as string || trip.hotel_regime || '—'}</span>
-                  <span className="text-vj-txt3">Tipo de Quarto</span>
-                  <span className="font-medium text-right">{(trip as Record<string, unknown>).room_type as string || '—'}</span>
-                </div>
-              </div>
-
-              {/* Voo & Localizador */}
-              <div className="rounded-xl border border-vj-border bg-white p-5 space-y-4">
-                <h3 className="font-semibold text-sm uppercase tracking-wider text-vj-txt3 flex items-center gap-2"><Plane className="h-4 w-4" />Voo & Localizador</h3>
-                <div className="grid grid-cols-2 gap-y-3 text-sm">
-                  <span className="text-vj-txt3">Companhia</span>
-                  <span className="font-medium text-right">{(trip as Record<string, unknown>).airline as string || '—'}</span>
-                  <span className="text-vj-txt3">Voo</span>
-                  <span className="font-medium text-right font-mono">{(trip as Record<string, unknown>).flight_number as string || '—'}</span>
-                  <span className="text-vj-txt3">Localizador</span>
-                  <span className="font-mono font-bold text-vj-green text-right uppercase">{(trip as Record<string, unknown>).locator_code as string || '—'}</span>
-                </div>
-              </div>
-
-              {/* Financeiro & Seguro */}
-              <div className="rounded-xl border border-vj-border bg-white p-5 space-y-4">
-                <h3 className="font-semibold text-sm uppercase tracking-wider text-vj-txt3 flex items-center gap-2"><DollarSign className="h-4 w-4" />Financeiro & Seguro</h3>
-                <div className="grid grid-cols-2 gap-y-3 text-sm">
-                  <span className="text-vj-txt3">Valor Total</span>
-                  <span className="font-bold text-vj-green text-right">{fmtCurrency((trip as Record<string, unknown>).total_value as number | null)}</span>
-                  <span className="text-vj-txt3">Seguradora</span>
-                  <span className="font-medium text-right">{(trip as Record<string, unknown>).insurance_company as string || '—'}</span>
-                  <span className="text-vj-txt3">Apólice</span>
-                  <span className="font-mono text-right text-xs">{(trip as Record<string, unknown>).insurance_policy as string || '—'}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Cliente principal */}
-            {trip.clients && (
-              <div className="mt-4 rounded-xl border border-vj-border bg-white p-5 flex items-center gap-4">
-                <div className="h-10 w-10 rounded-full bg-vj-green/10 flex items-center justify-center text-vj-green font-bold text-base shrink-0">
-                  {(trip.clients as { name: string }).name?.charAt(0) ?? 'C'}
-                </div>
+          {/* Finance & Insurance (Medium) */}
+          <div className="col-span-1 md:col-span-1 lg:col-span-1 premium-card p-6 bg-slate-50 border-slate-200">
+             <h3 className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-slate-400 mb-6">Financeiro & Proteção</h3>
+             
+             <div className="space-y-6">
                 <div>
-                  <p className="text-xs text-vj-txt3 uppercase tracking-wider font-medium">Cliente Principal</p>
-                  <p className="font-semibold text-vj-txt">{(trip.clients as { name: string }).name}</p>
+                   <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Valor do Pacote</p>
+                   <p className="stat-value text-vj-txt text-3xl leading-none">{fmtCurrency((trip as any).total_value)}</p>
                 </div>
-              </div>
-            )}
-
-            {/* Notas internas */}
-            {trip.notes_internal && (
-              <div className="mt-4 rounded-xl border border-vj-border bg-white p-5">
-                <p className="text-xs text-vj-txt3 uppercase tracking-wider font-medium mb-2 flex items-center gap-1.5"><Lock className="h-3.5 w-3.5" />Notas Internas</p>
-                <p className="text-sm text-vj-txt whitespace-pre-wrap">{trip.notes_internal}</p>
-              </div>
-            )}
-          </TabsContent>
-
-          {/* ── Roteiro ── */}
-          <TabsContent value="roteiro" className="mt-4">
-            <div className="rounded-xl border border-vj-border bg-white overflow-hidden">
-              <div className="flex items-center justify-between px-6 py-4 border-b border-vj-border">
-                <h3 className="font-semibold text-vj-txt flex items-center gap-2">
-                  <Map className="h-4 w-4 text-vj-green" />
-                  Roteiro com Mapa
-                </h3>
-                <div className="flex items-center gap-2">
-                  {tripItineraryId ? (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="border-vj-border gap-2"
-                      onClick={() => navigate(`/itineraries/${tripItineraryId}/builder`)}
-                    >
-                      <Edit2 className="h-3.5 w-3.5" /> Editar Roteiro
-                    </Button>
-                  ) : (
-                    <Button
-                      size="sm"
-                      className="gap-2"
-                      onClick={() => navigate('/itineraries')}
-                    >
-                      <Map className="h-3.5 w-3.5" /> Criar Roteiro
-                    </Button>
-                  )}
-                  {linkedItinerary?.public_token && linkedItinerary.is_public && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="gap-2 text-vj-green"
-                      onClick={() => window.open(`/roteiro/${linkedItinerary.public_token}`, '_blank')}
-                    >
-                      <ExternalLink className="h-3.5 w-3.5" /> Ver Público
-                    </Button>
-                  )}
+                <div className="pt-4 border-t border-slate-200">
+                   <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1.5"><Shield className="w-3 h-3"/> Seguro Viagem</p>
+                   <p className="text-xs font-bold text-vj-txt truncate">{(trip as any).insurance_company || "Não Contratado"}</p>
+                   <p className="text-[10px] font-mono text-slate-400 mt-0.5">{(trip as any).insurance_policy || "---"}</p>
                 </div>
-              </div>
+             </div>
+          </div>
 
-              {tripItineraryId && mappedStops.length > 0 ? (
-                <div className="h-[600px]">
-                  <ItinerarySplitView
-                    stops={mappedStops}
-                    isEditable={false}
-                    className="border-0 rounded-none h-full"
-                  />
-                </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center py-20 text-center">
-                  <Map className="h-14 w-14 text-vj-txt3/20 mx-auto mb-4" />
-                  <p className="font-semibold text-vj-txt mb-1">
-                    {tripItineraryId ? 'Roteiro sem paradas ainda' : 'Nenhum roteiro vinculado'}
-                  </p>
-                  <p className="text-sm text-vj-txt3 max-w-xs">
-                    {tripItineraryId
-                      ? 'Abra o editor de roteiro para adicionar paradas com mapa e IA.'
-                      : 'Crie um roteiro no módulo Roteiros e vincule a esta viagem para visualizá-lo aqui.'}
-                  </p>
+          {/* Client & Travelers integrated (Medium-Wide) */}
+          <div className="col-span-1 md:col-span-2 lg:col-span-2 premium-card p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-vj-txt3">Passageiros & Documentação</h3>
+              <Button variant="ghost" size="sm" className="text-[10px] font-bold uppercase hover:bg-zinc-100" disabled>Integrar CRM →</Button>
+            </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Primary Client */}
+              {trip.clients && (
+                <div className="p-4 rounded-[20px] bg-zinc-50 border border-zinc-100 flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full bg-vj-green flex items-center justify-center text-white font-black shadow-lg shadow-green-900/10">
+                    {(trip.clients as any).name?.charAt(0) || 'C'}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[9px] font-bold text-vj-green uppercase tracking-widest">Contratante</p>
+                    <p className="text-sm font-bold text-vj-txt truncate">{(trip.clients as any).name}</p>
+                  </div>
                 </div>
               )}
-            </div>
-          </TabsContent>
 
-          {/* ── Viajantes ── */}
-          <TabsContent value="travelers" className="mt-4">
-            <div className="rounded-xl border border-vj-border bg-white p-6">
-              <div className="flex items-center justify-between mb-5">
-                <h3 className="font-semibold text-vj-txt">Viajantes & Grupos</h3>
-                <Button variant="outline" size="sm" className="border-vj-border" disabled>
-                  <UsersIcon className="mr-2 h-4 w-4" /> Adicionar Viajante
-                </Button>
-              </div>
-              {!trip.trip_travelers?.length ? (
-                <div className="text-center py-12">
-                  <UsersIcon className="h-10 w-10 text-vj-txt3/30 mx-auto mb-3" />
-                  <p className="text-vj-txt3 text-sm">Nenhum viajante vinculado a esta viagem.</p>
-                </div>
-              ) : (
-                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                  {trip.trip_travelers.map((t) => (
-                    <div key={t.id} className="rounded-xl border border-vj-border p-4 hover:border-vj-green/30 transition-colors">
-                      <div className="flex items-center gap-3 mb-3">
-                        <div className="w-10 h-10 rounded-full bg-vj-green/10 flex items-center justify-center font-bold text-vj-green shrink-0">
-                          {(t.travelers as { full_name: string } | null)?.full_name?.charAt(0) ?? 'V'}
-                        </div>
-                        <div>
-                          <p className="font-semibold text-sm text-vj-txt">{(t.travelers as { full_name: string } | null)?.full_name ?? 'Viajante'}</p>
-                          <p className="text-xs text-vj-txt3">Passageiro</p>
-                        </div>
-                      </div>
-                      <div className="space-y-1 text-xs">
-                        <div className="flex justify-between">
-                          <span className="text-vj-txt3">E-ticket</span>
-                          <span className="font-mono">{(t as Record<string, unknown>).ticket_number as string || '—'}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-vj-txt3">Assento</span>
-                          <span className="font-medium">{(t as Record<string, unknown>).seat_number as string || '—'}</span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </TabsContent>
-
-          {/* ── Documentos ── */}
-          <TabsContent value="documents" className="mt-4">
-            <div className="rounded-xl border border-vj-border bg-white p-6">
-              <div className="flex items-center justify-between mb-5">
-                <h3 className="font-semibold text-vj-txt">Cofre de Documentos</h3>
-                <Button variant="outline" size="sm" className="border-vj-border" disabled>
-                  <FileText className="mr-2 h-4 w-4" /> Anexar Documento
-                </Button>
-              </div>
-              {!trip.trip_documents?.length ? (
-                <div className="text-center py-12">
-                  <FileText className="h-10 w-10 text-vj-txt3/30 mx-auto mb-3" />
-                  <p className="text-vj-txt3 text-sm">O cofre digital está vazio.</p>
-                </div>
-              ) : (
-                <div className="grid gap-3 md:grid-cols-2">
-                  {trip.trip_documents.map((doc) => (
-                    <div key={doc.id} className="flex items-center gap-3 rounded-xl border border-vj-border p-4 hover:border-vj-green/30 transition-colors">
-                      <div className="h-10 w-10 rounded-lg bg-vj-bg flex items-center justify-center shrink-0">
-                        <FileText className="h-5 w-5 text-vj-txt3" />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="font-medium text-sm text-vj-txt truncate">{doc.title}</p>
-                        <p className="text-xs text-vj-txt3 uppercase">{(doc as Record<string, unknown>).doc_type as string}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </TabsContent>
-
-          {/* ── Chamados ── */}
-          <TabsContent value="tickets" className="mt-4">
-            <div className="grid gap-4 lg:grid-cols-[1fr_300px]">
-              <div className="rounded-xl border border-vj-border bg-white p-6">
-                <h3 className="font-semibold text-vj-txt mb-5">Chamados da Viagem</h3>
-                {!tickets?.length ? (
-                  <div className="text-center py-10">
-                    <MessageSquare className="h-10 w-10 text-vj-txt3/30 mx-auto mb-3" />
-                    <p className="text-vj-txt3 text-sm">Nenhum chamado para esta viagem.</p>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {tickets.map((ticket) => (
-                      <button
-                        key={ticket.id}
-                        type="button"
-                        onClick={() => navigate(`/tickets/${ticket.id}`)}
-                        className="w-full flex items-start justify-between rounded-xl border border-vj-border p-4 text-left hover:border-vj-green/30 transition-colors"
-                      >
-                        <div>
-                          <p className="font-medium text-vj-txt text-sm">{ticket.title}</p>
-                          <p className="text-xs text-vj-txt3 mt-1 line-clamp-1">{ticket.description}</p>
-                        </div>
-                        <span className="text-xs text-vj-txt3 ml-4 shrink-0">{ticket.status}</span>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              <div className="rounded-xl border border-vj-border bg-white p-5 self-start">
-                <h3 className="font-semibold text-vj-txt mb-4 text-sm">Abrir Chamado</h3>
-                <div className="space-y-3">
-                  <div className="space-y-1.5">
-                    <Label htmlFor="t-title" className="text-xs text-vj-txt3">Título</Label>
-                    <Input id="t-title" value={ticketTitle} onChange={(e) => setTicketTitle(e.target.value)} placeholder="Reemissão de passagem" className="border-vj-border h-9 text-sm" />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="t-desc" className="text-xs text-vj-txt3">Descrição</Label>
-                    <Input id="t-desc" value={ticketDescription} onChange={(e) => setTicketDescription(e.target.value)} placeholder="Descreva o problema..." className="border-vj-border h-9 text-sm" />
-                  </div>
-                  <Button
-                    className="w-full"
-                    disabled={!ticketTitle || !ticketDescription || createTicket.isPending}
-                    onClick={async () => {
-                      await createTicket.mutateAsync({ title: ticketTitle, description: ticketDescription, trip_id: trip.id, client_id: trip.primary_client_id ?? null });
-                      setTicketTitle('');
-                      setTicketDescription('');
-                    }}
-                  >
-                    {createTicket.isPending ? 'Criando...' : 'Criar Chamado'}
-                  </Button>
-                </div>
+              {/* Travelers Quick Scroll */}
+              <div className="flex gap-2 overflow-x-auto scrollbar-none py-1">
+                 {trip.trip_travelers?.map((t: any) => (
+                   <div key={t.id} className="min-w-[140px] p-3 rounded-2xl border border-zinc-100 bg-white flex flex-col items-center text-center">
+                     <div className="w-8 h-8 rounded-full bg-zinc-100 flex items-center justify-center text-[10px] font-bold text-zinc-500 mb-2">
+                       {t.travelers?.full_name?.charAt(0) || 'V'}
+                     </div>
+                     <p className="text-[10px] font-bold truncate w-full">{t.travelers?.full_name}</p>
+                     <p className="text-[9px] text-zinc-400 font-medium">Assento: {t.seat_number || '--'}</p>
+                   </div>
+                 ))}
+                 {!trip.trip_travelers?.length && <p className="text-[10px] text-vj-txt3 italic flex items-center h-full">Nenhum viajante vinculado.</p>}
               </div>
             </div>
-          </TabsContent>
+          </div>
 
-          {/* ── Checklists ── */}
-          <TabsContent value="checklists" className="mt-4">
-            <div className="grid gap-4 lg:grid-cols-[1fr_280px]">
-              <div className="rounded-xl border border-vj-border bg-white p-6">
-                <h3 className="font-semibold text-vj-txt mb-5">Checklists</h3>
-                {!checklists?.length ? (
-                  <div className="text-center py-10">
-                    <CheckSquare className="h-10 w-10 text-vj-txt3/30 mx-auto mb-3" />
-                    <p className="text-vj-txt3 text-sm">Nenhum checklist criado para esta viagem.</p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {checklists.map((checklist) => (
-                      <div key={checklist.id} className="rounded-xl border border-vj-border p-5">
-                        <div className="flex items-center justify-between mb-4">
-                          <p className="font-semibold text-vj-txt">{checklist.title}</p>
-                          <Button variant="outline" size="sm" className="border-vj-border text-xs h-7" onClick={() => navigator.clipboard.writeText(`${window.location.origin}/c/${checklist.share_token}`)}>
-                            Copiar Link
-                          </Button>
-                        </div>
-                        <div className="space-y-2">
-                          {checklist.checklist_items?.map((item) => (
-                            <label key={item.id} className="flex items-start gap-3 rounded-lg border border-vj-border p-3 cursor-pointer hover:bg-vj-bg transition-colors">
-                              <Checkbox checked={item.is_checked} disabled className="mt-0.5" />
-                              <p className="text-sm text-vj-txt">{item.title}</p>
-                            </label>
-                          ))}
-                          <div className="flex gap-2 mt-3">
-                            <Input
-                              value={checklistItemTitle[checklist.id] ?? ''}
-                              onChange={(e) => setChecklistItemTitle((c) => ({ ...c, [checklist.id]: e.target.value }))}
-                              placeholder="Adicionar item..."
-                              className="border-vj-border h-9 text-sm"
-                            />
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="border-vj-border shrink-0"
-                              disabled={!checklistItemTitle[checklist.id]?.trim() || createChecklistItem.isPending}
-                              onClick={async () => {
-                                const t = checklistItemTitle[checklist.id]?.trim();
-                                if (!t) return;
-                                await createChecklistItem.mutateAsync({ checklist_id: checklist.id, title: t, position: checklist.checklist_items?.length ?? 0 });
-                                setChecklistItemTitle((c) => ({ ...c, [checklist.id]: '' }));
-                              }}
-                            >
-                              +
-                            </Button>
+          {/* Internal Notes / Vault (Tall) */}
+          <div className="col-span-1 md:col-span-1 row-span-1 premium-card p-6 flex flex-col justify-between bg-zinc-50 border-vj-border/30">
+            <div>
+              <div className="flex items-center gap-2 mb-6">
+                <Lock className="w-4 h-4 text-vj-txt3" />
+                <span className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-vj-txt3">Notas do Agente</span>
+              </div>
+              <p className="text-xs text-vj-txt font-medium leading-relaxed italic line-clamp-6">
+                {trip.notes_internal || "Nenhuma nota interna registrada para esta viagem. Clique em editar para adicionar informações críticas do passageiro."}
+              </p>
+            </div>
+            
+            <div className="pt-6 border-t border-zinc-200 mt-6 flex justify-between items-center text-[10px] font-extrabold uppercase tracking-widest text-vj-txt3">
+               <span>Cofre Ativo</span>
+               <div className="flex gap-1">
+                 {[1,2,3].map(i => <div key={i} className="w-1 h-1 rounded-full bg-green-500" />)}
+               </div>
+            </div>
+          </div>
+
+          {/* Roteiro & Chamados Tabs (Wide Bottom) */}
+          <div className="col-span-full mt-4">
+             <Tabs defaultValue="roteiro" className="w-full">
+                <TabsList className="bg-zinc-100 border-vj-border p-1 rounded-2xl mb-6">
+                  <TabsTrigger value="roteiro" className="rounded-xl px-8 data-[state=active]:bg-white data-[state=active]:shadow-sm">Roteiro Detalhado</TabsTrigger>
+                  <TabsTrigger value="tickets" className="rounded-xl px-8 data-[state=active]:bg-white data-[state=active]:shadow-sm">Suporte & Chamados</TabsTrigger>
+                  <TabsTrigger value="checklists" className="rounded-xl px-8 data-[state=active]:bg-white data-[state=active]:shadow-sm">Checklists</TabsTrigger>
+                  <TabsTrigger value="documents" className="rounded-xl px-8 data-[state=active]:bg-white data-[state=active]:shadow-sm">Todos os Documentos</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="roteiro">
+                   <div className="premium-card overflow-hidden">
+                      <div className="p-6 border-b border-zinc-100 flex items-center justify-between">
+                        <h3 className="text-sm font-bold uppercase tracking-wider flex items-center gap-2"><Map className="w-4 h-4 text-vj-green"/> Visualização do Itinerário</h3>
+                        <Button variant="outline" size="sm" className="premium-button text-xs h-8" onClick={() => navigate(`/itineraries/${tripItineraryId}/builder`)}>Editar no Módulo</Button>
+                      </div>
+                      <div className="h-[500px]">
+                         {tripItineraryId ? (
+                           <ItinerarySplitView stops={mappedStops} isEditable={false} className="border-0 rounded-none h-full" />
+                         ) : (
+                           <div className="h-full flex flex-col items-center justify-center p-20 text-center text-vj-txt3">
+                             <Map className="w-12 h-12 mb-4 opacity-20" />
+                             <p className="text-sm font-medium">Nenhum roteiro vinculado.</p>
+                           </div>
+                         )}
+                      </div>
+                   </div>
+                </TabsContent>
+
+                <TabsContent value="tickets">
+                   <div className="grid md:grid-cols-3 gap-6">
+                      <div className="md:col-span-2 premium-card p-6">
+                         <h3 className="text-sm font-bold uppercase tracking-wider mb-6">Histórico de Atendimento</h3>
+                         <div className="space-y-3">
+                            {tickets?.map(t => (
+                              <div key={t.id} className="p-4 rounded-2xl bg-zinc-50 border border-zinc-100 flex items-center justify-between hover:bg-zinc-100 transition-colors cursor-pointer" onClick={() => navigate(`/tickets/${t.id}`)}>
+                                 <div className="flex items-center gap-3">
+                                    <div className={`w-2 h-2 rounded-full ${t.priority === 'urgent' ? 'bg-red-500' : 'bg-amber-400'}`} />
+                                    <span className="text-sm font-bold">{t.title}</span>
+                                 </div>
+                                 <span className="text-[10px] font-bold uppercase text-zinc-400">{t.status}</span>
+                              </div>
+                            ))}
+                            {!tickets?.length && <p className="text-xs text-vj-txt3 text-center py-10 italic">Nenhum chamado pendente.</p>}
+                         </div>
+                      </div>
+                      <div className="premium-card p-6 bg-zinc-900 text-white">
+                         <h3 className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 mb-4">Novo Chamado</h3>
+                         <div className="space-y-4">
+                            <Input value={ticketTitle} onChange={(e) => setTicketTitle(e.target.value)} placeholder="Título do problema..." className="bg-zinc-800 border-zinc-700 text-white" />
+                            <Input value={ticketDescription} onChange={(e) => setTicketDescription(e.target.value)} placeholder="Descrição curta..." className="bg-zinc-800 border-zinc-700 text-white" />
+                            <Button className="w-full bg-white text-zinc-900 hover:bg-zinc-200 premium-button" onClick={async () => {
+                              await createTicket.mutateAsync({ title: ticketTitle, description: ticketDescription, trip_id: trip.id, client_id: trip.primary_client_id ?? null });
+                              setTicketTitle(''); setTicketDescription('');
+                            }}>Abrir Ticket</Button>
+                         </div>
+                      </div>
+                   </div>
+                </TabsContent>
+                
+                <TabsContent value="documents">
+                   <div className="premium-card p-8">
+                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                        {trip.trip_documents?.map(doc => (
+                          <div key={doc.id} className="p-4 rounded-[20px] bg-zinc-50 border border-zinc-100 flex flex-col items-center text-center gap-3 hover:border-vj-green/40 transition-all cursor-pointer">
+                             <div className="w-12 h-12 rounded-2xl bg-white border border-zinc-100 flex items-center justify-center shadow-sm">
+                               <FileText className="w-6 h-6 text-vj-green" />
+                             </div>
+                             <div>
+                               <p className="text-xs font-bold truncate w-full">{doc.title}</p>
+                               <p className="text-[10px] text-vj-txt3 uppercase font-bold mt-1">{(doc as any).doc_type}</p>
+                             </div>
                           </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
+                        ))}
+                        {!trip.trip_documents?.length && <p className="text-xs text-vj-txt3 text-center col-span-full py-20 italic">Ainda não há documentos anexados.</p>}
+                     </div>
+                   </div>
+                </TabsContent>
 
-              <div className="rounded-xl border border-vj-border bg-white p-5 self-start">
-                <h3 className="font-semibold text-vj-txt mb-4 text-sm">Novo Checklist</h3>
-                <div className="space-y-3">
-                  <div className="space-y-1.5">
-                    <Label className="text-xs text-vj-txt3">Título</Label>
-                    <Input value={checklistTitle} onChange={(e) => setChecklistTitle(e.target.value)} placeholder="Checklist pré-embarque" className="border-vj-border h-9 text-sm" />
-                  </div>
-                  <Button
-                    className="w-full"
-                    disabled={!checklistTitle || createChecklist.isPending}
-                    onClick={async () => {
-                      await createChecklist.mutateAsync({ title: checklistTitle, trip_id: trip.id, client_id: trip.primary_client_id ?? null, is_visible_to_client: true });
-                      setChecklistTitle('');
-                    }}
-                  >
-                    {createChecklist.isPending ? 'Criando...' : 'Criar Checklist'}
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </TabsContent>
-        </Tabs>
+                <TabsContent value="checklists">
+                   <div className="grid md:grid-cols-2 gap-4">
+                      {checklists?.map(cl => (
+                        <div key={cl.id} className="premium-card p-6">
+                           <h4 className="text-sm font-bold uppercase tracking-wider mb-4">{cl.title}</h4>
+                           <div className="space-y-2">
+                              {cl.checklist_items?.map((item: any) => (
+                                <div key={item.id} className="flex items-center gap-3 p-3 rounded-xl bg-zinc-50 border border-zinc-100">
+                                   <Checkbox checked={item.is_checked} disabled />
+                                   <span className="text-xs font-medium">{item.title}</span>
+                                </div>
+                              ))}
+                           </div>
+                        </div>
+                      ))}
+                   </div>
+                </TabsContent>
+             </Tabs>
+          </div>
+
+        </div>
       </div>
 
       {/* Edit Sheet */}

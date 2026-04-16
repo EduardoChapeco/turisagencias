@@ -42,12 +42,54 @@ serve(async (req) => {
 
     const orgId = profile.org_id;
 
-    // 2. [Simulate RAG] Buscar na tabela ai_knowledge_base
-    // Na vida real isso seria supabaseClient.rpc('match_documents', { query_embedding, ... })
-    // Como Deno Deploy / Edge Functions limitam bibliotecas onnx runtime pesadas,
-    // usaríamos a chamada a um embedding provider primeiro.
-    
-    // 3. Orquestrador de LLMs (Real implementation)
+    // 2. RAG Implementation (ZERO TEATRO)
+    let context = "";
+    try {
+      console.log(`[ai-chat-agent] Real RAG search for org: ${orgId}`);
+      
+      let queryEmbedding: number[] | null = null;
+      
+      // Se tivermos uma chave do Google/Gemini, podemos gerar embeddings
+      if (aiConfig.provider === 'gemini' || aiConfig.provider === 'google') {
+        const embRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent?key=${aiConfig.key}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            content: { parts: [{ text: message }] }
+          })
+        });
+        
+        if (embRes.ok) {
+          const embData = await embRes.json();
+          queryEmbedding = embData.embedding?.values;
+          console.log("[ai-chat-agent] Generated embedding successfully");
+        } else {
+          console.error("[ai-chat-agent] Embedding failure:", await embRes.text());
+        }
+      }
+
+      const { data: kbData } = queryEmbedding 
+        ? await supabaseClient.rpc('match_documents', {
+            query_embedding: queryEmbedding,
+            match_threshold: 0.5,
+            match_count: 5,
+            filter_org_id: orgId
+          })
+        : await supabaseClient
+            .from('ai_knowledge_base')
+            .select('content')
+            .eq('org_id', orgId)
+            .limit(3);
+      
+      if (kbData && kbData.length > 0) {
+        context = "\nCONHECIMENTO DA AGÊNCIA:\n" + kbData.map((d: any) => d.content).join("\n---\n");
+        console.log(`[ai-chat-agent] Found ${kbData.length} relevant documents.`);
+      }
+    } catch (ragError) {
+      console.error("[ai-chat-agent] RAG error:", ragError);
+    }
+
+    // 3. Orquestrador de LLMs
     const { data: keys } = await supabaseClient
       .from('ai_keys_pool')
       .select('id, provider, api_key')
@@ -87,7 +129,12 @@ serve(async (req) => {
     }
 
     const messages = [
-      { role: "system", content: "Você é um assistente de viagens do VoyageOS especialista em roteiros, orçamentos e informações de destino. Seja amigável e preciso." },
+      { 
+        role: "system", 
+        content: `Você é o assistente inteligente do Turis Agências. 
+Sua missão é ajudar agentes de viagens a gerenciar cotações, roteiros e clientes com precisão. 
+Use um tom profissional e prestativo.${context}` 
+      },
       ...conversation_history,
       { role: "user", content: message }
     ];

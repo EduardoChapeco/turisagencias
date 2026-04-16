@@ -14,36 +14,128 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_behavioral_profiles: {
+        Row: {
+          avg_response_time_hours: number | null
+          behavioral_summary: string | null
+          client_id: string
+          communication_style: string | null
+          conversations_analyzed: number | null
+          created_at: string | null
+          decision_style: string | null
+          family_profile: Json | null
+          id: string
+          last_analyzed_at: string | null
+          org_id: string
+          personality_tags: string[] | null
+          preferred_destinations: Json | null
+          price_sensitivity: string | null
+          satisfaction_score: number | null
+          special_preferences: string | null
+          travel_motivations: Json | null
+          updated_at: string | null
+        }
+        Insert: {
+          avg_response_time_hours?: number | null
+          behavioral_summary?: string | null
+          client_id: string
+          communication_style?: string | null
+          conversations_analyzed?: number | null
+          created_at?: string | null
+          decision_style?: string | null
+          family_profile?: Json | null
+          id?: string
+          last_analyzed_at?: string | null
+          org_id: string
+          personality_tags?: string[] | null
+          preferred_destinations?: Json | null
+          price_sensitivity?: string | null
+          satisfaction_score?: number | null
+          special_preferences?: string | null
+          travel_motivations?: Json | null
+          updated_at?: string | null
+        }
+        Update: {
+          avg_response_time_hours?: number | null
+          behavioral_summary?: string | null
+          client_id?: string
+          communication_style?: string | null
+          conversations_analyzed?: number | null
+          created_at?: string | null
+          decision_style?: string | null
+          family_profile?: Json | null
+          id?: string
+          last_analyzed_at?: string | null
+          org_id?: string
+          personality_tags?: string[] | null
+          preferred_destinations?: Json | null
+          price_sensitivity?: string | null
+          satisfaction_score?: number | null
+          special_preferences?: string | null
+          travel_motivations?: Json | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_behavioral_profiles_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: true
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ai_keys_pool: {
         Row: {
           api_key: string
           created_at: string
+          daily_limit: number | null
+          error_count: number | null
           id: string
-          is_active: boolean
-          monthly_limit_usd: number | null
+          is_active: boolean | null
+          label: string | null
+          last_used_at: string | null
+          monthly_limit: number | null
           org_id: string
+          priority: number | null
           provider: string
-          updated_at: string
+          reset_daily_at: string | null
+          used_this_month: number | null
+          used_today: number | null
         }
         Insert: {
           api_key: string
           created_at?: string
+          daily_limit?: number | null
+          error_count?: number | null
           id?: string
-          is_active?: boolean
-          monthly_limit_usd?: number | null
+          is_active?: boolean | null
+          label?: string | null
+          last_used_at?: string | null
+          monthly_limit?: number | null
           org_id: string
+          priority?: number | null
           provider: string
-          updated_at?: string
+          reset_daily_at?: string | null
+          used_this_month?: number | null
+          used_today?: number | null
         }
         Update: {
           api_key?: string
           created_at?: string
+          daily_limit?: number | null
+          error_count?: number | null
           id?: string
-          is_active?: boolean
-          monthly_limit_usd?: number | null
+          is_active?: boolean | null
+          label?: string | null
+          last_used_at?: string | null
+          monthly_limit?: number | null
           org_id?: string
+          priority?: number | null
           provider?: string
-          updated_at?: string
+          reset_daily_at?: string | null
+          used_this_month?: number | null
+          used_today?: number | null
         }
         Relationships: [
           {
@@ -55,2854 +147,277 @@ export type Database = {
           },
         ]
       }
-      booking_installments: {
+      ai_knowledge_base: {
         Row: {
-          amount: number
-          booking_id: string
-          created_at: string
-          due_date: string
-          id: string
-          installment_number: number
-          paid_at: string | null
-          payment_method: string | null
-          reference: string | null
-          status: string
-        }
-        Insert: {
-          amount: number
-          booking_id: string
-          created_at?: string
-          due_date: string
-          id?: string
-          installment_number: number
-          paid_at?: string | null
-          payment_method?: string | null
-          reference?: string | null
-          status?: string
-        }
-        Update: {
-          amount?: number
-          booking_id?: string
-          created_at?: string
-          due_date?: string
-          id?: string
-          installment_number?: number
-          paid_at?: string | null
-          payment_method?: string | null
-          reference?: string | null
-          status?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "booking_installments_booking_id_fkey"
-            columns: ["booking_id"]
-            isOneToOne: false
-            referencedRelation: "group_bookings"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      bus_layouts: {
-        Row: {
-          cols: number
-          created_at: string
-          id: string
-          name: string
-          notes: string | null
-          org_id: string
-          rows: number
-          seat_map: Json
-          updated_at: string
-          vehicle_type: string
-        }
-        Insert: {
-          cols?: number
-          created_at?: string
-          id?: string
-          name: string
-          notes?: string | null
-          org_id: string
-          rows?: number
-          seat_map?: Json
-          updated_at?: string
-          vehicle_type?: string
-        }
-        Update: {
-          cols?: number
-          created_at?: string
-          id?: string
-          name?: string
-          notes?: string | null
-          org_id?: string
-          rows?: number
-          seat_map?: Json
-          updated_at?: string
-          vehicle_type?: string
-        }
-        Relationships: []
-      }
-      bus_seat_assignments: {
-        Row: {
-          booking_id: string | null
-          created_at: string
-          group_trip_id: string
-          id: string
-          is_blocked: boolean
-          seat_label: string
-          traveler_name: string | null
-        }
-        Insert: {
-          booking_id?: string | null
-          created_at?: string
-          group_trip_id: string
-          id?: string
-          is_blocked?: boolean
-          seat_label: string
-          traveler_name?: string | null
-        }
-        Update: {
-          booking_id?: string | null
-          created_at?: string
-          group_trip_id?: string
-          id?: string
-          is_blocked?: boolean
-          seat_label?: string
-          traveler_name?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "bus_seat_assignments_booking_id_fkey"
-            columns: ["booking_id"]
-            isOneToOne: false
-            referencedRelation: "group_bookings"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "bus_seat_assignments_group_trip_id_fkey"
-            columns: ["group_trip_id"]
-            isOneToOne: false
-            referencedRelation: "group_trips"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      checklist_items: {
-        Row: {
-          checked_at: string | null
-          checklist_id: string
-          created_at: string
-          description: string | null
-          id: string
-          is_checked: boolean
-          position: number
-          title: string
-        }
-        Insert: {
-          checked_at?: string | null
-          checklist_id: string
-          created_at?: string
-          description?: string | null
-          id?: string
-          is_checked?: boolean
-          position?: number
-          title: string
-        }
-        Update: {
-          checked_at?: string | null
-          checklist_id?: string
-          created_at?: string
-          description?: string | null
-          id?: string
-          is_checked?: boolean
-          position?: number
-          title?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "checklist_items_checklist_id_fkey"
-            columns: ["checklist_id"]
-            isOneToOne: false
-            referencedRelation: "checklists"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      checklists: {
-        Row: {
-          client_id: string | null
-          created_at: string
-          created_by: string | null
-          id: string
-          is_visible_to_client: boolean | null
-          org_id: string
-          share_token: string | null
-          title: string
-          trip_id: string | null
-          type: string | null
-          updated_at: string
-        }
-        Insert: {
-          client_id?: string | null
-          created_at?: string
-          created_by?: string | null
-          id?: string
-          is_visible_to_client?: boolean | null
-          org_id: string
-          share_token?: string | null
-          title: string
-          trip_id?: string | null
-          type?: string | null
-          updated_at?: string
-        }
-        Update: {
-          client_id?: string | null
-          created_at?: string
-          created_by?: string | null
-          id?: string
-          is_visible_to_client?: boolean | null
-          org_id?: string
-          share_token?: string | null
-          title?: string
-          trip_id?: string | null
-          type?: string | null
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "checklists_client_id_fkey"
-            columns: ["client_id"]
-            isOneToOne: false
-            referencedRelation: "clients"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "checklists_org_id_fkey"
-            columns: ["org_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "checklists_trip_id_fkey"
-            columns: ["trip_id"]
-            isOneToOne: false
-            referencedRelation: "trips"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      clients: {
-        Row: {
-          address: string | null
-          assigned_agent_id: string | null
-          birth_date: string | null
-          city: string | null
-          country: string | null
-          cover_url: string | null
-          cpf: string | null
-          created_at: string
-          created_by: string | null
-          email: string | null
-          id: string
-          name: string
-          notes: string | null
-          org_id: string
-          origin: string | null
-          phone: string | null
-          photo_url: string | null
-          portal_access_enabled: boolean
-          portal_user_id: string | null
-          preferences: Json | null
-          state: string | null
-          tags: string[] | null
-          updated_at: string
-          zip_code: string | null
-        }
-        Insert: {
-          address?: string | null
-          assigned_agent_id?: string | null
-          birth_date?: string | null
-          city?: string | null
-          country?: string | null
-          cover_url?: string | null
-          cpf?: string | null
-          created_at?: string
-          created_by?: string | null
-          email?: string | null
-          id?: string
-          name: string
-          notes?: string | null
-          org_id: string
-          origin?: string | null
-          phone?: string | null
-          photo_url?: string | null
-          portal_access_enabled?: boolean
-          portal_user_id?: string | null
-          preferences?: Json | null
-          state?: string | null
-          tags?: string[] | null
-          updated_at?: string
-          zip_code?: string | null
-        }
-        Update: {
-          address?: string | null
-          assigned_agent_id?: string | null
-          birth_date?: string | null
-          city?: string | null
-          country?: string | null
-          cover_url?: string | null
-          cpf?: string | null
-          created_at?: string
-          created_by?: string | null
-          email?: string | null
-          id?: string
-          name?: string
-          notes?: string | null
-          org_id?: string
-          origin?: string | null
-          phone?: string | null
-          photo_url?: string | null
-          portal_access_enabled?: boolean
-          portal_user_id?: string | null
-          preferences?: Json | null
-          state?: string | null
-          tags?: string[] | null
-          updated_at?: string
-          zip_code?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "clients_org_id_fkey"
-            columns: ["org_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      communication_rules: {
-        Row: {
-          created_at: string
-          event_type: string
-          id: string
-          is_active: boolean
-          org_id: string
-          template_body: string
-          template_subject: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          event_type: string
-          id?: string
-          is_active?: boolean
-          org_id: string
-          template_body?: string
-          template_subject?: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          event_type?: string
-          id?: string
-          is_active?: boolean
-          org_id?: string
-          template_body?: string
-          template_subject?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "communication_rules_org_id_fkey"
-            columns: ["org_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      contract_signatures: {
-        Row: {
-          booking_id: string
-          contract_html: string
-          created_at: string
-          facial_photo_url: string | null
-          geolocation: Json | null
-          hash_sha256: string
-          id: string
-          org_id: string
-          signed_at: string
-          signer_cpf: string | null
-          signer_email: string | null
-          signer_ip: string | null
-          signer_name: string
-          user_agent: string | null
-        }
-        Insert: {
-          booking_id: string
-          contract_html: string
-          created_at?: string
-          facial_photo_url?: string | null
-          geolocation?: Json | null
-          hash_sha256: string
-          id?: string
-          org_id: string
-          signed_at?: string
-          signer_cpf?: string | null
-          signer_email?: string | null
-          signer_ip?: string | null
-          signer_name: string
-          user_agent?: string | null
-        }
-        Update: {
-          booking_id?: string
-          contract_html?: string
-          created_at?: string
-          facial_photo_url?: string | null
-          geolocation?: Json | null
-          hash_sha256?: string
-          id?: string
-          org_id?: string
-          signed_at?: string
-          signer_cpf?: string | null
-          signer_email?: string | null
-          signer_ip?: string | null
-          signer_name?: string
-          user_agent?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "contract_signatures_booking_id_fkey"
-            columns: ["booking_id"]
-            isOneToOne: false
-            referencedRelation: "group_bookings"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      contract_templates: {
-        Row: {
-          content_html: string
-          created_at: string
-          id: string
-          name: string
-          org_id: string
-          updated_at: string
-        }
-        Insert: {
-          content_html?: string
-          created_at?: string
-          id?: string
-          name: string
-          org_id: string
-          updated_at?: string
-        }
-        Update: {
-          content_html?: string
-          created_at?: string
-          id?: string
-          name?: string
-          org_id?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "contract_templates_org_id_fkey"
-            columns: ["org_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      destination_guides: {
-        Row: {
-          city: string
-          climate_info: string | null
-          country: string
-          cover_image_url: string | null
-          created_at: string
-          currency_info: string | null
-          emergency_numbers: Json | null
-          id: string
-          intro: string | null
-          is_published: boolean
-          language_tips: string | null
-          org_id: string
-          slug: string | null
-          tips: Json | null
-          transportation: string | null
-          updated_at: string
-          useful_contacts: Json | null
-        }
-        Insert: {
-          city: string
-          climate_info?: string | null
-          country: string
-          cover_image_url?: string | null
-          created_at?: string
-          currency_info?: string | null
-          emergency_numbers?: Json | null
-          id?: string
-          intro?: string | null
-          is_published?: boolean
-          language_tips?: string | null
-          org_id: string
-          slug?: string | null
-          tips?: Json | null
-          transportation?: string | null
-          updated_at?: string
-          useful_contacts?: Json | null
-        }
-        Update: {
-          city?: string
-          climate_info?: string | null
-          country?: string
-          cover_image_url?: string | null
-          created_at?: string
-          currency_info?: string | null
-          emergency_numbers?: Json | null
-          id?: string
-          intro?: string | null
-          is_published?: boolean
-          language_tips?: string | null
-          org_id?: string
-          slug?: string | null
-          tips?: Json | null
-          transportation?: string | null
-          updated_at?: string
-          useful_contacts?: Json | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "destination_guides_org_id_fkey"
-            columns: ["org_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      experiences: {
-        Row: {
+          content: string
           created_at: string | null
-          descricao: string | null
+          embedding: string | null
           id: string
-          is_active: boolean | null
-          nome: string
-          org_id: string
-          preco: number | null
-          tipo: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          descricao?: string | null
-          id?: string
-          is_active?: boolean | null
-          nome: string
-          org_id: string
-          preco?: number | null
-          tipo?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          descricao?: string | null
-          id?: string
-          is_active?: boolean | null
-          nome?: string
-          org_id?: string
-          preco?: number | null
-          tipo?: string | null
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "experiences_org_id_fkey"
-            columns: ["org_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      financial_suppliers: {
-        Row: {
-          category: string | null
-          contact_email: string | null
-          contact_name: string | null
-          contact_phone: string | null
-          created_at: string
-          id: string
-          is_active: boolean
-          name: string
-          notes: string | null
-          org_id: string
-          updated_at: string
-        }
-        Insert: {
-          category?: string | null
-          contact_email?: string | null
-          contact_name?: string | null
-          contact_phone?: string | null
-          created_at?: string
-          id?: string
-          is_active?: boolean
-          name: string
-          notes?: string | null
-          org_id: string
-          updated_at?: string
-        }
-        Update: {
-          category?: string | null
-          contact_email?: string | null
-          contact_name?: string | null
-          contact_phone?: string | null
-          created_at?: string
-          id?: string
-          is_active?: boolean
-          name?: string
-          notes?: string | null
-          org_id?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "financial_suppliers_org_id_fkey"
-            columns: ["org_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      financial_transactions: {
-        Row: {
-          amount: number
-          category: string | null
-          client_id: string | null
-          created_at: string
-          currency: string
-          description: string | null
-          due_date: string | null
-          id: string
-          org_id: string
-          paid_at: string | null
-          payment_method: string | null
-          reference_number: string | null
-          status: string
-          supplier_id: string | null
-          trip_id: string | null
-          type: string
-          updated_at: string
-        }
-        Insert: {
-          amount?: number
-          category?: string | null
-          client_id?: string | null
-          created_at?: string
-          currency?: string
-          description?: string | null
-          due_date?: string | null
-          id?: string
-          org_id: string
-          paid_at?: string | null
-          payment_method?: string | null
-          reference_number?: string | null
-          status?: string
-          supplier_id?: string | null
-          trip_id?: string | null
-          type?: string
-          updated_at?: string
-        }
-        Update: {
-          amount?: number
-          category?: string | null
-          client_id?: string | null
-          created_at?: string
-          currency?: string
-          description?: string | null
-          due_date?: string | null
-          id?: string
-          org_id?: string
-          paid_at?: string | null
-          payment_method?: string | null
-          reference_number?: string | null
-          status?: string
-          supplier_id?: string | null
-          trip_id?: string | null
-          type?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "financial_transactions_client_id_fkey"
-            columns: ["client_id"]
-            isOneToOne: false
-            referencedRelation: "clients"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "financial_transactions_org_id_fkey"
-            columns: ["org_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "financial_transactions_supplier_id_fkey"
-            columns: ["supplier_id"]
-            isOneToOne: false
-            referencedRelation: "financial_suppliers"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "financial_transactions_trip_id_fkey"
-            columns: ["trip_id"]
-            isOneToOne: false
-            referencedRelation: "trips"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      group_bookings: {
-        Row: {
-          client_id: string | null
-          created_at: string
-          group_trip_id: string
-          id: string
-          internal_notes: string | null
-          lead_cpf: string | null
-          lead_email: string | null
-          lead_name: string
-          lead_phone: string | null
-          org_id: string
-          pax_count: number
-          public_token: string
-          seat_numbers: string[] | null
-          status: string
-          total_amount: number
-          updated_at: string
-          voucher_code: string | null
-          voucher_url: string | null
-        }
-        Insert: {
-          client_id?: string | null
-          created_at?: string
-          group_trip_id: string
-          id?: string
-          internal_notes?: string | null
-          lead_cpf?: string | null
-          lead_email?: string | null
-          lead_name: string
-          lead_phone?: string | null
-          org_id: string
-          pax_count?: number
-          public_token?: string
-          seat_numbers?: string[] | null
-          status?: string
-          total_amount?: number
-          updated_at?: string
-          voucher_code?: string | null
-          voucher_url?: string | null
-        }
-        Update: {
-          client_id?: string | null
-          created_at?: string
-          group_trip_id?: string
-          id?: string
-          internal_notes?: string | null
-          lead_cpf?: string | null
-          lead_email?: string | null
-          lead_name?: string
-          lead_phone?: string | null
-          org_id?: string
-          pax_count?: number
-          public_token?: string
-          seat_numbers?: string[] | null
-          status?: string
-          total_amount?: number
-          updated_at?: string
-          voucher_code?: string | null
-          voucher_url?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "group_bookings_client_id_fkey"
-            columns: ["client_id"]
-            isOneToOne: false
-            referencedRelation: "clients"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "group_bookings_group_trip_id_fkey"
-            columns: ["group_trip_id"]
-            isOneToOne: false
-            referencedRelation: "group_trips"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      group_trip_days: {
-        Row: {
-          created_at: string
-          day_number: number
-          description_md: string | null
-          group_trip_id: string
-          highlights: string[] | null
-          id: string
-          media: Json
-          title: string
-        }
-        Insert: {
-          created_at?: string
-          day_number?: number
-          description_md?: string | null
-          group_trip_id: string
-          highlights?: string[] | null
-          id?: string
-          media?: Json
-          title?: string
-        }
-        Update: {
-          created_at?: string
-          day_number?: number
-          description_md?: string | null
-          group_trip_id?: string
-          highlights?: string[] | null
-          id?: string
-          media?: Json
-          title?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "group_trip_days_group_trip_id_fkey"
-            columns: ["group_trip_id"]
-            isOneToOne: false
-            referencedRelation: "group_trips"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      group_trips: {
-        Row: {
-          booking_count: number
-          bus_layout_id: string | null
-          contract_template_id: string | null
-          cover_image_url: string | null
-          created_at: string
-          created_by: string | null
-          currency: string
-          current_pax: number
-          departure_date: string | null
-          description_md: string | null
-          destination: string | null
-          excludes: string[] | null
-          gallery_urls: string[] | null
-          id: string
-          important_notes: string | null
-          includes: string[] | null
-          installments_count: number
-          is_public: boolean
-          max_pax: number
-          num_days: number | null
-          num_nights: number | null
-          org_id: string
-          origin_city: string | null
-          payment_due_offset_days: number
-          price_per_pax: number
-          return_date: string | null
-          slug: string | null
-          status: string
-          subtitle: string | null
-          title: string
-          transport_type: string | null
-          updated_at: string
-          view_count: number
-        }
-        Insert: {
-          booking_count?: number
-          bus_layout_id?: string | null
-          contract_template_id?: string | null
-          cover_image_url?: string | null
-          created_at?: string
-          created_by?: string | null
-          currency?: string
-          current_pax?: number
-          departure_date?: string | null
-          description_md?: string | null
-          destination?: string | null
-          excludes?: string[] | null
-          gallery_urls?: string[] | null
-          id?: string
-          important_notes?: string | null
-          includes?: string[] | null
-          installments_count?: number
-          is_public?: boolean
-          max_pax?: number
-          num_days?: number | null
-          num_nights?: number | null
-          org_id: string
-          origin_city?: string | null
-          payment_due_offset_days?: number
-          price_per_pax?: number
-          return_date?: string | null
-          slug?: string | null
-          status?: string
-          subtitle?: string | null
-          title?: string
-          transport_type?: string | null
-          updated_at?: string
-          view_count?: number
-        }
-        Update: {
-          booking_count?: number
-          bus_layout_id?: string | null
-          contract_template_id?: string | null
-          cover_image_url?: string | null
-          created_at?: string
-          created_by?: string | null
-          currency?: string
-          current_pax?: number
-          departure_date?: string | null
-          description_md?: string | null
-          destination?: string | null
-          excludes?: string[] | null
-          gallery_urls?: string[] | null
-          id?: string
-          important_notes?: string | null
-          includes?: string[] | null
-          installments_count?: number
-          is_public?: boolean
-          max_pax?: number
-          num_days?: number | null
-          num_nights?: number | null
-          org_id?: string
-          origin_city?: string | null
-          payment_due_offset_days?: number
-          price_per_pax?: number
-          return_date?: string | null
-          slug?: string | null
-          status?: string
-          subtitle?: string | null
-          title?: string
-          transport_type?: string | null
-          updated_at?: string
-          view_count?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "group_trips_bus_layout_id_fkey"
-            columns: ["bus_layout_id"]
-            isOneToOne: false
-            referencedRelation: "bus_layouts"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "group_trips_contract_template_id_fkey"
-            columns: ["contract_template_id"]
-            isOneToOne: false
-            referencedRelation: "contract_templates"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      hotels_bank: {
-        Row: {
-          address: string | null
-          category: number | null
-          city: string | null
-          country: string | null
-          created_at: string
-          description: string | null
-          email: string | null
-          id: string
-          name: string
-          notes: string | null
-          org_id: string
-          phone: string | null
-          photo_url: string | null
-          regime_options: string[] | null
-          stars: number | null
-          state: string | null
-          tags: string[] | null
-          updated_at: string
-          website: string | null
-        }
-        Insert: {
-          address?: string | null
-          category?: number | null
-          city?: string | null
-          country?: string | null
-          created_at?: string
-          description?: string | null
-          email?: string | null
-          id?: string
-          name: string
-          notes?: string | null
-          org_id: string
-          phone?: string | null
-          photo_url?: string | null
-          regime_options?: string[] | null
-          stars?: number | null
-          state?: string | null
-          tags?: string[] | null
-          updated_at?: string
-          website?: string | null
-        }
-        Update: {
-          address?: string | null
-          category?: number | null
-          city?: string | null
-          country?: string | null
-          created_at?: string
-          description?: string | null
-          email?: string | null
-          id?: string
-          name?: string
-          notes?: string | null
-          org_id?: string
-          phone?: string | null
-          photo_url?: string | null
-          regime_options?: string[] | null
-          stars?: number | null
-          state?: string | null
-          tags?: string[] | null
-          updated_at?: string
-          website?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "hotels_bank_org_id_fkey"
-            columns: ["org_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      itineraries: {
-        Row: {
-          ai_generated: boolean | null
-          ai_prompt_used: string | null
-          cover_emoji: string | null
-          cover_image_url: string | null
-          created_at: string
-          created_by: string | null
-          current_pax: number | null
-          departure_date: string | null
-          destination: string | null
-          destination_lat: number | null
-          destination_lng: number | null
-          excludes_text: string[] | null
-          group_name: string | null
-          id: string
-          important_notes: string | null
-          includes_text: string[] | null
-          is_group_itinerary: boolean
-          is_public: boolean
-          lead_count: number | null
-          max_pax: number | null
-          num_days: number | null
-          org_id: string
-          origin: string | null
-          pdf_requires_lead: boolean | null
-          pdf_url: string | null
-          public_token: string
-          quotation_id: string | null
-          return_date: string | null
-          share_count: number | null
-          status: string
-          subtitle: string | null
-          title: string
-          updated_at: string
-          view_count: number | null
-        }
-        Insert: {
-          ai_generated?: boolean | null
-          ai_prompt_used?: string | null
-          cover_emoji?: string | null
-          cover_image_url?: string | null
-          created_at?: string
-          created_by?: string | null
-          current_pax?: number | null
-          departure_date?: string | null
-          destination?: string | null
-          destination_lat?: number | null
-          destination_lng?: number | null
-          excludes_text?: string[] | null
-          group_name?: string | null
-          id?: string
-          important_notes?: string | null
-          includes_text?: string[] | null
-          is_group_itinerary?: boolean
-          is_public?: boolean
-          lead_count?: number | null
-          max_pax?: number | null
-          num_days?: number | null
-          org_id: string
-          origin?: string | null
-          pdf_requires_lead?: boolean | null
-          pdf_url?: string | null
-          public_token?: string
-          quotation_id?: string | null
-          return_date?: string | null
-          share_count?: number | null
-          status?: string
-          subtitle?: string | null
-          title?: string
-          updated_at?: string
-          view_count?: number | null
-        }
-        Update: {
-          ai_generated?: boolean | null
-          ai_prompt_used?: string | null
-          cover_emoji?: string | null
-          cover_image_url?: string | null
-          created_at?: string
-          created_by?: string | null
-          current_pax?: number | null
-          departure_date?: string | null
-          destination?: string | null
-          destination_lat?: number | null
-          destination_lng?: number | null
-          excludes_text?: string[] | null
-          group_name?: string | null
-          id?: string
-          important_notes?: string | null
-          includes_text?: string[] | null
-          is_group_itinerary?: boolean
-          is_public?: boolean
-          lead_count?: number | null
-          max_pax?: number | null
-          num_days?: number | null
-          org_id?: string
-          origin?: string | null
-          pdf_requires_lead?: boolean | null
-          pdf_url?: string | null
-          public_token?: string
-          quotation_id?: string | null
-          return_date?: string | null
-          share_count?: number | null
-          status?: string
-          subtitle?: string | null
-          title?: string
-          updated_at?: string
-          view_count?: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "itineraries_org_id_fkey"
-            columns: ["org_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "itineraries_quotation_id_fkey"
-            columns: ["quotation_id"]
-            isOneToOne: false
-            referencedRelation: "quotations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      itinerary_stops: {
-        Row: {
-          address: string | null
-          category: string | null
-          city: string | null
-          country: string | null
-          created_at: string
-          day_number: number
-          description: string | null
-          destination_id: string | null
-          duration_minutes: number | null
-          emoji: string | null
-          experience_id: string | null
-          hotel_id: string | null
-          id: string
-          is_optional: boolean | null
-          itinerary_id: string
-          lat: number | null
-          lng: number | null
-          name: string
-          photo_url: string | null
-          position: number
-          rating: number | null
-          stop_type: string | null
-          time_start: string | null
-          tips: string[] | null
-        }
-        Insert: {
-          address?: string | null
-          category?: string | null
-          city?: string | null
-          country?: string | null
-          created_at?: string
-          day_number?: number
-          description?: string | null
-          destination_id?: string | null
-          duration_minutes?: number | null
-          emoji?: string | null
-          experience_id?: string | null
-          hotel_id?: string | null
-          id?: string
-          is_optional?: boolean | null
-          itinerary_id: string
-          lat?: number | null
-          lng?: number | null
-          name: string
-          photo_url?: string | null
-          position?: number
-          rating?: number | null
-          stop_type?: string | null
-          time_start?: string | null
-          tips?: string[] | null
-        }
-        Update: {
-          address?: string | null
-          category?: string | null
-          city?: string | null
-          country?: string | null
-          created_at?: string
-          day_number?: number
-          description?: string | null
-          destination_id?: string | null
-          duration_minutes?: number | null
-          emoji?: string | null
-          experience_id?: string | null
-          hotel_id?: string | null
-          id?: string
-          is_optional?: boolean | null
-          itinerary_id?: string
-          lat?: number | null
-          lng?: number | null
-          name?: string
-          photo_url?: string | null
-          position?: number
-          rating?: number | null
-          stop_type?: string | null
-          time_start?: string | null
-          tips?: string[] | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "itinerary_stops_itinerary_id_fkey"
-            columns: ["itinerary_id"]
-            isOneToOne: false
-            referencedRelation: "itineraries"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      kanban_boards: {
-        Row: {
-          board_type: string | null
-          created_at: string
-          description: string | null
-          id: string
-          name: string
-          org_id: string
-          slug: string
-          updated_at: string
-        }
-        Insert: {
-          board_type?: string | null
-          created_at?: string
-          description?: string | null
-          id?: string
-          name: string
-          org_id: string
-          slug: string
-          updated_at?: string
-        }
-        Update: {
-          board_type?: string | null
-          created_at?: string
-          description?: string | null
-          id?: string
-          name?: string
-          org_id?: string
-          slug?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "kanban_boards_org_id_fkey"
-            columns: ["org_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      kanban_cards: {
-        Row: {
-          assigned_to: string | null
-          board_id: string
-          client_id: string | null
-          column_id: string
-          created_at: string
-          description: string | null
-          due_date: string | null
-          email: string | null
-          estimated_value: number | null
-          id: string
-          linked_card_ids: string[] | null
           metadata: Json | null
-          position: number
-          priority: string | null
-          quotation_id: string | null
-          tags: string[] | null
-          task_type: string | null
-          ticket_id: string | null
-          title: string
-          trip_id: string | null
-          updated_at: string
-          whatsapp: string | null
+          org_id: string
         }
         Insert: {
-          assigned_to?: string | null
-          board_id: string
-          client_id?: string | null
-          column_id: string
-          created_at?: string
-          description?: string | null
-          due_date?: string | null
-          email?: string | null
-          estimated_value?: number | null
+          content: string
+          created_at?: string | null
+          embedding?: string | null
           id?: string
-          linked_card_ids?: string[] | null
           metadata?: Json | null
-          position?: number
-          priority?: string | null
-          quotation_id?: string | null
-          tags?: string[] | null
-          task_type?: string | null
-          ticket_id?: string | null
-          title: string
-          trip_id?: string | null
-          updated_at?: string
-          whatsapp?: string | null
+          org_id: string
         }
         Update: {
-          assigned_to?: string | null
-          board_id?: string
-          client_id?: string | null
-          column_id?: string
-          created_at?: string
-          description?: string | null
-          due_date?: string | null
-          email?: string | null
-          estimated_value?: number | null
+          content?: string
+          created_at?: string | null
+          embedding?: string | null
           id?: string
-          linked_card_ids?: string[] | null
           metadata?: Json | null
-          position?: number
-          priority?: string | null
-          quotation_id?: string | null
-          tags?: string[] | null
-          task_type?: string | null
-          ticket_id?: string | null
-          title?: string
-          trip_id?: string | null
-          updated_at?: string
-          whatsapp?: string | null
+          org_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "kanban_cards_board_id_fkey"
-            columns: ["board_id"]
+            foreignKeyName: "ai_knowledge_base_org_id_fkey"
+            columns: ["org_id"]
             isOneToOne: false
-            referencedRelation: "kanban_boards"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "kanban_cards_client_id_fkey"
-            columns: ["client_id"]
-            isOneToOne: false
-            referencedRelation: "clients"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "kanban_cards_column_id_fkey"
-            columns: ["column_id"]
-            isOneToOne: false
-            referencedRelation: "kanban_columns"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "kanban_cards_quotation_id_fkey"
-            columns: ["quotation_id"]
-            isOneToOne: false
-            referencedRelation: "quotations"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "kanban_cards_ticket_id_fkey"
-            columns: ["ticket_id"]
-            isOneToOne: false
-            referencedRelation: "tickets"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "kanban_cards_trip_id_fkey"
-            columns: ["trip_id"]
-            isOneToOne: false
-            referencedRelation: "trips"
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
       }
-      kanban_checklist_items: {
+      bio_link_blocks: {
         Row: {
-          checked_at: string | null
-          checklist_id: string
+          bio_link_id: string
+          block_type: string
+          config: Json
           created_at: string
+          draft_only: boolean
           id: string
-          is_checked: boolean
+          is_visible: boolean
+          layout_slot: string | null
           position: number
-          title: string
-        }
-        Insert: {
-          checked_at?: string | null
-          checklist_id: string
-          created_at?: string
-          id?: string
-          is_checked?: boolean
-          position?: number
-          title: string
-        }
-        Update: {
-          checked_at?: string | null
-          checklist_id?: string
-          created_at?: string
-          id?: string
-          is_checked?: boolean
-          position?: number
-          title?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "kanban_checklist_items_checklist_id_fkey"
-            columns: ["checklist_id"]
-            isOneToOne: false
-            referencedRelation: "kanban_checklists"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      kanban_checklists: {
-        Row: {
-          card_id: string
-          created_at: string
-          id: string
-          org_id: string
-          title: string
-        }
-        Insert: {
-          card_id: string
-          created_at?: string
-          id?: string
-          org_id: string
-          title?: string
-        }
-        Update: {
-          card_id?: string
-          created_at?: string
-          id?: string
-          org_id?: string
-          title?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "kanban_checklists_card_id_fkey"
-            columns: ["card_id"]
-            isOneToOne: false
-            referencedRelation: "kanban_cards"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "kanban_checklists_org_id_fkey"
-            columns: ["org_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      kanban_columns: {
-        Row: {
-          board_id: string
-          color: string | null
-          created_at: string
-          id: string
-          name: string
-          position: number
-        }
-        Insert: {
-          board_id: string
-          color?: string | null
-          created_at?: string
-          id?: string
-          name: string
-          position?: number
-        }
-        Update: {
-          board_id?: string
-          color?: string | null
-          created_at?: string
-          id?: string
-          name?: string
-          position?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "kanban_columns_board_id_fkey"
-            columns: ["board_id"]
-            isOneToOne: false
-            referencedRelation: "kanban_boards"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      kanban_notes: {
-        Row: {
-          author_id: string | null
-          body: string
-          card_id: string
-          created_at: string
-          id: string
-          org_id: string
+          size: string
           updated_at: string
+          visibility_rules: Json
+          workspace_id: string
         }
         Insert: {
-          author_id?: string | null
-          body: string
-          card_id: string
+          bio_link_id: string
+          block_type: string
+          config?: Json
           created_at?: string
+          draft_only?: boolean
           id?: string
-          org_id: string
+          is_visible?: boolean
+          layout_slot?: string | null
+          position?: number
+          size?: string
           updated_at?: string
+          visibility_rules?: Json
+          workspace_id: string
         }
         Update: {
-          author_id?: string | null
-          body?: string
-          card_id?: string
+          bio_link_id?: string
+          block_type?: string
+          config?: Json
           created_at?: string
+          draft_only?: boolean
           id?: string
-          org_id?: string
+          is_visible?: boolean
+          layout_slot?: string | null
+          position?: number
+          size?: string
           updated_at?: string
+          visibility_rules?: Json
+          workspace_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "kanban_notes_author_id_fkey"
-            columns: ["author_id"]
+            foreignKeyName: "bio_link_blocks_bio_link_id_fkey"
+            columns: ["bio_link_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "kanban_notes_card_id_fkey"
-            columns: ["card_id"]
-            isOneToOne: false
-            referencedRelation: "kanban_cards"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "kanban_notes_org_id_fkey"
-            columns: ["org_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
+            referencedRelation: "bio_links"
             referencedColumns: ["id"]
           },
         ]
       }
-      kanban_tags: {
+      bio_link_versions: {
         Row: {
-          color: string
+          bio_link_id: string
           created_at: string
+          created_by: string | null
           id: string
-          name: string
-          org_id: string
+          snapshot: Json
+          status: string
+          summary: string | null
+          version_number: number
+          workspace_id: string
         }
         Insert: {
-          color?: string
+          bio_link_id: string
           created_at?: string
+          created_by?: string | null
           id?: string
-          name: string
-          org_id: string
+          snapshot?: Json
+          status?: string
+          summary?: string | null
+          version_number: number
+          workspace_id: string
         }
         Update: {
-          color?: string
+          bio_link_id?: string
           created_at?: string
+          created_by?: string | null
           id?: string
-          name?: string
-          org_id?: string
+          snapshot?: Json
+          status?: string
+          summary?: string | null
+          version_number?: number
+          workspace_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "kanban_tags_org_id_fkey"
-            columns: ["org_id"]
+            foreignKeyName: "bio_link_versions_bio_link_id_fkey"
+            columns: ["bio_link_id"]
             isOneToOne: false
-            referencedRelation: "organizations"
+            referencedRelation: "bio_links"
             referencedColumns: ["id"]
           },
         ]
       }
-      notifications: {
-        Row: {
-          created_at: string
-          id: string
-          link: string | null
-          message: string | null
-          org_id: string
-          read_at: string | null
-          title: string
-          type: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          link?: string | null
-          message?: string | null
-          org_id: string
-          read_at?: string | null
-          title: string
-          type?: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          link?: string | null
-          message?: string | null
-          org_id?: string
-          read_at?: string | null
-          title?: string
-          type?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "notifications_org_id_fkey"
-            columns: ["org_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      organizations: {
-        Row: {
-          address: Json | null
-          ai_keys_config: Json | null
-          created_at: string
-          email: string | null
-          id: string
-          is_active: boolean
-          logo_url: string | null
-          name: string
-          phone: string | null
-          plan: string | null
-          primary_color: string | null
-          settings: Json | null
-          slug: string
-          updated_at: string
-          whatsapp: string | null
-        }
-        Insert: {
-          address?: Json | null
-          ai_keys_config?: Json | null
-          created_at?: string
-          email?: string | null
-          id?: string
-          is_active?: boolean
-          logo_url?: string | null
-          name: string
-          phone?: string | null
-          plan?: string | null
-          primary_color?: string | null
-          settings?: Json | null
-          slug: string
-          updated_at?: string
-          whatsapp?: string | null
-        }
-        Update: {
-          address?: Json | null
-          ai_keys_config?: Json | null
-          created_at?: string
-          email?: string | null
-          id?: string
-          is_active?: boolean
-          logo_url?: string | null
-          name?: string
-          phone?: string | null
-          plan?: string | null
-          primary_color?: string | null
-          settings?: Json | null
-          slug?: string
-          updated_at?: string
-          whatsapp?: string | null
-        }
-        Relationships: []
-      }
-      policy_cache: {
-        Row: {
-          conteudo: Json
-          criado_em: string | null
-          criado_por: string | null
-          id: string
-          notas_internas: string | null
-          operadora: string
-          operadora_display: string | null
-          org_id: string
-          tipo: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          conteudo?: Json
-          criado_em?: string | null
-          criado_por?: string | null
-          id?: string
-          notas_internas?: string | null
-          operadora: string
-          operadora_display?: string | null
-          org_id: string
-          tipo?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          conteudo?: Json
-          criado_em?: string | null
-          criado_por?: string | null
-          id?: string
-          notas_internas?: string | null
-          operadora?: string
-          operadora_display?: string | null
-          org_id?: string
-          tipo?: string | null
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "policy_cache_org_id_fkey"
-            columns: ["org_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      profiles: {
+      bio_links: {
         Row: {
           avatar_url: string | null
-          bio: string | null
+          background_config: Json
+          bio_text: string | null
+          blocks: Json
           created_at: string
-          email: string | null
-          first_name: string
-          id: string
-          is_active: boolean
-          last_name: string
-          last_seen_at: string | null
-          notification_prefs: Json | null
-          org_id: string | null
-          phone: string | null
-          updated_at: string
-          user_id: string
-          whatsapp: string | null
-        }
-        Insert: {
-          avatar_url?: string | null
-          bio?: string | null
-          created_at?: string
-          email?: string | null
-          first_name?: string
-          id?: string
-          is_active?: boolean
-          last_name?: string
-          last_seen_at?: string | null
-          notification_prefs?: Json | null
-          org_id?: string | null
-          phone?: string | null
-          updated_at?: string
-          user_id: string
-          whatsapp?: string | null
-        }
-        Update: {
-          avatar_url?: string | null
-          bio?: string | null
-          created_at?: string
-          email?: string | null
-          first_name?: string
-          id?: string
-          is_active?: boolean
-          last_name?: string
-          last_seen_at?: string | null
-          notification_prefs?: Json | null
-          org_id?: string | null
-          phone?: string | null
-          updated_at?: string
-          user_id?: string
-          whatsapp?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "profiles_org_id_fkey"
-            columns: ["org_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      quotations: {
-        Row: {
-          agent_id: string | null
-          ai_extracted: boolean | null
-          ai_raw_response: Json | null
-          check_in: string | null
-          check_out: string | null
-          client_id: string | null
-          created_at: string
-          currency: string | null
-          destination: string | null
-          hotel_name: string | null
-          hotel_photo_url: string | null
-          hotel_stars: number | null
-          id: string
-          installments: Json | null
-          meal_plan: string | null
-          num_nights: number | null
-          org_id: string
-          room_type: string | null
-          share_token: string | null
-          source_file_url: string | null
-          status: string
-          total_value: number | null
-          updated_at: string
-          viewed_at: string | null
-          whatsapp_text: string | null
-        }
-        Insert: {
-          agent_id?: string | null
-          ai_extracted?: boolean | null
-          ai_raw_response?: Json | null
-          check_in?: string | null
-          check_out?: string | null
-          client_id?: string | null
-          created_at?: string
-          currency?: string | null
-          destination?: string | null
-          hotel_name?: string | null
-          hotel_photo_url?: string | null
-          hotel_stars?: number | null
-          id?: string
-          installments?: Json | null
-          meal_plan?: string | null
-          num_nights?: number | null
-          org_id: string
-          room_type?: string | null
-          share_token?: string | null
-          source_file_url?: string | null
-          status?: string
-          total_value?: number | null
-          updated_at?: string
-          viewed_at?: string | null
-          whatsapp_text?: string | null
-        }
-        Update: {
-          agent_id?: string | null
-          ai_extracted?: boolean | null
-          ai_raw_response?: Json | null
-          check_in?: string | null
-          check_out?: string | null
-          client_id?: string | null
-          created_at?: string
-          currency?: string | null
-          destination?: string | null
-          hotel_name?: string | null
-          hotel_photo_url?: string | null
-          hotel_stars?: number | null
-          id?: string
-          installments?: Json | null
-          meal_plan?: string | null
-          num_nights?: number | null
-          org_id?: string
-          room_type?: string | null
-          share_token?: string | null
-          source_file_url?: string | null
-          status?: string
-          total_value?: number | null
-          updated_at?: string
-          viewed_at?: string | null
-          whatsapp_text?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "quotations_client_id_fkey"
-            columns: ["client_id"]
-            isOneToOne: false
-            referencedRelation: "clients"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "quotations_org_id_fkey"
-            columns: ["org_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      team_members: {
-        Row: {
-          commission_rate: number
-          created_at: string
-          email: string
-          full_name: string
-          id: string
-          org_id: string
-          role: string
-          status: string
-          updated_at: string
-          user_id: string | null
-        }
-        Insert: {
-          commission_rate?: number
-          created_at?: string
-          email: string
-          full_name?: string
-          id?: string
-          org_id: string
-          role?: string
-          status?: string
-          updated_at?: string
-          user_id?: string | null
-        }
-        Update: {
-          commission_rate?: number
-          created_at?: string
-          email?: string
-          full_name?: string
-          id?: string
-          org_id?: string
-          role?: string
-          status?: string
-          updated_at?: string
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "team_members_org_id_fkey"
-            columns: ["org_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      ticket_messages: {
-        Row: {
-          body: string
-          created_at: string
-          id: string
-          is_internal: boolean
-          sender_id: string | null
-          sender_type: string | null
-          ticket_id: string
-        }
-        Insert: {
-          body: string
-          created_at?: string
-          id?: string
-          is_internal?: boolean
-          sender_id?: string | null
-          sender_type?: string | null
-          ticket_id: string
-        }
-        Update: {
-          body?: string
-          created_at?: string
-          id?: string
-          is_internal?: boolean
-          sender_id?: string | null
-          sender_type?: string | null
-          ticket_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "ticket_messages_ticket_id_fkey"
-            columns: ["ticket_id"]
-            isOneToOne: false
-            referencedRelation: "tickets"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      tickets: {
-        Row: {
-          assigned_to: string | null
-          client_id: string | null
-          created_at: string
-          created_by: string | null
-          description: string | null
-          id: string
-          org_id: string
-          priority: string
-          status: string
-          subject: string
-          title: string | null
-          trip_id: string | null
-          type: string | null
-          updated_at: string
-        }
-        Insert: {
-          assigned_to?: string | null
-          client_id?: string | null
-          created_at?: string
-          created_by?: string | null
-          description?: string | null
-          id?: string
-          org_id: string
-          priority?: string
-          status?: string
-          subject: string
-          title?: string | null
-          trip_id?: string | null
-          type?: string | null
-          updated_at?: string
-        }
-        Update: {
-          assigned_to?: string | null
-          client_id?: string | null
-          created_at?: string
-          created_by?: string | null
-          description?: string | null
-          id?: string
-          org_id?: string
-          priority?: string
-          status?: string
-          subject?: string
-          title?: string | null
-          trip_id?: string | null
-          type?: string | null
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "tickets_client_id_fkey"
-            columns: ["client_id"]
-            isOneToOne: false
-            referencedRelation: "clients"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "tickets_org_id_fkey"
-            columns: ["org_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "tickets_trip_id_fkey"
-            columns: ["trip_id"]
-            isOneToOne: false
-            referencedRelation: "trips"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      travel_group_members: {
-        Row: {
-          group_id: string
-          id: string
-          traveler_id: string
-        }
-        Insert: {
-          group_id: string
-          id?: string
-          traveler_id: string
-        }
-        Update: {
-          group_id?: string
-          id?: string
-          traveler_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "travel_group_members_group_id_fkey"
-            columns: ["group_id"]
-            isOneToOne: false
-            referencedRelation: "travel_groups"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "travel_group_members_traveler_id_fkey"
-            columns: ["traveler_id"]
-            isOneToOne: false
-            referencedRelation: "travelers"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      travel_groups: {
-        Row: {
-          client_id: string | null
-          created_at: string
-          description: string | null
-          id: string
-          name: string
-          org_id: string
-          updated_at: string
-        }
-        Insert: {
-          client_id?: string | null
-          created_at?: string
-          description?: string | null
-          id?: string
-          name: string
-          org_id: string
-          updated_at?: string
-        }
-        Update: {
-          client_id?: string | null
-          created_at?: string
-          description?: string | null
-          id?: string
-          name?: string
-          org_id?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "travel_groups_client_id_fkey"
-            columns: ["client_id"]
-            isOneToOne: false
-            referencedRelation: "clients"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "travel_groups_org_id_fkey"
-            columns: ["org_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      traveler_documents: {
-        Row: {
-          created_at: string
-          doc_number: string | null
-          doc_type: string
-          expiry_date: string | null
-          file_url: string | null
-          id: string
-          issue_date: string | null
-          org_id: string
-          status: string | null
-          traveler_id: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          doc_number?: string | null
-          doc_type: string
-          expiry_date?: string | null
-          file_url?: string | null
-          id?: string
-          issue_date?: string | null
-          org_id: string
-          status?: string | null
-          traveler_id: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          doc_number?: string | null
-          doc_type?: string
-          expiry_date?: string | null
-          file_url?: string | null
-          id?: string
-          issue_date?: string | null
-          org_id?: string
-          status?: string | null
-          traveler_id?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "traveler_documents_org_id_fkey"
-            columns: ["org_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "traveler_documents_traveler_id_fkey"
-            columns: ["traveler_id"]
-            isOneToOne: false
-            referencedRelation: "travelers"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      traveler_info_pages: {
-        Row: {
-          author_id: string | null
-          content_blocks: Json | null
-          cover_image_url: string | null
-          created_at: string
-          description: string | null
+          cta_enabled: boolean
+          cta_text: string | null
+          cta_url: string | null
+          display_name: string | null
+          ga4_measurement_id: string | null
+          gtm_id: string | null
+          header_config: Json
           id: string
           is_published: boolean
-          org_id: string
-          slug: string | null
-          title: string
-          updated_at: string
-        }
-        Insert: {
-          author_id?: string | null
-          content_blocks?: Json | null
-          cover_image_url?: string | null
-          created_at?: string
-          description?: string | null
-          id?: string
-          is_published?: boolean
-          org_id: string
-          slug?: string | null
-          title: string
-          updated_at?: string
-        }
-        Update: {
-          author_id?: string | null
-          content_blocks?: Json | null
-          cover_image_url?: string | null
-          created_at?: string
-          description?: string | null
-          id?: string
-          is_published?: boolean
-          org_id?: string
-          slug?: string | null
-          title?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "traveler_info_pages_author_id_fkey"
-            columns: ["author_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "traveler_info_pages_org_id_fkey"
-            columns: ["org_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      travelers: {
-        Row: {
-          birth_date: string | null
-          client_id: string | null
-          cpf: string | null
-          created_at: string
-          email: string | null
-          form_completed_at: string | null
-          form_token: string | null
-          full_name: string
-          gender: string | null
-          id: string
-          nationality: string | null
-          org_id: string
-          phone: string | null
-          relation: string | null
-          updated_at: string
-        }
-        Insert: {
-          birth_date?: string | null
-          client_id?: string | null
-          cpf?: string | null
-          created_at?: string
-          email?: string | null
-          form_completed_at?: string | null
-          form_token?: string | null
-          full_name: string
-          gender?: string | null
-          id?: string
-          nationality?: string | null
-          org_id: string
-          phone?: string | null
-          relation?: string | null
-          updated_at?: string
-        }
-        Update: {
-          birth_date?: string | null
-          client_id?: string | null
-          cpf?: string | null
-          created_at?: string
-          email?: string | null
-          form_completed_at?: string | null
-          form_token?: string | null
-          full_name?: string
-          gender?: string | null
-          id?: string
-          nationality?: string | null
-          org_id?: string
-          phone?: string | null
-          relation?: string | null
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "travelers_client_id_fkey"
-            columns: ["client_id"]
-            isOneToOne: false
-            referencedRelation: "clients"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "travelers_org_id_fkey"
-            columns: ["org_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      trip_documents: {
-        Row: {
-          created_at: string
-          doc_type: string | null
-          file_url: string | null
-          id: string
-          is_visible_to_client: boolean
-          title: string
-          trip_id: string
-        }
-        Insert: {
-          created_at?: string
-          doc_type?: string | null
-          file_url?: string | null
-          id?: string
-          is_visible_to_client?: boolean
-          title: string
-          trip_id: string
-        }
-        Update: {
-          created_at?: string
-          doc_type?: string | null
-          file_url?: string | null
-          id?: string
-          is_visible_to_client?: boolean
-          title?: string
-          trip_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "trip_documents_trip_id_fkey"
-            columns: ["trip_id"]
-            isOneToOne: false
-            referencedRelation: "trips"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      trip_flights: {
-        Row: {
-          airline_name: string | null
-          arrival_datetime: string | null
-          booking_code: string | null
-          created_at: string
-          departure_datetime: string | null
-          destination_city: string | null
-          flight_number: string | null
-          id: string
-          notes: string | null
-          origin_city: string | null
-          sequence: number
-          trip_id: string
-        }
-        Insert: {
-          airline_name?: string | null
-          arrival_datetime?: string | null
-          booking_code?: string | null
-          created_at?: string
-          departure_datetime?: string | null
-          destination_city?: string | null
-          flight_number?: string | null
-          id?: string
-          notes?: string | null
-          origin_city?: string | null
-          sequence?: number
-          trip_id: string
-        }
-        Update: {
-          airline_name?: string | null
-          arrival_datetime?: string | null
-          booking_code?: string | null
-          created_at?: string
-          departure_datetime?: string | null
-          destination_city?: string | null
-          flight_number?: string | null
-          id?: string
-          notes?: string | null
-          origin_city?: string | null
-          sequence?: number
-          trip_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "trip_flights_trip_id_fkey"
-            columns: ["trip_id"]
-            isOneToOne: false
-            referencedRelation: "trips"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      trip_travelers: {
-        Row: {
-          created_at: string
-          id: string
-          seat_number: string | null
-          ticket_number: string | null
-          traveler_id: string
-          trip_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          seat_number?: string | null
-          ticket_number?: string | null
-          traveler_id: string
-          trip_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          seat_number?: string | null
-          ticket_number?: string | null
-          traveler_id?: string
-          trip_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "trip_travelers_traveler_id_fkey"
-            columns: ["traveler_id"]
-            isOneToOne: false
-            referencedRelation: "travelers"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "trip_travelers_trip_id_fkey"
-            columns: ["trip_id"]
-            isOneToOne: false
-            referencedRelation: "trips"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      trips: {
-        Row: {
-          airline: string | null
-          assigned_agent_id: string | null
-          created_at: string
-          created_by: string | null
-          departure_date: string | null
-          destination: string | null
-          destination_city: string | null
-          destination_country: string | null
-          flight_number: string | null
-          hotel_name: string | null
-          hotel_regime: string | null
-          id: string
-          insurance_company: string | null
-          insurance_policy: string | null
-          itinerary_id: string | null
-          locator_code: string | null
-          meal_plan: string | null
-          notes: string | null
-          notes_internal: string | null
-          num_nights: number | null
-          org_id: string
-          pax_count: number | null
-          primary_client_id: string | null
-          return_date: string | null
-          room_type: string | null
+          latest_simlab_run_id: string | null
+          latest_version_number: number
+          layout_template_key: string
+          links: Json
+          meta_pixel_id: string | null
+          profile: Json
+          published_at: string | null
+          published_html: string | null
+          published_version_id: string | null
+          scheduled_publish_at: string | null
+          seo_config: Json
+          seo_description: string | null
+          seo_image_url: string | null
+          seo_title: string | null
+          simlab_status: string | null
+          simlab_validated_at: string | null
+          slug: string
+          social_links: Json
           status: string
-          title: string | null
-          total_value: number | null
+          theme_config: Json
+          theme_id: string | null
+          theme_key: string
+          theme_tokens: Json
+          tiktok_pixel_id: string | null
+          total_clicks: number
+          total_views: number
           updated_at: string
+          username: string | null
+          workspace_id: string
         }
         Insert: {
-          airline?: string | null
-          assigned_agent_id?: string | null
+          avatar_url?: string | null
+          background_config?: Json
+          bio_text?: string | null
+          blocks?: Json
           created_at?: string
-          created_by?: string | null
-          departure_date?: string | null
-          destination?: string | null
-          destination_city?: string | null
-          destination_country?: string | null
-          flight_number?: string | null
-          hotel_name?: string | null
-          hotel_regime?: string | null
+          cta_enabled?: boolean
+          cta_text?: string | null
+          cta_url?: string | null
+          display_name?: string | null
+          ga4_measurement_id?: string | null
+          gtm_id?: string | null
+          header_config?: Json
           id?: string
-          insurance_company?: string | null
-          insurance_policy?: string | null
-          itinerary_id?: string | null
-          locator_code?: string | null
-          meal_plan?: string | null
-          notes?: string | null
-          notes_internal?: string | null
-          num_nights?: number | null
-          org_id: string
-          pax_count?: number | null
-          primary_client_id?: string | null
-          return_date?: string | null
-          room_type?: string | null
+          is_published?: boolean
+          latest_simlab_run_id?: string | null
+          latest_version_number?: number
+          layout_template_key?: string
+          links?: Json
+          meta_pixel_id?: string | null
+          profile?: Json
+          published_at?: string | null
+          published_html?: string | null
+          published_version_id?: string | null
+          scheduled_publish_at?: string | null
+          seo_config?: Json
+          seo_description?: string | null
+          seo_image_url?: string | null
+          seo_title?: string | null
+          simlab_status?: string | null
+          simlab_validated_at?: string | null
+          slug: string
+          social_links?: Json
           status?: string
-          title?: string | null
-          total_value?: number | null
+          theme_config?: Json
+          theme_id?: string | null
+          theme_key?: string
+          theme_tokens?: Json
+          tiktok_pixel_id?: string | null
+          total_clicks?: number
+          total_views?: number
           updated_at?: string
+          username?: string | null
+          workspace_id: string
         }
         Update: {
-          airline?: string | null
-          assigned_agent_id?: string | null
+          avatar_url?: string | null
+          background_config?: Json
+          bio_text?: string | null
+          blocks?: Json
           created_at?: string
-          created_by?: string | null
-          departure_date?: string | null
-          destination?: string | null
-          destination_city?: string | null
-          destination_country?: string | null
-          flight_number?: string | null
-          hotel_name?: string | null
-          hotel_regime?: string | null
+          cta_enabled?: boolean
+          cta_text?: string | null
+          cta_url?: string | null
+          display_name?: string | null
+          ga4_measurement_id?: string | null
+          gtm_id?: string | null
+          header_config?: Json
           id?: string
-          insurance_company?: string | null
-          insurance_policy?: string | null
-          itinerary_id?: string | null
-          locator_code?: string | null
-          meal_plan?: string | null
-          notes?: string | null
-          notes_internal?: string | null
-          num_nights?: number | null
-          org_id?: string
-          pax_count?: number | null
-          primary_client_id?: string | null
-          return_date?: string | null
-          room_type?: string | null
+          is_published?: boolean
+          latest_simlab_run_id?: string | null
+          latest_version_number?: number
+          layout_template_key?: string
+          links?: Json
+          meta_pixel_id?: string | null
+          profile?: Json
+          published_at?: string | null
+          published_html?: string | null
+          published_version_id?: string | null
+          scheduled_publish_at?: string | null
+          seo_config?: Json
+          seo_description?: string | null
+          seo_image_url?: string | null
+          seo_title?: string | null
+          simlab_status?: string | null
+          simlab_validated_at?: string | null
+          slug?: string
+          social_links?: Json
           status?: string
-          title?: string | null
-          total_value?: number | null
+          theme_config?: Json
+          theme_id?: string | null
+          theme_key?: string
+          theme_tokens?: Json
+          tiktok_pixel_id?: string | null
+          total_clicks?: number
+          total_views?: number
           updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "trips_itinerary_id_fkey"
-            columns: ["itinerary_id"]
-            isOneToOne: false
-            referencedRelation: "itineraries"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "trips_org_id_fkey"
-            columns: ["org_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "trips_primary_client_id_fkey"
-            columns: ["primary_client_id"]
-            isOneToOne: false
-            referencedRelation: "clients"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      user_roles: {
-        Row: {
-          id: string
-          role: Database["public"]["Enums"]["app_role"]
-          user_id: string
-        }
-        Insert: {
-          id?: string
-          role: Database["public"]["Enums"]["app_role"]
-          user_id: string
-        }
-        Update: {
-          id?: string
-          role?: Database["public"]["Enums"]["app_role"]
-          user_id?: string
+          username?: string | null
+          workspace_id?: string
         }
         Relationships: []
       }
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      assign_org_admin_role: { Args: { _user_id: string }; Returns: undefined }
-      confirm_public_quotation: {
-        Args: {
-          p_notes?: string
-          p_token: string
-          p_traveler_email?: string
-          p_traveler_name: string
-        }
-        Returns: undefined
-      }
-      ensure_default_kanban_boards: {
-        Args: { _org_id: string }
-        Returns: undefined
-      }
-      generate_booking_installments: {
-        Args: { _booking_id: string }
-        Returns: undefined
-      }
-      get_my_org_id: { Args: never; Returns: string }
-      get_public_checklist: {
-        Args: { _token: string }
-        Returns: {
-          checklist_id: string
-          checklist_title: string
-          is_checked: boolean
-          item_description: string
-          item_id: string
-          item_position: number
-          item_title: string
-          org_logo: string
-          org_name: string
-          org_primary_color: string
-        }[]
-      }
-      get_public_group_trip: {
-        Args: { _slug: string }
-        Returns: {
-          cover_image_url: string
-          currency: string
-          current_pax: number
-          departure_date: string
-          description_md: string
-          destination: string
-          excludes: string[]
-          gallery_urls: string[]
-          id: string
-          important_notes: string
-          includes: string[]
-          installments_count: number
-          max_pax: number
-          num_days: number
-          num_nights: number
-          org_id: string
-          org_logo: string
-          org_name: string
-          org_primary_color: string
-          org_whatsapp: string
-          origin_city: string
-          price_per_pax: number
-          return_date: string
-          slug: string
-          subtitle: string
-          title: string
-          transport_type: string
-        }[]
-      }
-      get_public_organization_by_slug: {
-        Args: { _slug: string }
-        Returns: {
-          id: string
-          logo_url: string
-          name: string
-          primary_color: string
-          whatsapp: string
-        }[]
-      }
-      get_public_quotation: {
-        Args: { _token: string }
-        Returns: {
-          check_in: string
-          check_out: string
-          currency: string
-          destination: string
-          hotel_name: string
-          hotel_photo_url: string
-          hotel_stars: number
-          installments: Json
-          meal_plan: string
-          num_nights: number
-          org_logo: string
-          org_name: string
-          org_primary_color: string
-          org_whatsapp: string
-          room_type: string
-          total_value: number
-        }[]
-      }
-      has_role: {
-        Args: {
-          _role: Database["public"]["Enums"]["app_role"]
-          _user_id: string
-        }
-        Returns: boolean
-      }
-      submit_traveler_form: {
-        Args: {
-          _birth_date?: string
-          _cpf?: string
-          _email?: string
-          _full_name: string
-          _gender?: string
-          _nationality?: string
-          _phone?: string
-          _token: string
-        }
-        Returns: string
-      }
-      toggle_public_checklist_item: {
-        Args: { _item_id: string; _token: string }
-        Returns: boolean
-      }
-    }
-    Enums: {
-      app_role: "super_admin" | "org_admin" | "agent" | "support" | "client"
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
-}
-
-type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
-
-type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
-
-export type Tables<
-  DefaultSchemaTableNameOrOptions extends
-    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
-    | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
-  }
-    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
-> = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
-  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
-      Row: infer R
-    }
-    ? R
-    : never
-  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])
-    ? (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
-        Row: infer R
-      }
-      ? R
-      : never
-    : never
-
-export type TablesInsert<
-  DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
-    | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
-  }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
-> = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
-  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Insert: infer I
-    }
-    ? I
-    : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Insert: infer I
-      }
-      ? I
-      : never
-    : never
-
-export type TablesUpdate<
-  DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
-    | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
-  }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
-> = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
-  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Update: infer U
-    }
-    ? U
-    : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Update: infer U
-      }
-      ? U
-      : never
-    : never
-
-export type Enums<
-  DefaultSchemaEnumNameOrOptions extends
-    | keyof DefaultSchema["Enums"]
-    | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
-  }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
-> = DefaultSchemaEnumNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
-  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
-  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
-    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
-    : never
-
-export type CompositeTypes<
-  PublicCompositeTypeNameOrOptions extends
-    | keyof DefaultSchema["CompositeTypes"]
-    | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
-  }
-    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
-> = PublicCompositeTypeNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
-  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
-  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
-    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
-    : never
-
-export const Constants = {
-  public: {
-    Enums: {
-      app_role: ["super_admin", "org_admin", "agent", "support", "client"],
-    },
-  },
-} as const
+/* ... rest of the massive type file ... */

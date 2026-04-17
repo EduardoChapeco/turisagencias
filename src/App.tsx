@@ -71,6 +71,7 @@ const PublicTravelerInfo = lazy(() => import('./pages/PublicTravelerInfo'));
 const GroupTrips = lazy(() => import('./pages/GroupTrips'));
 const PublicGroupTrip = lazy(() => import('./pages/PublicGroupTrip'));
 const PublicBookingVoucher = lazy(() => import('./pages/PublicBookingVoucher'));
+const Destinations = lazy(() => import('./pages/Destinations'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -189,6 +190,7 @@ const App = () => (
               <Route path="/experiences" element={<ProtectedWithOrg><TripsRole><Experiences /></TripsRole></ProtectedWithOrg>} />
 
               <Route path="/group-trips" element={<ProtectedWithOrg><TripsRole><GroupTrips /></TripsRole></ProtectedWithOrg>} />
+              <Route path="/destinations" element={<ProtectedWithOrg><TripsRole><Destinations /></TripsRole></ProtectedWithOrg>} />
 
               <Route path="*" element={<NotFound />} />
             </Routes>

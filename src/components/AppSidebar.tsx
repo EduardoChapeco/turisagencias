@@ -16,6 +16,7 @@ import {
   Book,
   Bell,
   Map,
+  MapPin,
   FileSignature,
   Bot,
   UserPlus
@@ -77,6 +78,7 @@ const navGroups: NavGroup[] = [
       { title: 'Hotéis da Rede',   url: '/hotels',          icon: Building2 },
       { title: 'Passeios',         url: '/experiences',     icon: Globe2 },
       { title: 'Guias de Destino', url: '/guides',          icon: Book },
+      { title: 'Destinos & Gateways', url: '/destinations', icon: MapPin },
     ],
   },
   {

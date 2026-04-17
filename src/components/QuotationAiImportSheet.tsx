@@ -2,15 +2,17 @@ import { useState, useRef } from 'react';
 import { SheetPage } from '@/components/ui/SheetPage';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthStore } from '@/stores/authStore';
 import { useToast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
 import {
   Sparkles, Upload, FileText, X, Loader2, CheckCircle2,
-  ImageIcon, Eye, ExternalLink
+  ImageIcon, Eye, ExternalLink, Pencil, AlertCircle, Save
 } from 'lucide-react';
 
 interface QuotationAiImportSheetProps {
@@ -44,6 +46,44 @@ const MEAL_PLAN_LABELS: Record<string, string> = {
   room_only: 'Somente Apartamento',
 };
 
+const MEAL_PLAN_OPTIONS = Object.entries(MEAL_PLAN_LABELS).map(([value, label]) => ({ value, label }));
+
+// ── Componente de campo editável pós-extração ──
+function EditableField({
+  label, value, onChange, type = 'text', icon, highlight = false,
+  options,
+}: {
+  label: string; value: string; onChange: (v: string) => void;
+  type?: string; icon?: string; highlight?: boolean; options?: { value: string; label: string }[];
+}) {
+  return (
+    <div className={`p-3 rounded-vj-lg border ${highlight ? 'border-vj-green/30 bg-vj-green/5' : 'border-vj-border bg-vj-surface'}`}>
+      <p className="text-[10px] uppercase tracking-wider text-vj-txt3 font-semibold mb-1.5">
+        {icon} {label}
+      </p>
+      {options ? (
+        <Select value={value} onValueChange={onChange}>
+          <SelectTrigger className="h-8 text-xs border-none shadow-none p-0 bg-transparent font-semibold">
+            <SelectValue placeholder="Selecionar..." />
+          </SelectTrigger>
+          <SelectContent>
+            {options.map(o => (
+              <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      ) : (
+        <Input
+          type={type}
+          value={value}
+          onChange={e => onChange(e.target.value)}
+          className={`h-8 border-none shadow-none p-0 text-sm font-semibold bg-transparent focus-visible:ring-0 ${highlight ? 'text-vj-green' : 'text-vj-txt'}`}
+        />
+      )}
+    </div>
+  );
+}
+
 export function QuotationAiImportSheet({ open, onClose, onSuccess }: QuotationAiImportSheetProps) {
   const { profile, organization } = useAuthStore();
   const { toast } = useToast();
@@ -54,15 +94,26 @@ export function QuotationAiImportSheet({ open, onClose, onSuccess }: QuotationAi
   const [isPdf, setIsPdf] = useState(false);
   const [additionalText, setAdditionalText] = useState('');
   const [extracting, setExtracting] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [extracted, setExtracted] = useState<ExtractedData | null>(null);
+  const [edited, setEdited] = useState<ExtractedData | null>(null);
   const [step, setStep] = useState<'upload' | 'review' | 'done'>('upload');
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Atualiza um campo do formulário de revisão
+  const updateField = (key: keyof ExtractedData, value: any) => {
+    setEdited(prev => ({ ...prev!, [key]: value }));
+  };
+
+  // Valor atual (editado ou original)
+  const current = edited ?? extracted ?? {};
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
     if (!f) return;
     setFile(f);
     setExtracted(null);
+    setEdited(null);
     setStep('upload');
 
     if (f.type === 'application/pdf') {
@@ -88,14 +139,12 @@ export function QuotationAiImportSheet({ open, onClose, onSuccess }: QuotationAi
 
   const handleExtract = async () => {
     if (!file && !additionalText.trim()) return;
-
     setExtracting(true);
 
     try {
       let imageBase64: string | null = null;
       let fileUrl: string | null = null;
 
-      // Upload do arquivo para o storage primeiro
       if (file) {
         const ext = file.name.split('.').pop();
         const path = `quotations/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
@@ -105,7 +154,6 @@ export function QuotationAiImportSheet({ open, onClose, onSuccess }: QuotationAi
           fileUrl = publicUrl;
         }
 
-        // Converter para base64 para enviar à IA
         if (file.type.startsWith('image/') || file.type === 'application/pdf') {
           const buffer = await file.arrayBuffer();
           const bytes = new Uint8Array(buffer);
@@ -128,18 +176,15 @@ export function QuotationAiImportSheet({ open, onClose, onSuccess }: QuotationAi
         body: payload,
       });
 
-      if (error) {
-        throw new Error(error.message || 'Falha na extração pela IA.');
-      }
-      
+      if (error) throw new Error(error.message || 'Falha na extração pela IA.');
+
       const result = data;
       setExtracted(result.data);
+      setEdited(result.data); // cópia editável começa igual ao extraído
       setStep('review');
 
-      // Invalida cache de cotações para o novo card aparecer na lista
       queryClient.invalidateQueries({ queryKey: ['quotations'] });
-
-      toast({ title: '✅ Extração concluída!', description: 'Revise os dados e confirme a cotação.' });
+      toast({ title: '✅ Extração concluída!', description: 'Revise e ajuste os dados antes de confirmar.' });
     } catch (err: any) {
       toast({ title: '❌ Erro na extração', description: err.message, variant: 'destructive' });
     } finally {
@@ -147,10 +192,41 @@ export function QuotationAiImportSheet({ open, onClose, onSuccess }: QuotationAi
     }
   };
 
+  // Salvar alterações editadas de volta ao banco
+  const handleSaveEdits = async () => {
+    if (!extracted?.id || !edited) return;
+    setSaving(true);
+    try {
+      const { error } = await supabase
+        .from('quotations')
+        .update({
+          destination: edited.destination,
+          hotel_name: edited.hotel_name,
+          hotel_stars: edited.hotel_stars ? Number(edited.hotel_stars) : null,
+          check_in: edited.check_in || null,
+          check_out: edited.check_out || null,
+          num_nights: edited.num_nights ? Number(edited.num_nights) : null,
+          meal_plan: edited.meal_plan || null,
+          room_type: edited.room_type || null,
+          total_value: edited.total_value ? Number(edited.total_value) : null,
+          currency: edited.currency || 'BRL',
+          whatsapp_text: edited.whatsapp_text || null,
+        })
+        .eq('id', extracted.id);
+
+      if (error) throw error;
+      queryClient.invalidateQueries({ queryKey: ['quotations'] });
+      toast({ title: '✅ Dados corrigidos e salvos!', description: 'Cotação atualizada com suas edições.' });
+    } catch (e: any) {
+      toast({ title: 'Erro ao salvar edições', description: e.message, variant: 'destructive' });
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const handleConfirm = () => {
     setStep('done');
     if (extracted?.id) onSuccess?.(extracted.id);
-    toast({ title: '🎉 Cotação criada!', description: 'Cotação salva e disponível na lista.' });
     onClose();
   };
 
@@ -160,6 +236,7 @@ export function QuotationAiImportSheet({ open, onClose, onSuccess }: QuotationAi
     setIsPdf(false);
     setAdditionalText('');
     setExtracted(null);
+    setEdited(null);
     setStep('upload');
   };
 
@@ -173,18 +250,18 @@ export function QuotationAiImportSheet({ open, onClose, onSuccess }: QuotationAi
       open={open}
       onClose={onClose}
       title="Importar Cotação por IA"
-      subtitle="Faça upload de PDF ou imagem — extração automática de todos os dados"
+      subtitle="Upload de PDF ou imagem — extração + revisão editável"
       icon={Sparkles}
       sections={[
         { id: 'upload', label: '1. Upload do Arquivo' },
-        { id: 'review', label: '2. Revisão dos Dados' },
+        { id: 'review', label: '2. Revisão e Edição' },
       ]}
       defaultSection={step === 'review' ? 'review' : 'upload'}
       footer={
         <div className="flex w-full gap-2 justify-between items-center">
           <div className="text-xs text-vj-txt3">
             {step === 'upload' && file && <span className="flex items-center gap-1.5"><FileText className="w-3 h-3" /> {file.name} ({(file.size / 1024 / 1024).toFixed(1)}MB)</span>}
-            {step === 'review' && extracted && <span className="flex items-center gap-1.5 text-vj-green"><CheckCircle2 className="w-3.5 h-3.5" /> Dados extraídos com sucesso</span>}
+            {step === 'review' && extracted && <span className="flex items-center gap-1.5 text-vj-green"><CheckCircle2 className="w-3.5 h-3.5" /> Extraído com sucesso — edite se necessário</span>}
           </div>
           <div className="flex gap-2">
             <Button variant="outline" onClick={onClose}>Cancelar</Button>
@@ -195,9 +272,9 @@ export function QuotationAiImportSheet({ open, onClose, onSuccess }: QuotationAi
                 className="bg-vj-green text-white hover:bg-vj-green/90 min-w-[160px]"
               >
                 {extracting ? (
-                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Extraindo com IA...</>
+                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Extraindo com IA...</>
                 ) : (
-                  <><Sparkles className="mr-2 h-4 w-4" /> Extrair com IA</>
+                  <><Sparkles className="mr-2 h-4 w-4" />Extrair com IA</>
                 )}
               </Button>
             )}
@@ -207,12 +284,23 @@ export function QuotationAiImportSheet({ open, onClose, onSuccess }: QuotationAi
                   <Upload className="mr-2 h-4 w-4" /> Nova Extração
                 </Button>
                 {extracted?.id && (
-                  <Button
-                    onClick={handleConfirm}
-                    className="bg-vj-green text-white hover:bg-vj-green/90"
-                  >
-                    <CheckCircle2 className="mr-2 h-4 w-4" /> Confirmar e Abrir
-                  </Button>
+                  <>
+                    <Button
+                      variant="outline"
+                      onClick={handleSaveEdits}
+                      disabled={saving}
+                      className="border-amber-300 text-amber-700 hover:bg-amber-50"
+                    >
+                      <Save className="mr-2 h-4 w-4" />
+                      {saving ? 'Salvando...' : 'Salvar Edições'}
+                    </Button>
+                    <Button
+                      onClick={handleConfirm}
+                      className="bg-vj-green text-white hover:bg-vj-green/90"
+                    >
+                      <CheckCircle2 className="mr-2 h-4 w-4" /> Confirmar e Abrir
+                    </Button>
+                  </>
                 )}
               </div>
             )}
@@ -225,16 +313,14 @@ export function QuotationAiImportSheet({ open, onClose, onSuccess }: QuotationAi
           {/* ── PASSO 1: UPLOAD ──────────────────────────────────── */}
           {activeSection === 'upload' && (
             <div className="space-y-8">
-              {/* Hero info bar */}
               <div className="p-4 rounded-vj-lg bg-gradient-to-r from-vj-green/5 to-blue-50 border border-vj-green/20 flex items-start gap-3">
                 <Sparkles className="w-5 h-5 text-vj-green mt-0.5 flex-shrink-0" />
                 <div>
                   <p className="font-semibold text-vj-txt text-sm">Extração automática por Inteligência Artificial</p>
-                  <p className="text-xs text-vj-txt3 mt-0.5">Faça upload da cotação em PDF ou imagem. A IA extrai destino, hotel, datas, valores, voos, transfers e gera o texto para WhatsApp automaticamente.</p>
+                  <p className="text-xs text-vj-txt3 mt-0.5">Faça upload da cotação em PDF ou imagem. A IA extrai destino, hotel, datas, valores, voos, transfers e gera o texto para WhatsApp. Você poderá editar qualquer campo antes de confirmar.</p>
                 </div>
               </div>
 
-              {/* Drop Zone */}
               <div>
                 <Label className="font-semibold text-vj-txt mb-3 block">Arquivo da Cotação *</Label>
                 <div
@@ -244,7 +330,6 @@ export function QuotationAiImportSheet({ open, onClose, onSuccess }: QuotationAi
                   className="cursor-pointer border-2 border-dashed border-vj-border hover:border-vj-green/50 hover:bg-vj-green/5 transition-all rounded-vj-xl p-8 flex flex-col items-center justify-center gap-4 min-h-[240px]"
                 >
                   {file ? (
-                    // Preview do arquivo selecionado
                     <div className="flex flex-col items-center gap-3 w-full" onClick={(e) => e.stopPropagation()}>
                       {filePreview && !isPdf ? (
                         <div className="relative w-full max-h-48 rounded-vj-lg overflow-hidden border border-vj-border">
@@ -275,7 +360,7 @@ export function QuotationAiImportSheet({ open, onClose, onSuccess }: QuotationAi
                       </div>
                       <div className="text-center space-y-1">
                         <p className="font-semibold text-vj-txt">Arraste ou clique para fazer upload</p>
-                        <p className="text-sm text-vj-txt3">PDF, JPG, PNG, WEBP — sem limite de tamanho</p>
+                        <p className="text-sm text-vj-txt3">PDF, JPG, PNG, WEBP</p>
                       </div>
                       <div className="flex gap-2 flex-wrap justify-center">
                         {['PDF', 'JPG', 'PNG', 'WEBP'].map(t => (
@@ -285,23 +370,15 @@ export function QuotationAiImportSheet({ open, onClose, onSuccess }: QuotationAi
                     </>
                   )}
                 </div>
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handleFileSelect}
-                  accept="image/*,application/pdf"
-                  className="hidden"
-                />
+                <input type="file" ref={fileInputRef} onChange={handleFileSelect} accept="image/*,application/pdf" className="hidden" />
               </div>
 
-              {/* Separator */}
               <div className="flex items-center gap-3 text-vj-txt3 text-xs">
                 <div className="flex-1 h-px bg-vj-border" />
                 <span>ou cole o texto da cotação abaixo</span>
                 <div className="flex-1 h-px bg-vj-border" />
               </div>
 
-              {/* Text input alternativo */}
               <div className="space-y-2">
                 <Label className="text-vj-txt2 text-sm">Texto da Cotação (opcional)</Label>
                 <Textarea
@@ -314,7 +391,6 @@ export function QuotationAiImportSheet({ open, onClose, onSuccess }: QuotationAi
                 <p className="text-xs text-vj-txt3">Pode combinar arquivo + texto para melhorar a precisão da extração.</p>
               </div>
 
-              {/* Extração em progresso */}
               {extracting && (
                 <div className="p-5 rounded-vj-lg bg-vj-green/5 border border-vj-green/20 flex items-center gap-4">
                   <div className="w-10 h-10 rounded-full bg-vj-green/10 flex items-center justify-center flex-shrink-0">
@@ -329,31 +405,25 @@ export function QuotationAiImportSheet({ open, onClose, onSuccess }: QuotationAi
             </div>
           )}
 
-          {/* ── PASSO 2: REVISÃO ──────────────────────────────────── */}
+          {/* ── PASSO 2: REVISÃO EDITÁVEL ─────────────────────────── */}
           {activeSection === 'review' && (
             <div className="space-y-6">
               {!extracted ? (
                 <div className="text-center py-16 text-vj-txt3 space-y-3">
                   <Sparkles className="w-10 h-10 mx-auto opacity-30" />
                   <p className="text-sm">Nenhuma extração realizada ainda.</p>
-                  <Button variant="outline" onClick={() => {}}>Voltar para Upload</Button>
                 </div>
               ) : (
                 <>
-                  {/* Banner de sucesso */}
-                  <div className="p-4 rounded-vj-lg bg-vj-green/5 border border-vj-green/20 flex items-center gap-3">
-                    <CheckCircle2 className="w-5 h-5 text-vj-green flex-shrink-0" />
-                    <div>
-                      <p className="font-semibold text-vj-green text-sm">Dados extraídos com sucesso!</p>
-                      {extracted.id && <p className="text-xs text-vj-txt3 mt-0.5">Cotação salva como rascunho — ID: {extracted.id.slice(0, 8)}...</p>}
+                  {/* Banner */}
+                  <div className="p-4 rounded-vj-lg bg-vj-green/5 border border-vj-green/20 flex items-start gap-3">
+                    <CheckCircle2 className="w-5 h-5 text-vj-green flex-shrink-0 mt-0.5" />
+                    <div className="flex-1">
+                      <p className="font-semibold text-vj-green text-sm">Dados extraídos pela IA</p>
+                      <p className="text-xs text-vj-txt3 mt-0.5">Revise e edite qualquer campo diretamente abaixo. Clique em "Salvar Edições" para persistir as correções.</p>
                     </div>
                     {extracted.id && (
-                      <a
-                        href={`/quotations/${extracted.id}`}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="ml-auto flex-shrink-0"
-                      >
+                      <a href={`/quotations/${extracted.id}`} target="_blank" rel="noreferrer" className="flex-shrink-0">
                         <Button size="sm" variant="outline" className="gap-1.5 border-vj-green text-vj-green hover:bg-vj-green/5">
                           <ExternalLink className="w-3.5 h-3.5" /> Abrir
                         </Button>
@@ -361,39 +431,54 @@ export function QuotationAiImportSheet({ open, onClose, onSuccess }: QuotationAi
                     )}
                   </div>
 
-                  {/* Grid de dados extraídos */}
-                  <div className="grid grid-cols-2 gap-3">
-                    {[
-                      { label: 'Destino', value: extracted.destination, icon: '📍' },
-                      { label: 'Hotel', value: extracted.hotel_name, icon: '🏨' },
-                      { label: 'Estrelas', value: extracted.hotel_stars ? '⭐'.repeat(Math.min(extracted.hotel_stars, 5)) : null, icon: '⭐' },
-                      { label: 'Check-in', value: extracted.check_in ? new Date(extracted.check_in + 'T00:00:00').toLocaleDateString('pt-BR') : null, icon: '📅' },
-                      { label: 'Check-out', value: extracted.check_out ? new Date(extracted.check_out + 'T00:00:00').toLocaleDateString('pt-BR') : null, icon: '📅' },
-                      { label: 'Noites', value: extracted.num_nights ? `${extracted.num_nights} noites` : null, icon: '🌙' },
-                      { label: 'Regime', value: extracted.meal_plan ? MEAL_PLAN_LABELS[extracted.meal_plan] : null, icon: '🍽️' },
-                      { label: 'Tipo de Quarto', value: extracted.room_type, icon: '🛏️' },
-                      { label: 'Valor Total', value: extracted.total_value ? formatCurrency(extracted.total_value, extracted.currency) : null, icon: '💰', highlight: true },
-                      { label: 'Moeda', value: extracted.currency, icon: '💱' },
-                    ].filter(item => item.value).map(({ label, value, icon, highlight }) => (
-                      <div key={label} className={`p-3 rounded-vj-lg border ${highlight ? 'border-vj-green/30 bg-vj-green/5' : 'border-vj-border bg-vj-surface'}`}>
-                        <p className="text-[10px] uppercase tracking-wider text-vj-txt3 font-semibold mb-1">{icon} {label}</p>
-                        <p className={`text-sm font-semibold ${highlight ? 'text-vj-green text-base' : 'text-vj-txt'}`}>{value}</p>
-                      </div>
-                    ))}
+                  {/* Aviso de editabilidade */}
+                  <div className="flex items-center gap-2 p-3 rounded-xl bg-amber-50 border border-amber-200">
+                    <Pencil className="w-4 h-4 text-amber-600 flex-shrink-0" />
+                    <p className="text-xs text-amber-700 font-medium">Todos os campos são editáveis. Clique para corrigir erros da extração antes de salvar.</p>
+                  </div>
+
+                  {/* Grid editável de campos principais */}
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-wider text-vj-txt3 mb-3">📦 Dados Principais</p>
+                    <div className="grid grid-cols-2 gap-3">
+                      <EditableField label="Destino" icon="📍" value={current.destination ?? ''} onChange={v => updateField('destination', v)} />
+                      <EditableField label="Hotel" icon="🏨" value={current.hotel_name ?? ''} onChange={v => updateField('hotel_name', v)} />
+                      <EditableField label="Estrelas" icon="⭐" type="number" value={String(current.hotel_stars ?? '')} onChange={v => updateField('hotel_stars', Number(v))} />
+                      <EditableField label="Tipo de Quarto" icon="🛏️" value={current.room_type ?? ''} onChange={v => updateField('room_type', v)} />
+                      <EditableField label="Check-in" icon="📅" type="date" value={current.check_in ?? ''} onChange={v => updateField('check_in', v)} />
+                      <EditableField label="Check-out" icon="📅" type="date" value={current.check_out ?? ''} onChange={v => updateField('check_out', v)} />
+                      <EditableField label="Noites" icon="🌙" type="number" value={String(current.num_nights ?? '')} onChange={v => updateField('num_nights', Number(v))} />
+                      <EditableField
+                        label="Regime de Refeição" icon="🍽️"
+                        value={current.meal_plan ?? ''}
+                        onChange={v => updateField('meal_plan', v)}
+                        options={MEAL_PLAN_OPTIONS}
+                      />
+                      <EditableField
+                        label="Valor Total" icon="💰"
+                        type="number"
+                        value={String(current.total_value ?? '')}
+                        onChange={v => updateField('total_value', Number(v))}
+                        highlight
+                      />
+                      <EditableField label="Moeda" icon="💱" value={current.currency ?? 'BRL'} onChange={v => updateField('currency', v)} />
+                    </div>
                   </div>
 
                   {/* Voos */}
-                  {extracted.flights && extracted.flights.length > 0 && (
+                  {current.flights && current.flights.length > 0 && (
                     <div className="space-y-2">
-                      <p className="font-semibold text-vj-txt text-sm flex items-center gap-2">✈️ Voos Extraídos ({extracted.flights.length})</p>
+                      <p className="font-semibold text-vj-txt text-sm flex items-center gap-2">✈️ Voos Extraídos ({current.flights.length})</p>
                       <div className="space-y-2">
-                        {extracted.flights.map((f: any, i: number) => (
+                        {current.flights.map((f: any, i: number) => (
                           <div key={i} className="p-3 rounded-vj-lg border border-vj-border bg-vj-surface flex items-center gap-3">
                             <span className="text-xs font-mono bg-vj-bg border border-vj-border rounded px-2 py-1 text-vj-txt2">
                               {f.direction === 'outbound' ? '→ IDA' : '← VOLTA'}
                             </span>
-                            <span className="text-sm text-vj-txt">{f.airline_name}</span>
+                            <span className="text-sm text-vj-txt font-medium">{f.airline_name}</span>
                             <span className="text-xs text-vj-txt3">— {f.cabin_class}</span>
+                            {f.flight_number && <span className="text-xs font-mono text-vj-txt3">{f.flight_number}</span>}
+                            {f.departure_time && <span className="text-xs text-vj-txt3 ml-auto">{f.departure_time}</span>}
                           </div>
                         ))}
                       </div>
@@ -401,11 +486,11 @@ export function QuotationAiImportSheet({ open, onClose, onSuccess }: QuotationAi
                   )}
 
                   {/* Roteiro */}
-                  {extracted.itinerary && extracted.itinerary.length > 0 && (
+                  {current.itinerary && current.itinerary.length > 0 && (
                     <div className="space-y-2">
-                      <p className="font-semibold text-vj-txt text-sm flex items-center gap-2">🗺️ Roteiro Extraído ({extracted.itinerary.length} dias)</p>
+                      <p className="font-semibold text-vj-txt text-sm flex items-center gap-2">🗺️ Roteiro Extraído ({current.itinerary.length} dias)</p>
                       <div className="space-y-2">
-                        {extracted.itinerary.map((day: any, i: number) => (
+                        {current.itinerary.map((day: any, i: number) => (
                           <div key={i} className="p-3 rounded-vj-lg border border-vj-border bg-vj-surface">
                             <p className="text-xs font-bold text-vj-green">Dia {day.day_number} — {day.city}</p>
                             <p className="text-xs text-vj-txt3 mt-1">{day.label}</p>
@@ -416,15 +501,15 @@ export function QuotationAiImportSheet({ open, onClose, onSuccess }: QuotationAi
                   )}
 
                   {/* Condições de pagamento */}
-                  {extracted.installments && extracted.installments.length > 0 && (
+                  {current.installments && current.installments.length > 0 && (
                     <div className="space-y-2">
-                      <p className="font-semibold text-vj-txt text-sm flex items-center gap-2">💳 Condições de Pagamento ({extracted.installments.length} opções)</p>
+                      <p className="font-semibold text-vj-txt text-sm flex items-center gap-2">💳 Condições de Pagamento ({current.installments.length} opções)</p>
                       <div className="space-y-1.5">
-                        {extracted.installments.map((inst: any, i: number) => (
+                        {current.installments.map((inst: any, i: number) => (
                           <div key={i} className="p-3 rounded-vj-lg bg-vj-surface border border-vj-border flex justify-between items-center">
                             <span className="text-xs text-vj-txt">{inst.type}</span>
                             <span className="text-xs font-semibold text-vj-txt">
-                              {inst.installment_count}× {formatCurrency(inst.value, extracted.currency)}
+                              {inst.installment_count}× {formatCurrency(inst.value, current.currency)}
                             </span>
                           </div>
                         ))}
@@ -432,12 +517,17 @@ export function QuotationAiImportSheet({ open, onClose, onSuccess }: QuotationAi
                     </div>
                   )}
 
-                  {/* WhatsApp Preview */}
-                  {extracted.whatsapp_text && (
+                  {/* WhatsApp Preview editável */}
+                  {current.whatsapp_text !== undefined && (
                     <div className="space-y-2">
-                      <p className="font-semibold text-vj-txt text-sm flex items-center gap-2">💬 Texto para WhatsApp (gerado pela IA)</p>
-                      <div className="p-4 rounded-vj-lg bg-[#dcf8c6] border border-green-200 font-sans">
-                        <pre className="text-xs text-gray-800 whitespace-pre-wrap leading-relaxed font-sans">{extracted.whatsapp_text}</pre>
+                      <p className="font-semibold text-vj-txt text-sm flex items-center gap-2">💬 Texto para WhatsApp <span className="text-[10px] text-amber-600 font-normal bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">editável</span></p>
+                      <div className="p-4 rounded-vj-lg bg-[#dcf8c6] border border-green-200">
+                        <Textarea
+                          value={current.whatsapp_text ?? ''}
+                          onChange={e => updateField('whatsapp_text', e.target.value)}
+                          rows={8}
+                          className="text-xs text-gray-800 whitespace-pre-wrap leading-relaxed font-sans bg-transparent border-none shadow-none focus-visible:ring-0 resize-none p-0"
+                        />
                       </div>
                     </div>
                   )}

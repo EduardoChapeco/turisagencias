@@ -6,7 +6,7 @@ import { StatusBadge } from '@/components/ui/StatusBadge';
 import { EmptyState, PageSkeleton } from '@/components/ui/EmptyState';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useCreateKanbanCard, useKanbanBoard, useUpdateKanbanCard } from '@/hooks/useKanbanBoards';
+import { useCreateKanbanCard, useKanbanBoard, useUpdateKanbanCard, useEnsureDefaultBoards } from '@/hooks/useKanbanBoards';
 import { useAuthStore } from '@/stores/authStore';
 import { TaskBoardCard, TaskCardOverlay } from '@/components/kanban/TaskBoardCard';
 import { TaskCardSheet } from '@/components/kanban/TaskCardSheet';
@@ -111,6 +111,7 @@ function TaskColumn({ column, cards, boardId, onCardClick }: { column: KanbanCol
 export default function TasksKanban() {
   const { data, isLoading } = useKanbanBoard('tasks');
   const updateCard = useUpdateKanbanCard();
+  const ensureBoards = useEnsureDefaultBoards();
   const { user } = useAuthStore();
 
   const [activeCard, setActiveCard] = useState<TaskCardData | null>(null);
@@ -203,8 +204,13 @@ export default function TasksKanban() {
         {!data?.columns?.length ? (
           <EmptyState
             icon={CheckSquare}
-            title="Nenhuma coluna configurada"
-            description="O board de tarefas está sendo preparado. Tente recarregar a página."
+            title="Quadro de tarefas vazio"
+            description="Recrie as colunas padrão (A Fazer, Em Progresso, Revisão, Concluído) automaticamente."
+            action={
+              <Button onClick={() => ensureBoards.mutate()} disabled={ensureBoards.isPending}>
+                {ensureBoards.isPending ? 'Restaurando...' : 'Restaurar colunas padrão'}
+              </Button>
+            }
           />
         ) : (
           <DndContext sensors={sensors} collisionDetection={closestCorners} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>

@@ -6,7 +6,7 @@ import { PageHeader } from '@/components/ui/PageHeader';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { EmptyState, PageSkeleton } from '@/components/ui/EmptyState';
 import { KanbanCardSheet } from '@/components/kanban/KanbanCardSheet';
-import { useCreateKanbanCard, useKanbanBoard, useUpdateKanbanCard } from '@/hooks/useKanbanBoards';
+import { useCreateKanbanCard, useKanbanBoard, useUpdateKanbanCard, useEnsureDefaultBoards } from '@/hooks/useKanbanBoards';
 import { useAuthStore } from '@/stores/authStore';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -284,6 +284,7 @@ export default function KanbanBoard() {
 
   const { data, isLoading } = useKanbanBoard(slug);
   const updateCard = useUpdateKanbanCard();
+  const ensureBoards = useEnsureDefaultBoards();
 
   const [activeCard, setActiveCard] = useState<KanbanCardData | null>(null);
   const [selectedCard, setSelectedCard] = useState<KanbanCardData | null>(null);
@@ -379,8 +380,13 @@ export default function KanbanBoard() {
         {!data?.columns?.length ? (
           <EmptyState
             icon={KanbanSquare}
-            title="Board sendo preparado..."
-            description="As colunas estão sendo criadas automaticamente. Recarregue em instantes."
+            title="Quadro de vendas vazio"
+            description="Recrie as colunas padrão (Novo Lead, Em Contato, Proposta, Negociando, Fechado, Perdido) automaticamente."
+            action={
+              <Button onClick={() => ensureBoards.mutate()} disabled={ensureBoards.isPending}>
+                {ensureBoards.isPending ? 'Restaurando...' : 'Restaurar colunas padrão'}
+              </Button>
+            }
           />
         ) : (
           <DndContext

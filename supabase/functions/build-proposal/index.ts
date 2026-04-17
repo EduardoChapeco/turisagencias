@@ -183,7 +183,7 @@ serve(async (req) => {
       .update({
         notes_internal: (quotation.notes_internal
           ? quotation.notes_internal + "\n\n---\n[Proposta gerada pela IA em " + new Date().toLocaleString('pt-BR') + "]\n"
-          : "[Proposta gerada pela IA]\n") + proposalMarkdown.slice(0, 800),
+          : "[Proposta gerada pela IA]\n") + proposalMarkdown,
       })
       .eq("id", quotation_id);
 

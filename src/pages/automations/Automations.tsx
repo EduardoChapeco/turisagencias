@@ -9,6 +9,8 @@ import { Bot, Save, Mail, CalendarClock, PlaneTakeoff, HeartHandshake } from 'lu
 import { useAuthStore } from '@/stores/authStore';
 import { useCommunicationRules, useUpdateCommunicationRule, CommunicationRule } from '@/hooks/useAutomations';
 import { PageSkeleton } from '@/components/ui/EmptyState';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 const EVENT_DETAILS = {
   trip_created: { title: '1. Roteiro Fechado (Boas vindas)', icon: HandshakeIcon, desc: 'Dispara quando o status de uma cotação muda para Fechado/Viagem e é enviado ao Portal do Cliente.' },
@@ -48,6 +50,17 @@ export default function Automations() {
   // Map backend defaults if empty (in a real migration we'd insert these, here we just gracefully handle it)
   const defaultEvents: CommunicationRule['event_type'][] = ['trip_created', 'payment_due', '1_week_before_travel', 'welcome_back'];
 
+  const runAutomationsWorker = async () => {
+    try {
+      toast.info('Agente 2 em operação...', { description: 'Varrendo embarques e processando e-mails...' });
+      const { data, error } = await supabase.functions.invoke('process-automations');
+      if (error) throw new Error(error.message);
+      toast.success('Varredura concluída!', { description: `${data?.processed || 0} e-mails despachados.` });
+    } catch (e: any) {
+      toast.error('Erro no Bot', { description: e.message });
+    }
+  };
+
   return (
     <AppLayout fullHeight>
       <div className="flex flex-col h-full gap-4">
@@ -55,6 +68,12 @@ export default function Automations() {
           title="Automações Mailbox (Robô de Relacionamento)" 
           description="E-mails inteligentes que disparam nos bastidores conectando sua agência com o passageiro na hora exata."
           icon={Bot}
+          action={
+            <Button onClick={runAutomationsWorker} className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-lg">
+              <Bot size={16} className="mr-2" />
+              Rodar Agente Manualmente
+            </Button>
+          }
         />
 
         <div className="flex-1 overflow-auto bg-transparent min-h-0 space-y-6 pb-20">

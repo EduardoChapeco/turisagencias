@@ -70,41 +70,41 @@ export default function ClientsPage() {
             action={<Button onClick={openNew}><Plus className="mr-2 h-4 w-4" /> Cadastrar Cliente</Button>}
           />
         ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="bento-grid-premium">
             {clients.map((client) => (
               <div
                 key={client.id}
-                className="group relative rounded-2xl border border-vj-border bg-white hover:border-vj-green/30 hover:shadow-lg transition-all cursor-pointer p-4 flex flex-col gap-3"
+                className="premium-card group relative hover:border-vj-green/30 cursor-pointer p-5 flex flex-col gap-4 min-h-[140px]"
                 onClick={() => navigate(`/clients/${client.id}`)}
               >
                 {/* Header */}
-                <div className="flex items-start gap-3">
-                  <div className="h-12 w-12 shrink-0 rounded-full bg-vj-green/10 border border-vj-green/20 overflow-hidden flex items-center justify-center">
+                <div className="flex items-start gap-4">
+                  <div className="h-14 w-14 shrink-0 rounded-[18px] bg-gradient-to-br from-vj-green/20 to-vj-green/5 border border-vj-green/20 overflow-hidden flex items-center justify-center shadow-inner">
                     {(client as any).photo_url ? (
                       <img src={(client as any).photo_url} alt={client.name} className="h-full w-full object-cover" />
                     ) : (
-                      <span className="text-vj-green font-bold text-lg">{client.name[0]?.toUpperCase()}</span>
+                      <span className="text-vj-green font-bold text-xl">{client.name[0]?.toUpperCase()}</span>
                     )}
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-bold text-vj-txt truncate">{client.name}</p>
+                  <div className="flex-1 min-w-0 pt-1">
+                    <p className="font-heading font-extrabold text-lg text-vj-txt truncate">{client.name}</p>
                     {client.email && (
-                      <p className="text-xs text-vj-txt3 flex items-center gap-1 truncate">
+                      <p className="text-xs text-vj-txt3 flex items-center gap-1.5 truncate mt-1">
                         <Mail className="h-3 w-3 shrink-0" /> {client.email}
                       </p>
                     )}
                     {client.phone && (
-                      <p className="text-xs text-vj-txt3 flex items-center gap-1">
+                      <p className="text-xs text-vj-txt3 flex items-center gap-1.5 mt-0.5">
                         <Phone className="h-3 w-3 shrink-0" /> {client.phone}
                       </p>
                     )}
                   </div>
 
                   {/* Action Buttons — aparecem no hover */}
-                  <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
+                  <div className="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-white/50 backdrop-blur-sm rounded-xl p-1" onClick={(e) => e.stopPropagation()}>
                     {/* Quick View */}
                     <Button
-                      variant="ghost" size="icon" className="h-7 w-7 hover:text-vj-green"
+                      variant="ghost" size="icon" className="h-7 w-7 hover:bg-white hover:text-vj-green hover:shadow-sm rounded-lg"
                       title="Visualização rápida"
                       onClick={() => openQuickView(client.id)}
                     >
@@ -112,7 +112,7 @@ export default function ClientsPage() {
                     </Button>
                     {/* Edit */}
                     <Button
-                      variant="ghost" size="icon" className="h-7 w-7"
+                      variant="ghost" size="icon" className="h-7 w-7 hover:bg-white hover:shadow-sm rounded-lg"
                       title="Editar cliente"
                       onClick={() => openEdit(client.id)}
                     >
@@ -121,7 +121,7 @@ export default function ClientsPage() {
                     {/* Delete */}
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-7 w-7 hover:text-red-500">
+                        <Button variant="ghost" size="icon" className="h-7 w-7 hover:bg-red-50 hover:text-red-500 rounded-lg">
                           <Trash2 className="h-3.5 w-3.5" />
                         </Button>
                       </AlertDialogTrigger>
@@ -146,28 +146,36 @@ export default function ClientsPage() {
                   </div>
                 </div>
 
-                {/* Tags */}
-                {client.tags && client.tags.length > 0 && (
+                <div className="flex-1" />
+
+                <div className="flex items-center justify-between pt-3 border-t border-zinc-100/80">
+                  {/* Tags */}
                   <div className="flex flex-wrap gap-1.5">
-                    {client.tags.slice(0, 4).map((tag) => (
-                      <Badge key={tag} className="text-xs bg-vj-green/10 text-vj-green border-vj-green/20 border">
-                        {tag}
-                      </Badge>
-                    ))}
-                    {client.tags.length > 4 && (
-                      <Badge className="text-xs bg-vj-surface text-vj-txt3 border border-vj-border">
-                        +{client.tags.length - 4}
-                      </Badge>
+                    {client.tags && client.tags.length > 0 ? (
+                      <>
+                        {client.tags.slice(0, 3).map((tag) => (
+                          <Badge key={tag} className="text-[10px] font-bold px-2 py-0 bg-vj-green/10 text-vj-green border-transparent hover:bg-vj-green/20 uppercase tracking-wider">
+                            {tag}
+                          </Badge>
+                        ))}
+                        {client.tags.length > 3 && (
+                          <Badge className="text-[10px] font-bold px-2 py-0 bg-zinc-100 text-zinc-500 border-transparent">
+                            +{client.tags.length - 3}
+                          </Badge>
+                        )}
+                      </>
+                    ) : (
+                      <span className="text-[10px] text-zinc-300 font-medium italic">Sem tags</span>
                     )}
                   </div>
-                )}
 
-                {/* Portal badge */}
-                {client.portal_access_enabled && (
-                  <div className="flex items-center gap-1 text-xs text-vj-green">
-                    <Shield className="h-3 w-3" /> Portal ativo
-                  </div>
-                )}
+                  {/* Portal badge */}
+                  {client.portal_access_enabled && (
+                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-100 text-[10px] font-black uppercase tracking-wider text-emerald-600 shadow-sm shrink-0">
+                      <Shield className="h-3 w-3" /> Vip
+                    </div>
+                  )}
+                </div>
               </div>
             ))}
           </div>

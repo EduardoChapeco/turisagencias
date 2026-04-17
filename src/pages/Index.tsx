@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import {
   FileText, Plane, PlaneTakeoff, CalendarHeart,
-  KanbanSquare, ArrowRight, DollarSign, ArrowUpRight, ArrowDownRight, Users2
+  KanbanSquare, ArrowRight, DollarSign, ArrowUpRight, ArrowDownRight, Users2, Brain, CheckCircle2
 } from 'lucide-react';
 import { AppLayout } from '@/components/AppLayout';
 import { useAuthStore } from '@/stores/authStore';
@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { QuotationBuilderSheet } from '@/components/QuotationBuilderSheet';
 import { useState } from 'react';
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { useAIInsights } from '@/hooks/useAIInsights';
 
 const MONTH_LABELS = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
 
@@ -140,6 +141,7 @@ export default function Dashboard() {
   const { data: _activity } = useRecentActivity(organization?.id);
   const { data: financialChartData } = useFinancialChart(organization?.id);
   const { data: upcoming } = useUpcomingTrips(organization?.id);
+  const { data: aiInsights } = useAIInsights();
   
   const [quotationBuilderOpen, setQuotationBuilderOpen] = useState(false);
 
@@ -300,6 +302,36 @@ export default function Dashboard() {
               <Button variant="ghost" size="sm" className="mt-4 text-[10px] font-bold uppercase text-slate-500 tracking-wider hover:text-blue-600 w-fit p-0" onClick={() => navigate('/quotations')}>
                 Ver todas as cotações →
               </Button>
+            </div>
+
+            {/* AI Insights Block */}
+            <div className="col-span-1 md:col-span-4 premium-card p-6 border-indigo-100 bg-gradient-to-br from-indigo-50/50 to-white overflow-hidden relative">
+              <div className="absolute -right-10 -top-10 w-40 h-40 bg-indigo-500/10 blur-[50px] pointer-events-none" />
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm font-bold uppercase tracking-wider flex items-center gap-2">
+                  <span className="bg-indigo-100 text-indigo-600 p-1.5 rounded-xl"><Brain className="w-4 h-4" /></span>
+                  Cofre de Inteligência (Agent 7)
+                </h3>
+                <span className="text-[10px] bg-indigo-100 text-indigo-600 px-2 py-1 rounded-full font-bold">Aprendizado Contínuo</span>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {aiInsights?.map((insight: any) => (
+                  <div key={insight.id} className="bg-white p-4 rounded-2xl border border-indigo-50 shadow-sm flex flex-col cursor-pointer transition-all hover:shadow-indigo-100 hover:-translate-y-1" onClick={() => navigate('/settings')}>
+                    <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-1 truncate">{insight.title}</p>
+                    <p className="text-xs text-zinc-600 leading-relaxed font-medium line-clamp-3 mb-3 flex-1">{insight.content}</p>
+                    <div className="flex flex-wrap gap-1">
+                      {insight.tags?.slice(0,2).map((t: string) => (
+                        <span key={t} className="px-1.5 py-0.5 rounded-md bg-indigo-50 text-[9px] text-indigo-600">{t}</span>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+                {!aiInsights?.length && (
+                  <div className="md:col-span-3 text-center py-6 italic text-xs text-zinc-400">
+                    Nenhum insight gerado. Marque cotações como Ganhas/Perdidas para o Agent 7 extrair lições.
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Recent Tickets Activity */}

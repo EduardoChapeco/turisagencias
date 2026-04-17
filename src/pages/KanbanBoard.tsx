@@ -6,6 +6,7 @@ import { PageHeader } from '@/components/ui/PageHeader';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { EmptyState, PageSkeleton } from '@/components/ui/EmptyState';
 import { KanbanCardSheet } from '@/components/kanban/KanbanCardSheet';
+import { KanbanAiLeadDialog } from '@/components/kanban/KanbanAiLeadDialog';
 import { useCreateKanbanCard, useKanbanBoard, useUpdateKanbanCard, useEnsureDefaultBoards } from '@/hooks/useKanbanBoards';
 import { useAuthStore } from '@/stores/authStore';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -365,16 +366,22 @@ export default function KanbanBoard() {
               </StatusBadge>
             }
           />
-          <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as 'me' | 'all')} className="w-[300px]">
-             <TabsList className="grid w-full grid-cols-2">
-                 <TabsTrigger value="me" className="flex items-center gap-2 text-xs">
-                     <Eye size={14}/> Meu Board
-                 </TabsTrigger>
-                 <TabsTrigger value="all" className="flex items-center gap-2 text-xs">
-                     <Users size={14}/> Geral (Todos)
-                 </TabsTrigger>
-             </TabsList>
-          </Tabs>
+          <div className="flex flex-col items-end gap-3">
+            <KanbanAiLeadDialog 
+              boardId={data?.board?.id} 
+              defaultColumnId={data?.columns?.[0]?.id} 
+            />
+            <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as 'me' | 'all')} className="w-[300px]">
+               <TabsList className="grid w-full grid-cols-2">
+                   <TabsTrigger value="me" className="flex items-center gap-2 text-xs">
+                       <Eye size={14}/> Meu Board
+                   </TabsTrigger>
+                   <TabsTrigger value="all" className="flex items-center gap-2 text-xs">
+                       <Users size={14}/> Geral (Todos)
+                   </TabsTrigger>
+               </TabsList>
+            </Tabs>
+          </div>
         </div>
 
         {!data?.columns?.length ? (

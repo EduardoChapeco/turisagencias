@@ -68,28 +68,28 @@ export default function Trips() {
 
         {/* Content */}
         {isLoading ? (
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            {[1, 2, 3].map((i) => (
-              <Skeleton key={i} className="h-44 rounded-xl" />
+          <div className="bento-grid-premium">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <Skeleton key={i} className="h-44 rounded-[32px]" />
             ))}
           </div>
         ) : !filtered.length ? (
-          <div className="rounded-xl border border-vj-border bg-white p-16 flex flex-col items-center text-center">
-            <Plane className="h-12 w-12 text-vj-txt3/30 mb-4" />
-            <p className="text-lg font-semibold text-vj-txt mb-1">
+          <div className="rounded-[40px] border border-vj-border bg-white p-16 flex flex-col items-center text-center shadow-xl shadow-zinc-100/50">
+            <Plane className="h-12 w-12 text-vj-green/40 mb-4" />
+            <p className="text-xl font-heading font-black text-vj-txt mb-2">
               {search ? 'Nenhuma viagem encontrada' : 'Nenhuma viagem cadastrada'}
             </p>
-            <p className="text-sm text-vj-txt3 mb-6">
+            <p className="text-sm text-vj-txt3 mb-6 max-w-sm mx-auto">
               {search
                 ? `Sua busca por "${search}" não retornou resultados.`
-                : 'Crie a primeira viagem para organizar voos, documentos e viajantes.'}
+                : 'Crie a primeira viagem para organizar voos, documentos e interações com os viajantes do seu portal.'}
             </p>
             {!search && (
-              <Button onClick={() => navigate('/trips/new')}>Criar primeira viagem</Button>
+              <Button onClick={() => navigate('/trips/new')} className="premium-button shadow-xl shadow-green-900/10">Criar Primeira Viagem</Button>
             )}
           </div>
         ) : (
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <div className="bento-grid-premium">
             {filtered.map((trip) => {
               const s = STATUS_MAP[trip.status] ?? { label: trip.status, variant: 'neutral' as const };
               const dest = [trip.destination_city, trip.destination_country].filter(Boolean).join(', ') || 'Destino Indefinido';
@@ -99,34 +99,38 @@ export default function Trips() {
                   key={trip.id}
                   type="button"
                   onClick={() => navigate(`/trips/${trip.id}`)}
-                  className="rounded-xl border border-vj-border bg-white p-5 text-left hover:border-vj-green/30 transition-all group text-start"
+                  className="premium-card group relative hover:border-vj-green/30 transition-all text-start flex flex-col p-5"
                 >
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-green-500/5 to-transparent blur-3xl pointer-events-none rounded-full" />
+                  
                   {/* Card Header */}
-                  <div className="flex items-start justify-between gap-3 mb-4">
-                    <div className="h-10 w-10 rounded-xl bg-vj-green/10 flex items-center justify-center shrink-0 group-hover:bg-vj-green/15 transition-colors">
-                      <Plane className="h-5 w-5 text-vj-green" />
+                  <div className="flex items-start justify-between gap-3 mb-4 relative z-10">
+                    <div className="h-12 w-12 rounded-[16px] bg-gradient-to-br from-vj-green/20 to-vj-green/5 flex items-center justify-center shrink-0 border border-vj-green/20 shadow-inner group-hover:scale-110 transition-transform duration-500">
+                      <Plane className="h-6 w-6 text-vj-green" />
                     </div>
                     <StatusBadge variant={s.variant} size="sm">{s.label}</StatusBadge>
                   </div>
 
                   {/* Title */}
-                  <p className="font-semibold text-vj-txt text-base leading-snug mb-1 line-clamp-1">{trip.title}</p>
+                  <p className="font-heading font-black text-xl text-vj-txt leading-snug mb-1 line-clamp-2 relative z-10">{trip.title}</p>
 
                   {/* Destination */}
-                  <p className="text-sm text-vj-txt3 flex items-center gap-1.5 mb-4">
-                    <MapPin className="h-3.5 w-3.5 shrink-0" />
+                  <p className="text-sm text-vj-txt3 flex items-center gap-1.5 mb-6 relative z-10">
+                    <MapPin className="h-4 w-4 shrink-0" />
                     {dest}
                   </p>
 
+                  <div className="flex-1" />
+
                   {/* Meta */}
-                  <div className="flex items-center gap-4 text-xs text-vj-txt3 border-t border-vj-border pt-3">
-                    <span className="flex items-center gap-1">
-                      <CalendarDays className="h-3.5 w-3.5" />
+                  <div className="flex items-center gap-4 text-xs font-bold uppercase tracking-wider text-vj-txt3 border-t border-zinc-100 pt-4 relative z-10 w-full">
+                    <span className="flex items-center gap-1.5 px-3 py-1.5 bg-zinc-50 rounded-full border border-zinc-100">
+                      <CalendarDays className="h-4 w-4 text-zinc-400" />
                       {fmt(trip.departure_date)}
                     </span>
                     {(trip as Record<string, unknown>).pax_count ? (
-                      <span className="flex items-center gap-1 ml-auto">
-                        <Users2 className="h-3.5 w-3.5" />
+                      <span className="flex items-center gap-1.5 ml-auto px-3 py-1.5 bg-zinc-50 rounded-full border border-zinc-100">
+                        <Users2 className="h-4 w-4 text-zinc-400" />
                         {(trip as Record<string, unknown>).pax_count as number} pax
                       </span>
                     ) : null}

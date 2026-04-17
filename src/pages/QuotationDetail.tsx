@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { AppLayout } from '@/components/AppLayout';
 import { useQuotation, useUpdateQuotation } from '@/hooks/useQuotations';
 import { useQuotationScenarios, useScoreQuotation } from '@/hooks/useQuotationScenarios';
+import { useCreateTrip } from '@/hooks/useTrips';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -12,7 +13,7 @@ import {
   ArrowLeft, Copy, ExternalLink, Send, MapPin, Hotel, Calendar,
   DollarSign, Sparkles, Brain, Loader2, Trophy, TrendingDown,
   TrendingUp, CheckCircle2, AlertCircle, ChevronDown, ChevronUp,
-  Star, Clock, Plane, FileText, Check, XCircle
+  Star, Clock, Plane, FileText, Check, XCircle, PlaneTakeoff
 } from 'lucide-react';
 import { parseInstallments } from '@/lib/utils';
 import { cn } from '@/lib/utils';
@@ -188,6 +189,7 @@ export default function QuotationDetail() {
   const navigate = useNavigate();
   const { data: quotation, isLoading } = useQuotation(id);
   const updateQuotation = useUpdateQuotation();
+  const createTrip = useCreateTrip();
   const { toast } = useToast();
 
   const { data: scenarios, isLoading: scenariosLoading } = useQuotationScenarios(id);
@@ -195,6 +197,12 @@ export default function QuotationDetail() {
   const buildProposal = useBuildProposal();
   const sendQuotation = useSendQuotation();
   const [proposalMarkdown, setProposalMarkdown] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (quotation?.notes_internal && !proposalMarkdown) {
+      setProposalMarkdown(quotation.notes_internal);
+    }
+  }, [quotation?.notes_internal]);
 
   const copyWhatsApp = () => {
     if (quotation?.whatsapp_text) {
@@ -219,14 +227,38 @@ export default function QuotationDetail() {
     if (!id) return;
     await updateQuotation.mutateAsync({ id, status });
     toast({ title: status === 'accepted' ? 'Venda concluída! 🎉' : 'Negócio perdido marcado' });
-    
     try {
       await supabase.functions.invoke('extract-quotation-feedback', {
         body: { quotation_id: id, org_id: quotation?.org_id, status }
       });
-      toast({ title: 'Insights extraídos para IA', description: 'Agent 7 documentou o aprendizado no cofre de inteligência.' });
     } catch (e) {
       console.error('Feedback loop error', e);
+    }
+  };
+
+  const handleConvertToTrip = async () => {
+    if (!quotation) return;
+    try {
+      const trip = await createTrip.mutateAsync({
+        title: `${quotation.destination || quotation.hotel_name || 'Viagem'} — ${quotation.clients?.name ?? 'Cliente'}`,
+        destination: quotation.destination ?? '',
+        primary_client_id: quotation.client_id ?? null,
+        departure_date: quotation.check_in ?? null,
+        return_date: quotation.check_out ?? null,
+        num_nights: quotation.num_nights ?? null,
+        hotel_name: quotation.hotel_name ?? null,
+        meal_plan: quotation.meal_plan ?? null,
+        room_type: quotation.room_type ?? null,
+        total_value: quotation.total_value ?? null,
+        status: 'confirmed',
+        quotation_id: quotation.id,
+      } as any);
+      if (trip?.id) {
+        toast({ title: 'Viagem criada!', description: 'Redirecionando para o workspace da viagem...' });
+        navigate(`/trips/${trip.id}`);
+      }
+    } catch (e: any) {
+      toast({ title: 'Erro ao converter', description: e.message, variant: 'destructive' });
     }
   };
 
@@ -311,7 +343,6 @@ export default function QuotationDetail() {
                 : <><Send className="mr-1.5 h-3.5 w-3.5" /> Enviar Cotação</>
               }
             </Button>
-            </Button>
           )}
           {quotation.status === 'sent' && (
             <>
@@ -331,6 +362,19 @@ export default function QuotationDetail() {
                 <XCircle className="mr-1.5 h-3.5 w-3.5" /> Cliente Recusou
               </Button>
             </>
+          )}
+          {quotation.status === 'accepted' && (
+            <Button
+              size="sm"
+              onClick={handleConvertToTrip}
+              disabled={createTrip.isPending}
+              className="rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:opacity-90 shadow-md"
+            >
+              {createTrip.isPending
+                ? <><Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> Criando Viagem...</>
+                : <><PlaneTakeoff className="mr-1.5 h-3.5 w-3.5" /> Converter em Viagem ✦</>
+              }
+            </Button>
           )}
           <Button
             size="sm"

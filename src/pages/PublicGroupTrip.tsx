@@ -222,14 +222,21 @@ export default function PublicGroupTrip() {
 
       {/* Booking Dialog */}
       <Dialog open={bookingOpen} onOpenChange={setBookingOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>Reservar — {trip.title}</DialogTitle>
           </DialogHeader>
           <PublicBookingForm
             tripId={trip.id}
             orgId={trip.org_id}
+            tripTitle={trip.title}
             pricePerPax={Number(trip.price_per_pax)}
+            installmentsCount={trip.installments_count || 1}
+            currency={trip.currency || 'BRL'}
+            onSuccess={(token) => {
+              setBookingOpen(false);
+              window.location.href = `/voucher/${token}`;
+            }}
           />
         </DialogContent>
       </Dialog>

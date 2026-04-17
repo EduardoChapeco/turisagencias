@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { Calendar, FileText, Plane, MapPin, Hotel, ArrowLeft, Users, Download, Globe2, Sparkles } from 'lucide-react';
+import { Calendar, FileText, Plane, MapPin, Hotel, ArrowLeft, Users, Download, Globe2, Sparkles, Bot } from 'lucide-react';
 import { usePortalTrip } from '@/hooks/usePortal';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -210,6 +210,35 @@ export default function PortalTripDetail() {
 
               {/* Side column */}
               <div className="space-y-6">
+
+                {/* AI Agent 3: Cross-sell Widget */}
+                {trip.destination_city && (
+                  <Card className="rounded-[2rem] border-transparent shadow-[0_0_40px_-10px_rgba(139,92,246,0.3)] bg-gradient-to-br from-violet-500 to-indigo-600 backdrop-blur-xl relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 blur-2xl rounded-full -mr-10 -mt-10 pointer-events-none transition-transform group-hover:scale-150 duration-700" />
+                    <CardHeader className="relative z-10 pb-2">
+                      <CardTitle className="flex items-center gap-2 text-white font-heading">
+                        <Sparkles className="h-5 w-5 text-amber-300" /> Dicas Exclusivas
+                      </CardTitle>
+                      <CardDescription className="text-white/80">
+                        Aproveite <strong>{trip.destination_city}</strong> ao máximo!
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="relative z-10">
+                      <div className="bg-white/10 p-3 rounded-2xl border border-white/20 text-white shadow-inner backdrop-blur-sm cursor-pointer hover:bg-white/20 transition-colors">
+                        <div className="flex items-start gap-3">
+                          <Bot className="w-8 h-8 shrink-0 text-amber-300" />
+                          <div>
+                            <p className="text-sm font-medium leading-tight mb-2">Já pensou em adicionar um <strong>seguro viagem</strong> ou um passeio especial ao seu roteiro?</p>
+                            <Button size="sm" variant="secondary" className="w-full rounded-xl bg-white text-indigo-700 hover:bg-gray-50 text-xs font-bold" onClick={() => navigate(`/portal/${org_slug}/trip/${id}/chat`)}>
+                              Falar com meu Agente
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
                 <Card className="rounded-[2rem] border-vj-border shadow-lg bg-white/60 dark:bg-zinc-900/60 backdrop-blur-xl">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2"><Users className="h-5 w-5 text-accent" /> Viajantes</CardTitle>

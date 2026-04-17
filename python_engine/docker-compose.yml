@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  # 1. Banco de Dados Vetorial (Qdrant) para Memória de Agência a Longo Prazo
+  qdrant:
+    image: qdrant/qdrant:latest
+    ports:
+      - "6333:6333" # Interface HTTP/REST
+      - "6334:6334" # gRPC
+    volumes:
+      - qdrant_data:/qdrant/storage
+    environment:
+      - QDRANT__SERVICE__GRPC_PORT=6334
+    networks:
+      - ai_net
+
+  # 2. Redis para filas do Celery e Caching de Layovers do Playwright
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - ai_net
+
+  # 3. O Container da Engine Python (Será buildado pra rodar com o Playwright Embedded)
+  # Comentado até termos o Dockerfile estruturado com os browsers do Playwright
+  # fastapi_engine:
+  #   build: .
+  #   ports:
+  #     - "8000:8000"
+  #   environment:
+  #     - REDIS_URL=redis://redis:6379/0
+  #     - QDRANT_URL=http://qdrant:6333
+  #   depends_on:
+  #     - redis
+  #     - qdrant
+  #   networks:
+  #     - ai_net
+  #
+  # celery_worker:
+  #   build: .
+  #   command: celery -A core.workers worker --loglevel=info -c 4
+  #   environment:
+  #     - REDIS_URL=redis://redis:6379/0
+  #     - QDRANT_URL=http://qdrant:6333
+  #   depends_on:
+  #     - redis
+  #   networks:
+  #     - ai_net
+
+volumes:
+  qdrant_data:
+  redis_data:
+
+networks:
+  ai_net:
+    driver: bridge

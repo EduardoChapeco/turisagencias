@@ -19,7 +19,8 @@ import {
   MapPin,
   FileSignature,
   Bot,
-  UserPlus
+  UserPlus,
+  XCircle,
 } from 'lucide-react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -68,6 +69,7 @@ const navGroups: NavGroup[] = [
     items: [
       { title: 'Transações',     url: '/finance/transactions', icon: Book },
       { title: 'Fornecedores',   url: '/finance/suppliers',    icon: Building2 },
+      { title: 'Cancelamentos',  url: '/finance/cancellations',icon: XCircle },
     ],
   },
   {

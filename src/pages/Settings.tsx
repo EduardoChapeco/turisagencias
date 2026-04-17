@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import {
   Key, Users, Columns, Settings as SettingsIcon, Trash2, Brain,
   Plus, ChevronDown, ChevronRight, Mail, Shield, UserCheck,
-  UserX, Grip, Pencil, Check, X, Database, ArrowRight, ArrowUpRight, Activity
+  UserX, Grip, Pencil, Check, X, Database, ArrowRight, ArrowUpRight, Activity, Bus
 } from 'lucide-react';
 import { useAiKeys, useSaveAiKey, useDeleteAiKey } from '@/hooks/useAiKeys';
 import { usePolicies, useCreatePolicy, useDeletePolicy } from '@/hooks/usePoliciesAndExperiences';
@@ -21,6 +21,9 @@ import {
   useKanbanBoardColumns, useCreateKanbanColumnInBoard,
   useUpdateKanbanColumn, useDeleteKanbanColumn,
 } from '@/hooks/useSettings';
+import { useB2bCredentials, useSaveB2bCredential, useEmailInbound } from '@/hooks/useB2bCredentials';
+import { useBusLayouts, useCreateBusLayout, useDeleteBusLayout } from '@/hooks/useBusLayouts';
+import { BusSeatMap } from '@/components/group-trips/BusSeatMap';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuthStore } from '@/stores/authStore';
 import { cn } from '@/lib/utils';
@@ -321,6 +324,293 @@ function AiLogsTab() {
   );
 }
 
+/* ── Aba Integrações B2B + Gmail ──────────────────────── */
+function IntegrationsTab() {
+  const { data: creds, isLoading: credsLoading } = useB2bCredentials();
+  const saveB2b = useSaveB2bCredential();
+  const { data: emails, isLoading: emailsLoading } = useEmailInbound(20);
+
+  const [b2bPortal, setB2bPortal] = useState('orinter');
+  const [b2bUser, setB2bUser] = useState('');
+  const [b2bPass, setB2bPass] = useState('');
+
+  const handleSaveB2b = async () => {
+    if (!b2bUser.trim() || !b2bPass.trim()) return;
+    await saveB2b.mutateAsync({ portal_name: b2bPortal, username: b2bUser, password: b2bPass });
+    setB2bUser(''); setB2bPass('');
+  };
+
+  const intentBadge: Record<string, string> = {
+    new_lead: 'bg-vj-green/10 text-vj-green',
+    ticket_reply: 'bg-blue-50 text-blue-600',
+    operator_invoice: 'bg-yellow-50 text-yellow-700',
+    '2fa_code': 'bg-red-50 text-red-600',
+    other: 'bg-zinc-100 text-zinc-500',
+  };
+  const intentLabel: Record<string, string> = {
+    new_lead: '✈ Novo Lead', ticket_reply: '↩ Resposta', operator_invoice: '📄 Fatura', '2fa_code': '🔑 2FA Code', other: 'Outro'
+  };
+
+  return (
+    <div className="space-y-8">
+      <div className="grid md:grid-cols-2 gap-8">
+        {/* Cofre B2B */}
+        <Card className="premium-card overflow-hidden">
+          <div className="p-1.5 bg-zinc-950 text-white font-mono text-[10px] text-center uppercase tracking-widest flex items-center justify-center gap-2">
+            <Shield className="w-3 h-3 text-vj-green" /> Cofre de Credenciais RPA
+          </div>
+          <CardHeader>
+            <CardTitle className="text-lg">Portais B2B (Orinter/Flytour)</CardTitle>
+            <CardDescription>Credenciais usadas pelo Playwright para cotar e emitir pacotes automaticamente.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">Portal</Label>
+              <select className="flex h-12 w-full rounded-2xl border border-zinc-100 bg-zinc-50 px-4 py-2 text-sm font-medium" value={b2bPortal} onChange={e => setB2bPortal(e.target.value)}>
+                <option value="orinter">Orinter / Infotravel</option>
+                <option value="flytour">Flytour</option>
+              </select>
+            </div>
+            <div className="space-y-2">
+              <Label className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">Usuário B2B</Label>
+              <Input placeholder="usuario.agencia@operadora.com.br" value={b2bUser} onChange={e => setB2bUser(e.target.value)} className="h-12 rounded-2xl border-zinc-100 bg-zinc-50" />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">Senha / Token de Acesso</Label>
+              <Input type="password" placeholder="••••••••••••••••" value={b2bPass} onChange={e => setB2bPass(e.target.value)} className="h-12 rounded-2xl border-zinc-100 bg-zinc-50" />
+            </div>
+            <Button className="w-full premium-button h-12" onClick={handleSaveB2b} disabled={!b2bUser || !b2bPass || saveB2b.isPending}>
+              {saveB2b.isPending ? 'Salvando no Cofre...' : 'Salvar Credencial Segura'}
+            </Button>
+            {/* Lista de Credenciais Salvas */}
+            {!credsLoading && creds && creds.length > 0 && (
+              <div className="pt-3 border-t border-zinc-100 space-y-2">
+                <p className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">Acessos Ativos</p>
+                {creds.map((c: any) => (
+                  <div key={c.id} className="flex items-center gap-3 p-3 rounded-xl bg-zinc-50 border border-zinc-100">
+                    <div className="h-2 w-2 rounded-full bg-vj-green animate-pulse" />
+                    <span className="text-xs font-bold uppercase flex-1">{c.portal_name}</span>
+                    <span className="text-xs text-muted-foreground">{c.username}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Gmail / Webhook info */}
+        <Card className="premium-card overflow-hidden">
+          <div className="p-1.5 bg-blue-600 text-white font-mono text-[10px] text-center uppercase tracking-widest">
+            Endpoint da Extensão Gmail (Leitura Inteligente)
+          </div>
+          <CardHeader>
+            <CardTitle className="text-lg">Integração Gmail + 2FA Automático</CardTitle>
+            <CardDescription>Cole este webhook na sua extensão do Chrome. A IA classifica cada e-mail e age: cria leads, responde tickets, captura códigos 2FA da Orinter.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="bg-zinc-950 p-4 rounded-2xl">
+              <code className="text-[11px] font-mono select-all break-all text-vj-green block">
+                https://xhdoupxnpjbzkzuhucpp.supabase.co/functions/v1/email-webhook-ingest
+              </code>
+            </div>
+            <div className="grid grid-cols-3 gap-3 text-center">
+              {['✈ Novo Lead → Kanban', '🔑 2FA → Python RPA', '↩ Reply → Ticket'].map(label => (
+                <div key={label} className="p-3 rounded-xl bg-zinc-50 border border-zinc-100">
+                  <p className="text-[10px] font-bold text-vj-txt leading-tight">{label}</p>
+                </div>
+              ))}
+            </div>
+            <p className="text-[11px] text-muted-foreground italic">
+              Versão v3 da edge function ativa — classifica com IA em tempo real + Regex Fallback sem custo.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Feed de Emails Inbound */}
+      <Card className="premium-card">
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Mail className="w-4 h-4 text-blue-500" /> Caixa de Entrada Inteligente
+          </CardTitle>
+          <CardDescription>Emails recebidos e classificados automaticamente pela IA da Turis.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {emailsLoading ? <Skeleton className="h-40 w-full" /> :
+            !emails?.length ? (
+              <div className="text-center py-16 opacity-30">
+                <Mail size={48} className="mx-auto mb-3" />
+                <p className="text-sm">Nenhum email ingerido ainda. Configure o Webhook acima.</p>
+              </div>
+            ) : (
+              <div className="space-y-2 max-h-96 overflow-y-auto pr-2 scrollbar-none">
+                {emails.map((em: any) => (
+                  <div key={em.id} className="flex items-start gap-4 p-4 rounded-2xl border border-zinc-100 bg-zinc-50 hover:bg-white transition-colors">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1 flex-wrap">
+                        <span className={`text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full ${intentBadge[em.ai_intent] ?? intentBadge.other}`}>
+                          {intentLabel[em.ai_intent] ?? 'Outro'}
+                        </span>
+                        <span className="text-[10px] text-zinc-400">{em.sender_email}</span>
+                        {em.ai_confidence && <span className="text-[9px] font-mono text-zinc-400">{(em.ai_confidence * 100).toFixed(0)}% conf.</span>}
+                      </div>
+                      <p className="text-xs font-bold text-zinc-800 truncate">{em.subject}</p>
+                      <p className="text-[10px] text-zinc-500 mt-0.5 truncate">{em.ai_summary}</p>
+                    </div>
+                    <p className="text-[9px] text-zinc-400 flex-shrink-0 pt-1">
+                      {new Date(em.received_at).toLocaleString('pt-BR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )
+          }
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+/* ── Aba Layouts de Ônibus ────────────────────────────────────────────────── */
+function BusLayoutTab() {
+  const { data: layouts, isLoading } = useBusLayouts();
+  const create = useCreateBusLayout();
+  const remove = useDeleteBusLayout();
+
+  const [form, setForm] = useState({
+    name: '', vehicle_type: 'bus', rows: 13, cols: 5, notes: '',
+  });
+  const [preview, setPreview] = useState<string | null>(null);
+
+  const handleCreate = async () => {
+    if (!form.name.trim()) return;
+    await create.mutateAsync(form);
+    setForm({ name: '', vehicle_type: 'bus', rows: 13, cols: 5, notes: '' });
+  };
+
+  const vehicleEmoji: Record<string, string> = {
+    bus: '🚌', van: '🚐', plane: '✈️', boat: '⛵',
+  };
+
+  return (
+    <div className="grid md:grid-cols-2 gap-8">
+      {/* Create form */}
+      <Card className="premium-card">
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Bus className="h-4 w-4 text-vj-green" /> Novo Layout de Ônibus
+          </CardTitle>
+          <CardDescription>
+            Defina a configuração de assentos gerada automaticamente.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <Label>Nome do layout *</Label>
+            <Input value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))}
+              placeholder="Ex: Comil Campione 45 lugares" className="rounded-xl mt-1" />
+          </div>
+          <div>
+            <Label>Tipo de veículo</Label>
+            <select
+              className="flex h-10 w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm mt-1"
+              value={form.vehicle_type}
+              onChange={e => setForm(p => ({ ...p, vehicle_type: e.target.value }))}
+            >
+              <option value="bus">🚌 Ônibus</option>
+              <option value="van">🚐 Van</option>
+              <option value="plane">✈️ Avião</option>
+              <option value="boat">⛵ Barco</option>
+            </select>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label>Fileiras</Label>
+              <Input type="number" min={3} max={20} value={form.rows}
+                onChange={e => setForm(p => ({ ...p, rows: Number(e.target.value) }))}
+                className="rounded-xl mt-1" />
+            </div>
+            <div>
+              <Label>Colunas (sem corredor)</Label>
+              <Input type="number" min={2} max={6} value={form.cols}
+                onChange={e => setForm(p => ({ ...p, cols: Number(e.target.value) }))}
+                className="rounded-xl mt-1" />
+            </div>
+          </div>
+          <div>
+            <Label>Notas internas</Label>
+            <Input value={form.notes} onChange={e => setForm(p => ({ ...p, notes: e.target.value }))}
+              placeholder="Ex: Ônibus da Cooperativa Sul" className="rounded-xl mt-1" />
+          </div>
+          <p className="text-xs text-zinc-400">
+            Layout com corredor central gerado automaticamente.
+            Aprox. {(form.rows - 1) * (form.cols - 1)} assentos + WC.
+          </p>
+          <Button className="w-full" onClick={handleCreate} disabled={!form.name.trim() || create.isPending}>
+            {create.isPending ? 'Criando...' : <><Plus size={14} className="mr-1" /> Criar Layout</>}
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* List */}
+      <div className="space-y-3">
+        <h3 className="font-semibold text-sm text-zinc-500 uppercase tracking-wider">Layouts cadastrados</h3>
+        {isLoading ? (
+          <div className="space-y-2">{[1,2].map(i => <Skeleton key={i} className="h-20 rounded-2xl" />)}</div>
+        ) : !layouts?.length ? (
+          <Card className="premium-card">
+            <CardContent className="flex flex-col items-center py-12 text-center">
+              <Bus size={36} className="text-zinc-200 mb-2" />
+              <p className="text-sm text-zinc-400">Nenhum layout criado ainda</p>
+            </CardContent>
+          </Card>
+        ) : (
+          layouts.map(layout => (
+            <Card key={layout.id} className="premium-card">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm flex items-center justify-between">
+                  <span className="flex items-center gap-2">
+                    <span>{vehicleEmoji[layout.vehicle_type] ?? '🚌'}</span>
+                    {layout.name}
+                  </span>
+                  <div className="flex gap-1">
+                    <Button variant="outline" size="sm" className="h-7 text-xs rounded-lg"
+                      onClick={() => setPreview(preview === layout.id ? null : layout.id)}>
+                      {preview === layout.id ? 'Ocultar' : 'Preview'}
+                    </Button>
+                    <Button variant="ghost" size="icon" className="h-7 w-7 text-red-500 hover:bg-red-50"
+                      onClick={() => { if (confirm('Remover layout?')) remove.mutate(layout.id); }}>
+                      <Trash2 size={13} />
+                    </Button>
+                  </div>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <p className="text-xs text-zinc-400">
+                  {layout.rows} fileiras × {layout.cols} colunas · {layout.vehicle_type}
+                </p>
+                {layout.notes && <p className="text-xs text-zinc-500 mt-0.5">{layout.notes}</p>}
+                {preview === layout.id && layout.seat_map && (
+                  <div className="mt-4 overflow-x-auto">
+                    <BusSeatMap
+                      layout={{ rows: layout.rows, cols: layout.cols, seat_map: layout.seat_map }}
+                      occupied={[]}
+                      selected={[]}
+                      maxSelect={0}
+                      onSelect={() => {}}
+                      readOnly
+                    />
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          ))
+        )}
+      </div>
+    </div>
+  );
+}
+
 /* ── Main Settings Page ───────────────────────────────────── */
 export default function Settings() {
   const { data: keys, isLoading } = useAiKeys();
@@ -355,13 +645,14 @@ export default function Settings() {
         <Tabs defaultValue="aikeys" className="w-full">
           <TabsList className="bg-zinc-100/50 p-1.5 rounded-[32px] flex gap-1 mb-10 border border-zinc-200/50 backdrop-blur-md w-fit mx-auto">
             {[
-              { id: 'agents', label: 'Equipe', icon: Users },
-              { id: 'aikeys', label: 'Chaves IA', icon: Key },
-              { id: 'knowledge', label: 'Especialista', icon: Brain },
-              { id: 'policies', label: 'Operadoras', icon: Database },
-              { id: 'kanban', label: 'Board', icon: Columns },
-              { id: 'integrations', label: 'Webhooks', icon: Mail },
-              { id: 'logs', label: 'Logs IA', icon: Activity },
+              { id: 'agents',       label: 'Equipe',     icon: Users },
+              { id: 'aikeys',       label: 'Chaves IA',  icon: Key },
+              { id: 'knowledge',    label: 'Especialista', icon: Brain },
+              { id: 'policies',     label: 'Operadoras', icon: Database },
+              { id: 'kanban',       label: 'Board',      icon: Columns },
+              { id: 'integrations', label: 'Webhooks',   icon: Mail },
+              { id: 'bus',          label: 'Ônibus',     icon: Bus },
+              { id: 'logs',         label: 'Logs IA',    icon: Activity },
             ].map(t => (
               <TabsTrigger 
                 key={t.id} 
@@ -452,36 +743,11 @@ export default function Settings() {
           </TabsContent>
 
           <TabsContent value="integrations" className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-             <Card className="premium-card overflow-hidden">
-               <div className="p-1.5 bg-zinc-950 text-green-400 font-mono text-[10px] text-center uppercase tracking-widest">Serviço de Ingestão Autônomo Ativo</div>
-               <CardHeader><CardTitle className="text-lg">Email & Webhooks Hub</CardTitle></CardHeader>
-               <CardContent className="space-y-8">
-                 <div className="space-y-4">
-                    <p className="text-xs font-bold uppercase text-muted-foreground tracking-widest">Endpoint de Captura</p>
-                    <div className="bg-zinc-100 p-6 rounded-3xl border border-zinc-200 group relative">
-                       <code className="text-[11px] font-mono select-all break-all text-zinc-600 block pr-12">
-                         https://xhdoupxnpjbzkzuhucpp.supabase.co/functions/v1/email-webhook-ingest
-                       </code>
-                       <Button variant="ghost" size="icon" className="absolute right-4 top-1/2 -translate-y-1/2 rounded-xl group-hover:bg-white transition-colors">
-                          <ArrowUpRight className="w-4 h-4" />
-                       </Button>
-                    </div>
-                    <p className="text-[11px] text-muted-foreground italic">Redirecione seus emails do Gmail ou automações do Zapier/Make para este endereço para processamento em tempo real.</p>
-                 </div>
+            <IntegrationsTab />
+          </TabsContent>
 
-                 <div className="grid md:grid-cols-2 gap-4 pt-4 border-t border-zinc-100">
-                    <div className="p-4 rounded-3xl bg-zinc-50 border border-zinc-100 flex items-center justify-between">
-                       <div>
-                         <p className="text-sm font-bold">Automação de Datalake</p>
-                         <p className="text-[10px] text-muted-foreground">Transformar emails em leads/tickets</p>
-                       </div>
-                       <div className="w-10 h-5 bg-vj-green rounded-full relative shadow-inner">
-                         <div className="absolute right-1 top-0.5 w-4 h-4 bg-white rounded-full shadow-sm"></div>
-                       </div>
-                    </div>
-                 </div>
-               </CardContent>
-             </Card>
+          <TabsContent value="bus" className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <BusLayoutTab />
           </TabsContent>
 
           <TabsContent value="logs" className="animate-in fade-in slide-in-from-bottom-4 duration-500">

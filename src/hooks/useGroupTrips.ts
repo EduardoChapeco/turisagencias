@@ -321,3 +321,34 @@ export function usePublicGroupTrip(slug: string | undefined) {
     enabled: !!slug,
   });
 }
+
+// ── Transfer Booking ────────────────────────────────────────────────────────
+export function useTransferBooking() {
+  const qc = useQueryClient();
+  const { toast } = useToast();
+  return useMutation({
+    mutationFn: async ({
+      bookingId,
+      newTripId,
+      reason,
+    }: {
+      bookingId: string;
+      newTripId: string;
+      reason: string;
+    }) => {
+      const { error } = await (supabase as any).rpc('transfer_booking_to_trip', {
+        p_booking_id: bookingId,
+        p_new_trip_id: newTripId,
+        p_reason: reason,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['group_trips'] });
+      qc.invalidateQueries({ queryKey: ['group_trip_bookings_full'] });
+      qc.invalidateQueries({ queryKey: ['group_trip_finance_summary'] });
+      toast({ title: 'Reserva transferida com sucesso!' });
+    },
+    onError: (e: Error) => toast({ title: 'Erro na transferência', description: e.message, variant: 'destructive' }),
+  });
+}

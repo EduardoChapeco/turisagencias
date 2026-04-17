@@ -58,6 +58,7 @@ const PortalTripDetail = lazy(() => import('./pages/PortalTripDetail'));
 const PortalAiPhotos = lazy(() => import('./pages/PortalAiPhotos'));
 const Suppliers = lazy(() => import('./pages/finance/Suppliers'));
 const Transactions = lazy(() => import('./pages/finance/Transactions'));
+const PendingCancellations = lazy(() => import('./pages/finance/PendingCancellations'));
 const ContractTemplates = lazy(() => import('./pages/legal/ContractTemplates'));
 const Automations = lazy(() => import('./pages/automations/Automations'));
 const Team = lazy(() => import('./pages/admin/Team'));
@@ -68,10 +69,12 @@ const PublicChecklist = lazy(() => import('./pages/PublicChecklist'));
 const PublicGuide = lazy(() => import('./pages/PublicGuide'));
 const PublicTravelerInfo = lazy(() => import('./pages/PublicTravelerInfo'));
 
-const GroupTrips = lazy(() => import('./pages/GroupTrips'));
-const PublicGroupTrip = lazy(() => import('./pages/PublicGroupTrip'));
+const GroupTrips       = lazy(() => import('./pages/GroupTrips'));
+const GroupTripFinance = lazy(() => import('./pages/GroupTripFinance'));
+const PublicGroupTrip  = lazy(() => import('./pages/PublicGroupTrip'));
 const PublicBookingVoucher = lazy(() => import('./pages/PublicBookingVoucher'));
-const Destinations = lazy(() => import('./pages/Destinations'));
+const TravelerPortal   = lazy(() => import('./pages/TravelerPortal'));
+const Destinations     = lazy(() => import('./pages/Destinations'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -137,6 +140,7 @@ const App = () => (
               <Route path="/p/info/:slug" element={<PublicTravelerInfo />} />
               <Route path="/g/:slug" element={<PublicGroupTrip />} />
               <Route path="/voucher/:token" element={<PublicBookingVoucher />} />
+              <Route path="/minha-viagem/:token" element={<TravelerPortal />} />
               <Route path="/portal/:org_slug" element={<PortalLogin />} />
               <Route path="/portal/:org_slug/home" element={<ProtectedRoute><PortalHome /></ProtectedRoute>} />
               <Route path="/portal/:org_slug/trip/:id" element={<ProtectedRoute><PortalTripDetail /></ProtectedRoute>} />
@@ -171,6 +175,7 @@ const App = () => (
               {/* ERP v3 Financeiro & Jurídico */}
               <Route path="/finance/suppliers" element={<ProtectedRoute><Suppliers /></ProtectedRoute>} />
               <Route path="/finance/transactions" element={<ProtectedRoute><Transactions /></ProtectedRoute>} />
+              <Route path="/finance/cancellations" element={<ProtectedRoute><PendingCancellations /></ProtectedRoute>} />
               <Route path="/legal/contracts" element={<ProtectedRoute><ContractTemplates /></ProtectedRoute>} />
               <Route path="/automations" element={<ProtectedRoute><Automations /></ProtectedRoute>} />
               <Route path="/team" element={<ProtectedRoute><Team /></ProtectedRoute>} />
@@ -190,6 +195,7 @@ const App = () => (
               <Route path="/experiences" element={<ProtectedWithOrg><TripsRole><Experiences /></TripsRole></ProtectedWithOrg>} />
 
               <Route path="/group-trips" element={<ProtectedWithOrg><TripsRole><GroupTrips /></TripsRole></ProtectedWithOrg>} />
+              <Route path="/group-trips/:id/finance" element={<ProtectedWithOrg><TripsRole><GroupTripFinance /></TripsRole></ProtectedWithOrg>} />
               <Route path="/destinations" element={<ProtectedWithOrg><TripsRole><Destinations /></TripsRole></ProtectedWithOrg>} />
 
               <Route path="*" element={<NotFound />} />

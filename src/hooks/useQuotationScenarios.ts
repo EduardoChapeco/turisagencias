@@ -6,21 +6,33 @@ import { useToast } from '@/hooks/use-toast';
 export type QuotationScenario = {
   id: string;
   quotation_id: string;
-  scenario_type: 'direct' | 'gateway' | 'date_shift' | 'upgrade' | 'budget';
-  title: string;
-  description: string;
-  score: number;
-  score_breakdown: {
-    logistic_viability: number;
-    price_competitiveness: number;
-    client_experience: number;
-    operational_risk: number;
+  org_id: string;
+  scenario_type: string;
+  scenario_label?: string;
+  title?: string;
+  description?: string;
+  score?: number;
+  score_breakdown?: {
+    logistic_viability?: number;
+    price_competitiveness?: number;
+    client_experience?: number;
+    operational_risk?: number;
   };
+  flights_json?: any;
+  hotels_json?: any;
+  total_price?: number;
+  flight_score?: number;
+  hotel_score?: number;
+  logistics_score?: number;
+  price_score?: number;
+  recommendation?: string;
+  ai_reasoning?: string;
+  agent_rationale?: string;
   estimated_savings_brl?: number | null;
   estimated_extra_cost_brl?: number | null;
   suggested_changes?: any;
-  agent_rationale: string;
-  recommended: boolean;
+  recommended?: boolean;
+  is_selected?: boolean;
   metadata?: any;
   created_at: string;
 };
@@ -60,16 +72,17 @@ export function useScoreQuotation() {
     },
     onSuccess: (data, quotationId) => {
       qc.invalidateQueries({ queryKey: ['quotation_scenarios', quotationId] });
+      const bestIdx = (data.best_scenario_index ?? 0) + 1;
       toast({
-        title: '✅ Análise IA concluída!',
-        description: `${data.scenarios?.length ?? 3} cenários gerados. Melhor: opção ${(data.best_scenario_index ?? 0) + 1}.`,
+        title: '🧠 Análise IA concluída!',
+        description: `${data.scenarios?.length ?? 3} cenários gerados. Recomendação: opção ${bestIdx}.`,
       });
     },
-    onError: (e: Error) => toast({ title: 'Erro na análise IA', description: e.message, variant: 'destructive' }),
+    onError: (e: Error) =>
+      toast({ title: 'Erro na análise IA', description: e.message, variant: 'destructive' }),
   });
 }
 
-// Hook para listas de decision logs (painel de auditoria)
 export function useAiDecisionLogs(limit = 20) {
   const { organization } = useAuthStore();
   return useQuery({

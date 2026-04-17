@@ -6,6 +6,8 @@ import { parseInstallments } from '@/lib/utils';
 import type { PublicQuotationData } from '@/types';
 import { PublicLayout } from '@/components/layout/PublicLayout';
 import { TurisBadge } from '@/components/ui/TurisBadge';
+import { ConfirmationModal } from '@/components/public-quotation/ConfirmationModal';
+import { PriceDetails } from '@/components/public-quotation/PriceDetails';
 
 const mealLabels: Record<string, string> = {
   all_inclusive: 'All Inclusive 🍽️',
@@ -217,70 +219,20 @@ export default function PublicQuotation() {
     >
 
       {/* CONFIRMATION MODAL OVERLAY */}
-      {isConfirmOpen && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(17, 17, 16, 0.4)', backdropFilter: 'blur(4px)', padding: 16 }}>
-          <div style={{ background: 'var(--vj-bg)', width: '100%', maxWidth: 420, borderRadius: 24, padding: 32, position: 'relative', boxShadow: '0 24px 48px rgba(0,0,0,0.1)' }}>
-            <button 
-              onClick={() => setIsConfirmOpen(false)}
-              style={{ position: 'absolute', top: 16, right: 16, width: 32, height: 32, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--vj-txt3)' }}
-            >
-              <X size={20} />
-            </button>
-
-            {confirmSuccess ? (
-              <div style={{ textAlign: 'center', padding: '20px 0' }}>
-                <CheckCircle2 size={56} color="var(--vj-green)" style={{ margin: '0 auto 16px' }} />
-                <h3 style={{ fontSize: 20, fontWeight: 700, color: 'var(--vj-txt)', marginBottom: 8 }}>Solicitação Confirmada!</h3>
-                <p style={{ color: 'var(--vj-txt2)', fontSize: 14, lineHeight: 1.5 }}>
-                  Nossa equipe já foi notificada sobre seu interesse. Entraremos em contato em breve para prosseguir com o pagamento e a emissão.
-                </p>
-                <div style={{ marginTop: 24 }}>
-                  <button onClick={() => setIsConfirmOpen(false)} style={{ background: 'var(--vj-green)', color: '#fff', border: 'none', padding: '12px 24px', borderRadius: 100, fontWeight: 600, fontSize: 14, cursor: 'pointer' }}>
-                    Fechar
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div>
-                <h3 style={{ fontSize: 20, fontWeight: 700, color: 'var(--vj-txt)', marginBottom: 8 }}>Confirmar Reserva</h3>
-                <p style={{ color: 'var(--vj-txt2)', fontSize: 13, marginBottom: 24, lineHeight: 1.5 }}>
-                  Ótima escolha! Preencha os dados abaixo para sinalizar seu aceite. Nossa equipe cuidará do resto.
-                </p>
-
-                <div style={{ marginBottom: 16 }}>
-                  <label style={{ display: 'block', fontSize: 12, fontWeight: 600, marginBottom: 6, color: 'var(--vj-txt)' }}>Nome Completo *</label>
-                  <input type="text" value={confirmName} onChange={e => setConfirmName(e.target.value)} style={{ width: '100%', padding: '12px 16px', borderRadius: 12, border: '1px solid var(--vj-border)', background: '#fff', outline: 'none', color: 'var(--vj-txt)' }} placeholder="Como devemos lhe chamar" />
-                </div>
-                
-                <div style={{ marginBottom: 16 }}>
-                  <label style={{ display: 'block', fontSize: 12, fontWeight: 600, marginBottom: 6, color: 'var(--vj-txt)' }}>E-mail ou WhatsApp</label>
-                  <input type="text" value={confirmEmail} onChange={e => setConfirmEmail(e.target.value)} style={{ width: '100%', padding: '12px 16px', borderRadius: 12, border: '1px solid var(--vj-border)', background: '#fff', outline: 'none', color: 'var(--vj-txt)' }} placeholder="Para nosso retorno" />
-                </div>
-
-                <div style={{ marginBottom: 24 }}>
-                  <label style={{ display: 'block', fontSize: 12, fontWeight: 600, marginBottom: 6, color: 'var(--vj-txt)' }}>Observações (Opcional)</label>
-                  <textarea rows={3} value={confirmNotes} onChange={e => setConfirmNotes(e.target.value)} style={{ width: '100%', padding: '12px 16px', borderRadius: 12, border: '1px solid var(--vj-border)', background: '#fff', outline: 'none', color: 'var(--vj-txt)', resize: 'none' }} placeholder="Algum detalhe extra sobre acompanhantes ou pagamento..." />
-                </div>
-
-                {confirmError && (
-                  <div style={{ padding: 12, background: 'var(--vj-red-bg)', color: 'var(--vj-red)', fontSize: 13, borderRadius: 12, marginBottom: 16 }}>
-                    {confirmError}
-                  </div>
-                )}
-
-                <button 
-                  disabled={confirmLoading}
-                  onClick={handleConfirm}
-                  style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: 'var(--vj-green)', color: '#fff', border: 'none', padding: 16, borderRadius: 100, fontWeight: 600, fontSize: 15, cursor: confirmLoading ? 'not-allowed' : 'pointer', opacity: confirmLoading ? 0.7 : 1 }}
-                >
-                  {confirmLoading && <Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} />}
-                  {confirmLoading ? 'Enviando...' : 'Confirmar Interesse'}
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+      <ConfirmationModal 
+        isOpen={isConfirmOpen}
+        onClose={() => setIsConfirmOpen(false)}
+        confirmName={confirmName}
+        setConfirmName={setConfirmName}
+        confirmEmail={confirmEmail}
+        setConfirmEmail={setConfirmEmail}
+        confirmNotes={confirmNotes}
+        setConfirmNotes={setConfirmNotes}
+        confirmLoading={confirmLoading}
+        confirmSuccess={confirmSuccess}
+        confirmError={confirmError}
+        handleConfirm={handleConfirm}
+      />
       {/* ══ COVER HERO ══ */}
       <div className="vj-cover">
         {coverImageUrl ? (
@@ -698,136 +650,24 @@ export default function PublicQuotation() {
         )}
 
         {/* PREÇOS — usa price_items relacionais quando disponível */}
-        {hasPriceDetails && (
-          <div className="vj-price-section vj-section-gap">
-            {/* Breakdown */}
-            <div className="vj-price-breakdown">
-              <div className="vj-sh" style={{ marginBottom: 16 }}>
-                <div>
-                  <div className="vj-sh-title">💰 Detalhes do Valor</div>
-                </div>
-              </div>
-
-              {/* Itens relacionais */}
-              {priceItems.length > 0 ? priceItems.map((item: any, i: number) => (
-                <div key={i} className="vj-pb-row">
-                  <span className="vj-pb-label"><span className="vj-pb-label-icon">{item.icon || '—'}</span> {item.label}</span>
-                  <span className="vj-pb-val">{item.amount ? fmt(item.amount, data.currency ?? 'BRL') : 'incluído'}</span>
-                </div>
-              )) : (
-                <>
-                  {flights.length > 0 && (
-                    <div className="vj-pb-row">
-                      <span className="vj-pb-label"><span className="vj-pb-label-icon">✈️</span> Passagem aérea</span>
-                      <span className="vj-pb-val">incluído</span>
-                    </div>
-                  )}
-                  {data.hotel_name && data.num_nights && (
-                    <div className="vj-pb-row">
-                      <span className="vj-pb-label"><span className="vj-pb-label-icon">🏨</span> {data.hotel_name} ({data.num_nights} noites)</span>
-                      <span className="vj-pb-val">incluído</span>
-                    </div>
-                  )}
-                  {transfers.length > 0 && (
-                    <div className="vj-pb-row">
-                      <span className="vj-pb-label"><span className="vj-pb-label-icon">🚗</span> Transfers</span>
-                      <span className="vj-pb-val">incluído</span>
-                    </div>
-                  )}
-                </>
-              )}
-
-              {data.total_value && (
-                <div className="vj-pb-total">
-                  <span className="vj-pb-total-l">Total ({pricingLabel.toLowerCase()})</span>
-                  <span className="vj-pb-total-v">{fmt(data.total_value, data.currency ?? 'BRL')}</span>
-                </div>
-              )}
-
-              {/* PAX info */}
-              {(paxAdultos || paxCriancas) && (
-                <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid var(--vj-border)', display: 'flex', gap: 16, fontSize: 12, color: 'var(--vj-txt3)' }}>
-                  {paxAdultos > 0 && <span>👤 {paxAdultos} adulto{paxAdultos > 1 ? 's' : ''}</span>}
-                  {paxCriancas > 0 && <span>👶 {paxCriancas} criança{paxCriancas > 1 ? 's' : ''}</span>}
-                </div>
-              )}
-
-              {/* Cancelamento */}
-              {cancelamento && (
-                <div style={{ marginTop: 16, padding: '12px 14px', background: '#fff8ed', border: '1px solid #f59e0b40', borderRadius: 12 }}>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: '#b45309', marginBottom: 4 }}>⚠️ Política de Cancelamento</div>
-                  <div style={{ fontSize: 12, color: '#92400e', lineHeight: 1.5 }}>
-                    {cancelamentoData && <strong style={{ display: 'block', marginBottom: 4 }}>Prazo sem multa: {fmtDate(cancelamentoData)}</strong>}
-                    {cancelamento}
-                  </div>
-                </div>
-              )}
-
-              {/* Não incluído */}
-              {excludedItems.length > 0 && (
-                <div style={{ marginTop: 20, paddingTop: 16, borderTop: '1px solid var(--vj-border)' }}>
-                  <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.5px', color: 'var(--vj-txt3)', marginBottom: 10 }}>Não incluído</div>
-                  {excludedItems.map((item, i) => (
-                    <div key={i} className="vj-pb-row" style={{ color: 'var(--vj-txt3)' }}>
-                      <span className="vj-pb-label"><span className="vj-pb-label-icon">❌</span> {item}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* CTA Card */}
-            <div className="vj-price-cta">
-              {/* Urgency banner when expiry is close */}
-              {daysLeft !== null && daysLeft <= 5 && daysLeft >= 0 && (
-                <div style={{ padding: '10px 16px', background: daysLeft <= 2 ? '#fee2e2' : '#fff8ed', borderRadius: 12, marginBottom: 12, border: `1px solid ${daysLeft <= 2 ? '#fca5a5' : '#fde68a'}`, display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{ fontSize: 16 }}>{daysLeft <= 2 ? '🔴' : '🟡'}</span>
-                  <div>
-                    <div style={{ fontSize: 12, fontWeight: 700, color: daysLeft <= 2 ? '#dc2626' : '#d97706' }}>
-                      {daysLeft === 0 ? 'Expira hoje!' : `Expira em ${daysLeft} dia${daysLeft > 1 ? 's' : ''}!`}
-                    </div>
-                    <div style={{ fontSize: 11, color: daysLeft <= 2 ? '#b91c1c' : '#b45309' }}>Confirme agora para garantir a disponibilidade.</div>
-                  </div>
-                </div>
-              )}
-              <div className="vj-price-total-card">
-                <div className="vj-ptc-label">Valor total</div>
-                <div className="vj-ptc-val">{fmt(data.total_value, data.currency ?? 'BRL')}</div>
-                <div className="vj-ptc-sub">{pricingLabel} · todos os serviços</div>
-                {installments.length > 0 && (
-                  <>
-                    <div className="vj-ptc-divider" />
-                    <div className="vj-ptc-parc">Parcelamento em até</div>
-                    {installments.map((inst, i) => (
-                      <div key={i} className="vj-ptc-parc-val">
-                        {inst.installment_count}× de {fmt(inst.value)}
-                        <span style={{ fontSize: 11, opacity: .6, marginLeft: 6 }}>{inst.type}</span>
-                      </div>
-                    ))}
-                  </>
-                )}
-                {whatsappUrl && (
-                  <>
-                    <button className="vj-btn-block vj-btn-white" onClick={() => setIsConfirmOpen(true)}>
-                      ✅ Confirmar reserva
-                    </button>
-                    <button className="vj-btn-block vj-btn-outline-w" onClick={() => window.open(whatsappUrl, '_blank')}>
-                      💬 Fazer pergunta
-                    </button>
-                  </>
-                )}
-              </div>
-
-              <div className="vj-note-card">
-                <div className="vj-nc-icon">✅</div>
-                <div className="vj-nc-title">Proposta personalizada</div>
-                <div className="vj-nc-text">
-                  Esta cotação foi elaborada exclusivamente para você. Entre em contato para ajustes, dúvidas ou para confirmar sua reserva.
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+        <PriceDetails 
+          data={data}
+          priceItems={priceItems}
+          flights={flights}
+          transfers={transfers}
+          installments={installments}
+          paxAdultos={paxAdultos}
+          paxCriancas={paxCriancas}
+          cancelamento={cancelamento}
+          cancelamentoData={cancelamentoData}
+          excludedItems={excludedItems}
+          pricingLabel={pricingLabel}
+          fmt={fmt}
+          fmtDate={fmtDate}
+          daysLeft={daysLeft}
+          whatsappUrl={whatsappUrl}
+          onConfirmClick={() => setIsConfirmOpen(true)}
+        />
 
         {/* INCLUDES GRID — usa includes_items relacionais quando disponível */}
         {(includesItems.length > 0 || includedItems.length > 0 || flights.length > 0 || data.hotel_name || transfers.length > 0) && (

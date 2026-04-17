@@ -36,15 +36,15 @@ export default function PortalLogin() {
       <div className="z-10 w-full max-w-md animate-in fade-in slide-in-from-bottom-8 duration-700">
         
         {/* Logo Flutuante (Above Card) */}
-        <div className="flex justify-center mb-6 drop-shadow-xl">
+        <div className="flex justify-center mb-6">
            <div
               className="flex h-16 w-16 items-center justify-center rounded-2xl  border border-white/10"
               style={{ backgroundColor: organization?.primary_color || '#1E3A5F' }}
             >
               {organization?.logo_url ? (
-                <img src={organization.logo_url} alt={organization.name} className="h-10 w-10 object-contain drop-shadow-sm" />
+                <img src={organization.logo_url} alt={organization.name} className="h-10 w-10 object-contain" />
               ) : (
-                <Plane className="h-8 w-8 text-white drop-shadow-md" />
+                <Plane className="h-8 w-8 text-white" />
               )}
             </div>
         </div>

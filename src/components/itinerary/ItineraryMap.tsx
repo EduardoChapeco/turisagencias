@@ -48,7 +48,6 @@ function createNumberedPin(number: number, category: string = 'default') {
         border-radius: 50% 50% 50% 0;
         transform: rotate(-45deg);
         border: 2px solid white;
-        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.2);
         display: flex; align-items: center; justify-content: center;
         transition: transform 0.2s ease;
       " class="pin-marker">
@@ -240,7 +239,7 @@ export function ItineraryMap({ stops, activeStopId, interactive = true }: Itiner
         .custom-popup .leaflet-popup-content-wrapper {
           border-radius: 12px;
           padding: 4px;
-          box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+          border: 1px solid rgba(0, 0, 0, 0.08);
         }
         .custom-popup .leaflet-popup-tip-container {
           margin-top: -1px;

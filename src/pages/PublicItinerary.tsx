@@ -224,11 +224,11 @@ export default function PublicItinerary() {
               </Badge>
             )}
           </div>
-          <h1 className="text-3xl md:text-5xl font-extrabold text-white tracking-tight mb-2 drop-shadow-lg leading-tight">
+          <h1 className="text-3xl md:text-5xl font-extrabold text-white tracking-tight mb-2 leading-tight">
             🗺️ {itinerary.title}
           </h1>
           {itinerary.subtitle && (
-            <p className="text-white/80 text-lg md:text-xl max-w-3xl drop-shadow font-medium">
+            <p className="text-white/80 text-lg md:text-xl max-w-3xl font-medium">
               {itinerary.subtitle}
             </p>
           )}

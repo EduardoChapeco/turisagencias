@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, Navigate, useNavigate } from 'react-router-dom';
+import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { Cloud } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthStore } from '@/stores/authStore';
@@ -11,14 +11,17 @@ import { Label } from '@/components/ui/label';
 
 export default function Login() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
   const { isLoading, user } = useAuthStore();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const returnTo = searchParams.get('returnTo');
+  const targetPath = returnTo && returnTo.startsWith('/') ? returnTo : '/';
 
   if (!isLoading && user) {
-    return <Navigate to="/" replace />;
+    return <Navigate to={targetPath} replace />;
   }
 
   return (
@@ -45,7 +48,7 @@ export default function Login() {
                 return;
               }
 
-              navigate('/');
+              navigate(targetPath, { replace: true });
             }}
           >
             <div className="space-y-2">

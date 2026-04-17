@@ -23,6 +23,13 @@ export type ExtensionContext = {
   email: string | null;
 };
 
+export type ExtensionAiConfig = {
+  provider: string;
+  apiKey: string;
+  apiBase: string;
+  model: string;
+} | null;
+
 export function jsonResponse(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
     status,
@@ -118,6 +125,30 @@ function normalizePriority(value: string | null | undefined) {
   return raw || 'normal';
 }
 
+function defaultAiBaseUrl(provider: string | null | undefined) {
+  const raw = String(provider || '').toLowerCase();
+  if (raw === 'openrouter') return 'https://openrouter.ai/api/v1';
+  if (raw === 'groq') return 'https://api.groq.com/openai/v1';
+  if (raw === 'openai') return 'https://api.openai.com/v1';
+  if (raw === 'gemini' || raw === 'google') return 'https://generativelanguage.googleapis.com/v1beta/openai';
+  if (raw === 'anthropic') return 'https://api.anthropic.com';
+  return 'https://openrouter.ai/api/v1';
+}
+
+function defaultAiModel(provider: string | null | undefined) {
+  const raw = String(provider || '').toLowerCase();
+  if (raw === 'groq') return 'llama3-70b-8192';
+  if (raw === 'openai') return 'gpt-4o-mini';
+  if (raw === 'gemini' || raw === 'google') return 'gemini-2.5-flash';
+  if (raw === 'anthropic') return 'claude-3-5-sonnet-latest';
+  return 'google/gemini-2.5-flash';
+}
+
+function isDemandCard(row: Record<string, any>) {
+  const raw = String(row.task_type || row.metadata?.extension_kind || row.metadata?.kind || '').toLowerCase();
+  return raw.includes('demanda') || raw.includes('demand');
+}
+
 function taskPriorityToPlatform(value: string | null | undefined) {
   const raw = normalizePriority(value);
   if (raw === 'urgente' || raw === 'alta') return 'High';
@@ -199,6 +230,32 @@ export async function ensureTaskBoard(supabase: ReturnType<typeof createClient>,
   };
 }
 
+export async function getExtensionAiConfig(
+  supabase: ReturnType<typeof createClient>,
+  orgId: string,
+): Promise<ExtensionAiConfig> {
+  const { data: keys, error } = await supabase
+    .from('ai_keys_pool')
+    .select('provider, api_key, model')
+    .eq('org_id', orgId)
+    .eq('is_active', true)
+    .order('created_at', { ascending: true })
+    .limit(1);
+
+  if (error) throw new Error(error.message);
+
+  const entry = (keys ?? [])[0];
+  if (!entry?.api_key) return null;
+
+  const provider = String(entry.provider || 'openrouter').toLowerCase();
+  return {
+    provider,
+    apiKey: entry.api_key,
+    apiBase: defaultAiBaseUrl(provider),
+    model: entry.model || defaultAiModel(provider),
+  };
+}
+
 export async function findClientByPhone(
   supabase: ReturnType<typeof createClient>,
   orgId: string,
@@ -212,7 +269,7 @@ export async function findClientByPhone(
   for (const pattern of patterns) {
     const { data, error } = await supabase
       .from('clients')
-      .select('id, org_id, name, email, phone, tags, notes, created_at, updated_at')
+      .select('id, org_id, name, email, phone, tags, notes, preferences, ltv, ltv_max, created_at, updated_at')
       .eq('org_id', orgId)
       .ilike('phone', `%${pattern}%`)
       .limit(20);
@@ -243,7 +300,7 @@ export async function searchClients(
 
   const { data, error } = await supabase
     .from('clients')
-    .select('id, org_id, name, email, phone, tags, notes, created_at, updated_at')
+    .select('id, org_id, name, email, phone, tags, notes, preferences, ltv, ltv_max, created_at, updated_at')
     .eq('org_id', orgId)
     .or(orParts.join(','))
     .order('updated_at', { ascending: false })
@@ -324,6 +381,67 @@ function mapTaskCardRow(row: Record<string, any>, doneColumnId: string | null) {
   };
 }
 
+function mapTravelerRow(row: Record<string, any>) {
+  return {
+    id: row.id,
+    full_name: row.full_name || '',
+    cpf: row.cpf || '',
+    passport_number: row.passport_number || '',
+    birth_date: row.birth_date || '',
+    email: row.email || '',
+    phone: row.phone || '',
+    relation: row.relation || '',
+    document_status: row.document_status || (row.passport_number || row.cpf ? 'recebido' : 'pendente'),
+    created_at: row.created_at || null,
+  };
+}
+
+function mapFinancialRow(row: Record<string, any>) {
+  return {
+    id: row.id,
+    kind: row.type || row.kind || 'manual',
+    description: row.description || '',
+    amount: row.amount ?? null,
+    currency: row.currency || 'BRL',
+    due_date: row.due_date || null,
+    status: row.status || 'aberto',
+    payment_method: row.payment_method || '',
+    external_ref: row.reference_number || row.external_ref || '',
+    created_at: row.created_at || null,
+  };
+}
+
+function mapDemandRow(row: Record<string, any>, doneColumnId: string | null) {
+  const done = Boolean(doneColumnId && row.column_id === doneColumnId);
+  const progress = done ? 100 : row.metadata?.progress ?? row.metadata?.completion ?? 0;
+
+  return {
+    id: row.id,
+    title: row.title || 'Demanda',
+    owner: row.metadata?.owner || row.metadata?.assignee_name || null,
+    priority: normalizePriority(row.priority),
+    progress: Number.isFinite(Number(progress)) ? Number(progress) : 0,
+    due_date: row.due_date || null,
+    status: done ? 'concluida' : (row.metadata?.status || 'aberta'),
+    created_at: row.created_at || null,
+  };
+}
+
+function mapClientDocuments(clientRow: Record<string, any>) {
+  const docs = clientRow?.preferences?.documents;
+  if (!Array.isArray(docs)) return [];
+  return docs.map((doc: Record<string, any>, index: number) => ({
+    id: doc.id || `pref-doc-${index}`,
+    type: doc.type || 'documento',
+    holder_name: doc.holder_name || doc.name || clientRow.name || '',
+    number: doc.number || doc.document_number || '',
+    issued_at: doc.issued_at || '',
+    expires_at: doc.expires_at || doc.passport_expiry || '',
+    status: doc.status || 'pendente',
+    source: doc.source || 'platform',
+  }));
+}
+
 function buildTimeline(params: {
   trips: Array<Record<string, any>>;
   tickets: Array<Record<string, any>>;
@@ -370,7 +488,14 @@ export async function hydrateExtensionClient(
   taskBoardId?: string | null,
   doneColumnId?: string | null,
 ) {
-  const [{ data: trips, error: tripsError }, { data: tickets, error: ticketsError }, { data: tasks, error: tasksError }, { data: emails, error: emailsError }] =
+  const [
+    { data: trips, error: tripsError },
+    { data: tickets, error: ticketsError },
+    { data: taskCards, error: tasksError },
+    { data: emails, error: emailsError },
+    { data: travelers, error: travelersError },
+    { data: financial, error: financialError },
+  ] =
     await Promise.all([
       supabase
         .from('trips')
@@ -389,7 +514,7 @@ export async function hydrateExtensionClient(
       taskBoardId
         ? supabase
             .from('kanban_cards')
-            .select('id, board_id, column_id, title, description, client_id, ticket_id, task_type, linked_card_ids, assigned_to, due_date, priority, created_at, updated_at')
+            .select('id, board_id, column_id, title, description, client_id, ticket_id, task_type, linked_card_ids, assigned_to, due_date, priority, metadata, created_at, updated_at')
             .eq('board_id', taskBoardId)
             .eq('client_id', clientRow.id)
             .order('created_at', { ascending: false })
@@ -402,12 +527,32 @@ export async function hydrateExtensionClient(
         .eq('client_id', clientRow.id)
         .order('received_at', { ascending: false })
         .limit(30),
+      supabase
+        .from('travelers')
+        .select('id, full_name, cpf, passport_number, birth_date, email, phone, relation, created_at')
+        .eq('org_id', orgId)
+        .eq('client_id', clientRow.id)
+        .order('created_at', { ascending: false })
+        .limit(30),
+      supabase
+        .from('financial_transactions')
+        .select('id, type, status, amount, currency, due_date, payment_method, description, reference_number, created_at')
+        .eq('org_id', orgId)
+        .eq('client_id', clientRow.id)
+        .order('due_date', { ascending: true })
+        .limit(50),
     ]);
 
   if (tripsError) throw new Error(tripsError.message);
   if (ticketsError) throw new Error(ticketsError.message);
   if (tasksError) throw new Error(tasksError.message);
   if (emailsError) throw new Error(emailsError.message);
+  if (travelersError) throw new Error(travelersError.message);
+  if (financialError) throw new Error(financialError.message);
+
+  const cards = taskCards ?? [];
+  const tasks = cards.filter((row) => !isDemandCard(row));
+  const demands = cards.filter((row) => isDemandCard(row));
 
   return {
     id: clientRow.id,
@@ -419,7 +564,11 @@ export async function hydrateExtensionClient(
     ltv_max: Math.max(Number(clientRow.ltv_max || 60000), Number(clientRow.ltv || 0), 1),
     trips: (trips ?? []).map(mapTripRow),
     tickets: (tickets ?? []).map((ticket) => mapTicketRow(ticket, agentName)),
-    tasks: (tasks ?? []).map((task) => mapTaskCardRow(task, doneColumnId || null)),
+    tasks: tasks.map((task) => mapTaskCardRow(task, doneColumnId || null)),
+    travelers: (travelers ?? []).map(mapTravelerRow),
+    documents: mapClientDocuments(clientRow),
+    financial: (financial ?? []).map(mapFinancialRow),
+    demands: demands.map((demand) => mapDemandRow(demand, doneColumnId || null)),
     timeline: buildTimeline({ trips: trips ?? [], tickets: tickets ?? [], emails: emails ?? [] }),
     updated_at: clientRow.updated_at || new Date().toISOString(),
     source: 'platform',

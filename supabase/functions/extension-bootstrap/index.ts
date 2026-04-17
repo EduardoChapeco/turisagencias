@@ -1,11 +1,24 @@
-import { corsHeaders, errorResponse, jsonResponse, resolveExtensionContext, ensureTaskBoard } from '../_shared/extension.ts';
+import {
+  corsHeaders,
+  errorResponse,
+  jsonResponse,
+  resolveExtensionContext,
+  ensureTaskBoard,
+  getExtensionAiConfig,
+} from '../_shared/extension.ts';
+
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
+const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')!;
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
 
   try {
     const context = await resolveExtensionContext(req);
-    const taskBoard = await ensureTaskBoard(context.supabase, context.orgId);
+    const [taskBoard, aiConfig] = await Promise.all([
+      ensureTaskBoard(context.supabase, context.orgId),
+      getExtensionAiConfig(context.supabase, context.orgId),
+    ]);
 
     return jsonResponse({
       userId: context.userId,
@@ -13,18 +26,42 @@ Deno.serve(async (req) => {
       orgId: context.orgId,
       agentName: context.agentName,
       email: context.email,
+      appUrl: req.headers.get('origin') || null,
       taskBoardId: taskBoard.boardId,
       taskBoardName: taskBoard.boardName,
       taskColumnId: taskBoard.defaultColumnId,
       taskDoneColumnId: taskBoard.doneColumnId,
+      backend: {
+        mode: 'platform_edge_functions',
+        supabase_url: SUPABASE_URL,
+        supabase_anon_key: SUPABASE_ANON_KEY,
+        sync_url: `${SUPABASE_URL}/functions/v1/extension-sync`,
+        quotation_url: `${SUPABASE_URL}/functions/v1/ext-process-quotation`,
+      },
+      ai: aiConfig
+        ? {
+            provider: aiConfig.provider,
+            api_key: aiConfig.apiKey,
+            api_base: aiConfig.apiBase,
+            model: aiConfig.model,
+          }
+        : null,
       capabilities: {
+        sso: true,
+        platformSync: true,
         clientLookup: true,
+        clientSearch: true,
         clientUpsert: true,
+        travelers: true,
+        documents: true,
+        financial: true,
+        taskBoard: true,
+        demands: true,
         tripImport: true,
         tickets: true,
-        taskBoard: true,
         quotationProcessing: true,
         emailLinking: true,
+        proactiveAlerts: true,
       },
     });
   } catch (error) {

@@ -35,7 +35,7 @@ export default function PortalHome() {
             <div>
               <div className="flex items-center gap-3 mb-2">
                 {organization?.logo_url ? (
-                  <img src={organization.logo_url} alt={organization.name} className="h-10 w-10 object-contain rounded-lg drop-shadow-md bg-white/10 p-1" />
+                  <img src={organization.logo_url} alt={organization.name} className="h-10 w-10 object-contain rounded-lg bg-white/10 p-1" />
                 ) : (
                   <div className="h-10 w-10 bg-white/20 rounded-lg flex items-center justify-center backdrop-blur-md">
                     <Globe2 className="h-5 w-5 text-white" />
@@ -43,7 +43,7 @@ export default function PortalHome() {
                 )}
                 <span className="text-white/80 font-medium tracking-wide uppercase text-sm">{organization?.name || 'Portal do Cliente'}</span>
               </div>
-              <h1 className="font-heading text-4xl font-bold text-white tracking-tight drop-shadow-lg">Minhas Viagens</h1>
+              <h1 className="font-heading text-4xl font-bold text-white tracking-tight">Minhas Viagens</h1>
             </div>
             <Button variant="ghost" className="text-white/80 hover:text-white hover:bg-white/10" onClick={handleLogout}>
               <LogOut className="h-4 w-4 mr-2" />

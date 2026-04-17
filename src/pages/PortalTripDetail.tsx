@@ -94,8 +94,8 @@ export default function PortalTripDetail() {
                 <Globe2 className="h-4 w-4" /> {organization.name}
               </span>
             </div>
-            <h1 className="font-heading text-4xl md:text-6xl font-bold text-white tracking-tight drop-shadow-lg">{trip.title}</h1>
-            <p className="text-white/90 mt-2 flex items-center gap-2 text-lg md:text-xl font-medium drop-shadow-md">
+            <h1 className="font-heading text-4xl md:text-6xl font-bold text-white tracking-tight">{trip.title}</h1>
+            <p className="text-white/90 mt-2 flex items-center gap-2 text-lg md:text-xl font-medium">
               <MapPin className="h-5 w-5 text-white/70" />
               {[trip.destination_city, trip.destination_country].filter(Boolean).join(', ') || 'Destino a definir'}
             </p>

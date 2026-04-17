@@ -9,17 +9,19 @@ export function useQuotations(filters?: { status?: string; search?: string }) {
   return useQuery({
     queryKey: ['quotations', organization?.id, filters],
     queryFn: async () => {
+      if (!organization?.id) return [];
       let query = supabase
         .from('quotations')
         .select('*, clients(name)')
+        .eq('org_id', organization.id)
         .order('created_at', { ascending: false });
       if (filters?.status) query = query.eq('status', filters.status);
-      if (filters?.search) query = query.ilike('destination', `%${filters.search}%`);
+      if (filters?.search) query = query.or(`destination.ilike.%${filters.search}%,hotel_name.ilike.%${filters.search}%`);
       const { data, error } = await query;
       if (error) throw error;
       return data;
     },
-    enabled: !!organization,
+    enabled: !!organization?.id,
     staleTime: 2 * 60 * 1000,
   });
 }

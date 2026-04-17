@@ -213,7 +213,7 @@ function ColumnRow({ col, onDelete }: { col: any; onDelete: (id: string) => void
 }
 
 function KanbanTab() {
-  const [boardSlug, setBoardSlug] = useState<'sales' | 'departures'>('sales');
+  const [boardSlug, setBoardSlug] = useState<'sales' | 'departures' | 'tasks'>('sales');
   const { data, isLoading } = useKanbanBoardColumns(boardSlug);
   const createColumn = useCreateKanbanColumnInBoard();
   const deleteColumn = useDeleteKanbanColumn();
@@ -232,13 +232,13 @@ function KanbanTab() {
   return (
     <div className="grid md:grid-cols-3 gap-8">
       <div className="space-y-3">
-        {(['sales', 'departures'] as const).map(b => (
+        {(['sales', 'departures', 'tasks'] as const).map(b => (
           <button key={b} onClick={() => setBoardSlug(b)} className={cn(
-            "w-full p-6 rounded-[32px] text-left border transition-all duration-300",
+            "w-full p-5 rounded-[32px] text-left border transition-all duration-300",
             boardSlug === b ? "bg-vj-txt text-white shadow-xl shadow-zinc-950/20" : "bg-white border-zinc-100 hover:bg-zinc-50"
           )}>
             <p className="text-[10px] uppercase font-bold tracking-widest opacity-60 mb-1">Board</p>
-            <p className="text-lg font-bold">{b === 'sales' ? 'Vendas' : 'Embarques'}</p>
+            <p className="text-base font-bold">{b === 'sales' ? 'Vendas (CRM)' : b === 'departures' ? 'Embarques' : 'Tarefas do Dia'}</p>
           </button>
         ))}
       </div>

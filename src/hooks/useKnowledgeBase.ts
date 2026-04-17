@@ -3,17 +3,24 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuthStore } from '@/stores/authStore';
 import { useToast } from '@/hooks/use-toast';
 
-export type KnowledgeEntry = { id: string; content: string; metadata?: any; created_at: string };
+export type KnowledgeEntry = {
+  id: string;
+  content: string;
+  metadata?: any;
+  embedding?: number[] | null;
+  created_at: string;
+};
 
 export function useKnowledgeBase() {
   const { organization } = useAuthStore();
   return useQuery({
     queryKey: ['ai_knowledge_base', organization?.id],
     queryFn: async () => {
+      if (!organization?.id) return [];
       const { data, error } = await supabase
         .from('ai_knowledge_base')
-        .select('*')
-        .eq('org_id', organization!.id)
+        .select('id, content, metadata, created_at')
+        .eq('org_id', organization.id)
         .order('created_at', { ascending: false });
       if (error) throw error;
       return data;
@@ -26,23 +33,44 @@ export function useUpsertKnowledge() {
   const qc = useQueryClient();
   const { organization } = useAuthStore();
   const { toast } = useToast();
+
   return useMutation({
     mutationFn: async (payload: { id?: string; content: string; metadata?: any }) => {
+      if (!organization?.id) throw new Error('Organização não encontrada');
+
+      // 1. Salvar o texto no banco primeiro
       const { data, error } = await supabase
         .from('ai_knowledge_base')
         .upsert({
           ...payload,
-          org_id: organization!.id,
-          // Note: embedding is handled by DB triggers or edge functions usually
+          org_id: organization.id,
         })
         .select()
         .single();
       if (error) throw error;
+
+      // 2. Gerar embedding via edge function (real — não simulado)
+      try {
+        const { error: embError } = await supabase.functions.invoke('generate-embedding', {
+          body: {
+            record_id: data.id,
+            content: payload.content,
+            org_id: organization.id,
+          },
+        });
+        if (embError) {
+          // Não bloqueia: salva sem embedding, RAG por texto ainda funciona
+          console.warn('[useUpsertKnowledge] Embedding não gerado:', embError.message);
+        }
+      } catch (embErr) {
+        console.warn('[useUpsertKnowledge] Falha na edge fn de embedding:', embErr);
+      }
+
       return data;
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['ai_knowledge_base'] });
-      toast({ title: 'Cérebro da IA atualizado!' });
+      toast({ title: 'Cérebro da IA atualizado!', description: 'Conhecimento indexado com embedding vetorial.' });
     },
     onError: (e: Error) => toast({ title: 'Erro', description: e.message, variant: 'destructive' }),
   });

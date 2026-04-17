@@ -47,20 +47,36 @@ function useDashboardStats(orgId: string | undefined) {
     queryFn: async () => {
       if (!orgId) return null;
       const today = new Date().toISOString().split('T')[0];
+      const firstOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
+      const firstOfLastMonth = new Date(new Date().getFullYear(), new Date().getMonth() - 1, 1).toISOString();
+      const firstOfThisMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
 
-      const [tripsRes, quotationsRes, ticketsRes, clientsRes, departuresTodayRes, transRes] = await Promise.all([
+      const [tripsRes, quotationsRes, ticketsRes, clientsRes, departuresTodayRes, transRes, transLastMonthRes, quotAllRes] = await Promise.all([
         supabase.from('trips').select('id, status', { count: 'exact' }).eq('org_id', orgId).neq('status', 'cancelled'),
         supabase.from('quotations').select('id, status', { count: 'exact' }).eq('org_id', orgId).in('status', ['draft', 'sent']),
         supabase.from('tickets').select('id, priority', { count: 'exact' }).eq('org_id', orgId).eq('status', 'open'),
         supabase.from('clients').select('id', { count: 'exact' }).eq('org_id', orgId),
         supabase.from('trips').select('id', { count: 'exact' }).eq('org_id', orgId).eq('departure_date', today),
-        supabase.from('financial_transactions').select('amount, type, status').eq('org_id', orgId).neq('status', 'canceled')
+        supabase.from('financial_transactions').select('amount, type, status').eq('org_id', orgId).neq('status', 'canceled').gte('created_at', firstOfThisMonth),
+        supabase.from('financial_transactions').select('amount, type, status').eq('org_id', orgId).neq('status', 'canceled').gte('created_at', firstOfLastMonth).lt('created_at', firstOfThisMonth),
+        supabase.from('quotations').select('id, status').eq('org_id', orgId),
       ]);
 
       const transactions = transRes.data || [];
-      const totalReceivable = transactions.filter(t => t.type === 'receivable').reduce((acc, t) => acc + t.amount, 0);
-      const totalPayable = transactions.filter(t => t.type === 'payable').reduce((acc, t) => acc + t.amount, 0);
+      const lastMonthTx = transLastMonthRes.data || [];
+      const totalReceivable = transactions.filter(t => t.type === 'receivable' || t.type === 'income').reduce((acc, t) => acc + Number(t.amount), 0);
+      const totalPayable = transactions.filter(t => t.type === 'payable' || t.type === 'expense').reduce((acc, t) => acc + Number(t.amount), 0);
       const operationalProfit = totalReceivable - totalPayable;
+      const lastMonthProfit = lastMonthTx.filter(t => t.type === 'receivable' || t.type === 'income').reduce((acc, t) => acc + Number(t.amount), 0)
+        - lastMonthTx.filter(t => t.type === 'payable' || t.type === 'expense').reduce((acc, t) => acc + Number(t.amount), 0);
+      const profitDelta = lastMonthProfit > 0 ? ((operationalProfit - lastMonthProfit) / lastMonthProfit) * 100 : null;
+
+      const allQuotations = quotAllRes.data || [];
+      const acceptedCount = allQuotations.filter((q: any) => q.status === 'accepted').length;
+      const totalCount = allQuotations.length;
+      const conversionRate = totalCount > 0 ? Math.round((acceptedCount / totalCount) * 100) : 0;
+      const draftCount = allQuotations.filter((q: any) => q.status === 'draft').length;
+      const sentCount = allQuotations.filter((q: any) => q.status === 'sent').length;
 
       return {
         activeTrips: tripsRes.count || 0,
@@ -69,7 +85,9 @@ function useDashboardStats(orgId: string | undefined) {
         totalClients: clientsRes.count || 0,
         departuresToday: departuresTodayRes.count || 0,
         urgentTickets: (ticketsRes.data || []).filter((t: any) => t.priority === 'urgent').length,
-        finances: { receivable: totalReceivable, payable: totalPayable, profit: operationalProfit }
+        finances: { receivable: totalReceivable, payable: totalPayable, profit: operationalProfit },
+        profitDelta,
+        quotations: { total: totalCount, accepted: acceptedCount, draft: draftCount, sent: sentCount, conversionRate },
       };
     },
     enabled: !!orgId,
@@ -179,7 +197,20 @@ export default function Dashboard() {
                   <span className="text-2xl opacity-50">,00</span>
                 </h2>
                 <p className="text-zinc-400 text-sm mt-2 flex items-center gap-2">
-                  <ArrowUpRight className="w-4 h-4 text-green-400" /> +12.5% em relação ao mês anterior
+                  {stats?.profitDelta !== null && stats?.profitDelta !== undefined ? (
+                    <>
+                      {stats.profitDelta >= 0 ? (
+                        <ArrowUpRight className="w-4 h-4 text-green-400" />
+                      ) : (
+                        <ArrowDownRight className="w-4 h-4 text-red-400" />
+                      )}
+                      <span className={stats.profitDelta >= 0 ? 'text-green-400' : 'text-red-400'}>
+                        {stats.profitDelta >= 0 ? '+' : ''}{stats.profitDelta.toFixed(1)}% vs mês anterior
+                      </span>
+                    </>
+                  ) : (
+                    <span className="text-zinc-500 text-xs">Primeiro mês de referência</span>
+                  )}
                 </p>
               </div>
 
@@ -225,29 +256,49 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* AI Insights Block (Wide) */}
+            {/* Quotation Intelligence Block (Real Data) */}
             <div className="col-span-1 md:col-span-2 premium-card p-6 flex flex-col bg-slate-50 border-slate-200">
-              <div className="flex items-center gap-2 mb-4">
+              <div className="flex items-center gap-2 mb-5">
                 <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
-                <span className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-blue-600">Turis AI Agent • Real-time Insights</span>
+                <span className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-blue-600">Inteligência de Cotações</span>
               </div>
               
-              <div className="space-y-4 flex-1">
-                <div className="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm transition-all hover:shadow-md cursor-help">
-                  <p className="text-xs text-vj-txt font-medium leading-relaxed">
-                    "Identifiquei uma oportunidade de upselling em 3 cotações para Maldivas. Os clientes possuem perfil de alta renda e os hotéis selecionados têm baixa disponibilidade."
-                  </p>
+              <div className="grid grid-cols-3 gap-3 mb-5">
+                <div className="bg-white p-3 rounded-2xl border border-slate-200 text-center">
+                  <p className="stat-value text-2xl text-zinc-800 leading-none">{stats?.quotations?.draft ?? 0}</p>
+                  <p className="text-[9px] uppercase tracking-widest text-zinc-400 mt-1 font-bold">Rascunhos</p>
                 </div>
-                <div className="bg-blue-600/5 p-3 rounded-2xl border border-blue-100">
-                  <p className="text-[10px] text-blue-700 font-bold uppercase mb-1">Ação Sugerida</p>
-                  <p className="text-xs text-blue-900 leading-relaxed font-medium">
-                    Enviar upgrade de categoria de quarto no hotel 'Soneva Fushi' para o cliente Roberto Silva.
-                  </p>
+                <div className="bg-white p-3 rounded-2xl border border-blue-100 text-center">
+                  <p className="stat-value text-2xl text-blue-600 leading-none">{stats?.quotations?.sent ?? 0}</p>
+                  <p className="text-[9px] uppercase tracking-widest text-blue-400 mt-1 font-bold">Enviadas</p>
+                </div>
+                <div className="bg-white p-3 rounded-2xl border border-green-100 text-center">
+                  <p className="stat-value text-2xl text-green-600 leading-none">{stats?.quotations?.accepted ?? 0}</p>
+                  <p className="text-[9px] uppercase tracking-widest text-green-400 mt-1 font-bold">Aceitas</p>
                 </div>
               </div>
-              
-              <Button variant="ghost" size="sm" className="mt-4 text-[10px] font-bold uppercase text-slate-500 tracking-wider hover:text-blue-600 w-fit p-0">
-                Ver todas as automações →
+
+              <div className="bg-white p-4 rounded-2xl border border-slate-200 flex-1">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">Taxa de Conversão</p>
+                  <span className={`text-sm font-bold ${
+                    (stats?.quotations?.conversionRate ?? 0) >= 30 ? 'text-green-600' : 
+                    (stats?.quotations?.conversionRate ?? 0) >= 15 ? 'text-amber-600' : 'text-red-500'
+                  }`}>{stats?.quotations?.conversionRate ?? 0}%</span>
+                </div>
+                <div className="w-full h-2 bg-zinc-100 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full rounded-full bg-gradient-to-r from-blue-400 to-green-500 transition-all duration-700"
+                    style={{ width: `${Math.min(stats?.quotations?.conversionRate ?? 0, 100)}%` }}
+                  />
+                </div>
+                <p className="text-[10px] text-zinc-400 mt-2">
+                  {stats?.quotations?.total ?? 0} cotações totais · {stats?.quotations?.accepted ?? 0} convertidas em vendas
+                </p>
+              </div>
+
+              <Button variant="ghost" size="sm" className="mt-4 text-[10px] font-bold uppercase text-slate-500 tracking-wider hover:text-blue-600 w-fit p-0" onClick={() => navigate('/quotations')}>
+                Ver todas as cotações →
               </Button>
             </div>
 
@@ -304,22 +355,5 @@ export default function Dashboard() {
         onClose={() => setQuotationBuilderOpen(false)} 
       />
     </AppLayout>
-  );
-}
-
-function BentoBlock({ children, className = '', onClick }: { children: React.ReactNode; className?: string; onClick?: () => void }) {
-  return (
-    <div className={`bento-cell p-5 flex flex-col ${onClick ? 'cursor-pointer' : ''} ${className}`} onClick={onClick}>
-      {children}
-    </div>
-  );
-}
-
-function BentoHeader({ title, icon }: { title: string; icon: React.ReactNode }) {
-  return (
-    <div className="flex items-center justify-between w-full mb-1">
-      <h3 className="text-sm font-semibold tracking-tight">{title}</h3>
-      <div className="opacity-80 drop-shadow-sm">{icon}</div>
-    </div>
   );
 }

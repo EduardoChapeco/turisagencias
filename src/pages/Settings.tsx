@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Settings as SettingsIcon, Trash2, Users, Key, Brain, Database, Columns, Mail, Activity, Bus } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 import { useAiKeys, useSaveAiKey, useDeleteAiKey } from '@/hooks/useAiKeys';
 import { usePolicies, useCreatePolicy, useDeletePolicy } from '@/hooks/usePoliciesAndExperiences';
@@ -89,10 +90,15 @@ export default function Settings() {
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
                     <Label className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">Provedor Principal</Label>
-                    <select className="flex h-12 w-full rounded-2xl border border-zinc-100 bg-zinc-50 px-4 py-2 text-sm font-medium" value={provider} onChange={e => setProvider(e.target.value)}>
-                      <option value="OpenRouter">OpenRouter (Acesso Total)</option>
-                      <option value="Gemini">Google Gemini (Visão)</option>
-                    </select>
+                    <Select value={provider} onValueChange={setProvider}>
+                      <SelectTrigger className="h-12 rounded-2xl border-zinc-100 bg-zinc-50 font-medium">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="OpenRouter">OpenRouter (Acesso Total)</SelectItem>
+                        <SelectItem value="Gemini">Google Gemini (Visão)</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div className="space-y-2">
                     <Label className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">Token de Acesso</Label>

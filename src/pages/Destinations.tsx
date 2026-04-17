@@ -10,6 +10,7 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import {
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription
 } from '@/components/ui/sheet';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel,
   AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
@@ -374,14 +375,15 @@ export default function Destinations() {
               className="pl-11 h-11 bg-white border-vj-border rounded-2xl"
             />
           </div>
-          <select
-            value={country}
-            onChange={e => setCountry(e.target.value)}
-            className="h-11 px-4 rounded-2xl border border-vj-border bg-white text-sm font-medium"
-          >
-            <option value="">Todos os países</option>
-            {countries.map(c => <option key={c} value={c}>{c}</option>)}
-          </select>
+          <Select value={country || 'all'} onValueChange={v => setCountry(v === 'all' ? '' : v)}>
+            <SelectTrigger className="h-11 px-4 rounded-2xl border-vj-border bg-white font-medium w-auto min-w-[180px]">
+              <SelectValue placeholder="Todos os países" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos os países</SelectItem>
+              {countries.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+            </SelectContent>
+          </Select>
           {(search || country) && (
             <Button variant="ghost" size="sm" onClick={() => { setSearch(''); setCountry(''); }}>
               Limpar filtros

@@ -5,6 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Bus, Plus, Trash2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useBusLayouts, useCreateBusLayout, useDeleteBusLayout } from '@/hooks/useBusLayouts';
 import { BusSeatMap } from '@/components/group-trips/BusSeatMap';
 
@@ -48,16 +49,17 @@ export function BusLayoutTab() {
           </div>
           <div>
             <Label>Tipo de veículo</Label>
-            <select
-              className="flex h-10 w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm mt-1"
-              value={form.vehicle_type}
-              onChange={e => setForm(p => ({ ...p, vehicle_type: e.target.value }))}
-            >
-              <option value="bus">🚌 Ônibus</option>
-              <option value="van">🚐 Van</option>
-              <option value="plane">✈️ Avião</option>
-              <option value="boat">⛵ Barco</option>
-            </select>
+            <Select value={form.vehicle_type} onValueChange={v => setForm(p => ({ ...p, vehicle_type: v }))}>
+              <SelectTrigger className="h-10 rounded-xl border-zinc-200 mt-1">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="bus">🚌 Ônibus</SelectItem>
+                <SelectItem value="van">🚐 Van</SelectItem>
+                <SelectItem value="plane">✈️ Avião</SelectItem>
+                <SelectItem value="boat">⛵ Barco</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>

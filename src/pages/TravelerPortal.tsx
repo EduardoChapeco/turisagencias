@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 
@@ -285,13 +286,14 @@ function CancelRequestDialog({
         <div className="space-y-4">
           <div>
             <label className="text-xs font-bold uppercase tracking-wider text-zinc-500">Motivo</label>
-            <select
-              value={reasonCode}
-              onChange={e => setReasonCode(e.target.value)}
-              className="mt-1 w-full h-10 rounded-xl border border-zinc-200 bg-white px-3 text-sm"
-            >
-              {reasons.map(r => <option key={r.v} value={r.v}>{r.l}</option>)}
-            </select>
+            <Select value={reasonCode} onValueChange={setReasonCode}>
+              <SelectTrigger className="mt-1 h-10 rounded-xl">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {reasons.map(r => <SelectItem key={r.v} value={r.v}>{r.l}</SelectItem>)}
+              </SelectContent>
+            </Select>
           </div>
           <div>
             <label className="text-xs font-bold uppercase tracking-wider text-zinc-500">Observações</label>

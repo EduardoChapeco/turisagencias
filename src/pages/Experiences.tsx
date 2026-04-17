@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { EmptyState, PageSkeleton } from '@/components/ui/EmptyState';
 import { SheetPage } from '@/components/ui/SheetPage';
@@ -366,15 +367,16 @@ export default function Experiences() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>Moeda</Label>
-                    <select
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                      value={form.moeda}
-                      onChange={e => update('moeda', e.target.value)}
-                    >
-                      <option value="BRL">BRL — Real Brasileiro</option>
-                      <option value="USD">USD — Dólar Americano</option>
-                      <option value="EUR">EUR — Euro</option>
-                    </select>
+                    <Select value={form.moeda} onValueChange={v => update('moeda', v)}>
+                      <SelectTrigger className="h-10">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="BRL">BRL — Real Brasileiro</SelectItem>
+                        <SelectItem value="USD">USD — Dólar Americano</SelectItem>
+                        <SelectItem value="EUR">EUR — Euro</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div className="space-y-2">
                     <Label>Capacidade Máxima de Pessoas</Label>

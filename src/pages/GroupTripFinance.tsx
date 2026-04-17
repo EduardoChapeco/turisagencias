@@ -8,6 +8,7 @@ import {
 import { AppLayout } from '@/components/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -198,12 +199,16 @@ function TransferBookingDialog({ booking, currentTripId, onClose }: {
             {isLoading ? (
               <Skeleton className="h-10 w-full mt-1" />
             ) : (
-              <select value={selectedTrip} onChange={e => setSelectedTrip(e.target.value)} className="mt-1 w-full h-10 rounded-xl border border-zinc-200 bg-white px-3 text-sm">
-                <option value="" disabled>Selecione o destino...</option>
-                {otherTrips.map((t: any) => (
-                  <option key={t.id} value={t.id}>{t.title} ({fmtDate(t.departure_date)})</option>
-                ))}
-              </select>
+              <Select value={selectedTrip} onValueChange={setSelectedTrip}>
+                <SelectTrigger className="mt-1 h-10 rounded-xl">
+                  <SelectValue placeholder="Selecione o destino..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {otherTrips.map((t: any) => (
+                    <SelectItem key={t.id} value={t.id}>{t.title} ({fmtDate(t.departure_date)})</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             )}
           </div>
           <div>

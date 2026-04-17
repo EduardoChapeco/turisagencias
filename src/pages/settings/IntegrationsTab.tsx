@@ -5,6 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Shield, Mail } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useB2bCredentials, useSaveB2bCredential, useEmailInbound } from '@/hooks/useB2bCredentials';
 
 export function IntegrationsTab() {
@@ -48,10 +49,15 @@ export function IntegrationsTab() {
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">Portal</Label>
-              <select className="flex h-12 w-full rounded-2xl border border-zinc-100 bg-zinc-50 px-4 py-2 text-sm font-medium" value={b2bPortal} onChange={e => setB2bPortal(e.target.value)}>
-                <option value="orinter">Orinter / Infotravel</option>
-                <option value="flytour">Flytour</option>
-              </select>
+              <Select value={b2bPortal} onValueChange={setB2bPortal}>
+                <SelectTrigger className="h-12 rounded-2xl border-zinc-100 bg-zinc-50 font-medium">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="orinter">Orinter / Infotravel</SelectItem>
+                  <SelectItem value="flytour">Flytour</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2">
               <Label className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">Usuário B2B</Label>

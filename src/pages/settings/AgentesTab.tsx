@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Mail, UserCheck, UserX } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuthStore } from '@/stores/authStore';
 import { useTeamMembers, useInviteAgent, useUpdateMemberRole } from '@/hooks/useSettings';
 
@@ -44,15 +45,16 @@ export function AgentesTab() {
             onChange={e => setInviteEmail(e.target.value)}
             className="rounded-xl border-zinc-200"
           />
-          <select
-            className="flex h-10 w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm"
-            value={inviteRole}
-            onChange={e => setInviteRole(e.target.value)}
-          >
-            <option value="agent">Agente de Viagens</option>
-            <option value="manager">Gerente</option>
-            <option value="admin">Administrador</option>
-          </select>
+          <Select value={inviteRole} onValueChange={setInviteRole}>
+            <SelectTrigger className="h-10 rounded-xl border-zinc-200">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="agent">Agente de Viagens</SelectItem>
+              <SelectItem value="manager">Gerente</SelectItem>
+              <SelectItem value="admin">Administrador</SelectItem>
+            </SelectContent>
+          </Select>
           <Button
             className="w-full premium-button"
             onClick={handleInvite}

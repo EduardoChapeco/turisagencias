@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useSaveTravelerInfoPage, useTravelerInfoPage } from '@/hooks/useTravelerInfo';
 
 interface AlertContent {
@@ -185,16 +186,20 @@ export function TravelerInfoEdit({ id, open, onClose, onSuccess }: TravelerInfoE
                           <div className="space-y-2 pt-2">
                             <div className="flex items-center justify-between">
                               <Label className="text-xs text-vj-txt3 font-bold uppercase tracking-wide">Caixa de Alerta</Label>
-                              <select 
+                              <Select 
                                 value={(block.content as any)?.style || 'neutral'} 
-                                onChange={e => updateBlock(i, { ...(block.content as any), style: e.target.value } as any)}
-                                className="text-xs border border-vj-border bg-vj-bg rounded px-2 py-1 outline-none"
+                                onValueChange={v => updateBlock(i, { ...(block.content as any), style: v } as any)}
                               >
-                                <option value="neutral">Nota (Neutro)</option>
-                                <option value="danger">Atenção (Vermelho)</option>
-                                <option value="warning">Aviso (Amarelo)</option>
-                                <option value="success">Dica (Verde)</option>
-                              </select>
+                                <SelectTrigger className="text-xs border-vj-border bg-vj-bg h-8 w-auto min-w-[140px]">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="neutral">Nota (Neutro)</SelectItem>
+                                  <SelectItem value="danger">Atenção (Vermelho)</SelectItem>
+                                  <SelectItem value="warning">Aviso (Amarelo)</SelectItem>
+                                  <SelectItem value="success">Dica (Verde)</SelectItem>
+                                </SelectContent>
+                              </Select>
                             </div>
                             <Textarea value={(block.content as any)?.text || ''} onChange={e => updateBlock(i, { ...(block.content as any), text: e.target.value } as any)} placeholder="Texto do alerta..." className="h-20" />
                           </div>

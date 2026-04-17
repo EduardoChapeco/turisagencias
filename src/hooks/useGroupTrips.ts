@@ -182,6 +182,95 @@ export function useGroupTripDays(tripId: string | undefined) {
   });
 }
 
+export function useUpsertGroupTripDay() {
+  const qc = useQueryClient();
+  const { toast } = useToast();
+  return useMutation({
+    mutationFn: async (payload: Partial<GroupTripDay> & { group_trip_id: string }) => {
+      const { id, ...rest } = payload as any;
+      if (id) {
+        const { data, error } = await (supabase as any)
+          .from('group_trip_days').update(rest).eq('id', id).select().single();
+        if (error) throw error;
+        return data;
+      }
+      const { data, error } = await (supabase as any)
+        .from('group_trip_days').insert(rest).select().single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (_, vars) => {
+      qc.invalidateQueries({ queryKey: ['group_trip_days', vars.group_trip_id] });
+    },
+    onError: (e: Error) => toast({ title: 'Erro ao salvar dia', description: e.message, variant: 'destructive' }),
+  });
+}
+
+export function useDeleteGroupTripDay() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, tripId: _ }: { id: string; tripId: string }) => {
+      const { error } = await (supabase as any).from('group_trip_days').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: (_, vars) => {
+      qc.invalidateQueries({ queryKey: ['group_trip_days', vars.tripId] });
+    },
+  });
+}
+
+// ───────────── Public booking
+export function useCreatePublicBooking() {
+  const { toast } = useToast();
+  return useMutation({
+    mutationFn: async (payload: {
+      group_trip_id: string;
+      org_id: string;
+      lead_name: string;
+      lead_email?: string;
+      lead_phone?: string;
+      lead_cpf?: string;
+      pax_count: number;
+      total_amount: number;
+    }) => {
+      const { data, error } = await (supabase as any)
+        .from('group_bookings')
+        .insert({ ...payload, status: 'pending' })
+        .select('id, public_token')
+        .single();
+      if (error) throw error;
+      // gera carnê
+      const { error: rpcError } = await (supabase as any).rpc('generate_booking_installments', { _booking_id: data.id });
+      if (rpcError) throw rpcError;
+      return data as { id: string; public_token: string };
+    },
+    onError: (e: Error) => toast({ title: 'Erro ao reservar', description: e.message, variant: 'destructive' }),
+  });
+}
+
+export function usePublicBooking(token: string | undefined) {
+  return useQuery({
+    queryKey: ['public_booking', token],
+    queryFn: async () => {
+      if (!token) return null;
+      const { data: booking, error } = await (supabase as any)
+        .from('group_bookings')
+        .select('*, group_trips(title, destination, departure_date, return_date, currency, cover_image_url, slug)')
+        .eq('public_token', token)
+        .maybeSingle();
+      if (error) throw error;
+      if (!booking) return null;
+      const { data: installments } = await (supabase as any)
+        .from('booking_installments')
+        .select('*')
+        .eq('booking_id', booking.id)
+        .order('installment_number');
+      return { booking, installments: installments || [] };
+    },
+    enabled: !!token,
+  });
+}
+
 // ───────────── Public
 export type PublicGroupTrip = {
   id: string;

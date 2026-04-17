@@ -1,12 +1,16 @@
+import { useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Calendar, MapPin, Users, CheckCircle2, XCircle, MessageCircle, Loader2 } from 'lucide-react';
+import { Calendar, MapPin, Users, CheckCircle2, XCircle, MessageCircle, Loader2, Ticket } from 'lucide-react';
 import { usePublicGroupTrip } from '@/hooks/useGroupTrips';
 import { Button } from '@/components/ui/button';
 import { LazyImage } from '@/components/ui/LazyImage';
+import { PublicBookingForm } from '@/components/group-trips/PublicBookingForm';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 export default function PublicGroupTrip() {
   const { slug } = useParams<{ slug: string }>();
   const { data, isLoading } = usePublicGroupTrip(slug);
+  const [bookingOpen, setBookingOpen] = useState(false);
 
   if (isLoading) {
     return (
@@ -29,7 +33,8 @@ export default function PublicGroupTrip() {
   const formatPrice = (v: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: trip.currency || 'BRL' }).format(v);
   const installmentValue = trip.installments_count > 1 ? trip.price_per_pax / trip.installments_count : 0;
 
-  const handleReserve = () => {
+  const handleReserve = () => setBookingOpen(true);
+  const handleWhatsapp = () => {
     if (trip.org_whatsapp) {
       const msg = encodeURIComponent(`Olá! Tenho interesse no pacote "${trip.title}". Pode me passar mais detalhes?`);
       window.open(`https://wa.me/${trip.org_whatsapp.replace(/\D/g, '')}?text=${msg}`, '_blank');
@@ -83,9 +88,16 @@ export default function PublicGroupTrip() {
               <p className="text-xs opacity-90">ou {trip.installments_count}x de {formatPrice(installmentValue)}</p>
             )}
           </div>
-          <Button onClick={handleReserve} variant="secondary" size="lg" className="gap-2 bg-white text-vj-green hover:bg-white/90">
-            <MessageCircle size={18} /> Reservar minha vaga
-          </Button>
+          <div className="flex gap-2">
+            {trip.org_whatsapp && (
+              <Button onClick={handleWhatsapp} variant="ghost" size="lg" className="gap-2 text-white hover:bg-white/10">
+                <MessageCircle size={18} /> Tirar dúvidas
+              </Button>
+            )}
+            <Button onClick={handleReserve} variant="secondary" size="lg" className="gap-2 bg-white text-vj-green hover:bg-white/90">
+              <Ticket size={18} /> Reservar minha vaga
+            </Button>
+          </div>
         </div>
       </section>
 
@@ -195,7 +207,7 @@ export default function PublicGroupTrip() {
         <h2 className="text-3xl font-bold text-vj-txt mb-4">Garanta sua vaga</h2>
         <p className="text-vj-txt2 mb-6">Restam {trip.max_pax - trip.current_pax} vagas. Reserva confirmada com sinal.</p>
         <Button onClick={handleReserve} size="lg" className="gap-2">
-          <MessageCircle size={18} /> Falar com {trip.org_name}
+          <Ticket size={18} /> Reservar agora
         </Button>
       </section>
 
@@ -207,6 +219,20 @@ export default function PublicGroupTrip() {
           </div>
         </footer>
       )}
+
+      {/* Booking Dialog */}
+      <Dialog open={bookingOpen} onOpenChange={setBookingOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Reservar — {trip.title}</DialogTitle>
+          </DialogHeader>
+          <PublicBookingForm
+            tripId={trip.id}
+            orgId={trip.org_id}
+            pricePerPax={Number(trip.price_per_pax)}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

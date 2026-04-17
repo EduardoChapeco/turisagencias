@@ -22,10 +22,10 @@ serve(async (req) => {
     const supabaseClient = createClient(supabaseUrl, supabaseKey);
 
     const token = authHeader.replace('Bearer ', '');
-    const { data: claimsData, error: claimsError } = await supabaseClient.auth.getClaims(token);
-    if (claimsError || !claimsData?.claims?.sub) throw new Error("Não autorizado");
-    
-    const userId = claimsData.claims.sub as string;
+    const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
+    if (userError || !userData?.user?.id) throw new Error("Não autorizado");
+
+    const userId = userData.user.id;
 
     const { message, conversation_history = [] } = await req.json();
 

@@ -214,11 +214,11 @@ serve(async (req) => {
       global: { headers: { Authorization: authHeader } },
     });
 
-    // Validate JWT via getClaims
+    // Validate JWT
     const token = authHeader.replace("Bearer ", "");
-    const { data: claimsData, error: claimsError } = await supabaseClient.auth.getClaims(token);
-    if (claimsError || !claimsData?.claims?.sub) throw new Error("Unauthorized");
-    const userId = claimsData.claims.sub as string;
+    const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
+    if (userError || !userData?.user?.id) throw new Error("Unauthorized");
+    const userId = userData.user.id;
 
     // Service-role key available for future sub-table writes
     const _serviceKey = supabaseServiceKey;

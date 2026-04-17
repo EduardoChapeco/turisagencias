@@ -7,6 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Input } from '@/components/ui/input';
+import { TripNewSheet } from '@/components/TripNewSheet';
 import {
   Plane, Plus, MapPin, CalendarDays, Users2, Search,
 } from 'lucide-react';
@@ -27,6 +28,7 @@ export default function Trips() {
   const navigate = useNavigate();
   const { data: trips, isLoading } = useTrips();
   const [search, setSearch] = useState('');
+  const [newSheetOpen, setNewSheetOpen] = useState(false);
 
   const filtered = (trips ?? []).filter((t) =>
     !search.trim() ||
@@ -50,7 +52,7 @@ export default function Trips() {
               ) : undefined
             }
           />
-          <Button onClick={() => navigate('/trips/new')} className="shrink-0 self-start sm:self-center">
+          <Button onClick={() => setNewSheetOpen(true)} className="shrink-0 self-start sm:self-center premium-button">
             <Plus className="mr-2 h-4 w-4" /> Nova Viagem
           </Button>
         </div>
@@ -85,7 +87,7 @@ export default function Trips() {
                 : 'Crie a primeira viagem para organizar voos, documentos e interações com os viajantes do seu portal.'}
             </p>
             {!search && (
-              <Button onClick={() => navigate('/trips/new')} className="premium-button  ">Criar Primeira Viagem</Button>
+              <Button onClick={() => setNewSheetOpen(true)} className="premium-button">Criar Primeira Viagem</Button>
             )}
           </div>
         ) : (
@@ -141,6 +143,11 @@ export default function Trips() {
           </div>
         )}
       </div>
+
+      <TripNewSheet 
+        open={newSheetOpen} 
+        onClose={() => setNewSheetOpen(false)} 
+      />
     </AppLayout>
   );
 }

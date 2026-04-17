@@ -18,16 +18,12 @@ const Onboarding = lazy(() => import('./pages/Onboarding'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
 const Clients = lazy(() => import('./pages/Clients'));
-const ClientNew = lazy(() => import('./pages/ClientNew'));
 const ClientDetail = lazy(() => import('./pages/ClientDetail'));
-const ClientEdit = lazy(() => import('./pages/ClientEdit'));
 
 const Quotations = lazy(() => import('./pages/Quotations'));
-const QuotationNew = lazy(() => import('./pages/QuotationNew'));
 const QuotationDetail = lazy(() => import('./pages/QuotationDetail'));
 
 const Trips = lazy(() => import('./pages/Trips'));
-const TripNew = lazy(() => import('./pages/TripNew'));
 const TripDetail = lazy(() => import('./pages/TripDetail'));
 
 const Itineraries = lazy(() => import('./pages/Itineraries'));
@@ -151,16 +147,12 @@ const App = () => (
               <Route path="/" element={<ProtectedWithOrg><Dashboard /></ProtectedWithOrg>} />
 
               <Route path="/clients" element={<ProtectedWithOrg><Clients /></ProtectedWithOrg>} />
-              <Route path="/clients/new" element={<ProtectedWithOrg><ClientNew /></ProtectedWithOrg>} />
               <Route path="/clients/:id" element={<ProtectedWithOrg><ClientDetail /></ProtectedWithOrg>} />
-              <Route path="/clients/:id/edit" element={<ProtectedWithOrg><ClientEdit /></ProtectedWithOrg>} />
 
               <Route path="/quotations" element={<ProtectedWithOrg><Quotations /></ProtectedWithOrg>} />
-              <Route path="/quotations/new" element={<ProtectedWithOrg><QuotationNew /></ProtectedWithOrg>} />
               <Route path="/quotations/:id" element={<ProtectedWithOrg><QuotationDetail /></ProtectedWithOrg>} />
 
               <Route path="/trips" element={<ProtectedWithOrg><Trips /></ProtectedWithOrg>} />
-              <Route path="/trips/new" element={<ProtectedWithOrg><TripsRole><TripNew /></TripsRole></ProtectedWithOrg>} />
               <Route path="/trips/:id" element={<ProtectedWithOrg><TripsRole><TripDetail /></TripsRole></ProtectedWithOrg>} />
 
               <Route path="/itineraries" element={<ProtectedWithOrg><Itineraries /></ProtectedWithOrg>} />

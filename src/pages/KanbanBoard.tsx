@@ -7,7 +7,7 @@ import { StatusBadge } from '@/components/ui/StatusBadge';
 import { EmptyState, PageSkeleton } from '@/components/ui/EmptyState';
 import { KanbanCardSheet } from '@/components/kanban/KanbanCardSheet';
 import { KanbanAiLeadDialog } from '@/components/kanban/KanbanAiLeadDialog';
-import { useCreateKanbanCard, useKanbanBoard, useUpdateKanbanCard, useEnsureDefaultBoards } from '@/hooks/useKanbanBoards';
+import { useCreateKanbanCard, useKanbanBoard, useUpdateKanbanCard, useEnsureDefaultBoards, useKanbanRealtime } from '@/hooks/useKanbanBoards';
 import { useAuthStore } from '@/stores/authStore';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -286,6 +286,7 @@ export default function KanbanBoard() {
   const { data, isLoading } = useKanbanBoard(slug);
   const updateCard = useUpdateKanbanCard();
   const ensureBoards = useEnsureDefaultBoards();
+  useKanbanRealtime(data?.board?.id);
 
   const [activeCard, setActiveCard] = useState<KanbanCardData | null>(null);
   const [selectedCard, setSelectedCard] = useState<KanbanCardData | null>(null);

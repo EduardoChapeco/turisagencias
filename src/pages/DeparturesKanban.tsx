@@ -6,7 +6,7 @@ import { StatusBadge } from '@/components/ui/StatusBadge';
 import { EmptyState, PageSkeleton } from '@/components/ui/EmptyState';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useCreateKanbanCard, useKanbanBoard, useUpdateKanbanCard, useEnsureDefaultBoards } from '@/hooks/useKanbanBoards';
+import { useCreateKanbanCard, useKanbanBoard, useUpdateKanbanCard, useEnsureDefaultBoards, useKanbanRealtime } from '@/hooks/useKanbanBoards';
 import { DepartureBoardCard, DepartureCardOverlay } from '@/components/kanban/DepartureBoardCard';
 import { DepartureCardSheet } from '@/components/kanban/DepartureCardSheet';
 import { useAuthStore } from '@/stores/authStore';
@@ -244,6 +244,7 @@ export default function DeparturesKanban() {
   const { data, isLoading } = useKanbanBoard('departures');
   const updateCard = useUpdateKanbanCard();
   const ensureBoards = useEnsureDefaultBoards();
+  useKanbanRealtime(data?.board?.id);
 
   const [activeCard, setActiveCard] = useState<DepartureCardData | null>(null);
   const [selectedCard, setSelectedCard] = useState<DepartureCardData | null>(null);

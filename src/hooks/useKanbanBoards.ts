@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthStore } from '@/stores/authStore';
@@ -497,4 +498,40 @@ export function useCreateKanbanTag() {
       toast({ title: 'Erro ao criar tag', description: err.message, variant: 'destructive' });
     },
   });
+}
+
+/* ─────────────────────────────────────────────
+   REALTIME SUBSCRIPTIONS
+   ───────────────────────────────────────────── */
+
+export function useKanbanRealtime(boardId?: string) {
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    if (!boardId) return;
+
+    // Listen to changes on kanban_cards table for this board
+    const channel = supabase
+      .channel(`kanban_realtime_${boardId}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'kanban_cards', filter: `board_id=eq.${boardId}` },
+        () => {
+          // Invalidate the specific board query
+          queryClient.invalidateQueries({ queryKey: ['kanban-board'] });
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'kanban_columns', filter: `board_id=eq.${boardId}` },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['kanban-board'] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [boardId, queryClient]);
 }

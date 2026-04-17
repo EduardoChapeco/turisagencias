@@ -17,6 +17,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { StatusBadge, mapStatusToVariant } from '@/components/ui/StatusBadge';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ClientSearchSelect } from '@/components/ui/ClientSearchSelect';
@@ -583,16 +584,20 @@ function VinculosSection({ card }: { card: KanbanCard }) {
 
       <div className="space-y-2">
         <Label className="text-xs font-semibold text-vj-txt3 uppercase tracking-wide">Vincular Viagem</Label>
-        <select
-          value={tripId}
-          onChange={(e) => void handleLinkTrip(e.target.value)}
-          className="w-full h-10 px-3 border border-border rounded-md bg-background text-sm"
+        <Select 
+          value={tripId} 
+          onValueChange={(value) => handleLinkTrip(value === '_empty' ? '' : value)}
         >
-          <option value="">Nenhuma viagem</option>
-          {trips?.map(t => (
-            <option key={t.id} value={t.id}>{t.title || t.destination || `Viagem ${t.id.slice(0, 8)}`}</option>
-          ))}
-        </select>
+          <SelectTrigger className="w-full bg-white h-10 border-vj-border rounded-md text-sm">
+            <SelectValue placeholder="Nenhuma viagem" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="_empty">Nenhuma viagem</SelectItem>
+            {trips?.map(t => (
+              <SelectItem key={t.id} value={t.id}>{t.title || t.destination || `Viagem ${t.id.slice(0, 8)}`}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Show current links */}

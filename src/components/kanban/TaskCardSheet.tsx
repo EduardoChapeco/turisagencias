@@ -8,6 +8,7 @@ import { ClientSearchSelect } from '@/components/ui/ClientSearchSelect';
 import { useTrips } from '@/hooks/useTrips';
 import { useUpdateKanbanCard, useDeleteKanbanCard } from '@/hooks/useKanbanBoards';
 import { Save, Trash2, Calendar, LayoutList, CheckSquare } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { TaskCardData } from './TaskBoardCard';
 
 interface Props {
@@ -85,21 +86,22 @@ export function TaskCardSheet({ card, isOpen, onClose, onDeleted }: Props) {
               <Label className="text-xs font-semibold text-vj-txt3 mb-1.5 block flex items-center gap-1">
                 <LayoutList size={14} /> Tipo de Tarefa
               </Label>
-              <select
-                className="w-full rounded-md border border-vj-border bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-vj-green/20"
-                value={form.task_type}
-                onChange={(e) => setForm({ ...form, task_type: e.target.value })}
-              >
-                <option value="">Geral</option>
-                <option value="cotar">Cotar</option>
-                <option value="ligar">Ligar</option>
-                <option value="reuniao">Reunião</option>
-                <option value="cancelamento">Cancelamento</option>
-                <option value="reembolso">Reembolso</option>
-                <option value="documentacao">Documentação</option>
-                <option value="checkin">Check-in</option>
-                <option value="follow_up">Follow Up</option>
-              </select>
+              <Select value={form.task_type} onValueChange={(value) => setForm({ ...form, task_type: value })}>
+                <SelectTrigger className="w-full bg-white h-10 border-vj-border rounded-md text-sm">
+                  <SelectValue placeholder="Tipo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="_empty">Geral</SelectItem>
+                  <SelectItem value="cotar">Cotar</SelectItem>
+                  <SelectItem value="ligar">Ligar</SelectItem>
+                  <SelectItem value="reuniao">Reunião</SelectItem>
+                  <SelectItem value="cancelamento">Cancelamento</SelectItem>
+                  <SelectItem value="reembolso">Reembolso</SelectItem>
+                  <SelectItem value="documentacao">Documentação</SelectItem>
+                  <SelectItem value="checkin">Check-in</SelectItem>
+                  <SelectItem value="follow_up">Follow Up</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div>
               <Label className="text-xs font-semibold text-vj-txt3 mb-1.5 block flex items-center gap-1">
@@ -125,31 +127,33 @@ export function TaskCardSheet({ card, isOpen, onClose, onDeleted }: Props) {
               />
             </div>
             <div>
-              <Label className="text-xs font-semibold text-vj-txt3 mb-1.5 block">Viagem Vinculada</Label>
-              <select
-                className="w-full rounded-md border border-vj-border bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-vj-green/20"
-                value={form.trip_id}
-                onChange={(e) => setForm({ ...form, trip_id: e.target.value })}
-              >
-                <option value="">Selecione a viagem...</option>
-                {trips?.map((t) => (
-                  <option key={t.id} value={t.id}>{t.title}</option>
-                ))}
-              </select>
+              <Label className="text-xs font-semibold text-vj-txt3 mb-1.5 block">Viagem</Label>
+              <Select value={form.trip_id} onValueChange={(value) => setForm({ ...form, trip_id: value === '_empty' ? '' : value })}>
+                <SelectTrigger className="w-full bg-white h-10 border-vj-border rounded-md text-sm">
+                  <SelectValue placeholder="Selecione a viagem..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="_empty">Selecione a viagem...</SelectItem>
+                  {trips?.map((t) => (
+                    <SelectItem key={t.id} value={t.id}>{t.title}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
           <div>
              <Label className="text-xs font-semibold text-vj-txt3 mb-1.5 block">Prioridade</Label>
-             <select
-                className="w-full rounded-md border border-vj-border bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-vj-green/20"
-                value={form.priority}
-                onChange={(e) => setForm({ ...form, priority: e.target.value })}
-              >
-                <option value="Low">Baixa</option>
-                <option value="Normal">Normal</option>
-                <option value="High">Alta</option>
-              </select>
+             <Select value={form.priority} onValueChange={(value) => setForm({ ...form, priority: value })}>
+               <SelectTrigger className="w-full bg-white h-10 border-vj-border rounded-md text-sm">
+                 <SelectValue />
+               </SelectTrigger>
+               <SelectContent>
+                 <SelectItem value="Low">Baixa</SelectItem>
+                 <SelectItem value="Normal">Normal</SelectItem>
+                 <SelectItem value="High">Alta</SelectItem>
+               </SelectContent>
+             </Select>
           </div>
 
           <div>

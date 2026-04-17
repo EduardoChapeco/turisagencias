@@ -6,7 +6,7 @@ import { StatusBadge } from '@/components/ui/StatusBadge';
 import { EmptyState, PageSkeleton } from '@/components/ui/EmptyState';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useCreateKanbanCard, useKanbanBoard, useUpdateKanbanCard, useEnsureDefaultBoards } from '@/hooks/useKanbanBoards';
+import { useCreateKanbanCard, useKanbanBoard, useUpdateKanbanCard, useEnsureDefaultBoards, useKanbanRealtime } from '@/hooks/useKanbanBoards';
 import { useAuthStore } from '@/stores/authStore';
 import { TaskBoardCard, TaskCardOverlay } from '@/components/kanban/TaskBoardCard';
 import { TaskCardSheet } from '@/components/kanban/TaskCardSheet';
@@ -112,6 +112,7 @@ export default function TasksKanban() {
   const { data, isLoading } = useKanbanBoard('tasks');
   const updateCard = useUpdateKanbanCard();
   const ensureBoards = useEnsureDefaultBoards();
+  useKanbanRealtime(data?.board?.id);
   const { user } = useAuthStore();
 
   const [activeCard, setActiveCard] = useState<TaskCardData | null>(null);

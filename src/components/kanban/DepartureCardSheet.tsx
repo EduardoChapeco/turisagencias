@@ -19,6 +19,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ClientSearchSelect } from '@/components/ui/ClientSearchSelect';
 import { useTrips } from '@/hooks/useTrips';
 import {
@@ -349,13 +350,24 @@ function VinculosSection({ card }: { card: DepartureCardData }) {
       </div>
       <div className="space-y-2">
         <Label className="text-xs font-semibold text-vj-txt3 uppercase tracking-wide">Vincular Viagem</Label>
-        <select value={tripId} onChange={async (e) => { setTripId(e.target.value); await updateCard.mutateAsync({ id: card.id, trip_id: e.target.value || null }); }}
-          className="w-full h-10 px-3 border border-border rounded-md bg-background text-sm">
-          <option value="">Nenhuma viagem</option>
-          {trips?.map((t) => (
-            <option key={t.id} value={t.id}>{t.title || t.destination || `Viagem ${t.id.slice(0, 8)}`}</option>
-          ))}
-        </select>
+        <Select 
+          value={tripId} 
+          onValueChange={async (value) => { 
+            const newId = value === '_empty' ? '' : value;
+            setTripId(newId); 
+            await updateCard.mutateAsync({ id: card.id, trip_id: newId || null }); 
+          }}
+        >
+          <SelectTrigger className="w-full bg-white h-10 border-vj-border rounded-md text-sm">
+            <SelectValue placeholder="Nenhuma viagem" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="_empty">Nenhuma viagem</SelectItem>
+            {trips?.map((t) => (
+              <SelectItem key={t.id} value={t.id}>{t.title || t.destination || `Viagem ${t.id.slice(0, 8)}`}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
       {card.clients && (
         <div className="surface-muted rounded-xl p-4">

@@ -274,6 +274,7 @@ export function usePublicBooking(token: string | undefined) {
 // ───────────── Public
 export type PublicGroupTrip = {
   id: string;
+  org_id: string;
   title: string;
   subtitle: string | null;
   slug: string;

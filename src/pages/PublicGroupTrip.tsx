@@ -228,7 +228,7 @@ export default function PublicGroupTrip() {
           </DialogHeader>
           <PublicBookingForm
             tripId={trip.id}
-            orgId={(trip as any).org_id || ''}
+            orgId={trip.org_id}
             pricePerPax={Number(trip.price_per_pax)}
           />
         </DialogContent>

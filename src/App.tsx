@@ -68,6 +68,9 @@ const PublicChecklist = lazy(() => import('./pages/PublicChecklist'));
 const PublicGuide = lazy(() => import('./pages/PublicGuide'));
 const PublicTravelerInfo = lazy(() => import('./pages/PublicTravelerInfo'));
 
+const GroupTrips = lazy(() => import('./pages/GroupTrips'));
+const PublicGroupTrip = lazy(() => import('./pages/PublicGroupTrip'));
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -130,6 +133,7 @@ const App = () => (
               <Route path="/c/:token" element={<PublicChecklist />} />
               <Route path="/p/guide/:slug" element={<PublicGuide />} />
               <Route path="/p/info/:slug" element={<PublicTravelerInfo />} />
+              <Route path="/g/:slug" element={<PublicGroupTrip />} />
               <Route path="/portal/:org_slug" element={<PortalLogin />} />
               <Route path="/portal/:org_slug/home" element={<ProtectedRoute><PortalHome /></ProtectedRoute>} />
               <Route path="/portal/:org_slug/trip/:id" element={<ProtectedRoute><PortalTripDetail /></ProtectedRoute>} />
@@ -181,6 +185,8 @@ const App = () => (
               <Route path="/tickets/:id" element={<ProtectedWithOrg><TripsRole><TicketDetail /></TripsRole></ProtectedWithOrg>} />
 
               <Route path="/experiences" element={<ProtectedWithOrg><TripsRole><Experiences /></TripsRole></ProtectedWithOrg>} />
+
+              <Route path="/group-trips" element={<ProtectedWithOrg><TripsRole><GroupTrips /></TripsRole></ProtectedWithOrg>} />
 
               <Route path="*" element={<NotFound />} />
             </Routes>

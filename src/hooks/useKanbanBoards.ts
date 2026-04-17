@@ -7,6 +7,28 @@ import { useToast } from '@/hooks/use-toast';
    Board + Columns + Cards (hook original expandido)
    ───────────────────────────────────────────── */
 
+/** Força a criação dos boards padrão (sales, departures, tasks) e refaz a consulta. */
+export function useEnsureDefaultBoards() {
+  const queryClient = useQueryClient();
+  const { organization } = useAuthStore();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async () => {
+      if (!organization?.id) throw new Error('Organização não carregada');
+      const { error } = await supabase.rpc('ensure_default_kanban_boards', { _org_id: organization.id });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['kanban-board'] });
+      toast({ title: 'Quadros recriados!', description: 'As colunas padrão foram restauradas.' });
+    },
+    onError: (err: Error) => {
+      toast({ title: 'Erro ao recriar quadros', description: err.message, variant: 'destructive' });
+    },
+  });
+}
+
 export function useKanbanBoard(slug: string) {
   const { organization } = useAuthStore();
 

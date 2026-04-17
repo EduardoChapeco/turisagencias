@@ -12,11 +12,12 @@ import {
   ArrowLeft, Copy, ExternalLink, Send, MapPin, Hotel, Calendar,
   DollarSign, Sparkles, Brain, Loader2, Trophy, TrendingDown,
   TrendingUp, CheckCircle2, AlertCircle, ChevronDown, ChevronUp,
-  Star, Clock, Plane, FileText
+  Star, Clock, Plane, FileText, Check, XCircle
 } from 'lucide-react';
 import { parseInstallments } from '@/lib/utils';
 import { cn } from '@/lib/utils';
 import { useBuildProposal } from '@/hooks/useBuildProposal';
+import { supabase } from '@/integrations/supabase/client';
 
 const statusLabels: Record<string, string> = {
   draft: 'Rascunho', sent: 'Enviada', viewed: 'Visualizada',
@@ -214,6 +215,21 @@ export default function QuotationDetail() {
     await updateQuotation.mutateAsync({ id, status: 'sent' });
   };
 
+  const handleFeedbackLoop = async (status: 'accepted' | 'lost') => {
+    if (!id) return;
+    await updateQuotation.mutateAsync({ id, status });
+    toast({ title: status === 'accepted' ? 'Venda concluída! 🎉' : 'Negócio perdido marcado' });
+    
+    try {
+      await supabase.functions.invoke('extract-quotation-feedback', {
+        body: { quotation_id: id, org_id: quotation?.org_id, status }
+      });
+      toast({ title: 'Insights extraídos para IA', description: 'Agent 7 documentou o aprendizado no cofre de inteligência.' });
+    } catch (e) {
+      console.error('Feedback loop error', e);
+    }
+  };
+
   const formatCurrency = (value: number | null, currency = 'BRL') => {
     if (!value) return '-';
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency }).format(value);
@@ -295,6 +311,26 @@ export default function QuotationDetail() {
                 : <><Send className="mr-1.5 h-3.5 w-3.5" /> Enviar Cotação</>
               }
             </Button>
+            </Button>
+          )}
+          {quotation.status === 'sent' && (
+            <>
+              <Button
+                size="sm"
+                onClick={() => handleFeedbackLoop('accepted')}
+                className="rounded-xl bg-vj-green hover:bg-emerald-700 text-white"
+              >
+                <Check className="mr-1.5 h-3.5 w-3.5" /> Ganhamos a Venda!
+              </Button>
+              <Button
+                size="sm"
+                onClick={() => handleFeedbackLoop('lost')}
+                variant="outline"
+                className="rounded-xl border-red-200 text-red-600 hover:bg-red-50"
+              >
+                <XCircle className="mr-1.5 h-3.5 w-3.5" /> Cliente Recusou
+              </Button>
+            </>
           )}
           <Button
             size="sm"

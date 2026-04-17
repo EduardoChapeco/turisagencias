@@ -88,9 +88,16 @@ export default function PublicGroupTrip() {
               <p className="text-xs opacity-90">ou {trip.installments_count}x de {formatPrice(installmentValue)}</p>
             )}
           </div>
-          <Button onClick={handleReserve} variant="secondary" size="lg" className="gap-2 bg-white text-vj-green hover:bg-white/90">
-            <MessageCircle size={18} /> Reservar minha vaga
-          </Button>
+          <div className="flex gap-2">
+            {trip.org_whatsapp && (
+              <Button onClick={handleWhatsapp} variant="ghost" size="lg" className="gap-2 text-white hover:bg-white/10">
+                <MessageCircle size={18} /> Tirar dúvidas
+              </Button>
+            )}
+            <Button onClick={handleReserve} variant="secondary" size="lg" className="gap-2 bg-white text-vj-green hover:bg-white/90">
+              <Ticket size={18} /> Reservar minha vaga
+            </Button>
+          </div>
         </div>
       </section>
 
@@ -200,7 +207,7 @@ export default function PublicGroupTrip() {
         <h2 className="text-3xl font-bold text-vj-txt mb-4">Garanta sua vaga</h2>
         <p className="text-vj-txt2 mb-6">Restam {trip.max_pax - trip.current_pax} vagas. Reserva confirmada com sinal.</p>
         <Button onClick={handleReserve} size="lg" className="gap-2">
-          <MessageCircle size={18} /> Falar com {trip.org_name}
+          <Ticket size={18} /> Reservar agora
         </Button>
       </section>
 
@@ -212,6 +219,20 @@ export default function PublicGroupTrip() {
           </div>
         </footer>
       )}
+
+      {/* Booking Dialog */}
+      <Dialog open={bookingOpen} onOpenChange={setBookingOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Reservar — {trip.title}</DialogTitle>
+          </DialogHeader>
+          <PublicBookingForm
+            tripId={trip.id}
+            orgId={(trip as any).org_id || ''}
+            pricePerPax={Number(trip.price_per_pax)}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

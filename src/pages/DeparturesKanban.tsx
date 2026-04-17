@@ -6,7 +6,7 @@ import { StatusBadge } from '@/components/ui/StatusBadge';
 import { EmptyState, PageSkeleton } from '@/components/ui/EmptyState';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useCreateKanbanCard, useKanbanBoard, useUpdateKanbanCard } from '@/hooks/useKanbanBoards';
+import { useCreateKanbanCard, useKanbanBoard, useUpdateKanbanCard, useEnsureDefaultBoards } from '@/hooks/useKanbanBoards';
 import { DepartureBoardCard, DepartureCardOverlay } from '@/components/kanban/DepartureBoardCard';
 import { DepartureCardSheet } from '@/components/kanban/DepartureCardSheet';
 import { useAuthStore } from '@/stores/authStore';
@@ -243,6 +243,7 @@ function DepartureColumn({
 export default function DeparturesKanban() {
   const { data, isLoading } = useKanbanBoard('departures');
   const updateCard = useUpdateKanbanCard();
+  const ensureBoards = useEnsureDefaultBoards();
 
   const [activeCard, setActiveCard] = useState<DepartureCardData | null>(null);
   const [selectedCard, setSelectedCard] = useState<DepartureCardData | null>(null);
@@ -390,8 +391,13 @@ export default function DeparturesKanban() {
         ) : !data?.columns?.length ? (
           <EmptyState
             icon={Plane}
-            title="Board sendo preparado..."
-            description="As colunas estão sendo criadas automaticamente. Recarregue em instantes."
+            title="Quadro de embarques vazio"
+            description="Recrie as colunas padrão (Documentação Pendente, Check-in, Embarque, Em Viagem, Retornaram) ou adicione cards manualmente."
+            action={
+              <Button onClick={() => ensureBoards.mutate()} disabled={ensureBoards.isPending}>
+                {ensureBoards.isPending ? 'Restaurando...' : 'Restaurar colunas padrão'}
+              </Button>
+            }
           />
         ) : (
           <DndContext

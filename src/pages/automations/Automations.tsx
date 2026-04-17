@@ -69,7 +69,7 @@ export default function Automations() {
           description="E-mails inteligentes que disparam nos bastidores conectando sua agência com o passageiro na hora exata."
           icon={Bot}
           action={
-            <Button onClick={runAutomationsWorker} className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-lg">
+            <Button onClick={runAutomationsWorker} className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl ">
               <Bot size={16} className="mr-2" />
               Rodar Agente Manualmente
             </Button>
@@ -86,7 +86,7 @@ export default function Automations() {
               const Icon = Details.icon;
 
               return (
-                <div key={rule.id} className="bg-white dark:bg-zinc-900 rounded-3xl p-6 md:p-8 border shadow-sm relative overflow-hidden transition-all">
+                <div key={rule.id} className="bg-white dark:bg-zinc-900 rounded-3xl p-6 md:p-8 border  relative overflow-hidden transition-all">
                   {/* Decorative background node */}
                   {rule.is_active && (
                     <div className="absolute top-0 right-0 w-32 h-32 bg-green-500/5 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none" />

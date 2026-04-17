@@ -66,7 +66,7 @@ export default function ContractTemplates() {
           }
         />
 
-        <div className="bg-white dark:bg-zinc-900 rounded-3xl p-6 border shadow-sm flex-1 flex flex-col min-h-0">
+        <div className="bg-white dark:bg-zinc-900 rounded-3xl p-6 border  flex-1 flex flex-col min-h-0">
           <div className="relative mb-6 max-w-sm">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
             <Input 
@@ -85,7 +85,7 @@ export default function ContractTemplates() {
                 </div>
              ) : (
                 filtered.map(tpl => (
-                   <div key={tpl.id} className="border rounded-2xl p-5 hover:border-vj-green/50 transition-colors flex flex-col justify-between h-[200px] shadow-sm">
+                   <div key={tpl.id} className="border rounded-2xl p-5 hover:border-vj-green/50 transition-colors flex flex-col justify-between h-[200px] ">
                       <div>
                         <h3 className="font-bold text-lg mb-2 text-vj-txt flex items-center gap-2">
                            <FileSignature size={18} className="text-vj-green"/> {tpl.name}

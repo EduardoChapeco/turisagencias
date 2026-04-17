@@ -168,7 +168,7 @@ export default function Dashboard() {
             <Button variant="outline" className="premium-button border-vj-border bg-white" onClick={() => navigate('/trips/new')}>
               <Plane className="h-4 w-4 mr-2 text-vj-green" /> Viagem
             </Button>
-            <Button className="premium-button shadow-lg shadow-green-900/10" onClick={() => setQuotationBuilderOpen(true)}>
+            <Button className="premium-button  " onClick={() => setQuotationBuilderOpen(true)}>
               <FileText className="h-4 w-4 mr-2" /> Nova Cotação
             </Button>
           </div>
@@ -316,7 +316,7 @@ export default function Dashboard() {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {aiInsights?.map((insight: any) => (
-                  <div key={insight.id} className="bg-white p-4 rounded-2xl border border-indigo-50 shadow-sm flex flex-col cursor-pointer transition-all hover:shadow-indigo-100 hover:-translate-y-1" onClick={() => navigate('/settings')}>
+                  <div key={insight.id} className="bg-white p-4 rounded-2xl border border-indigo-50  flex flex-col cursor-pointer transition-all hover: hover:-translate-y-1" onClick={() => navigate('/settings')}>
                     <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-1 truncate">{insight.title}</p>
                     <p className="text-xs text-zinc-600 leading-relaxed font-medium line-clamp-3 mb-3 flex-1">{insight.content}</p>
                     <div className="flex flex-wrap gap-1">

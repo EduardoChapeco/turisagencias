@@ -74,7 +74,7 @@ export default function Quotations() {
             <Button variant="outline" className="premium-button border-vj-border bg-white" onClick={() => setAiImportOpen(true)}>
               <Sparkles className="h-4 w-4 mr-2 text-vj-green" /> Extração IA
             </Button>
-            <Button className="premium-button shadow-lg shadow-green-900/10" onClick={() => setBuilderOpen(true)}>
+            <Button className="premium-button  " onClick={() => setBuilderOpen(true)}>
               <Plus className="h-4 w-4 mr-2" /> Nova Cotação
             </Button>
           </div>

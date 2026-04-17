@@ -95,7 +95,7 @@ export function SheetPage({
         className={cn(
           'relative flex flex-col z-10',
           'w-full sm:w-[min(85vw,_900px)] lg:w-[min(70vw,_900px)] h-[100dvh]',
-          'bg-white sm:border-l border-vj-border shadow-2xl',
+          'bg-white sm:border-l border-vj-border ',
           'animate-in slide-in-from-right duration-300',
           className,
         )}
@@ -150,7 +150,7 @@ export function SheetPage({
                     className={cn(
                       'flex items-center gap-2 w-max md:w-full px-3 md:px-3 py-1.5 md:py-2 rounded-cb-md text-sm font-medium transition-colors duration-100 text-left shrink-0',
                       isActive
-                        ? 'bg-vj-green/10 text-vj-green font-semibold shadow-sm border border-vj-green/20 md:border-transparent md:shadow-none'
+                        ? 'bg-vj-green/10 text-vj-green font-semibold  border border-vj-green/20 md:border-transparent md:'
                         : 'text-vj-txt3 hover:bg-vj-bg hover:text-vj-txt border border-transparent',
                     )}
                   >

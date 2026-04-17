@@ -79,7 +79,7 @@ export default function ClientsPage() {
               >
                 {/* Header */}
                 <div className="flex items-start gap-4">
-                  <div className="h-14 w-14 shrink-0 rounded-[18px] bg-gradient-to-br from-vj-green/20 to-vj-green/5 border border-vj-green/20 overflow-hidden flex items-center justify-center shadow-inner">
+                  <div className="h-14 w-14 shrink-0 rounded-[18px] bg-gradient-to-br from-vj-green/20 to-vj-green/5 border border-vj-green/20 overflow-hidden flex items-center justify-center ">
                     {(client as any).photo_url ? (
                       <img src={(client as any).photo_url} alt={client.name} className="h-full w-full object-cover" />
                     ) : (
@@ -104,7 +104,7 @@ export default function ClientsPage() {
                   <div className="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-white/50 backdrop-blur-sm rounded-xl p-1" onClick={(e) => e.stopPropagation()}>
                     {/* Quick View */}
                     <Button
-                      variant="ghost" size="icon" className="h-7 w-7 hover:bg-white hover:text-vj-green hover:shadow-sm rounded-lg"
+                      variant="ghost" size="icon" className="h-7 w-7 hover:bg-white hover:text-vj-green hover: rounded-lg"
                       title="Visualização rápida"
                       onClick={() => openQuickView(client.id)}
                     >
@@ -112,7 +112,7 @@ export default function ClientsPage() {
                     </Button>
                     {/* Edit */}
                     <Button
-                      variant="ghost" size="icon" className="h-7 w-7 hover:bg-white hover:shadow-sm rounded-lg"
+                      variant="ghost" size="icon" className="h-7 w-7 hover:bg-white hover: rounded-lg"
                       title="Editar cliente"
                       onClick={() => openEdit(client.id)}
                     >
@@ -171,7 +171,7 @@ export default function ClientsPage() {
 
                   {/* Portal badge */}
                   {client.portal_access_enabled && (
-                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-100 text-[10px] font-black uppercase tracking-wider text-emerald-600 shadow-sm shrink-0">
+                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-100 text-[10px] font-black uppercase tracking-wider text-emerald-600  shrink-0">
                       <Shield className="h-3 w-3" /> Vip
                     </div>
                   )}

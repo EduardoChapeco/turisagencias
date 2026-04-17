@@ -237,7 +237,7 @@ export default function PublicItinerary() {
 
       {/* Split View */}
       <div className="max-w-[1600px] w-full mx-auto p-4 md:p-6 lg:p-8 flex-1 flex flex-col z-10 -mt-6">
-        <div className="bg-background rounded-3xl shadow-xl border border-border/50 overflow-hidden flex-1 h-[800px] md:h-auto min-h-[600px] relative">
+        <div className="bg-background rounded-3xl  border border-border/50 overflow-hidden flex-1 h-[800px] md:h-auto min-h-[600px] relative">
           {mappedStops.length > 0 ? (
             <ItinerarySplitView
               stops={mappedStops}
@@ -258,12 +258,12 @@ export default function PublicItinerary() {
         {/* Group Registration / Interest Form */}
         {itinerary.is_group_itinerary && (
           <div className="mt-8 max-w-2xl mx-auto w-full">
-            <Card className="rounded-3xl border-vj-green/20 shadow-xl bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md overflow-hidden relative">
+            <Card className="rounded-3xl border-vj-green/20  bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md overflow-hidden relative">
                <div className="absolute top-0 right-0 w-32 h-32 bg-violet-500/10 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none" />
                <div className="absolute bottom-0 left-0 w-32 h-32 bg-fuchsia-500/10 rounded-full blur-3xl -ml-10 -mb-10 pointer-events-none" />
                
                <CardHeader className="text-center relative z-10 pb-4">
-                 <div className="mx-auto w-12 h-12 bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 rounded-full flex items-center justify-center mb-3 shadow-inner">
+                 <div className="mx-auto w-12 h-12 bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 rounded-full flex items-center justify-center mb-3 ">
                    <Users className="w-6 h-6" />
                  </div>
                  <Badge className="bg-violet-500 text-white w-fit mx-auto mb-2 pointer-events-none">Vagas Abertas</Badge>
@@ -317,7 +317,7 @@ export default function PublicItinerary() {
                      <Button 
                        type="submit" 
                        disabled={isSubmitting}
-                       className="w-full rounded-xl py-6 bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700 text-white font-bold text-lg shadow-lg border-0 mt-2 transition-all hover:scale-[1.01]"
+                       className="w-full rounded-xl py-6 bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700 text-white font-bold text-lg  border-0 mt-2 transition-all hover:scale-[1.01]"
                      >
                        {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin mx-auto"/> : 'Tenho Interesse Nesta Viagem'}
                      </Button>

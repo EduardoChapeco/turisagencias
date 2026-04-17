@@ -37,7 +37,7 @@ const cellClass = (
   if (cell.type === 'door') return 'bg-zinc-200 border-zinc-300 text-zinc-400 text-[8px] font-bold cursor-default';
   if (cell.type === 'wc') return 'bg-indigo-50 border-indigo-200 text-indigo-400 text-[8px] cursor-default';
   if (isOccupied) return 'bg-zinc-300 border-zinc-400 text-zinc-500 cursor-not-allowed';
-  if (isSelected) return 'bg-vj-green border-vj-green text-white shadow-lg shadow-vj-green/30 scale-105';
+  if (isSelected) return 'bg-vj-green border-vj-green text-white   scale-105';
   if (readOnly) return 'bg-green-50 border-green-200 text-green-600 cursor-default';
   return 'bg-white border-zinc-200 text-zinc-600 hover:border-vj-green hover:bg-vj-green/10 hover:text-vj-green cursor-pointer active:scale-95';
 };

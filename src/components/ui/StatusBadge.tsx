@@ -23,10 +23,10 @@ interface StatusBadgeProps {
 }
 
 const variantStyles: Record<StatusVariant, string> = {
-  success: 'bg-vj-green-bg text-vj-green border-vj-green/20 shadow-sm',
-  warning: 'bg-vj-orange-bg text-vj-orange border-vj-orange/20 shadow-sm',
-  danger:  'bg-vj-red-bg  text-vj-red  border-vj-red/20 shadow-sm',
-  info:    'bg-vj-blue-bg text-vj-blue border-vj-blue/20 shadow-sm',
+  success: 'bg-vj-green-bg text-vj-green border-vj-green/20 ',
+  warning: 'bg-vj-orange-bg text-vj-orange border-vj-orange/20 ',
+  danger:  'bg-vj-red-bg  text-vj-red  border-vj-red/20 ',
+  info:    'bg-vj-blue-bg text-vj-blue border-vj-blue/20 ',
   neutral: 'bg-vj-bg text-vj-txt3 border-vj-border',
 };
 

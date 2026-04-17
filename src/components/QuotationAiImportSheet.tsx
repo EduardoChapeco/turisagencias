@@ -63,7 +63,7 @@ function EditableField({
       </p>
       {options ? (
         <Select value={value} onValueChange={onChange}>
-          <SelectTrigger className="h-8 text-xs border-none shadow-none p-0 bg-transparent font-semibold">
+          <SelectTrigger className="h-8 text-xs border-none  p-0 bg-transparent font-semibold">
             <SelectValue placeholder="Selecionar..." />
           </SelectTrigger>
           <SelectContent>
@@ -77,7 +77,7 @@ function EditableField({
           type={type}
           value={value}
           onChange={e => onChange(e.target.value)}
-          className={`h-8 border-none shadow-none p-0 text-sm font-semibold bg-transparent focus-visible:ring-0 ${highlight ? 'text-vj-green' : 'text-vj-txt'}`}
+          className={`h-8 border-none  p-0 text-sm font-semibold bg-transparent focus-visible:ring-0 ${highlight ? 'text-vj-green' : 'text-vj-txt'}`}
         />
       )}
     </div>
@@ -526,7 +526,7 @@ export function QuotationAiImportSheet({ open, onClose, onSuccess }: QuotationAi
                           value={current.whatsapp_text ?? ''}
                           onChange={e => updateField('whatsapp_text', e.target.value)}
                           rows={8}
-                          className="text-xs text-gray-800 whitespace-pre-wrap leading-relaxed font-sans bg-transparent border-none shadow-none focus-visible:ring-0 resize-none p-0"
+                          className="text-xs text-gray-800 whitespace-pre-wrap leading-relaxed font-sans bg-transparent border-none  focus-visible:ring-0 resize-none p-0"
                         />
                       </div>
                     </div>

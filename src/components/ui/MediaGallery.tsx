@@ -23,7 +23,7 @@ export function MediaGallery({ images, className }: MediaGalleryProps) {
       {images.map((src, index) => (
         <div 
           key={src + index}
-          className="group relative aspect-square rounded-xl overflow-hidden cursor-pointer bg-vj-bg border border-vj-border hover:border-vj-green/50 transition-all duration-300 shadow-sm hover:shadow-md"
+          className="group relative aspect-square rounded-xl overflow-hidden cursor-pointer bg-vj-bg border border-vj-border hover:border-vj-green/50 transition-all duration-300  hover:"
           onClick={() => openLightbox(index)}
         >
           <img 
@@ -38,14 +38,14 @@ export function MediaGallery({ images, className }: MediaGalleryProps) {
       ))}
 
       <Dialog open={selectedIndex !== null} onOpenChange={(open) => !open && closeLightbox()}>
-        <DialogContent className="max-w-[95vw] max-h-[90vh] p-0 border-none bg-transparent shadow-none flex items-center justify-center">
+        <DialogContent className="max-w-[95vw] max-h-[90vh] p-0 border-none bg-transparent  flex items-center justify-center">
           <div className="relative w-full h-full flex items-center justify-center">
             {selectedIndex !== null && (
               <>
                 <img 
                   src={images[selectedIndex]} 
                   alt="Lightbox" 
-                  className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl animate-in fade-in zoom-in duration-300"
+                  className="max-w-full max-h-[85vh] object-contain rounded-lg  animate-in fade-in zoom-in duration-300"
                 />
                 
                 <button 

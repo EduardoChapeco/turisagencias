@@ -140,7 +140,7 @@ export default function PortalAiPhotos() {
                   <div 
                     key={style.id}
                     onClick={() => setSelectedStyle(style.id)}
-                    className={`cursor-pointer min-h-[80px] p-3 rounded-xl border transition-all flex flex-col justify-center ${selectedStyle === style.id ? 'border-vj-primary bg-vj-primary/5 ring-1 ring-vj-primary shadow-sm' : 'border-vj-border bg-white dark:bg-zinc-950 hover:border-vj-primary/30'}`}
+                    className={`cursor-pointer min-h-[80px] p-3 rounded-xl border transition-all flex flex-col justify-center ${selectedStyle === style.id ? 'border-vj-primary bg-vj-primary/5 ring-1 ring-vj-primary ' : 'border-vj-border bg-white dark:bg-zinc-950 hover:border-vj-primary/30'}`}
                   >
                     <div className="font-medium text-sm text-vj-txt">{style.name}</div>
                     <div className="text-xs text-vj-txt3 leading-tight mt-1">{style.desc}</div>
@@ -151,7 +151,7 @@ export default function PortalAiPhotos() {
 
             <Button 
               size="lg" 
-              className="w-full h-14 bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700 shadow-lg"
+              className="w-full h-14 bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700 "
               disabled={!selectedImage || isGenerating}
               onClick={handleGenerate}
             >

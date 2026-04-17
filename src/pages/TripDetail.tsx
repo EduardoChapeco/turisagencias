@@ -133,7 +133,7 @@ export default function TripDetail() {
              <Button variant="outline" className="premium-button border-vj-border bg-white" onClick={() => navigate('/itineraries')}>
                <Map className="w-4 h-4 mr-2" /> Roteiros
              </Button>
-             <Button onClick={() => setEditOpen(true)} className="premium-button bg-vj-txt text-white hover:bg-zinc-800 shadow-xl">
+             <Button onClick={() => setEditOpen(true)} className="premium-button bg-vj-txt text-white hover:bg-zinc-800 ">
                <Edit2 className="h-4 w-4 mr-2" /> Gerenciar Viagem
              </Button>
           </div>
@@ -253,7 +253,7 @@ export default function TripDetail() {
               {/* Primary Client */}
               {trip.clients && (
                 <div className="p-4 rounded-[20px] bg-zinc-50 border border-zinc-100 flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-vj-green flex items-center justify-center text-white font-black shadow-lg shadow-green-900/10">
+                  <div className="w-12 h-12 rounded-full bg-vj-green flex items-center justify-center text-white font-black  ">
                     {(trip.clients as any).name?.charAt(0) || 'C'}
                   </div>
                   <div className="min-w-0">
@@ -303,10 +303,10 @@ export default function TripDetail() {
           <div className="col-span-full mt-4">
              <Tabs defaultValue="roteiro" className="w-full">
                 <TabsList className="bg-zinc-100 border-vj-border p-1 rounded-2xl mb-6">
-                  <TabsTrigger value="roteiro" className="rounded-xl px-8 data-[state=active]:bg-white data-[state=active]:shadow-sm">Roteiro Detalhado</TabsTrigger>
-                  <TabsTrigger value="tickets" className="rounded-xl px-8 data-[state=active]:bg-white data-[state=active]:shadow-sm">Suporte & Chamados</TabsTrigger>
-                  <TabsTrigger value="checklists" className="rounded-xl px-8 data-[state=active]:bg-white data-[state=active]:shadow-sm">Checklists</TabsTrigger>
-                  <TabsTrigger value="documents" className="rounded-xl px-8 data-[state=active]:bg-white data-[state=active]:shadow-sm">Todos os Documentos</TabsTrigger>
+                  <TabsTrigger value="roteiro" className="rounded-xl px-8 data-[state=active]:bg-white data-[state=active]:">Roteiro Detalhado</TabsTrigger>
+                  <TabsTrigger value="tickets" className="rounded-xl px-8 data-[state=active]:bg-white data-[state=active]:">Suporte & Chamados</TabsTrigger>
+                  <TabsTrigger value="checklists" className="rounded-xl px-8 data-[state=active]:bg-white data-[state=active]:">Checklists</TabsTrigger>
+                  <TabsTrigger value="documents" className="rounded-xl px-8 data-[state=active]:bg-white data-[state=active]:">Todos os Documentos</TabsTrigger>
                 </TabsList>
                 
                 <TabsContent value="roteiro">
@@ -364,7 +364,7 @@ export default function TripDetail() {
                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                         {trip.trip_documents?.map(doc => (
                           <div key={doc.id} className="p-4 rounded-[20px] bg-zinc-50 border border-zinc-100 flex flex-col items-center text-center gap-3 hover:border-vj-green/40 transition-all cursor-pointer">
-                             <div className="w-12 h-12 rounded-2xl bg-white border border-zinc-100 flex items-center justify-center shadow-sm">
+                             <div className="w-12 h-12 rounded-2xl bg-white border border-zinc-100 flex items-center justify-center ">
                                <FileText className="w-6 h-6 text-vj-green" />
                              </div>
                              <div>

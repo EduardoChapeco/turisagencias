@@ -171,7 +171,7 @@ export function TravelerInfoEdit({ id, open, onClose, onSuccess }: TravelerInfoE
                     </div>
                   ) : (
                     form.content_blocks.map((block, i) => (
-                      <div key={block.id} className="relative p-4 rounded-cb-md border border-vj-border bg-white shadow-sm animate-in fade-in slide-in-from-bottom-2">
+                      <div key={block.id} className="relative p-4 rounded-cb-md border border-vj-border bg-white  animate-in fade-in slide-in-from-bottom-2">
                         <div className="absolute top-2 right-2">
                            <Button type="button" variant="ghost" size="icon" className="h-6 w-6 text-vj-txt3 hover:text-vj-red" onClick={() => removeBlock(i)}><Trash2 className="h-3.5 w-3.5" /></Button>
                         </div>

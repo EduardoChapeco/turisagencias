@@ -47,7 +47,7 @@ export default function PendingCancellations() {
         <div className="bg-white border rounded-2xl p-4 flex gap-3 items-center">
           <Search size={18} className="text-zinc-400" />
           <Input
-            className="border-0 shadow-none focus-visible:ring-0 p-0 h-auto"
+            className="border-0  focus-visible:ring-0 p-0 h-auto"
             placeholder="Buscar por cliente ou viagem..."
             value={search} onChange={e => setSearch(e.target.value)}
           />
@@ -92,7 +92,7 @@ export default function PendingCancellations() {
 function CancellationCard({ cancellation: c, onProcess }: { cancellation: any, onProcess: () => void }) {
   const isCredit = c.finance_resolution === 'full_credit';
   return (
-    <div className="bg-white border rounded-2xl p-5 hover:border-zinc-300 transition-colors shadow-sm flex flex-col items-start gap-4">
+    <div className="bg-white border rounded-2xl p-5 hover:border-zinc-300 transition-colors  flex flex-col items-start gap-4">
       <div className="w-full flex items-start justify-between">
         <div>
           <p className="font-bold text-lg text-zinc-800 line-clamp-1">{c.group_bookings?.lead_name}</p>
@@ -117,7 +117,7 @@ function CancellationCard({ cancellation: c, onProcess }: { cancellation: any, o
 
       <div className="w-full flex justify-between items-center text-xs text-zinc-400">
         <span>Pedido em {fmtDate(c.created_at)}</span>
-        <Button size="sm" className="h-8 gap-1 shadow bg-zinc-900 text-white hover:bg-zinc-800" onClick={onProcess}>
+        <Button size="sm" className="h-8 gap-1  bg-zinc-900 text-white hover:bg-zinc-800" onClick={onProcess}>
           <Eye size={14} /> Avaliar
         </Button>
       </div>

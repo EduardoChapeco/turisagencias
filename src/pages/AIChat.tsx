@@ -49,7 +49,7 @@ function MessageBubble({ msg, isLast }: { msg: ChatMessage; isLast: boolean }) {
         </div>
       )}
       <div className={cn(
-        'rounded-2xl px-4 py-3 text-sm leading-relaxed max-w-[82%] shadow-sm',
+        'rounded-2xl px-4 py-3 text-sm leading-relaxed max-w-[82%] ',
         isUser
           ? 'bg-vj-green text-white rounded-tr-sm'
           : 'bg-white border border-zinc-100 rounded-tl-sm text-zinc-800'
@@ -234,7 +234,7 @@ export default function AIChat() {
 
   return (
     <AppLayout>
-      <div className="flex h-[calc(100vh-5rem)] max-w-[1400px] mx-auto gap-0 overflow-hidden rounded-[28px] border border-zinc-200 shadow-xl bg-white">
+      <div className="flex h-[calc(100vh-5rem)] max-w-[1400px] mx-auto gap-0 overflow-hidden rounded-[28px] border border-zinc-200  bg-white">
 
         {/* ── SIDEBAR DE SESSÕES ── */}
         <div className={cn(
@@ -287,7 +287,7 @@ export default function AIChat() {
                     'w-full text-left p-3 rounded-xl transition-all group',
                     activeSessionId === s.id
                       ? 'bg-vj-green/10 border border-vj-green/20'
-                      : 'hover:bg-white hover:shadow-sm border border-transparent'
+                      : 'hover:bg-white hover: border border-transparent'
                   )}
                 >
                   <div className="flex items-start justify-between gap-1">
@@ -381,7 +381,7 @@ export default function AIChat() {
                     <div className="w-8 h-8 rounded-full bg-vj-green/10 border border-vj-green/20 flex items-center justify-center shrink-0 mt-1">
                       <Bot className="h-4 w-4 text-vj-green animate-pulse" />
                     </div>
-                    <div className="rounded-2xl px-4 py-3 bg-white border border-zinc-100 rounded-tl-sm shadow-sm flex items-center gap-1.5">
+                    <div className="rounded-2xl px-4 py-3 bg-white border border-zinc-100 rounded-tl-sm  flex items-center gap-1.5">
                       {[0, 150, 300].map((delay) => (
                         <span
                           key={delay}

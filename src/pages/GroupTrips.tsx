@@ -241,7 +241,7 @@ export default function GroupTrips() {
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                 <div className="absolute top-3 right-3 flex gap-1 z-10">
-                  <span className={`text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-lg backdrop-blur-md ${
+                  <span className={`text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full  backdrop-blur-md ${
                     t.is_public && t.status === 'published'
                       ? 'bg-vj-green text-white' : 'bg-white/90 text-zinc-500'
                   }`}>
@@ -272,18 +272,18 @@ export default function GroupTrips() {
                   </div>
                   <div className="flex items-center gap-1.5">
                     {t.slug && t.is_public && (
-                      <Button variant="outline" size="sm" className="premium-button border-zinc-200 shadow-sm" title="Ver página pública"
+                      <Button variant="outline" size="sm" className="premium-button border-zinc-200 " title="Ver página pública"
                         onClick={() => window.open(`/g/${t.slug}`, '_blank')}>
                         <ExternalLink size={14} />
                       </Button>
                     )}
                     <Button variant="outline" size="sm"
-                      className="premium-button border-vj-green/30 text-vj-green hover:bg-vj-green/10 shadow-sm"
+                      className="premium-button border-vj-green/30 text-vj-green hover:bg-vj-green/10 "
                       title="Painel financeiro"
                       onClick={() => navigate(`/group-trips/${t.id}/finance`)}>
                       <BarChart2 size={14} className="mr-1" /> Financeiro
                     </Button>
-                    <Button variant="outline" size="sm" className="premium-button bg-zinc-900 border-zinc-900 text-white hover:bg-zinc-800 shadow-xl" title="Editar" onClick={() => openEdit(t.id)}>
+                    <Button variant="outline" size="sm" className="premium-button bg-zinc-900 border-zinc-900 text-white hover:bg-zinc-800 " title="Editar" onClick={() => openEdit(t.id)}>
                       <Eye size={14} className="mr-1.5" /> Abrir
                     </Button>
                     <Button variant="ghost" size="icon" className="h-9 w-9 text-red-500 hover:bg-red-50 hover:text-red-600 rounded-xl" title="Excluir"

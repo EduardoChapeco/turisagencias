@@ -100,7 +100,7 @@ export default function ItineraryBuilder() {
           </div>
           <Input
             placeholder="Descreva a viagem e a IA criará o roteiro e o mapa automaticamente…"
-            className="border-0 bg-transparent shadow-none focus-visible:ring-0 px-0 md:px-2 text-sm placeholder:text-vj-txt3"
+            className="border-0 bg-transparent  focus-visible:ring-0 px-0 md:px-2 text-sm placeholder:text-vj-txt3"
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && !generateAILoading && handleGenerate()}

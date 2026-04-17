@@ -93,7 +93,7 @@ export default function ClientDetail() {
         </div>
 
         {/* Header Profile - "World ID / Notion Style" */}
-        <div className="relative rounded-3xl overflow-hidden shadow-sm border border-vj-border bg-white">
+        <div className="relative rounded-3xl overflow-hidden  border border-vj-border bg-white">
            {/* Cover Banner */}
            <div 
              className={`h-32 w-full relative group cursor-pointer ${!(client as any).cover_url ? (isVip ? 'bg-gradient-to-r from-purple-600 to-indigo-900' : 'bg-gradient-to-r from-primary to-accent') : ''} opacity-90`}
@@ -138,7 +138,7 @@ export default function ClientDetail() {
                  {/* Avatar & Title */}
                   <div className="flex items-end gap-5">
                      <div 
-                       className="h-24 w-24 sm:h-32 sm:w-32 rounded-2xl border-4 border-background bg-accent/10 flex items-center justify-center overflow-hidden shadow-md relative group cursor-pointer"
+                       className="h-24 w-24 sm:h-32 sm:w-32 rounded-2xl border-4 border-background bg-accent/10 flex items-center justify-center overflow-hidden  relative group cursor-pointer"
                        onClick={() => photoInputRef.current?.click()}
                      >
                         {client.photo_url ? (
@@ -189,7 +189,7 @@ export default function ClientDetail() {
                  {/* Action Buttons */}
                  <div className="flex flex-wrap gap-2 pb-2">
                     {client.phone && (
-                      <Button variant="default" className="bg-green-600 hover:bg-green-700 text-white shadow-sm" onClick={() => window.open(`https://wa.me/${client.phone.replace(/\D/g, '')}`, '_blank')}>
+                      <Button variant="default" className="bg-green-600 hover:bg-green-700 text-white " onClick={() => window.open(`https://wa.me/${client.phone.replace(/\D/g, '')}`, '_blank')}>
                          <MessageCircle className="h-4 w-4 mr-2" /> WhatsApp
                       </Button>
                     )}
@@ -224,16 +224,16 @@ export default function ClientDetail() {
         {/* Tab Navigation */}
         <Tabs defaultValue="info" className="mt-8">
           <TabsList className="bg-transparent border-b border-vj-border w-full justify-start h-auto p-0 rounded-none mb-6">
-            <TabsTrigger value="info" className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-vj-green/20 data-[state=active]:shadow-none rounded-none px-6 py-3 font-medium">Dados Principais</TabsTrigger>
-            <TabsTrigger value="travelers" className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-vj-green/20 data-[state=active]:shadow-none rounded-none px-6 py-3 font-medium">Viajantes Vinculados <span className="ml-2 text-xs bg-muted px-2 py-0.5 rounded-full">{travelers?.length || 0}</span></TabsTrigger>
-            <TabsTrigger value="history" className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-vj-green/20 data-[state=active]:shadow-none rounded-none px-6 py-3 font-medium">Timeline de Viagens</TabsTrigger>
-            <TabsTrigger value="docs" className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-vj-green/20 data-[state=active]:shadow-none rounded-none px-6 py-3 font-medium">Documentos & Contratos</TabsTrigger>
+            <TabsTrigger value="info" className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-vj-green/20 data-[state=active]: rounded-none px-6 py-3 font-medium">Dados Principais</TabsTrigger>
+            <TabsTrigger value="travelers" className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-vj-green/20 data-[state=active]: rounded-none px-6 py-3 font-medium">Viajantes Vinculados <span className="ml-2 text-xs bg-muted px-2 py-0.5 rounded-full">{travelers?.length || 0}</span></TabsTrigger>
+            <TabsTrigger value="history" className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-vj-green/20 data-[state=active]: rounded-none px-6 py-3 font-medium">Timeline de Viagens</TabsTrigger>
+            <TabsTrigger value="docs" className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-vj-green/20 data-[state=active]: rounded-none px-6 py-3 font-medium">Documentos & Contratos</TabsTrigger>
           </TabsList>
 
           <TabsContent value="info" className="space-y-6 focus-visible:outline-none">
             <div className="grid gap-6 md:grid-cols-3">
               {/* Personal Details Card */}
-              <Card className="md:col-span-2 border-vj-border shadow-sm rounded-2xl overflow-hidden">
+              <Card className="md:col-span-2 border-vj-border  rounded-2xl overflow-hidden">
                 <CardHeader className="bg-vj-bg border-b border-vj-border pb-4">
                    <CardTitle className="text-base flex items-center gap-2"><User className="h-4 w-4 text-vj-green" /> Informações Pessoais</CardTitle>
                 </CardHeader>
@@ -258,7 +258,7 @@ export default function ClientDetail() {
               </Card>
 
               {/* Address Card */}
-              <Card className="border-vj-border shadow-sm rounded-2xl overflow-hidden">
+              <Card className="border-vj-border  rounded-2xl overflow-hidden">
                 <CardHeader className="bg-vj-bg border-b border-vj-border pb-4">
                    <CardTitle className="text-base flex items-center gap-2"><MapPin className="h-4 w-4 text-accent" /> Localização</CardTitle>
                 </CardHeader>
@@ -287,7 +287,7 @@ export default function ClientDetail() {
 
             {/* Notes Section styled nicely */}
             {client.notes && (
-              <Card className="border-warning/30 bg-warning/5 shadow-sm rounded-2xl overflow-hidden">
+              <Card className="border-warning/30 bg-warning/5  rounded-2xl overflow-hidden">
                 <CardHeader className="pb-2">
                    <CardTitle className="text-base text-warning flex items-center gap-2"><FileText className="h-4 w-4" /> Notas Internas do Agente</CardTitle>
                 </CardHeader>
@@ -306,7 +306,7 @@ export default function ClientDetail() {
                </div>
               <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button className="shadow-sm rounded-full px-5"><Plus className="mr-2 h-4 w-4" /> Adicionar Viajante</Button>
+                  <Button className=" rounded-full px-5"><Plus className="mr-2 h-4 w-4" /> Adicionar Viajante</Button>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-[425px]">
                   <DialogHeader><DialogTitle>Designar Viajante</DialogTitle></DialogHeader>
@@ -348,7 +348,7 @@ export default function ClientDetail() {
             ) : (
               <div className="grid md:grid-cols-2 gap-4">
                 {travelers.map((t) => (
-                  <Card key={t.id} className="rounded-2xl border-vj-border hover:shadow-md transition-shadow group relative overflow-hidden">
+                  <Card key={t.id} className="rounded-2xl border-vj-border hover: transition-shadow group relative overflow-hidden">
                     <div className="absolute top-0 left-0 w-1 h-full bg-accent/50" />
                     <CardContent className="p-5">
                       <div className="flex justify-between items-start mb-3">
@@ -438,7 +438,7 @@ export default function ClientDetail() {
                ) : (
                  <div className="grid gap-4 md:grid-cols-2">
                    {docs.map((doc: any, i: number) => (
-                     <div key={i} className="p-5 rounded-2xl border border-vj-border bg-white shadow-sm space-y-3">
+                     <div key={i} className="p-5 rounded-2xl border border-vj-border bg-white  space-y-3">
                        <div className="flex items-center justify-between">
                          <span className="font-semibold text-vj-txt flex items-center gap-2">
                            <FileText className="w-4 h-4 text-vj-green" /> {doc.type || 'Documento'}

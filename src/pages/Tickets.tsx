@@ -85,7 +85,7 @@ export default function Tickets() {
             {tickets.map((ticket) => (
               <Card
                 key={ticket.id}
-                className="cursor-pointer transition-all hover:shadow-md hover:border-vj-green/20 premium-card"
+                className="cursor-pointer transition-all hover: hover:border-vj-green/20 premium-card"
                 onClick={() => navigate(`/tickets/${ticket.id}`)}
               >
                 <CardHeader className="pb-2">

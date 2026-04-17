@@ -35,7 +35,7 @@ export function ItineraryTimeline({ stops, activeStopId, onStopClick, isEditable
         {Object.entries(days).map(([dayNumber, dayStops]) => (
           <div key={`day-${dayNumber}`} className="relative">
             {/* Day Header */}
-            <div className="sticky top-0 z-10 bg-slate-50/90 dark:bg-zinc-950/90 backdrop-blur-md py-3 -mx-4 px-4 sm:-mx-8 sm:px-8 mb-6 border-b border-border shadow-sm flex items-center">
+            <div className="sticky top-0 z-10 bg-slate-50/90 dark:bg-zinc-950/90 backdrop-blur-md py-3 -mx-4 px-4 sm:-mx-8 sm:px-8 mb-6 border-b border-border  flex items-center">
               <div className="flex flex-col">
                  <h3 className="text-sm font-bold text-primary uppercase tracking-widest bg-primary/10 w-fit px-3 py-1 rounded-full">
                     Dia {dayNumber}
@@ -66,7 +66,7 @@ export function ItineraryTimeline({ stops, activeStopId, onStopClick, isEditable
                     {/* Emoji / Icon container */}
                     <div className="relative shrink-0 z-10 pt-1">
                       <div className={cn(
-                        "w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center text-xl sm:text-2xl shadow-sm border-2 transition-transform duration-300",
+                        "w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center text-xl sm:text-2xl  border-2 transition-transform duration-300",
                         isActive ? "bg-primary border-primary text-primary-foreground scale-110" : "bg-card border-border hover:border-primary/50"
                       )}>
                         {stop.emoji || '📍'}
@@ -76,7 +76,7 @@ export function ItineraryTimeline({ stops, activeStopId, onStopClick, isEditable
                     {/* Content Card */}
                     <div className={cn(
                       "flex-1 rounded-2xl p-4 sm:p-5 transition-all duration-300 border bg-card",
-                      isActive ? "border-primary shadow-md ring-1 ring-primary/20 ring-offset-2 ring-offset-background" : "border-border shadow-sm hover:shadow-md hover:border-primary/30"
+                      isActive ? "border-primary  ring-1 ring-primary/20 ring-offset-2 ring-offset-background" : "border-border  hover: hover:border-primary/30"
                     )}>
                       {stop.time && (
                         <div className="flex items-center text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 gap-1.5 flex-wrap">

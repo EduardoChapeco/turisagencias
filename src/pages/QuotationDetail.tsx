@@ -368,7 +368,7 @@ export default function QuotationDetail() {
               size="sm"
               onClick={handleConvertToTrip}
               disabled={createTrip.isPending}
-              className="rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:opacity-90 shadow-md"
+              className="rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:opacity-90 "
             >
               {createTrip.isPending
                 ? <><Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> Criando Viagem...</>
@@ -397,7 +397,7 @@ export default function QuotationDetail() {
             size="sm"
             onClick={() => scoreQuotation.mutate(id!)}
             disabled={scoreQuotation.isPending}
-            className="rounded-xl bg-gradient-to-r from-vj-green to-emerald-600 text-white hover:opacity-90 ml-auto shadow-sm"
+            className="rounded-xl bg-gradient-to-r from-vj-green to-emerald-600 text-white hover:opacity-90 ml-auto "
           >
             {scoreQuotation.isPending ? (
               <><Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> Analisando...</>

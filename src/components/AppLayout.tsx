@@ -47,7 +47,7 @@ export function AppLayout({ children, fullHeight }: { children: React.ReactNode;
                     {(profile?.first_name?.[0] || '?').toUpperCase()}
                   </div>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56 rounded-vj-r border-vj-border bg-vj-bg shadow-sm">
+                <DropdownMenuContent align="end" className="w-56 rounded-vj-r border-vj-border bg-vj-bg ">
                   <DropdownMenuLabel className="font-normal">
                     <div className="flex flex-col space-y-1">
                       <p className="text-sm font-medium leading-none text-vj-txt">

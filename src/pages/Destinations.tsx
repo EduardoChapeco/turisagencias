@@ -358,7 +358,7 @@ export default function Destinations() {
               Base de conhecimento logístico do Agente IA — {activeCount} destinos ativos
             </p>
           </div>
-          <Button className="premium-button shadow-lg shadow-green-900/10" onClick={handleNew}>
+          <Button className="premium-button  " onClick={handleNew}>
             <Plus className="h-4 w-4 mr-2" /> Novo Destino
           </Button>
         </div>

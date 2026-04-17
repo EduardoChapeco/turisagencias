@@ -38,7 +38,7 @@ export default function PortalLogin() {
         {/* Logo Flutuante (Above Card) */}
         <div className="flex justify-center mb-6 drop-shadow-xl">
            <div
-              className="flex h-16 w-16 items-center justify-center rounded-2xl shadow-2xl border border-white/10"
+              className="flex h-16 w-16 items-center justify-center rounded-2xl  border border-white/10"
               style={{ backgroundColor: organization?.primary_color || '#1E3A5F' }}
             >
               {organization?.logo_url ? (
@@ -49,7 +49,7 @@ export default function PortalLogin() {
             </div>
         </div>
 
-        <Card className="border-0 shadow-2xl bg-white/5 backdrop-blur-xl supports-[backdrop-filter]:bg-zinc-950/40 rounded-[2rem] overflow-hidden text-white border-t border-l border-white/10">
+        <Card className="border-0  bg-white/5 backdrop-blur-xl supports-[backdrop-filter]:bg-zinc-950/40 rounded-[2rem] overflow-hidden text-white border-t border-l border-white/10">
           <CardHeader className="text-center pt-10 pb-6 px-8">
             <CardTitle className="font-heading text-3xl font-bold tracking-tight bg-gradient-to-br from-white to-white/60 bg-clip-text text-transparent">
                {organization?.name || 'Bem-vindo'}

@@ -113,7 +113,7 @@ export function DepartureBoardCard({
       style={style}
       onClick={onClick}
       className={cn(
-        'group relative bg-white border border-vj-border rounded-xl p-3 shadow-sm hover:shadow-md hover:border-vj-green/40 transition-all cursor-pointer select-none',
+        'group relative bg-white border border-vj-border rounded-xl p-3  hover: hover:border-vj-green/40 transition-all cursor-pointer select-none',
         isDragging && 'opacity-40',
       )}
     >
@@ -205,7 +205,7 @@ export function DepartureBoardCard({
 /* ── Overlay (DragOverlay) ── */
 export function DepartureCardOverlay({ card }: { card: DepartureCardData }) {
   return (
-    <div className="bg-white border border-vj-green/40 rounded-xl p-3 shadow-xl rotate-1 opacity-95 w-[260px]">
+    <div className="bg-white border border-vj-green/40 rounded-xl p-3  rotate-1 opacity-95 w-[260px]">
       <p className="font-semibold text-sm text-vj-txt">{card.title}</p>
       {card.clients?.name && (
         <p className="text-xs text-vj-txt3 mt-0.5">{card.clients.name}</p>

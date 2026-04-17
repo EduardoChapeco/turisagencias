@@ -57,7 +57,7 @@ export default function PublicTravelerForm() {
   if (invalidToken) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50 dark:from-zinc-950 dark:to-blue-950/20 px-4">
-        <Card className="w-full max-w-md text-center shadow-xl rounded-3xl border-vj-border">
+        <Card className="w-full max-w-md text-center  rounded-3xl border-vj-border">
           <CardContent className="py-12">
             <div className="w-16 h-16 bg-destructive/10 rounded-full flex items-center justify-center mx-auto mb-4">
               <AlertCircle className="h-8 w-8 text-destructive" />
@@ -73,7 +73,7 @@ export default function PublicTravelerForm() {
   if (submitted) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 to-green-50 dark:from-zinc-950 dark:to-green-950/20 px-4">
-        <Card className="w-full max-w-md text-center shadow-xl rounded-3xl border-vj-border">
+        <Card className="w-full max-w-md text-center  rounded-3xl border-vj-border">
           <CardContent className="py-12 space-y-4">
             <div className="w-20 h-20 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto">
               <CheckCircle2 className="h-10 w-10 text-green-600 dark:text-green-400" />
@@ -132,7 +132,7 @@ export default function PublicTravelerForm() {
         
         {/* Header */}
         <div className="text-center space-y-3">
-          <div className="mx-auto w-16 h-16 bg-vj-green rounded-2xl flex items-center justify-center shadow-lg shadow-primary/30">
+          <div className="mx-auto w-16 h-16 bg-vj-green rounded-2xl flex items-center justify-center  ">
             <Plane className="h-8 w-8 text-vj-green-foreground" />
           </div>
           <h1 className="font-heading text-2xl font-bold">Ficha do Viajante</h1>
@@ -150,7 +150,7 @@ export default function PublicTravelerForm() {
 
         {/* Step 1: Identificação */}
         {step === 1 && (
-          <Card className="shadow-lg rounded-2xl border-vj-border">
+          <Card className=" rounded-2xl border-vj-border">
             <CardHeader className="border-b border-vj-border">
               <CardTitle className="flex items-center gap-2 text-base"><FileText className="h-5 w-5 text-vj-green" /> Identificação Pessoal</CardTitle>
               <CardDescription>Nome exatamente como no documento de viagem.</CardDescription>
@@ -194,7 +194,7 @@ export default function PublicTravelerForm() {
 
         {/* Step 2: Documentos */}
         {step === 2 && (
-          <Card className="shadow-lg rounded-2xl border-vj-border">
+          <Card className=" rounded-2xl border-vj-border">
             <CardHeader className="border-b border-vj-border">
               <CardTitle className="flex items-center gap-2 text-base"><Globe className="h-5 w-5 text-vj-green" /> Documentos de Viagem</CardTitle>
               <CardDescription>Necessário para voos internacionais e vistos.</CardDescription>
@@ -223,7 +223,7 @@ export default function PublicTravelerForm() {
 
         {/* Step 3: Contato e Emergência */}
         {step === 3 && (
-          <Card className="shadow-lg rounded-2xl border-vj-border">
+          <Card className=" rounded-2xl border-vj-border">
             <CardHeader className="border-b border-vj-border">
               <CardTitle className="flex items-center gap-2 text-base"><Phone className="h-5 w-5 text-vj-green" /> Contato e Emergência</CardTitle>
               <CardDescription>Obrigatório para comunicação durante a viagem.</CardDescription>
@@ -258,7 +258,7 @@ export default function PublicTravelerForm() {
 
         {/* Step 4: Preferências */}
         {step === 4 && (
-          <Card className="shadow-lg rounded-2xl border-vj-border">
+          <Card className=" rounded-2xl border-vj-border">
             <CardHeader className="border-b border-vj-border">
               <CardTitle className="flex items-center gap-2 text-base"><Plane className="h-5 w-5 text-vj-green" /> Preferências de Bordo</CardTitle>
               <CardDescription>Personalize sua experiência durante o voo.</CardDescription>

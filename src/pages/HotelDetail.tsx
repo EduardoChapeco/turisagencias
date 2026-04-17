@@ -229,7 +229,7 @@ export default function HotelDetail() {
             <h2 className="text-2xl font-bold mb-6 text-vj-txt flex items-center gap-3">
               <Video className="h-6 w-6 text-vj-green" /> Apresentação em Vídeo
             </h2>
-            <div className="aspect-video rounded-3xl overflow-hidden shadow-2xl border border-vj-border">
+            <div className="aspect-video rounded-3xl overflow-hidden  border border-vj-border">
               <iframe 
                 src={(hotel as any).video_url.replace('watch?v=', 'embed/')} 
                 className="w-full h-full" 

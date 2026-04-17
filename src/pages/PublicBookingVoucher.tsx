@@ -104,7 +104,7 @@ export default function PublicBookingVoucher() {
           )}
 
           {/* ── VOUCHER CARD ──────────────────────────────────────────── */}
-          <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-zinc-100 print-page">
+          <div className="bg-white rounded-2xl  overflow-hidden border border-zinc-100 print-page">
             {/* Hero image */}
             {trip?.cover_image_url && (
               <div className="h-36 overflow-hidden relative">
@@ -193,7 +193,7 @@ export default function PublicBookingVoucher() {
           </div>
 
           {/* ── CARNÊ DE PAGAMENTO ────────────────────────────────────── */}
-          <div className="bg-white rounded-2xl shadow-sm border border-zinc-100 overflow-hidden print-page">
+          <div className="bg-white rounded-2xl  border border-zinc-100 overflow-hidden print-page">
             {/* Header */}
             <div className="px-6 py-4 border-b border-zinc-100 flex items-center justify-between bg-gradient-to-r from-zinc-50 to-white">
               <div>

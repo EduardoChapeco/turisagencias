@@ -481,7 +481,7 @@ export default function TravelerPortal() {
         )}
 
         {/* 💳 Card do viajante */}
-        <div className="rounded-2xl bg-white border border-zinc-100 shadow-sm p-5 space-y-3">
+        <div className="rounded-2xl bg-white border border-zinc-100  p-5 space-y-3">
           <div className="flex items-center justify-between">
             <div>
               <p className="font-black text-lg text-zinc-900">{booking.lead_name}</p>
@@ -513,7 +513,7 @@ export default function TravelerPortal() {
         </div>
 
         {/* 💰 Carnê de Parcelas */}
-        <div className="rounded-2xl bg-white border border-zinc-100 shadow-sm overflow-hidden">
+        <div className="rounded-2xl bg-white border border-zinc-100  overflow-hidden">
           {/* Header */}
           <div className="px-5 py-4 border-b border-zinc-50 flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -635,7 +635,7 @@ export default function TravelerPortal() {
 
         {/* 💬 Mensagens */}
         {messages.length > 0 && (
-          <div className="rounded-2xl bg-white border border-zinc-100 shadow-sm overflow-hidden">
+          <div className="rounded-2xl bg-white border border-zinc-100  overflow-hidden">
             <div className="px-5 py-3 border-b border-zinc-50 flex items-center gap-2">
               <MessageSquare size={15} className="text-zinc-400" />
               <h2 className="font-bold text-zinc-800">Mensagens</h2>

@@ -219,7 +219,7 @@ export function HotelEdit({ id, open, onClose, onSuccess }: HotelEditProps) {
                       <div key={section.id} className="relative p-5 rounded-2xl border border-vj-green/10 bg-vj-bg/50 group">
                         <button 
                           onClick={() => removeSection(section.id)}
-                          className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                          className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity "
                         >
                           <X className="h-3 w-3" />
                         </button>
@@ -233,7 +233,7 @@ export function HotelEdit({ id, open, onClose, onSuccess }: HotelEditProps) {
                               value={section.title} 
                               onChange={(e) => updateSection(section.id, { title: e.target.value })}
                               placeholder="Título da Seção"
-                              className="border-none bg-transparent font-bold text-vj-txt focus:ring-0 p-0 shadow-none h-auto text-base"
+                              className="border-none bg-transparent font-bold text-vj-txt focus:ring-0 p-0  h-auto text-base"
                             />
                           </div>
 

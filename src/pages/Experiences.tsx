@@ -187,7 +187,7 @@ export default function Experiences() {
               return (
                 <div
                   key={exp.id}
-                  className="group relative rounded-[var(--r)] border border-vj-border bg-vj-white overflow-hidden hover:border-vj-txt3 hover:shadow-sm transition-all"
+                  className="group relative rounded-[var(--r)] border border-vj-border bg-vj-white overflow-hidden hover:border-vj-txt3 hover: transition-all"
                 >
                   {/* Header colorido */}
                   <div className={`px-4 py-3 flex items-center gap-3 border-b border-vj-border`}>

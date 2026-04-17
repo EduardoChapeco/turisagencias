@@ -196,7 +196,7 @@ export default function GuideDetail() {
             <h2 className="text-2xl font-bold mb-6 text-vj-txt flex items-center gap-3">
               <Video className="h-6 w-6 text-vj-green" /> Documentário/Vídeo do Destino
             </h2>
-            <div className="aspect-video rounded-3xl overflow-hidden shadow-2xl border border-vj-border">
+            <div className="aspect-video rounded-3xl overflow-hidden  border border-vj-border">
               <iframe 
                 src={(guide as any).video_url.replace('watch?v=', 'embed/')} 
                 className="w-full h-full" 

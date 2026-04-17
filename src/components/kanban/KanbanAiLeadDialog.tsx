@@ -74,11 +74,11 @@ export function KanbanAiLeadDialog({ boardId, defaultColumnId }: { boardId?: str
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm" className="premium-button bg-violet-600 hover:bg-violet-700 text-white shadow-xl shadow-violet-900/20">
+        <Button size="sm" className="premium-button bg-violet-600 hover:bg-violet-700 text-white  ">
           <Sparkles className="w-4 h-4 mr-2 text-violet-200" /> Lead Rápida IA
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px] rounded-[2rem] p-6 border-violet-100/50 bg-white shadow-2xl backdrop-blur-xl">
+      <DialogContent className="sm:max-w-[425px] rounded-[2rem] p-6 border-violet-100/50 bg-white  backdrop-blur-xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-violet-800 font-heading">
             <Bot className="w-5 h-5 text-violet-500" /> Assistente de Leads (Agente 0)
@@ -96,7 +96,7 @@ export function KanbanAiLeadDialog({ boardId, defaultColumnId }: { boardId?: str
             className="min-h-[150px] resize-none bg-zinc-50 border-violet-100 focus-visible:ring-violet-500 text-sm"
           />
           <Button 
-            className="w-full premium-button bg-gradient-to-r from-violet-600 to-indigo-600 border-none shadow-xl shadow-indigo-900/20"
+            className="w-full premium-button bg-gradient-to-r from-violet-600 to-indigo-600 border-none  "
             disabled={!text.trim() || isExtracting || !boardId || !defaultColumnId}
             onClick={handleExtract}
           >

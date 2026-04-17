@@ -156,7 +156,7 @@ export function ItineraryMap({ stops, activeStopId, interactive = true }: Itiner
 
       if (interactive) {
         marker.bindPopup(popupContent, {
-          className: 'custom-popup rounded-xl shadow-lg border-0',
+          className: 'custom-popup rounded-xl  border-0',
           closeButton: false
         });
       }

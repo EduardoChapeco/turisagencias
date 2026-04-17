@@ -188,7 +188,7 @@ export function AppSidebar() {
         </div>
         {/* Notification Dropdown */}
         {showNotif && (
-          <div className="absolute bottom-14 left-2 right-2 z-50 bg-white rounded-xl border border-vj-border shadow-xl max-h-72 overflow-y-auto">
+          <div className="absolute bottom-14 left-2 right-2 z-50 bg-white rounded-xl border border-vj-border  max-h-72 overflow-y-auto">
             <div className="px-4 py-3 border-b border-vj-border flex items-center justify-between">
               <p className="text-xs font-bold uppercase tracking-wide text-vj-txt3">Notificações</p>
               {unreadCount > 0 && (

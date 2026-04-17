@@ -46,7 +46,7 @@ export default function Guides() {
                 placeholder="Buscar por cidade ou país..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9 bg-background shadow-sm rounded-xl"
+                className="pl-9 bg-background  rounded-xl"
               />
             </div>
             <div className="text-sm font-medium text-muted-foreground">
@@ -79,7 +79,7 @@ export default function Guides() {
                 {filteredGuides?.map((guide) => (
                   <Card 
                      key={guide.id} 
-                     className="group overflow-hidden rounded-2xl border-vj-border hover:shadow-lg hover:border-vj-green/20 transition-all cursor-pointer flex flex-col"
+                     className="group overflow-hidden rounded-2xl border-vj-border hover: hover:border-vj-green/20 transition-all cursor-pointer flex flex-col"
                      onClick={() => navigate(`/guides/${guide.id}`)}
                   >
                      <div className="h-40 bg-muted relative overflow-hidden">
@@ -92,7 +92,7 @@ export default function Guides() {
                            </div>
                         )}
                         <div className="absolute top-3 right-3 flex gap-2">
-                           <Badge variant={guide.is_published ? "default" : "secondary"} className="shadow-md">
+                           <Badge variant={guide.is_published ? "default" : "secondary"} className="">
                               {guide.is_published ? 'Publicado' : 'Rascunho'}
                            </Badge>
                         </div>

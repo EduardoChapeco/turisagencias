@@ -74,7 +74,7 @@ export default function Trips() {
             ))}
           </div>
         ) : !filtered.length ? (
-          <div className="rounded-[40px] border border-vj-border bg-white p-16 flex flex-col items-center text-center shadow-xl shadow-zinc-100/50">
+          <div className="rounded-[40px] border border-vj-border bg-white p-16 flex flex-col items-center text-center  ">
             <Plane className="h-12 w-12 text-vj-green/40 mb-4" />
             <p className="text-xl font-heading font-black text-vj-txt mb-2">
               {search ? 'Nenhuma viagem encontrada' : 'Nenhuma viagem cadastrada'}
@@ -85,7 +85,7 @@ export default function Trips() {
                 : 'Crie a primeira viagem para organizar voos, documentos e interações com os viajantes do seu portal.'}
             </p>
             {!search && (
-              <Button onClick={() => navigate('/trips/new')} className="premium-button shadow-xl shadow-green-900/10">Criar Primeira Viagem</Button>
+              <Button onClick={() => navigate('/trips/new')} className="premium-button  ">Criar Primeira Viagem</Button>
             )}
           </div>
         ) : (
@@ -105,7 +105,7 @@ export default function Trips() {
                   
                   {/* Card Header */}
                   <div className="flex items-start justify-between gap-3 mb-4 relative z-10">
-                    <div className="h-12 w-12 rounded-[16px] bg-gradient-to-br from-vj-green/20 to-vj-green/5 flex items-center justify-center shrink-0 border border-vj-green/20 shadow-inner group-hover:scale-110 transition-transform duration-500">
+                    <div className="h-12 w-12 rounded-[16px] bg-gradient-to-br from-vj-green/20 to-vj-green/5 flex items-center justify-center shrink-0 border border-vj-green/20  group-hover:scale-110 transition-transform duration-500">
                       <Plane className="h-6 w-6 text-vj-green" />
                     </div>
                     <StatusBadge variant={s.variant} size="sm">{s.label}</StatusBadge>

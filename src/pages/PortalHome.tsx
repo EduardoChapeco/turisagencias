@@ -61,7 +61,7 @@ export default function PortalHome() {
             ))}
           </div>
         ) : !trips?.length ? (
-          <Card className="border-vj-border rounded-[2rem] bg-white/60 dark:bg-zinc-900/60 backdrop-blur-xl shadow-lg">
+          <Card className="border-vj-border rounded-[2rem] bg-white/60 dark:bg-zinc-900/60 backdrop-blur-xl ">
             <CardContent className="py-20 flex flex-col items-center text-center">
               <div className="h-16 w-16 bg-muted/60 rounded-full flex items-center justify-center mb-4 border border-vj-border">
                 <Plane className="h-8 w-8 text-muted-foreground" />
@@ -78,13 +78,13 @@ export default function PortalHome() {
               <Card
                 key={trip.id}
                 onClick={() => navigate(`/portal/${org_slug}/trip/${trip.id}`)}
-                className="group cursor-pointer border-vj-border rounded-[2rem] bg-white/70 dark:bg-zinc-900/70 backdrop-blur-xl shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden"
+                className="group cursor-pointer border-vj-border rounded-[2rem] bg-white/70 dark:bg-zinc-900/70 backdrop-blur-xl  hover: hover:-translate-y-1 transition-all duration-300 overflow-hidden"
               >
                 <div className="absolute top-0 right-0 w-32 h-32 bg-vj-green/5 dark:bg-vj-green/10 rounded-full blur-[40px] -mr-10 -mt-10 group-hover:scale-150 transition-transform duration-500" />
                 <CardHeader className="pb-3 border-b border-vj-border/50 relative z-10">
                   <CardTitle className="flex items-start justify-between gap-3 text-lg">
                     <span className="font-heading font-bold text-foreground leading-tight group-hover:text-vj-green transition-colors">{trip.title}</span>
-                    <Badge variant="outline" className="bg-background shrink-0 shadow-sm border-vj-border font-medium">{trip.status}</Badge>
+                    <Badge variant="outline" className="bg-background shrink-0  border-vj-border font-medium">{trip.status}</Badge>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="pt-4 space-y-3 relative z-10">

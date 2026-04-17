@@ -194,8 +194,8 @@ function ColumnRow({ col, onDelete }: { col: any; onDelete: (id: string) => void
   };
 
   return (
-    <div className="flex items-center gap-3 p-3 rounded-2xl border border-zinc-100 bg-white group hover:shadow-md transition-shadow">
-      <div className="h-4 w-4 rounded-full border-2 border-white shadow-sm shrink-0" style={{ backgroundColor: color }} />
+    <div className="flex items-center gap-3 p-3 rounded-2xl border border-zinc-100 bg-white group hover: transition-shadow">
+      <div className="h-4 w-4 rounded-full border-2 border-white  shrink-0" style={{ backgroundColor: color }} />
       {editing ? (
         <div className="flex items-center gap-2 flex-1">
           <Input value={name} onChange={e => setName(e.target.value)} className="h-8 rounded-lg text-xs" autoFocus />
@@ -239,7 +239,7 @@ function KanbanTab() {
         {(['sales', 'departures', 'tasks'] as const).map(b => (
           <button key={b} onClick={() => setBoardSlug(b)} className={cn(
             "w-full p-5 rounded-[32px] text-left border transition-all duration-300",
-            boardSlug === b ? "bg-vj-txt text-white shadow-xl shadow-zinc-950/20" : "bg-white border-zinc-100 hover:bg-zinc-50"
+            boardSlug === b ? "bg-vj-txt text-white  " : "bg-white border-zinc-100 hover:bg-zinc-50"
           )}>
             <p className="text-[10px] uppercase font-bold tracking-widest opacity-60 mb-1">Board</p>
             <p className="text-base font-bold">{b === 'sales' ? 'Vendas (CRM)' : b === 'departures' ? 'Embarques' : 'Tarefas do Dia'}</p>
@@ -298,7 +298,7 @@ function AiLogsTab() {
         ) : (
           <div className="space-y-2">
             {logs.map((log: any) => (
-              <div key={log.id} className="p-4 rounded-2xl bg-zinc-50 border border-zinc-100 hover:bg-white hover:shadow-sm transition-all">
+              <div key={log.id} className="p-4 rounded-2xl bg-zinc-50 border border-zinc-100 hover:bg-white hover: transition-all">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-2 flex-wrap flex-1">
                     <span className={`text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border ${AGENT_COLORS[log.agent_name] ?? 'bg-zinc-50 text-zinc-500 border-zinc-200'}`}>
@@ -657,7 +657,7 @@ export default function Settings() {
               <TabsTrigger 
                 key={t.id} 
                 value={t.id} 
-                className="px-8 py-3 rounded-[24px] text-xs font-bold uppercase tracking-widest transition-all data-[state=active]:bg-vj-txt data-[state=active]:text-white data-[state=active]:shadow-xl"
+                className="px-8 py-3 rounded-[24px] text-xs font-bold uppercase tracking-widest transition-all data-[state=active]:bg-vj-txt data-[state=active]:text-white data-[state=active]:"
               >
                 <t.icon className="w-3.5 h-3.5 mr-2" /> {t.label}
               </TabsTrigger>

@@ -19,7 +19,7 @@ export function ItinerarySplitView({ stops, isEditable = false, onStopClick, cla
   };
 
   return (
-    <div className={`w-full h-full flex flex-col md:flex-row border rounded-2xl overflow-hidden shadow-sm bg-background ${className || ''}`}>
+    <div className={`w-full h-full flex flex-col md:flex-row border rounded-2xl overflow-hidden  bg-background ${className || ''}`}>
       {/* Mobile Handle / CSS Grid fallback. We use shadcn Resizable for Desktop */}
       <div className="hidden md:block w-full h-full">
          <ResizablePanelGroup direction="horizontal">
@@ -34,7 +34,7 @@ export function ItinerarySplitView({ stops, isEditable = false, onStopClick, cla
              />
            </ResizablePanel>
            
-           <ResizableHandle withHandle className="bg-border z-10 shadow-sm" />
+           <ResizableHandle withHandle className="bg-border z-10 " />
            
            <ResizablePanel
              defaultSize={50}
@@ -59,11 +59,11 @@ export function ItinerarySplitView({ stops, isEditable = false, onStopClick, cla
                activeStopId={activeStopId}
                interactive={false} // Disable interaction on small maps so user can scroll page 
              />
-             <div className="absolute top-2 left-2 bg-background/80 backdrop-blur text-[10px] px-2 py-1 rounded-md font-medium text-muted-foreground z-[1000] shadow-sm pointer-events-none border">
+             <div className="absolute top-2 left-2 bg-background/80 backdrop-blur text-[10px] px-2 py-1 rounded-md font-medium text-muted-foreground z-[1000]  pointer-events-none border">
                 Mapa Interativo
              </div>
          </div>
-         <div className="h-[60vh] w-full bg-background relative z-10 border-t shadow-[-0_10px_15px_-3px_rgba(0,0,0,0.1)]">
+         <div className="h-[60vh] w-full bg-background relative z-10 border-t _10px_15px_-3px_rgba(0,0,0,0.1)]">
              <ItineraryTimeline 
                stops={stops} 
                activeStopId={activeStopId} 

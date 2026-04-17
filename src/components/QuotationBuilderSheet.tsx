@@ -397,7 +397,7 @@ export function QuotationBuilderSheet({ open, onClose, clientId }: QuotationBuil
                   <div key={day.id} className="relative p-5 rounded-2xl border border-vj-green/10 bg-vj-bg/50 group space-y-3">
                     <button
                       onClick={() => removeDay(day.id)}
-                      className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow"
+                      className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity "
                     >
                       <X className="h-3 w-3" />
                     </button>
@@ -410,7 +410,7 @@ export function QuotationBuilderSheet({ open, onClose, clientId }: QuotationBuil
                         value={day.title}
                         onChange={(e) => updateDay(day.id, { title: e.target.value })}
                         placeholder="Título do dia"
-                        className="border-none bg-transparent font-bold text-vj-txt focus:ring-0 shadow-none"
+                        className="border-none bg-transparent font-bold text-vj-txt focus:ring-0 "
                       />
                     </div>
 
@@ -480,7 +480,7 @@ export function QuotationBuilderSheet({ open, onClose, clientId }: QuotationBuil
               <div className="space-y-4">
                 {transports.map((t) => (
                   <div key={t.id} className="relative p-5 rounded-2xl border border-vj-green/10 bg-vj-bg/50 group space-y-3">
-                    <button onClick={() => removeTransport(t.id)} className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow">
+                    <button onClick={() => removeTransport(t.id)} className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity ">
                       <X className="h-3 w-3" />
                     </button>
 
@@ -551,7 +551,7 @@ export function QuotationBuilderSheet({ open, onClose, clientId }: QuotationBuil
               <div className="space-y-4">
                 {excursions.map((exc) => (
                   <div key={exc.id} className="relative p-5 rounded-2xl border border-vj-green/10 bg-vj-bg/50 group space-y-3">
-                    <button onClick={() => removeExcursion(exc.id)} className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow">
+                    <button onClick={() => removeExcursion(exc.id)} className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity ">
                       <X className="h-3 w-3" />
                     </button>
 

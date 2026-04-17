@@ -97,7 +97,7 @@ export default function ClientNew() {
         <form onSubmit={handleSubmit} className="space-y-6">
           
           {/* Dados Pessoais */}
-          <Card className="border-vj-border shadow-sm">
+          <Card className="border-vj-border ">
             <CardHeader className="bg-vj-bg border-b border-vj-border">
               <CardTitle>Identidade do Cliente</CardTitle>
               <CardDescription>Dados obrigatórios para o cadastro no CRM e emissão de bilhetes.</CardDescription>
@@ -127,7 +127,7 @@ export default function ClientNew() {
           </Card>
 
           {/* Passaporte */}
-          <Card className="border-vj-border shadow-sm">
+          <Card className="border-vj-border ">
             <CardHeader className="bg-vj-bg border-b border-vj-border">
               <CardTitle className="flex items-center gap-2"><Globe className="h-5 w-5 text-accent" /> Documentos de Viagem</CardTitle>
               <CardDescription>Passaporte e documentos para emissão de voos internacionais.</CardDescription>
@@ -145,7 +145,7 @@ export default function ClientNew() {
           </Card>
 
           {/* Tags */}
-          <Card className="border-vj-border shadow-sm">
+          <Card className="border-vj-border ">
             <CardHeader className="bg-vj-bg border-b border-vj-border">
               <CardTitle className="flex items-center gap-2"><Tag className="h-5 w-5 text-accent" /> Tags de Segmentação</CardTitle>
               <CardDescription>Categorize o cliente para filtros automáticos e campanhas de marketing.</CardDescription>
@@ -177,7 +177,7 @@ export default function ClientNew() {
           </Card>
 
           {/* Preferências de Viagem */}
-          <Card className="border-vj-border shadow-sm">
+          <Card className="border-vj-border ">
             <CardHeader className="bg-vj-bg border-b border-vj-border">
               <CardTitle>Perfil de Preferências de Viagem</CardTitle>
               <CardDescription>Alimenta o V-Agent com contexto para recomendações personalizadas.</CardDescription>
@@ -215,7 +215,7 @@ export default function ClientNew() {
           </Card>
 
           {/* Endereço */}
-          <Card className="border-vj-border shadow-sm">
+          <Card className="border-vj-border ">
             <CardHeader className="bg-vj-bg border-b border-vj-border">
               <CardTitle>Endereço</CardTitle>
             </CardHeader>
@@ -240,7 +240,7 @@ export default function ClientNew() {
           </Card>
 
           {/* Origem e Notas */}
-          <Card className="border-vj-border shadow-sm">
+          <Card className="border-vj-border ">
             <CardHeader className="bg-vj-bg border-b border-vj-border">
               <CardTitle>Origem e Observações</CardTitle>
             </CardHeader>
@@ -262,7 +262,7 @@ export default function ClientNew() {
           </Card>
 
           {/* Portal Access */}
-          <Card className="border-vj-border shadow-sm">
+          <Card className="border-vj-border ">
             <CardHeader className="bg-vj-bg border-b border-vj-border">
               <CardTitle className="flex items-center gap-2"><Shield className="h-5 w-5 text-vj-green" /> Acesso ao Portal do Cliente</CardTitle>
               <CardDescription>Se ativo, o cliente poderá acessar o Portal personalizado da agência via Magic Link.</CardDescription>

@@ -68,7 +68,7 @@ export default function TravelerInfo() {
                 placeholder="Buscar informação..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9 bg-vj-bg border-vj-border shadow-sm rounded-xl"
+                className="pl-9 bg-vj-bg border-vj-border  rounded-xl"
               />
             </div>
             <div className="text-sm font-medium text-vj-txt3">
@@ -101,7 +101,7 @@ export default function TravelerInfo() {
                 {filteredPages?.map((page) => (
                   <Card 
                      key={page.id} 
-                     className="group overflow-hidden rounded-cb-lg border-vj-border/60 hover:shadow-lg hover:border-vj-green/50 transition-all flex flex-col bg-white"
+                     className="group overflow-hidden rounded-cb-lg border-vj-border/60 hover: hover:border-vj-green/50 transition-all flex flex-col bg-white"
                   >
                      <div className="h-32 bg-vj-bg relative overflow-hidden">
                         {page.cover_image_url ? (
@@ -112,7 +112,7 @@ export default function TravelerInfo() {
                            </div>
                         )}
                         <div className="absolute top-3 left-3 flex gap-2">
-                           <StatusBadge variant={page.is_published ? "success" : "neutral"} className="shadow-md">
+                           <StatusBadge variant={page.is_published ? "success" : "neutral"} className="">
                               {page.is_published ? 'Público' : 'Rascunho'}
                            </StatusBadge>
                         </div>

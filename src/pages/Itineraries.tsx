@@ -76,7 +76,7 @@ export default function Itineraries() {
             ))}
           </div>
         ) : !itineraries?.length ? (
-          <div className="flex flex-col items-center justify-center p-12 lg:p-24 bg-vj-surface border border-vj-border rounded-3xl text-center shadow-sm">
+          <div className="flex flex-col items-center justify-center p-12 lg:p-24 bg-vj-surface border border-vj-border rounded-3xl text-center ">
             <div className="w-20 h-20 bg-vj-green/10 rounded-full flex items-center justify-center mb-6">
               <Map className="h-10 w-10 text-vj-green" />
             </div>
@@ -93,7 +93,7 @@ export default function Itineraries() {
             {itineraries.map((itinerary) => (
               <Card
                 key={itinerary.id}
-                className="group overflow-hidden rounded-2xl cursor-pointer hover:shadow-md transition-shadow border-vj-border hover:border-vj-green/30 bg-vj-surface"
+                className="group overflow-hidden rounded-2xl cursor-pointer hover: transition-shadow border-vj-border hover:border-vj-green/30 bg-vj-surface"
                 onClick={() => navigate(`/itineraries/${itinerary.id}/builder`)}
               >
                 <div className="h-32 bg-vj-bg relative overflow-hidden">

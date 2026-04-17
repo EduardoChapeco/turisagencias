@@ -14,7 +14,7 @@ export default function PublicChecklist() {
   return (
     <PublicLayout orgName="Seu Checklist">
       <div className="mx-auto max-w-2xl py-4">
-        <Card className="border-vj-border bg-white shadow-sm">
+        <Card className="border-vj-border bg-white ">
           <CardHeader className="text-center pb-4">
             <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-cb-full bg-vj-green/10 text-vj-green mb-4">
               <CheckSquare2 className="h-6 w-6" />
@@ -31,7 +31,7 @@ export default function PublicChecklist() {
               </div>
             ) : (
               data.map((item) => (
-                <label key={item.item_id} className={`flex items-start gap-4 rounded-cb-md border p-4 cursor-pointer transition-colors ${item.is_checked ? 'bg-vj-bg border-vj-border/50' : 'bg-white border-vj-border hover:border-vj-green hover:shadow-sm'}`}>
+                <label key={item.item_id} className={`flex items-start gap-4 rounded-cb-md border p-4 cursor-pointer transition-colors ${item.is_checked ? 'bg-vj-bg border-vj-border/50' : 'bg-white border-vj-border hover:border-vj-green hover:'}`}>
                   <Checkbox
                     checked={item.is_checked}
                     className="mt-1"

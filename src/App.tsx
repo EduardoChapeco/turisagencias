@@ -70,6 +70,7 @@ const PublicTravelerInfo = lazy(() => import('./pages/PublicTravelerInfo'));
 
 const GroupTrips = lazy(() => import('./pages/GroupTrips'));
 const PublicGroupTrip = lazy(() => import('./pages/PublicGroupTrip'));
+const PublicBookingVoucher = lazy(() => import('./pages/PublicBookingVoucher'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -134,6 +135,7 @@ const App = () => (
               <Route path="/p/guide/:slug" element={<PublicGuide />} />
               <Route path="/p/info/:slug" element={<PublicTravelerInfo />} />
               <Route path="/g/:slug" element={<PublicGroupTrip />} />
+              <Route path="/voucher/:token" element={<PublicBookingVoucher />} />
               <Route path="/portal/:org_slug" element={<PortalLogin />} />
               <Route path="/portal/:org_slug/home" element={<ProtectedRoute><PortalHome /></ProtectedRoute>} />
               <Route path="/portal/:org_slug/trip/:id" element={<ProtectedRoute><PortalTripDetail /></ProtectedRoute>} />

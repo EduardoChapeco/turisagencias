@@ -2703,6 +2703,7 @@ export type Database = {
           max_pax: number
           num_days: number
           num_nights: number
+          org_id: string
           org_logo: string
           org_name: string
           org_primary_color: string

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Users, MapPin, Calendar, ExternalLink, Trash2, Eye } from 'lucide-react';
+import { Plus, Users, MapPin, Calendar, ExternalLink, Trash2, Eye, Image as ImageIcon } from 'lucide-react';
 import { AppLayout } from '@/components/AppLayout';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Button } from '@/components/ui/button';
@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { SheetPage } from '@/components/ui/SheetPage';
 import { Textarea } from '@/components/ui/textarea';
+import { GroupTripDaysEditor } from '@/components/group-trips/GroupTripDaysEditor';
 
 export default function GroupTrips() {
   const navigate = useNavigate();
@@ -181,6 +182,7 @@ export default function GroupTrips() {
           { id: 'basic', label: 'Básico', icon: MapPin },
           { id: 'details', label: 'Detalhes', icon: Calendar },
           { id: 'commercial', label: 'Comercial', icon: Users },
+          ...(editing && editing !== 'new' ? [{ id: 'days', label: 'Dia a dia', icon: ImageIcon }] : []),
         ]}
         footer={
           <>
@@ -266,6 +268,9 @@ export default function GroupTrips() {
                   </p>
                 </div>
               </div>
+            )}
+            {section === 'days' && editing && editing !== 'new' && (
+              <GroupTripDaysEditor tripId={editing} />
             )}
           </>
         )}

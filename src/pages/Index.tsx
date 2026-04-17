@@ -47,48 +47,17 @@ function useDashboardStats(orgId: string | undefined) {
     queryKey: ['dashboard-stats', orgId],
     queryFn: async () => {
       if (!orgId) return null;
-      const today = new Date().toISOString().split('T')[0];
-      const firstOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
-      const firstOfLastMonth = new Date(new Date().getFullYear(), new Date().getMonth() - 1, 1).toISOString();
-      const firstOfThisMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
-
-      const [tripsRes, quotationsRes, ticketsRes, clientsRes, departuresTodayRes, transRes, transLastMonthRes, quotAllRes] = await Promise.all([
-        supabase.from('trips').select('id, status', { count: 'exact' }).eq('org_id', orgId).neq('status', 'cancelled'),
-        supabase.from('quotations').select('id, status', { count: 'exact' }).eq('org_id', orgId).in('status', ['draft', 'sent']),
-        supabase.from('tickets').select('id, priority', { count: 'exact' }).eq('org_id', orgId).eq('status', 'open'),
-        supabase.from('clients').select('id', { count: 'exact' }).eq('org_id', orgId),
-        supabase.from('trips').select('id', { count: 'exact' }).eq('org_id', orgId).eq('departure_date', today),
-        supabase.from('financial_transactions').select('amount, type, status').eq('org_id', orgId).neq('status', 'canceled').gte('created_at', firstOfThisMonth),
-        supabase.from('financial_transactions').select('amount, type, status').eq('org_id', orgId).neq('status', 'canceled').gte('created_at', firstOfLastMonth).lt('created_at', firstOfThisMonth),
-        supabase.from('quotations').select('id, status').eq('org_id', orgId),
-      ]);
-
-      const transactions = transRes.data || [];
-      const lastMonthTx = transLastMonthRes.data || [];
-      const totalReceivable = transactions.filter(t => t.type === 'receivable' || t.type === 'income').reduce((acc, t) => acc + Number(t.amount), 0);
-      const totalPayable = transactions.filter(t => t.type === 'payable' || t.type === 'expense').reduce((acc, t) => acc + Number(t.amount), 0);
-      const operationalProfit = totalReceivable - totalPayable;
-      const lastMonthProfit = lastMonthTx.filter(t => t.type === 'receivable' || t.type === 'income').reduce((acc, t) => acc + Number(t.amount), 0)
-        - lastMonthTx.filter(t => t.type === 'payable' || t.type === 'expense').reduce((acc, t) => acc + Number(t.amount), 0);
-      const profitDelta = lastMonthProfit > 0 ? ((operationalProfit - lastMonthProfit) / lastMonthProfit) * 100 : null;
-
-      const allQuotations = quotAllRes.data || [];
-      const acceptedCount = allQuotations.filter((q: any) => q.status === 'accepted').length;
-      const totalCount = allQuotations.length;
-      const conversionRate = totalCount > 0 ? Math.round((acceptedCount / totalCount) * 100) : 0;
-      const draftCount = allQuotations.filter((q: any) => q.status === 'draft').length;
-      const sentCount = allQuotations.filter((q: any) => q.status === 'sent').length;
+      const { data, error } = await supabase.rpc('get_dashboard_stats', { p_org_id: orgId });
+      if (error) throw error;
+      
+      const stats = data as any;
+      const profitDelta = stats.lastMonthFinances?.profit > 0 
+        ? ((stats.finances.profit - stats.lastMonthFinances.profit) / stats.lastMonthFinances.profit) * 100 
+        : null;
 
       return {
-        activeTrips: tripsRes.count || 0,
-        pendingQuotations: quotationsRes.count || 0,
-        openTickets: ticketsRes.count || 0,
-        totalClients: clientsRes.count || 0,
-        departuresToday: departuresTodayRes.count || 0,
-        urgentTickets: (ticketsRes.data || []).filter((t: any) => t.priority === 'urgent').length,
-        finances: { receivable: totalReceivable, payable: totalPayable, profit: operationalProfit },
-        profitDelta,
-        quotations: { total: totalCount, accepted: acceptedCount, draft: draftCount, sent: sentCount, conversionRate },
+        ...stats,
+        profitDelta
       };
     },
     enabled: !!orgId,

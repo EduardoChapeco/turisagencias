@@ -6,6 +6,7 @@ import { QuotationBuilderSheet } from '@/components/QuotationBuilderSheet';
 import { useClient, useUpdateClient } from '@/hooks/useClients';
 import { useTravelers, useCreateTraveler, useDeleteTraveler } from '@/hooks/useTravelers';
 import { supabase } from '@/integrations/supabase/client';
+import { StorageService } from '@/services/storage.service';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -120,10 +121,9 @@ export default function ClientDetail() {
                try {
                  const ext = file.name.split('.').pop();
                  const path = `covers/${client.id}.${ext}`;
-                 const { error: upErr } = await supabase.storage.from('client-media').upload(path, file, { upsert: true });
-                 if (upErr) throw upErr;
-                 const { data: urlData } = supabase.storage.from('client-media').getPublicUrl(path);
-                 await updateClient.mutateAsync({ id: client.id, cover_url: urlData.publicUrl } as any);
+                 await StorageService.uploadFile('client-media', path, file);
+                 const publicUrl = StorageService.getPublicUrl('client-media', path);
+                 await updateClient.mutateAsync({ id: client.id, cover_url: publicUrl } as any);
                  toast({ title: 'Capa atualizada!' });
                } catch (err: any) {
                  toast({ title: 'Erro ao enviar capa', description: err.message, variant: 'destructive' });
@@ -162,10 +162,9 @@ export default function ClientDetail() {
                          try {
                            const ext = file.name.split('.').pop();
                            const path = `photos/${client.id}.${ext}`;
-                           const { error: upErr } = await supabase.storage.from('client-media').upload(path, file, { upsert: true });
-                           if (upErr) throw upErr;
-                           const { data: urlData } = supabase.storage.from('client-media').getPublicUrl(path);
-                           await updateClient.mutateAsync({ id: client.id, photo_url: urlData.publicUrl });
+                           await StorageService.uploadFile('client-media', path, file);
+                           const publicUrl = StorageService.getPublicUrl('client-media', path);
+                           await updateClient.mutateAsync({ id: client.id, photo_url: publicUrl });
                            toast({ title: 'Foto atualizada!' });
                          } catch (err: any) {
                            toast({ title: 'Erro ao enviar foto', description: err.message, variant: 'destructive' });

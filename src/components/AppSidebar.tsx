@@ -56,6 +56,7 @@ const navGroups: NavGroup[] = [
       { title: 'Gestão da Equipe', url: '/team',              icon: Users },
       { title: 'Tarefas do Dia', url: '/kanban/tasks',      icon: KanbanSquare },
       { title: 'Viagens',        url: '/trips',             icon: Plane },
+      { title: 'Grupos Terrestres', url: '/group-trips',    icon: UserPlus },
       { title: 'Roteiros',       url: '/itineraries',       icon: Map },
       { title: 'Embarques',      url: '/kanban/departures', icon: Anchor },
       { title: 'Chamados',       url: '/tickets',           icon: LifeBuoy },

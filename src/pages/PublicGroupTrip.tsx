@@ -1,12 +1,16 @@
+import { useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Calendar, MapPin, Users, CheckCircle2, XCircle, MessageCircle, Loader2 } from 'lucide-react';
+import { Calendar, MapPin, Users, CheckCircle2, XCircle, MessageCircle, Loader2, Ticket } from 'lucide-react';
 import { usePublicGroupTrip } from '@/hooks/useGroupTrips';
 import { Button } from '@/components/ui/button';
 import { LazyImage } from '@/components/ui/LazyImage';
+import { PublicBookingForm } from '@/components/group-trips/PublicBookingForm';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 export default function PublicGroupTrip() {
   const { slug } = useParams<{ slug: string }>();
   const { data, isLoading } = usePublicGroupTrip(slug);
+  const [bookingOpen, setBookingOpen] = useState(false);
 
   if (isLoading) {
     return (
@@ -29,7 +33,8 @@ export default function PublicGroupTrip() {
   const formatPrice = (v: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: trip.currency || 'BRL' }).format(v);
   const installmentValue = trip.installments_count > 1 ? trip.price_per_pax / trip.installments_count : 0;
 
-  const handleReserve = () => {
+  const handleReserve = () => setBookingOpen(true);
+  const handleWhatsapp = () => {
     if (trip.org_whatsapp) {
       const msg = encodeURIComponent(`Olá! Tenho interesse no pacote "${trip.title}". Pode me passar mais detalhes?`);
       window.open(`https://wa.me/${trip.org_whatsapp.replace(/\D/g, '')}?text=${msg}`, '_blank');

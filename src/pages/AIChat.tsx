@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { AppLayout } from '@/components/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import {
   Bot, User, Send, Sparkles, Plus, MessageSquare,
   Archive, ChevronRight, Loader2, Brain, Zap, Clock,
-  MessageCircle, Trash2
+  MessageCircle, Trash2, Search
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -85,6 +85,20 @@ export default function AIChat() {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sessionSearch, setSessionSearch] = useState('');
+
+  // Filtra sessões pelo campo de busca (client-side)
+  const filteredSessions = useMemo(() => {
+    if (!sessionSearch.trim()) return sessions ?? [];
+    const q = sessionSearch.toLowerCase();
+    return (sessions ?? []).filter(s => {
+      const titleMatch = (s.title ?? '').toLowerCase().includes(q);
+      const msgs = s.messages ?? [];
+      const lastMsg = msgs[msgs.length - 1];
+      const msgMatch = lastMsg ? lastMsg.content.toLowerCase().includes(q) : false;
+      return titleMatch || msgMatch;
+    });
+  }, [sessions, sessionSearch]);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -240,22 +254,32 @@ export default function AIChat() {
             </div>
             <Button
               onClick={handleNewSession}
-              className="w-full h-9 text-xs font-bold rounded-xl bg-vj-green text-white hover:bg-vj-green/90 gap-2"
+              className="w-full h-9 text-xs font-bold rounded-xl bg-vj-green text-white hover:bg-vj-green/90 gap-2 mb-3"
             >
               <Plus className="w-3.5 h-3.5" /> Nova Conversa
             </Button>
+            
+            <div className="relative">
+              <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
+              <Input
+                placeholder="Buscar conversas..."
+                className="h-8 text-xs pl-8 pr-3 rounded-lg border-zinc-200 bg-white"
+                value={sessionSearch}
+                onChange={e => setSessionSearch(e.target.value)}
+              />
+            </div>
           </div>
 
           {/* Lista de sessões */}
           <ScrollArea className="flex-1 px-2 py-2">
-            {sessions?.length === 0 && (
+            {filteredSessions.length === 0 && (
               <div className="text-center py-8 text-zinc-400">
                 <MessageCircle className="w-8 h-8 mx-auto mb-2 opacity-30" />
-                <p className="text-xs">Nenhuma conversa ainda</p>
+                <p className="text-xs">Nenhuma conversa encontrada</p>
               </div>
             )}
             <div className="space-y-1">
-              {sessions?.map(s => (
+              {filteredSessions.map(s => (
                 <button
                   key={s.id}
                   onClick={() => handleSelectSession(s.id!)}

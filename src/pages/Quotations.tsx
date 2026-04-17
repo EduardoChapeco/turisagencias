@@ -11,7 +11,7 @@ import { EmptyState, PageSkeleton } from '@/components/ui/EmptyState';
 import { QuotationBuilderSheet } from '@/components/QuotationBuilderSheet';
 import { QuotationAiImportSheet } from '@/components/QuotationAiImportSheet';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Search, FileText, MapPin, Hotel, Trash2, Calendar, Users, Sparkles, ArrowRight, ArrowUpRight } from 'lucide-react';
+import { Plus, Search, FileText, MapPin, Hotel, Trash2, Calendar, Users, Sparkles, ArrowRight, ArrowUpRight, CheckCircle2, Navigation, FileSignature } from 'lucide-react';
 import { getClientName } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
@@ -35,15 +35,27 @@ export default function Quotations() {
   const [aiImportOpen, setAiImportOpen] = useState(false);
   const navigate = useNavigate();
 
-  const { data: quotations, isLoading } = useQuotations({
-    search: search || undefined,
-    status: statusFilter !== 'all' ? statusFilter : undefined,
-  });
+  const { data: allQuotations, isLoading } = useQuotations();
   const deleteQuotation = useDeleteQuotation();
 
   const fmtCurrency = (value: number | null, currency = 'BRL') => {
     if (!value) return '0,00';
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency }).format(value);
+  };
+
+  const quotations = allQuotations ?? [];
+  const filteredQuotations = quotations.filter(q => {
+    const s = search.toLowerCase();
+    const searchMatch = !s || (q.destination?.toLowerCase().includes(s) || q.hotel_name?.toLowerCase().includes(s) || (q.clients as any)?.name?.toLowerCase().includes(s));
+    const statusMatch = statusFilter === 'all' || q.status === statusFilter;
+    return searchMatch && statusMatch;
+  });
+
+  const stats = {
+    total: quotations.length,
+    draft: quotations.filter(q => q.status === 'draft').length,
+    sent: quotations.filter(q => q.status === 'sent').length,
+    accepted: quotations.filter(q => q.status === 'accepted').length,
   };
 
   return (
@@ -67,6 +79,36 @@ export default function Quotations() {
             </Button>
           </div>
         </div>
+
+        {/* Stats Row */}
+        {!isLoading && (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pb-2">
+            <div className="premium-card p-4 flex flex-col justify-between">
+              <div className="flex items-center gap-2 text-zinc-400 mb-2 mt-1">
+                <FileText className="w-4 h-4" /> <span className="text-xs uppercase tracking-wider font-bold">Total</span>
+              </div>
+              <p className="text-3xl font-black text-zinc-800">{stats.total}</p>
+            </div>
+            <div className="premium-card border-zinc-200 bg-zinc-50/50 p-4 flex flex-col justify-between">
+              <div className="flex items-center gap-2 text-zinc-600 mb-2 mt-1">
+                <FileSignature className="w-4 h-4" /> <span className="text-xs uppercase tracking-wider font-bold">Rascunhos</span>
+              </div>
+              <p className="text-3xl font-black text-zinc-700">{stats.draft}</p>
+            </div>
+            <div className="premium-card border-blue-200 bg-blue-50/50 p-4 flex flex-col justify-between">
+              <div className="flex items-center gap-2 text-blue-600 mb-2 mt-1">
+                <Navigation className="w-4 h-4" /> <span className="text-xs uppercase tracking-wider font-bold">Enviadas</span>
+              </div>
+              <p className="text-3xl font-black text-blue-700">{stats.sent}</p>
+            </div>
+            <div className="premium-card border-vj-green/30 bg-vj-green/10 p-4 flex flex-col justify-between">
+              <div className="flex items-center gap-2 text-vj-green mb-2 mt-1">
+                <CheckCircle2 className="w-4 h-4" /> <span className="text-xs uppercase tracking-wider font-bold">Aceitas</span>
+              </div>
+              <p className="text-3xl font-black text-vj-green">{stats.accepted}</p>
+            </div>
+          </div>
+        )}
 
         {/* Filters Row */}
         <div className="flex flex-wrap gap-4 items-center justify-between pb-4">
@@ -98,16 +140,16 @@ export default function Quotations() {
           <div className="bento-grid-premium">
              {[1,2,3,4,5,6].map(i => <Skeleton key={i} className="h-[280px] rounded-[32px]" />)}
           </div>
-        ) : !quotations?.length ? (
+        ) : !filteredQuotations?.length ? (
           <EmptyState
             icon={FileText}
             title="Nenhuma cotação encontrada"
-            description="Comece criando sua primeira oferta exclusiva para seus clientes."
+            description="Tente ajustar os filtros ou comece criando sua primeira oferta."
             action={<Button className="premium-button" onClick={() => setBuilderOpen(true)}><Plus className="mr-2 h-4 w-4" /> Criar Cotação</Button>}
           />
         ) : (
           <div className="bento-grid-premium">
-            {quotations.map((q) => {
+            {filteredQuotations.map((q) => {
               const clientName = getClientName(q.clients);
               const style = STATUS_STYLES[q.status] ?? STATUS_STYLES.draft;
               const coverImage = (q as any).cover_image_url;

@@ -192,6 +192,7 @@ export default function QuotationDetail() {
   const { data: scenarios, isLoading: scenariosLoading } = useQuotationScenarios(id);
   const scoreQuotation = useScoreQuotation();
   const buildProposal = useBuildProposal();
+  const sendQuotation = useSendQuotation();
   const [proposalMarkdown, setProposalMarkdown] = useState<string | null>(null);
 
   const copyWhatsApp = () => {
@@ -283,8 +284,16 @@ export default function QuotationDetail() {
             <ExternalLink className="mr-1.5 h-3.5 w-3.5" /> Link Público
           </Button>
           {quotation.status === 'draft' && (
-            <Button size="sm" onClick={markAsSent} className="rounded-xl">
-              <Send className="mr-1.5 h-3.5 w-3.5" /> Marcar Enviada
+            <Button
+              size="sm"
+              onClick={() => sendQuotation.mutate(id!)}
+              disabled={sendQuotation.isPending}
+              className="rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white"
+            >
+              {sendQuotation.isPending
+                ? <><Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> Enviando...</>
+                : <><Send className="mr-1.5 h-3.5 w-3.5" /> Enviar Cotação</>
+              }
             </Button>
           )}
           <Button

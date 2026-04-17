@@ -1,0 +1,91 @@
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuthStore } from '@/stores/authStore';
+import { useToast } from '@/hooks/use-toast';
+
+export type QuotationScenario = {
+  id: string;
+  quotation_id: string;
+  scenario_type: 'direct' | 'gateway' | 'date_shift' | 'upgrade' | 'budget';
+  title: string;
+  description: string;
+  score: number;
+  score_breakdown: {
+    logistic_viability: number;
+    price_competitiveness: number;
+    client_experience: number;
+    operational_risk: number;
+  };
+  estimated_savings_brl?: number | null;
+  estimated_extra_cost_brl?: number | null;
+  suggested_changes?: any;
+  agent_rationale: string;
+  recommended: boolean;
+  metadata?: any;
+  created_at: string;
+};
+
+export function useQuotationScenarios(quotationId: string | undefined) {
+  return useQuery({
+    queryKey: ['quotation_scenarios', quotationId],
+    queryFn: async () => {
+      if (!quotationId) return [];
+      const { data, error } = await supabase
+        .from('quotation_scenarios')
+        .select('*')
+        .eq('quotation_id', quotationId)
+        .order('score', { ascending: false });
+      if (error) throw error;
+      return data as QuotationScenario[];
+    },
+    enabled: !!quotationId,
+    staleTime: 5 * 60_000,
+  });
+}
+
+export function useScoreQuotation() {
+  const qc = useQueryClient();
+  const { organization } = useAuthStore();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async (quotationId: string) => {
+      if (!organization?.id) throw new Error('Organização não encontrada');
+      const { data, error } = await supabase.functions.invoke('score-quotation', {
+        body: { quotation_id: quotationId, org_id: organization.id },
+      });
+      if (error) throw new Error(error.message);
+      if (data?.error) throw new Error(data.error);
+      return data;
+    },
+    onSuccess: (data, quotationId) => {
+      qc.invalidateQueries({ queryKey: ['quotation_scenarios', quotationId] });
+      toast({
+        title: '✅ Análise IA concluída!',
+        description: `${data.scenarios?.length ?? 3} cenários gerados. Melhor: opção ${(data.best_scenario_index ?? 0) + 1}.`,
+      });
+    },
+    onError: (e: Error) => toast({ title: 'Erro na análise IA', description: e.message, variant: 'destructive' }),
+  });
+}
+
+// Hook para listas de decision logs (painel de auditoria)
+export function useAiDecisionLogs(limit = 20) {
+  const { organization } = useAuthStore();
+  return useQuery({
+    queryKey: ['ai_decision_logs', organization?.id, limit],
+    queryFn: async () => {
+      if (!organization?.id) return [];
+      const { data, error } = await supabase
+        .from('ai_decision_logs')
+        .select('id, agent_name, decision_type, input_summary, output_summary, confidence_score, created_at')
+        .eq('org_id', organization.id)
+        .order('created_at', { ascending: false })
+        .limit(limit);
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!organization?.id,
+    staleTime: 60_000,
+  });
+}

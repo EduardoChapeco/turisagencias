@@ -53,9 +53,11 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
             <p className="mb-6 text-sm text-muted-foreground">
               Ocorreu um erro inesperado. Tente recarregar a página ou voltar para o início.
             </p>
-            {import.meta.env.DEV && this.state.error && (
-              <pre className="mb-4 max-h-32 overflow-auto rounded-lg bg-muted/50 p-3 text-left text-xs text-muted-foreground">
+            {this.state.error && (
+              <pre className="mb-4 max-h-32 overflow-auto rounded-lg bg-muted/50 p-3 text-left text-xs text-muted-foreground whitespace-pre-wrap">
                 {this.state.error.message}
+                {"\n"}
+                {this.state.error.stack}
               </pre>
             )}
             <div className="flex gap-3 justify-center">

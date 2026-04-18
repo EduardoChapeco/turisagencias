@@ -1,7 +1,8 @@
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import {
+  corsHeaders,
+  resolveExtensionContext,
+  verifyExtensionRequestSession,
+} from '../_shared/extension.ts';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 
@@ -9,13 +10,11 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
 
   try {
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader?.startsWith('Bearer ')) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
+    const context = await resolveExtensionContext(req);
+    await verifyExtensionRequestSession(req, context);
+    const authHeader = String(req.headers.get('Authorization') || '').trim();
+    const extensionSession = String(req.headers.get('x-extension-session') || '').trim();
+    const extensionId = String(req.headers.get('x-extension-id') || '').trim();
 
     const body = await req.json().catch(() => ({}));
     const payload = {
@@ -38,8 +37,10 @@ Deno.serve(async (req) => {
     const response = await fetch(`${SUPABASE_URL}/functions/v1/extract-quotation`, {
       method: 'POST',
       headers: {
-        Authorization: authHeader,
         'Content-Type': 'application/json',
+        ...(authHeader ? { Authorization: authHeader } : {}),
+        ...(extensionSession ? { 'x-extension-session': extensionSession } : {}),
+        ...(extensionId ? { 'x-extension-id': extensionId } : {}),
       },
       body: JSON.stringify(payload),
     });
@@ -52,7 +53,9 @@ Deno.serve(async (req) => {
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     return new Response(JSON.stringify({ error: message }), {
-      status: 500,
+      status: message === 'Unauthorized' || message.startsWith('Invalid extension') || message.startsWith('Missing extension')
+        ? 401
+        : 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { SheetPage } from '@/components/ui/SheetPage';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -23,28 +23,32 @@ export function TaskCardSheet({ card, isOpen, onClose, onDeleted }: Props) {
   const deleteCard = useDeleteKanbanCard();
   const { data: trips } = useTrips();
 
+  const metadata = (card as any)?.metadata || {};
   const [form, setForm] = useState({
     title: card?.title || '',
     description: card?.description || '',
-    task_type: card?.task_type || '',
-    priority: card?.priority || 'Normal',
-    due_date: card?.due_date || '',
+    task_type: card?.task_type || metadata.task_type || '',
+    priority: card?.priority || metadata.priority || 'Normal',
+    due_date: card?.due_date || metadata.due_date || '',
     client_id: card?.client_id || '',
     trip_id: card?.trip_id || '',
   });
 
-  // Keep form in sync when card opens
-  if (card && form.title === '' && card.title !== '') {
-    setForm({
-      title: card.title || '',
-      description: card.description || '',
-      task_type: card.task_type || '',
-      priority: card.priority || 'Normal',
-      due_date: card.due_date ? new Date(card.due_date).toISOString().split('T')[0] : '',
-      client_id: card.client_id || '',
-      trip_id: card.trip_id || '',
-    });
-  }
+  // Keep form in sync when a different card opens
+  useEffect(() => {
+    if (card) {
+      const meta = (card as any)?.metadata || {};
+      setForm({
+        title: card.title || '',
+        description: card.description || '',
+        task_type: card.task_type || meta.task_type || '',
+        priority: card.priority || meta.priority || 'Normal',
+        due_date: card.due_date || meta.due_date || '',
+        client_id: card.client_id || '',
+        trip_id: card.trip_id || '',
+      });
+    }
+  }, [card]);
 
   if (!card) return null;
 

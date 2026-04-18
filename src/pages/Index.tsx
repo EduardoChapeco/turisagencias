@@ -1,377 +1,201 @@
 import { useNavigate } from 'react-router-dom';
 import {
   FileText, Plane, PlaneTakeoff, CalendarHeart,
-  KanbanSquare, ArrowRight, DollarSign, ArrowUpRight, ArrowDownRight, Users2, Brain, CheckCircle2
+  Globe2, Newspaper, ArrowRight, DollarSign, Users2, CheckCircle2, Ticket, MapPin, Search
 } from 'lucide-react';
 import { AppLayout } from '@/components/AppLayout';
 import { useAuthStore } from '@/stores/authStore';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { QuotationBuilderSheet } from '@/components/QuotationBuilderSheet';
 import { useState } from 'react';
-import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { useAIInsights } from '@/hooks/useAIInsights';
-
-const MONTH_LABELS = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-
-// ── Dashboard Stats shape returned by get_dashboard_stats RPC ─────────────────
-interface DashboardStats {
-  finances: {
-    profit: number;
-    receivable: number;
-    payable: number;
-  };
-  lastMonthFinances: {
-    profit: number;
-    receivable: number;
-    payable: number;
-  } | null;
-  activeTrips: number;
-  pendingQuotations: number;
-  urgentTickets: number;
-  quotations: {
-    draft: number;
-    sent: number;
-    accepted: number;
-    total: number;
-    conversionRate: number;
-  };
-  profitDelta: number | null;
-}
-
-function useFinancialChart(orgId: string | undefined) {
-  return useQuery({
-    queryKey: ['dashboard-chart', orgId],
-    queryFn: async () => {
-      if (!orgId) return MONTH_LABELS.map(m => ({ month: m, receivable: 0, payable: 0 }));
-      const year = new Date().getFullYear();
-      const { data } = await supabase
-        .from('financial_transactions')
-        .select('amount, type, due_date')
-        .eq('org_id', orgId)
-        .gte('due_date', `${year}-01-01`)
-        .lte('due_date', `${year}-12-31`);
-      const buckets = MONTH_LABELS.map(m => ({ month: m, receivable: 0, payable: 0 }));
-      (data || []).forEach((t: any) => {
-        if (!t.due_date) return;
-        const mi = new Date(t.due_date).getMonth();
-        if (t.type === 'receivable' || t.type === 'income') buckets[mi].receivable += Number(t.amount) || 0;
-        else buckets[mi].payable += Number(t.amount) || 0;
-      });
-      return buckets;
-    },
-    enabled: !!orgId,
-    staleTime: 60_000,
-  });
-}
-
-function useDashboardStats(orgId: string | undefined) {
-  return useQuery<DashboardStats | null>({
-    queryKey: ['dashboard-stats', orgId],
-    queryFn: async () => {
-      if (!orgId) return null;
-      const { data, error } = await supabase.rpc('get_dashboard_stats', { p_org_id: orgId });
-      if (error) throw error;
-
-      // Single cast at the Supabase RPC boundary — result is untyped Json
-      const stats = data as unknown as DashboardStats;
-      const profitDelta = stats.lastMonthFinances?.profit
-        ? ((stats.finances.profit - stats.lastMonthFinances.profit) / stats.lastMonthFinances.profit) * 100
-        : null;
-
-      return { ...stats, profitDelta };
-    },
-    enabled: !!orgId,
-    staleTime: 60 * 1000,
-  });
-}
-
-function useRecentActivity(orgId: string | undefined) {
-  return useQuery({
-    queryKey: ['dashboard-activity', orgId],
-    queryFn: async () => {
-      if (!orgId) return [];
-      const { data } = await supabase
-        .from('tickets')
-        .select('id, title, status, created_at')
-        .eq('org_id', orgId)
-        .order('created_at', { ascending: false })
-        .limit(4);
-      return data || [];
-    },
-    enabled: !!orgId,
-  });
-}
-
-function useUpcomingTrips(orgId: string | undefined) {
-  return useQuery({
-    queryKey: ['dashboard-upcoming', orgId],
-    queryFn: async () => {
-      if (!orgId) return [];
-      const today = new Date().toISOString().split('T')[0];
-      const in7days = new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0];
-      const { data } = await supabase
-        .from('trips')
-        .select('id, title, departure_date, destination_city, destination_country')
-        .eq('org_id', orgId)
-        .gte('departure_date', today)
-        .lte('departure_date', in7days)
-        .order('departure_date')
-        .limit(4);
-      return data || [];
-    },
-    enabled: !!orgId,
-  });
-}
+import { Input } from '@/components/ui/input';
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const { organization, profile } = useAuthStore();
-  const { data: stats, isLoading } = useDashboardStats(organization?.id);
-  const { data: _activity } = useRecentActivity(organization?.id);
-  const { data: financialChartData } = useFinancialChart(organization?.id);
-  const { data: upcoming } = useUpcomingTrips(organization?.id);
-  const { data: aiInsights } = useAIInsights();
-  
   const [quotationBuilderOpen, setQuotationBuilderOpen] = useState(false);
 
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Bom dia' : hour < 18 ? 'Boa tarde' : 'Boa noite';
 
-  const formatCurrency = (val: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
+  // Mocked Map Points (Simulating travelers around the world)
+  const travelersMap = [
+    { id: 1, loc: 'Paris, FR', top: '30%', left: '48%', pax: 4 },
+    { id: 2, loc: 'Nova York, EUA', top: '35%', left: '26%', pax: 2 },
+    { id: 3, loc: 'Santiago, CL', top: '75%', left: '28%', pax: 6 },
+    { id: 4, loc: 'Tóquio, JP', top: '38%', left: '85%', pax: 1 },
+    { id: 5, loc: 'Rio de Janeiro, BR', top: '65%', left: '34%', pax: 12 },
+  ];
+
+  // Mocked AI Curated News (Simulating RSS feed validation)
+  const aiNews = [
+    { id: 1, tag: 'Mundo', source: 'Panrotas', title: 'França remove restrições de visto de trânsito em CDG para brasileiros na temporada de inverno.', date: 'Hoje, 08h30', rating: 98, verified: true },
+    { id: 2, tag: 'Aéreo', source: 'Mercado & Eventos', title: 'LATAM anuncia retomada de voos diários para Orlando a partir de novembro, com novas aeronaves.', date: 'Hoje, 07h15', rating: 95, verified: true },
+    { id: 3, tag: 'Hotelaria', source: 'Hosteltur', title: 'Nova rede de resorts all-inclusive foca em luxo na Riviera Maya; veja tarifas comissionadas.', date: 'Ontem, 16h40', rating: 88, verified: true },
+    { id: 4, tag: 'Clima', source: 'Reuters', title: 'Furacão na Flórida: Voos cancelados e aeroportos fechados nas próximas 48h.', date: 'Em alta', rating: 100, verified: true, alert: true },
+  ];
 
   return (
     <AppLayout>
-      <div className="space-y-8 max-w-[1400px] mx-auto pb-10 px-4 sm:px-6">
+      <div className="space-y-6 max-w-[1500px] mx-auto pb-10 px-4 sm:px-6 mt-4">
         {/* Header Section */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-2">
           <div>
             <h1 className="font-heading text-4xl font-extrabold tracking-tight">
-              {greeting}, <span className="highlight-text">{profile?.first_name || 'Agente'}</span> ☕
+              {greeting}, <span className="highlight-text">{profile?.first_name || 'Agente'}</span>
             </h1>
             <p className="text-muted-foreground text-sm mt-2 flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-              Sua agência <span className="font-bold text-vj-txt">{organization?.name || 'Turis Agências'}</span> está performando abaixo da meta este mês.
+              Operações normais. 12 passageiros em voo neste momento.
             </p>
           </div>
           <div className="flex items-center gap-3">
             <Button variant="outline" className="premium-button border-vj-border bg-white" onClick={() => navigate('/trips/new')}>
-              <Plane className="h-4 w-4 mr-2 text-vj-green" /> Viagem
+              <Plane className="h-4 w-4 mr-2 text-vj-green" /> Nova Viagem
             </Button>
-            <Button className="premium-button  " onClick={() => setQuotationBuilderOpen(true)}>
+            <Button className="premium-button" onClick={() => setQuotationBuilderOpen(true)}>
               <FileText className="h-4 w-4 mr-2" /> Nova Cotação
             </Button>
           </div>
         </div>
 
-        {isLoading ? (
-          <div className="bento-grid-premium">
-             <Skeleton className="col-span-full h-[300px] rounded-[32px]" />
-             {[1,2,3,4].map(i => <Skeleton key={i} className="h-[200px] rounded-[32px]" />)}
+        {/* BENTO GRID: Operations & Map */}
+        <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 gap-4">
+          
+          {/* Quick Ops Panel */}
+          <div className="col-span-1 md:col-span-2 lg:col-span-2 grid grid-rows-3 gap-4">
+            <div className="bg-white border text-vj-txt border-vj-border rounded-[24px] p-5 flex items-center justify-between hover:shadow-lg transition-shadow cursor-pointer">
+               <div className="flex items-center gap-4">
+                  <div className="bg-amber-100 text-amber-600 p-3 rounded-2xl"><PlaneTakeoff size={24} /></div>
+                  <div>
+                     <p className="text-2xl font-bold">14</p>
+                     <p className="text-xs uppercase tracking-wider text-vj-txt3 font-semibold">Embarques Hoje</p>
+                  </div>
+               </div>
+               <ArrowRight className="text-vj-txt3" />
+            </div>
+
+            <div className="bg-white border text-vj-txt border-vj-border rounded-[24px] p-5 flex items-center justify-between hover:shadow-lg transition-shadow cursor-pointer">
+               <div className="flex items-center gap-4">
+                  <div className="bg-blue-100 text-blue-600 p-3 rounded-2xl"><CheckCircle2 size={24} /></div>
+                  <div>
+                     <p className="text-2xl font-bold">28</p>
+                     <p className="text-xs uppercase tracking-wider text-vj-txt3 font-semibold flex items-center gap-1">Check-ins Liberados <span className="bg-vj-red text-white text-[9px] px-1.5 py-0.5 rounded-full ml-1">5 pendentes</span></p>
+                  </div>
+               </div>
+               <ArrowRight className="text-vj-txt3" />
+            </div>
+
+            <div className="bg-white border text-vj-txt border-vj-border rounded-[24px] p-5 flex items-center justify-between hover:shadow-lg transition-shadow cursor-pointer">
+               <div className="flex items-center gap-4">
+                  <div className="bg-green-100 text-green-600 p-3 rounded-2xl"><Ticket size={24} /></div>
+                  <div>
+                     <p className="text-2xl font-bold">42</p>
+                     <p className="text-xs uppercase tracking-wider text-vj-txt3 font-semibold flex items-center gap-1">Vouchers Prontos <span className="bg-vj-green/20 text-vj-green text-[9px] px-1.5 py-0.5 rounded-full ml-1">Para Envio</span></p>
+                  </div>
+               </div>
+               <ArrowRight className="text-vj-txt3" />
+            </div>
           </div>
-        ) : (
-          <div className="bento-grid-premium">
+
+          {/* Interactive World Map Block */}
+          <div className="col-span-1 md:col-span-2 lg:col-span-4 bg-zinc-950 rounded-[32px] overflow-hidden relative min-h-[350px] group flex flex-col justify-between">
+            {/* Absolute Map Background Graphic (Simulated for Demo) */}
+            <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 50% 50%, #ffffff 1px, transparent 1px)', backgroundSize: '20px 20px' }}></div>
+            <div className="absolute -inset-10 opacity-30 bg-center bg-no-repeat bg-contain" style={{ backgroundImage: "url('https://upload.wikimedia.org/wikipedia/commons/8/80/World_map_-_low_resolution.svg')", filter: 'invert(1) grayscale(100%)' }}></div>
             
-            {/* Financial Hero Block */}
-            <div className="col-span-1 md:col-span-2 row-span-2 premium-card bg-zinc-950 p-8 text-white flex flex-col justify-between group overflow-hidden relative">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-green-500/10 blur-[100px] pointer-events-none" />
-              
-              <div>
-                <div className="flex items-center justify-between mb-8">
-                  <span className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-400">Desempenho Financeiro YTD</span>
-                  <div className="bg-zinc-800/50 p-2 rounded-xl border border-zinc-700/50">
-                    <DollarSign className="w-5 h-5 text-green-400" />
-                  </div>
-                </div>
-                
-                <h2 className="stat-value text-green-400">
-                  {formatCurrency(stats?.finances.profit ?? 0).split(',')[0]}
-                  <span className="text-2xl opacity-50">,00</span>
-                </h2>
-                <p className="text-zinc-400 text-sm mt-2 flex items-center gap-2">
-                  {stats?.profitDelta !== null && stats?.profitDelta !== undefined ? (
-                    <>
-                      {stats.profitDelta >= 0 ? (
-                        <ArrowUpRight className="w-4 h-4 text-green-400" />
-                      ) : (
-                        <ArrowDownRight className="w-4 h-4 text-red-400" />
-                      )}
-                      <span className={stats.profitDelta >= 0 ? 'text-green-400' : 'text-red-400'}>
-                        {stats.profitDelta >= 0 ? '+' : ''}{stats.profitDelta.toFixed(1)}% vs mês anterior
-                      </span>
-                    </>
-                  ) : (
-                    <span className="text-zinc-500 text-xs">Primeiro mês de referência</span>
-                  )}
-                </p>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4 mt-8 pt-8 border-t border-zinc-800">
-                <div>
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">Receita Líquida</p>
-                  <p className="text-lg font-bold">{formatCurrency(stats?.finances.receivable ?? 0)}</p>
-                </div>
-                <div>
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-1">Custo Fornecedores</p>
-                  <p className="text-lg font-bold text-red-400">{formatCurrency(stats?.finances.payable ?? 0)}</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Quick KPI: Active Trips */}
-            <div className="col-span-1 premium-card card-gradient-green p-6 flex flex-col justify-between">
-              <div className="flex items-center justify-between">
-                <div className="bg-green-100 dark:bg-green-950/30 p-2 rounded-xl">
-                  <PlaneTakeoff className="w-5 h-5 text-green-600" />
-                </div>
-                <Users2 className="w-4 h-4 text-muted-foreground opacity-50" />
-              </div>
-              <div className="mt-8">
-                <span className="stat-value text-vj-txt leading-none">{stats?.activeTrips ?? 0}</span>
-                <p className="text-sm font-bold text-vj-txt uppercase tracking-wider mt-2">Viagens Ativas</p>
-                <p className="text-xs text-muted-foreground mt-1">Operacional em dia</p>
-              </div>
-            </div>
-
-            {/* Quick KPI: Pending Quotations */}
-            <div className="col-span-1 premium-card card-gradient-amber p-6 flex flex-col justify-between cursor-pointer group" onClick={() => navigate('/quotations')}>
-              <div className="flex items-center justify-between text-amber-600">
-                <div className="bg-amber-100 p-2 rounded-xl">
-                  <FileText className="w-5 h-5" />
-                </div>
-                <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
-              </div>
-              <div className="mt-8">
-                <span className="stat-value text-amber-600 leading-none">{stats?.pendingQuotations ?? 0}</span>
-                <p className="text-sm font-bold text-vj-txt uppercase tracking-wider mt-2">Cotações Abertas</p>
-                <p className="text-xs text-muted-foreground mt-1">Ações necessárias</p>
-              </div>
-            </div>
-
-            {/* Quotation Intelligence Block (Real Data) */}
-            <div className="col-span-1 md:col-span-2 premium-card p-6 flex flex-col bg-slate-50 border-slate-200">
-              <div className="flex items-center gap-2 mb-5">
-                <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
-                <span className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-blue-600">Inteligência de Cotações</span>
-              </div>
-              
-              <div className="grid grid-cols-3 gap-3 mb-5">
-                <div className="bg-white p-3 rounded-2xl border border-slate-200 text-center">
-                  <p className="stat-value text-2xl text-zinc-800 leading-none">{stats?.quotations?.draft ?? 0}</p>
-                  <p className="text-[9px] uppercase tracking-widest text-zinc-400 mt-1 font-bold">Rascunhos</p>
-                </div>
-                <div className="bg-white p-3 rounded-2xl border border-blue-100 text-center">
-                  <p className="stat-value text-2xl text-blue-600 leading-none">{stats?.quotations?.sent ?? 0}</p>
-                  <p className="text-[9px] uppercase tracking-widest text-blue-400 mt-1 font-bold">Enviadas</p>
-                </div>
-                <div className="bg-white p-3 rounded-2xl border border-green-100 text-center">
-                  <p className="stat-value text-2xl text-green-600 leading-none">{stats?.quotations?.accepted ?? 0}</p>
-                  <p className="text-[9px] uppercase tracking-widest text-green-400 mt-1 font-bold">Aceitas</p>
-                </div>
-              </div>
-
-              <div className="bg-white p-4 rounded-2xl border border-slate-200 flex-1">
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">Taxa de Conversão</p>
-                  <span className={`text-sm font-bold ${
-                    (stats?.quotations?.conversionRate ?? 0) >= 30 ? 'text-green-600' : 
-                    (stats?.quotations?.conversionRate ?? 0) >= 15 ? 'text-amber-600' : 'text-red-500'
-                  }`}>{stats?.quotations?.conversionRate ?? 0}%</span>
-                </div>
-                <div className="w-full h-2 bg-zinc-100 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full rounded-full bg-gradient-to-r from-blue-400 to-green-500 transition-all duration-700"
-                    style={{ width: `${Math.min(stats?.quotations?.conversionRate ?? 0, 100)}%` }}
-                  />
-                </div>
-                <p className="text-[10px] text-zinc-400 mt-2">
-                  {stats?.quotations?.total ?? 0} cotações totais · {stats?.quotations?.accepted ?? 0} convertidas em vendas
-                </p>
-              </div>
-
-              <Button variant="ghost" size="sm" className="mt-4 text-[10px] font-bold uppercase text-slate-500 tracking-wider hover:text-blue-600 w-fit p-0" onClick={() => navigate('/quotations')}>
-                Ver todas as cotações →
-              </Button>
-            </div>
-
-            {/* AI Insights Block */}
-            <div className="col-span-1 md:col-span-4 premium-card p-6 border-indigo-100 bg-gradient-to-br from-indigo-50/50 to-white overflow-hidden relative">
-              <div className="absolute -right-10 -top-10 w-40 h-40 bg-indigo-500/10 blur-[50px] pointer-events-none" />
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-bold uppercase tracking-wider flex items-center gap-2">
-                  <span className="bg-indigo-100 text-indigo-600 p-1.5 rounded-xl"><Brain className="w-4 h-4" /></span>
-                  Cofre de Inteligência (Agent 7)
-                </h3>
-                <span className="text-[10px] bg-indigo-100 text-indigo-600 px-2 py-1 rounded-full font-bold">Aprendizado Contínuo</span>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {aiInsights?.map((insight: any) => (
-                  <div key={insight.id} className="bg-white p-4 rounded-2xl border border-indigo-50  flex flex-col cursor-pointer transition-all hover: hover:-translate-y-1" onClick={() => navigate('/settings')}>
-                    <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-1 truncate">{insight.title}</p>
-                    <p className="text-xs text-zinc-600 leading-relaxed font-medium line-clamp-3 mb-3 flex-1">{insight.content}</p>
-                    <div className="flex flex-wrap gap-1">
-                      {insight.tags?.slice(0,2).map((t: string) => (
-                        <span key={t} className="px-1.5 py-0.5 rounded-md bg-indigo-50 text-[9px] text-indigo-600">{t}</span>
-                      ))}
+            {/* Map Pins */}
+            {travelersMap.map((pt) => (
+                <div key={pt.id} className="absolute group/pin cursor-pointer transform -translate-x-1/2 -translate-y-1/2 hover:z-50 transition-all" style={{ top: pt.top, left: pt.left }}>
+                    <div className="relative">
+                       <span className="animate-ping absolute -inset-1 rounded-full bg-vj-green opacity-75"></span>
+                       <div className="relative bg-vj-green w-3 h-3 rounded-full border-2 border-zinc-950"></div>
+                       {/* Tooltip */}
+                       <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max bg-white/90 backdrop-blur pb-1 px-3 py-2 rounded-xl text-zinc-950 opacity-0 group-hover/pin:opacity-100 transition-opacity">
+                           <p className="text-[10px] font-bold uppercase">{pt.loc}</p>
+                           <p className="text-xs font-medium">{pt.pax} passageiros</p>
+                       </div>
                     </div>
-                  </div>
-                ))}
-                {!aiInsights?.length && (
-                  <div className="md:col-span-3 text-center py-6 italic text-xs text-zinc-400">
-                    Nenhum insight gerado. Marque cotações como Ganhas/Perdidas para o Agent 7 extrair lições.
-                  </div>
-                )}
-              </div>
-            </div>
+                </div>
+            ))}
 
-            {/* Recent Tickets Activity */}
-            <div className="col-span-1 md:col-span-2 premium-card p-6 flex flex-col">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-sm font-bold uppercase tracking-wider">Suporte e Chamados</h3>
-                <span className="text-[10px] bg-red-100 text-red-600 px-2 py-1 rounded-full font-bold">{stats?.urgentTickets} urgentes</span>
-              </div>
-              
-              <div className="space-y-3 flex-1">
-                {_activity?.map((ticket: any) => (
-                  <div key={ticket.id} className="flex items-center justify-between p-3 rounded-2xl bg-zinc-50 hover:bg-zinc-100 border border-zinc-100 transition-colors cursor-pointer" onClick={() => navigate(`/tickets/${ticket.id}`)}>
-                    <div className="flex items-center gap-3">
-                      <div className={`w-2 h-2 rounded-full ${ticket.status === 'open' ? 'bg-amber-400' : 'bg-zinc-300'}`} />
-                      <span className="text-xs font-semibold truncate max-w-[200px]">{ticket.title}</span>
-                    </div>
-                    <span className="text-[10px] text-muted-foreground font-mono">#{ticket.id.slice(0, 5)}</span>
-                  </div>
-                ))}
-                {!_activity?.length && <p className="text-xs text-muted-foreground text-center py-4 italic">Nenhuma atividade recente.</p>}
-              </div>
+            <div className="relative z-10 p-6 flex justify-between items-start">
+               <div>
+                  <h3 className="text-white font-bold tracking-widest text-sm uppercase flex items-center gap-2">
+                      <Globe2 className="w-4 h-4 text-green-400" /> Radares de Passageiros
+                  </h3>
+                  <p className="text-zinc-400 text-xs mt-1">25 pax no exterior hoje</p>
+               </div>
+               <div className="flex gap-2">
+                 <Button size="sm" variant="outline" className="bg-transparent border-zinc-800 text-zinc-300 hover:text-white hover:bg-zinc-800 h-8">Ver Lista</Button>
+               </div>
             </div>
-
-            {/* Upcoming Trip Schedule (Narrow) */}
-            <div className="col-span-1 md:col-span-2 premium-card p-6 flex flex-col bg-zinc-900 text-white border-zinc-800">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-sm font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-2">
-                  <CalendarHeart className="w-4 h-4 text-purple-400" /> Próximos 7 Dias
-                </h3>
-              </div>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 flex-1">
-                {upcoming?.map((trip: any) => (
-                  <div key={trip.id} className="bg-zinc-800 h-24 p-4 rounded-2xl flex flex-col justify-between hover:bg-zinc-800/80 transition-colors cursor-pointer border border-zinc-700/50" onClick={() => navigate(`/trips/${trip.id}`)}>
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] text-purple-400 font-bold uppercase tracking-widest">{trip.destination_city}</span>
-                      <ArrowUpRight className="w-3 h-3 text-zinc-600" />
-                    </div>
-                    <p className="text-xs font-bold truncate">{trip.title}</p>
-                    <p className="text-[10px] text-zinc-500">{new Date(trip.departure_date).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long' })}</p>
-                  </div>
-                ))}
-                {!upcoming?.length && <p className="text-xs text-zinc-500 col-span-full text-center py-8">Vazio para este período.</p>}
-              </div>
+            <div className="relative z-10 p-6">
+                <div className="flex items-center gap-3">
+                   <div className="bg-zinc-800/50 backdrop-blur-md rounded-full px-4 py-2 border border-zinc-700/50 max-w-sm flex items-center gap-2 w-full">
+                       <Search className="w-4 h-4 text-zinc-400" />
+                       <Input placeholder="Buscar voo ou passageiro..." className="bg-transparent border-none text-white focus-visible:ring-0 placeholder:text-zinc-500 h-6 p-0 text-sm" />
+                   </div>
+                </div>
             </div>
-
           </div>
-        )}
+        </div>
+
+        {/* BENTO GRID: AI Curated News Feed */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+           {/* Header / Sidebar for News */}
+           <div className="bg-white border border-vj-border rounded-[32px] p-6 lg:row-span-2">
+              <div className="flex items-center gap-2 mb-2">
+                  <div className="bg-vj-green/10 text-vj-green p-2 rounded-xl"><Newspaper className="w-5 h-5" /></div>
+                  <h3 className="font-bold text-lg text-vj-txt">Radar de Notícias</h3>
+              </div>
+              <p className="text-sm text-vj-txt3 mb-6">Notícias filtradas e validadas pela Inteligência Artificial para agentes.</p>
+
+              <div className="space-y-4">
+                 <div>
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-vj-txt3 mb-2">Filtros Ativos</p>
+                    <div className="flex flex-wrap gap-2">
+                       <span className="bg-zinc-100 text-vj-txt text-xs px-3 py-1 rounded-full font-medium">Turismo de Lazer</span>
+                       <span className="bg-zinc-100 text-vj-txt text-xs px-3 py-1 rounded-full font-medium">Companhias Aéreas</span>
+                       <span className="bg-zinc-100 text-vj-txt text-xs px-3 py-1 rounded-full font-medium">Vistos</span>
+                    </div>
+                 </div>
+                 <Button variant="outline" className="w-full justify-between group h-12 rounded-xl border-vj-border hover:bg-zinc-50">
+                     <span>Personalizar Radar</span>
+                     <ArrowRight className="w-4 h-4 text-vj-txt3 group-hover:translate-x-1 transition-transform" />
+                 </Button>
+              </div>
+           </div>
+
+           {/* News Cards */}
+           {aiNews.map((news) => (
+               <div key={news.id} className={`p-6 rounded-[32px] border flex flex-col justify-between cursor-pointer transition-transform hover:-translate-y-1 ${news.alert ? 'bg-red-50 border-red-200' : 'bg-white border-vj-border'}`}>
+                  <div>
+                      <div className="flex items-center justify-between mb-4">
+                         <div className="flex items-center gap-2">
+                             <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded-lg ${news.alert ? 'bg-red-100 text-red-600' : 'bg-zinc-100 text-zinc-600'}`}>{news.tag}</span>
+                             <span className="text-xs text-vj-txt3">{news.source}</span>
+                         </div>
+                         {news.verified && (
+                             <div className="flex flex-col items-end">
+                                <span className="text-[9px] font-bold text-vj-green uppercase">Validado - AI Match</span>
+                                <span className="text-[10px] text-vj-txt3">{news.rating}% relevância</span>
+                             </div>
+                         )}
+                      </div>
+                      <h4 className={`font-bold leading-snug ${news.alert ? 'text-red-950 text-base' : 'text-vj-txt text-sm'}`}>
+                          {news.title}
+                      </h4>
+                  </div>
+                  <div className="mt-4 pt-4 border-t border-black/5 flex items-center justify-between">
+                      <span className="text-xs font-semibold text-vj-txt3">{news.date}</span>
+                      <Button variant="ghost" size="sm" className="h-8 px-2 text-vj-green hover:bg-vj-green/10 -mr-2">Ver resumo</Button>
+                  </div>
+               </div>
+           ))}
+        </div>
       </div>
 
       <QuotationBuilderSheet 

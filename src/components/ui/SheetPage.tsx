@@ -95,7 +95,7 @@ export function SheetPage({
         className={cn(
           'relative flex flex-col z-10',
           'w-full sm:w-[min(85vw,_900px)] lg:w-[min(70vw,_900px)] h-[100dvh]',
-          'bg-white sm:border-l border-vj-border ',
+          'bg-white sm:border-l-0 border-transparent',
           'animate-in slide-in-from-right duration-300',
           className,
         )}

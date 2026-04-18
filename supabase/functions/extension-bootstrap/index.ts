@@ -5,6 +5,7 @@ import {
   resolveExtensionContext,
   ensureTaskBoard,
   getExtensionAiConfig,
+  issueExtensionSession,
 } from '../_shared/extension.ts';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
@@ -19,6 +20,7 @@ Deno.serve(async (req) => {
       ensureTaskBoard(context.supabase, context.orgId),
       getExtensionAiConfig(context.supabase, context.orgId),
     ]);
+    const extensionSession = await issueExtensionSession(context, req);
 
     return jsonResponse({
       userId: context.userId,
@@ -37,7 +39,9 @@ Deno.serve(async (req) => {
         supabase_anon_key: SUPABASE_ANON_KEY,
         sync_url: `${SUPABASE_URL}/functions/v1/extension-sync`,
         quotation_url: `${SUPABASE_URL}/functions/v1/ext-process-quotation`,
+        extension_session_required: true,
       },
+      extension_session: extensionSession,
       ai: aiConfig
         ? {
             provider: aiConfig.provider,

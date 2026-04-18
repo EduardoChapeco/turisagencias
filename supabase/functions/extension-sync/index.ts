@@ -3,6 +3,7 @@ import {
   errorResponse,
   jsonResponse,
   resolveExtensionContext,
+  verifyExtensionRequestSession,
   ensureTaskBoard,
   findClientByPhone,
   searchClients,
@@ -801,6 +802,7 @@ Deno.serve(async (req) => {
 
   try {
     const context = await resolveExtensionContext(req);
+    await verifyExtensionRequestSession(req, context);
     const taskBoard = await ensureTaskBoard(context.supabase, context.orgId);
 
     const body = await req.json().catch(() => ({}));

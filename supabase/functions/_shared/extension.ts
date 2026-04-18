@@ -2,12 +2,14 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 export const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-engine-secret',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-engine-secret, x-extension-id, x-extension-source, x-extension-session, x-platform-app-url',
 };
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+const EXTENSION_SESSION_SECRET = Deno.env.get('EXTENSION_SESSION_SECRET') || SUPABASE_SERVICE_ROLE_KEY;
+const EXTENSION_SESSION_TTL_SECONDS = 60 * 60 * 8;
 
 export type ExtensionContext = {
   authHeader: string;
@@ -30,6 +32,33 @@ export type ExtensionAiConfig = {
   model: string;
 } | null;
 
+export type ExtensionSessionTokenPayload = {
+  iss: 'turis-extension';
+  aud: 'chrome-extension';
+  sub: string;
+  org_id: string;
+  profile_id: string;
+  extension_id: string;
+  source: string;
+  app_url: string | null;
+  iat: number;
+  exp: number;
+  jti: string;
+  ver: 1;
+};
+
+export type IssuedExtensionSession = {
+  token: string;
+  extension_id: string;
+  source: string;
+  app_url: string | null;
+  user_id: string;
+  org_id: string;
+  profile_id: string;
+  issued_at: string;
+  expires_at: string;
+};
+
 export function jsonResponse(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
     status,
@@ -51,51 +80,253 @@ export function createServiceClient() {
   return createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 }
 
-export async function resolveExtensionContext(req: Request): Promise<ExtensionContext> {
-  const authHeader = req.headers.get('Authorization');
-  if (!authHeader?.startsWith('Bearer ')) {
-    throw new Error('Unauthorized');
+function textToBytes(value: string) {
+  return new TextEncoder().encode(String(value || ''));
+}
+
+function bytesToBase64Url(bytes: Uint8Array) {
+  let binary = '';
+  const chunkSize = 0x8000;
+  for (let index = 0; index < bytes.length; index += chunkSize) {
+    binary += String.fromCharCode(...bytes.slice(index, index + chunkSize));
   }
 
-  const supabase = createUserClient(authHeader);
-  const service = createServiceClient();
+  return btoa(binary)
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/g, '');
+}
 
-  const { data: authData, error: authError } = await supabase.auth.getUser();
-  if (authError || !authData?.user?.id) {
-    throw new Error('Unauthorized');
+function base64UrlToText(value: string) {
+  const normalized = String(value || '').replace(/-/g, '+').replace(/_/g, '/');
+  const padding = normalized.length % 4;
+  const padded = padding ? normalized + '='.repeat(4 - padding) : normalized;
+  const binary = atob(padded);
+  const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
+  return new TextDecoder().decode(bytes);
+}
+
+function safeJsonParse<T>(value: string): T | null {
+  try {
+    return JSON.parse(value) as T;
+  } catch {
+    return null;
   }
+}
 
-  const user = authData.user;
-  const [{ data: profile, error: profileError }, { data: rolesData }] = await Promise.all([
-    supabase
-      .from('profiles')
-      .select('id, org_id, first_name, last_name, email')
-      .eq('user_id', user.id)
-      .maybeSingle(),
-    supabase.from('user_roles').select('role').eq('user_id', user.id),
-  ]);
+function sanitizeExtensionId(value: string | null | undefined) {
+  const raw = String(value || '').trim();
+  return /^[a-z0-9_-]{16,128}$/i.test(raw) ? raw : '';
+}
+
+function sanitizeSource(value: string | null | undefined) {
+  const raw = String(value || '').trim();
+  return /^[a-z0-9._:-]{3,120}$/i.test(raw) ? raw : 'turis-whatsapp-extension';
+}
+
+function sanitizeAppUrl(value: string | null | undefined) {
+  const raw = String(value || '').trim();
+  if (!raw) return null;
+
+  try {
+    const url = new URL(raw);
+    return `${url.protocol}//${url.host}`;
+  } catch {
+    return null;
+  }
+}
+
+async function signExtensionSession(unsignedToken: string) {
+  const key = await crypto.subtle.importKey(
+    'raw',
+    textToBytes(EXTENSION_SESSION_SECRET),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign'],
+  );
+  const signature = await crypto.subtle.sign('HMAC', key, textToBytes(unsignedToken));
+  return bytesToBase64Url(new Uint8Array(signature));
+}
+
+async function buildExtensionSessionToken(payload: ExtensionSessionTokenPayload) {
+  const header = bytesToBase64Url(textToBytes(JSON.stringify({ alg: 'HS256', typ: 'JWT' })));
+  const body = bytesToBase64Url(textToBytes(JSON.stringify(payload)));
+  const unsigned = `${header}.${body}`;
+  const signature = await signExtensionSession(unsigned);
+  return `${unsigned}.${signature}`;
+}
+
+async function verifyExtensionSessionToken(token: string) {
+  const [header, body, signature] = String(token || '').split('.');
+  if (!header || !body || !signature) return null;
+
+  const expected = await signExtensionSession(`${header}.${body}`);
+  if (expected !== signature) return null;
+
+  const payload = safeJsonParse<ExtensionSessionTokenPayload>(base64UrlToText(body));
+  if (!payload || payload.iss !== 'turis-extension' || payload.aud !== 'chrome-extension') return null;
+  if (!payload.sub || !payload.org_id || !payload.profile_id || !payload.extension_id) return null;
+  if (!payload.exp || payload.exp <= Math.floor(Date.now() / 1000)) return null;
+  return payload;
+}
+
+async function loadExtensionContextFromPrincipal(
+  supabase: ReturnType<typeof createClient>,
+  service: ReturnType<typeof createClient>,
+  principal: { userId: string; profileId?: string | null; orgId?: string | null; email?: string | null },
+  authHeader = '',
+): Promise<ExtensionContext> {
+
+  const profileQuery = service
+    .from('profiles')
+    .select('id, user_id, org_id, first_name, last_name, email');
+
+  const { data: profile, error: profileError } = principal.profileId
+    ? await profileQuery.eq('id', principal.profileId).maybeSingle()
+    : await profileQuery.eq('user_id', principal.userId).maybeSingle();
 
   if (profileError) throw new Error(profileError.message);
-  if (!profile?.org_id || !profile?.id) {
+  if (!profile?.org_id || !profile?.id || !profile?.user_id) {
     throw new Error('Perfil sem org_id. Configure sua organização primeiro.');
   }
 
+  if (profile.user_id !== principal.userId) {
+    throw new Error('Invalid extension principal');
+  }
+  if (principal.orgId && profile.org_id !== principal.orgId) {
+    throw new Error('Invalid extension principal');
+  }
+
+  const { data: rolesData, error: rolesError } = await service
+    .from('user_roles')
+    .select('role')
+    .eq('user_id', principal.userId);
+
+  if (rolesError) throw new Error(rolesError.message);
+
   const roles = (rolesData ?? []).map((item: { role: string }) => item.role);
-  const agentName = [profile.first_name, profile.last_name].filter(Boolean).join(' ').trim() || user.email || 'Agente';
+  const email = profile.email || principal.email || null;
+  const agentName = [profile.first_name, profile.last_name].filter(Boolean).join(' ').trim() || email || 'Agente';
 
   return {
     authHeader,
     supabase,
     service,
-    user: { id: user.id, email: user.email },
+    user: { id: principal.userId, email },
     profile,
     orgId: profile.org_id,
-    userId: user.id,
+    userId: principal.userId,
     profileId: profile.id,
     roles,
     agentName,
-    email: profile.email || user.email || null,
+    email,
   };
+}
+
+export async function resolveExtensionContext(req: Request): Promise<ExtensionContext> {
+  const authHeader = req.headers.get('Authorization');
+  const service = createServiceClient();
+
+  if (authHeader?.startsWith('Bearer ')) {
+    const supabase = createUserClient(authHeader);
+    const { data: authData, error: authError } = await supabase.auth.getUser();
+    if (authError || !authData?.user?.id) {
+      throw new Error('Unauthorized');
+    }
+
+    return await loadExtensionContextFromPrincipal(
+      supabase,
+      service,
+      { userId: authData.user.id, email: authData.user.email || null },
+      authHeader,
+    );
+  }
+
+  const token = String(req.headers.get('x-extension-session') || '').trim();
+  const payload = token ? await verifyExtensionSessionToken(token) : null;
+  if (!payload) {
+    throw new Error('Unauthorized');
+  }
+
+  const requestedExtensionId = sanitizeExtensionId(req.headers.get('x-extension-id')) || payload.extension_id;
+  if (payload.extension_id !== requestedExtensionId) {
+    throw new Error('Invalid extension binding');
+  }
+
+  return await loadExtensionContextFromPrincipal(
+    service,
+    service,
+    {
+      userId: payload.sub,
+      profileId: payload.profile_id,
+      orgId: payload.org_id,
+    },
+  );
+}
+
+export async function issueExtensionSession(
+  context: ExtensionContext,
+  req: Request,
+): Promise<IssuedExtensionSession> {
+  const extensionId = sanitizeExtensionId(req.headers.get('x-extension-id'));
+  if (!extensionId) {
+    throw new Error('Extension ID ausente ou invalido.');
+  }
+
+  const source = sanitizeSource(req.headers.get('x-extension-source'));
+  const appUrl = sanitizeAppUrl(req.headers.get('x-platform-app-url') || req.headers.get('origin'));
+  const issuedAtUnix = Math.floor(Date.now() / 1000);
+  const expiresAtUnix = issuedAtUnix + EXTENSION_SESSION_TTL_SECONDS;
+
+  const payload: ExtensionSessionTokenPayload = {
+    iss: 'turis-extension',
+    aud: 'chrome-extension',
+    sub: context.userId,
+    org_id: context.orgId,
+    profile_id: context.profileId,
+    extension_id: extensionId,
+    source,
+    app_url: appUrl,
+    iat: issuedAtUnix,
+    exp: expiresAtUnix,
+    jti: crypto.randomUUID(),
+    ver: 1,
+  };
+
+  return {
+    token: await buildExtensionSessionToken(payload),
+    extension_id: extensionId,
+    source,
+    app_url: appUrl,
+    user_id: context.userId,
+    org_id: context.orgId,
+    profile_id: context.profileId,
+    issued_at: new Date(issuedAtUnix * 1000).toISOString(),
+    expires_at: new Date(expiresAtUnix * 1000).toISOString(),
+  };
+}
+
+export async function verifyExtensionRequestSession(req: Request, context: ExtensionContext) {
+  const token = String(req.headers.get('x-extension-session') || '').trim();
+  if (!token) {
+    throw new Error('Missing extension session');
+  }
+
+  const payload = await verifyExtensionSessionToken(token);
+  if (!payload) {
+    throw new Error('Invalid extension session');
+  }
+
+  const requestedExtensionId = sanitizeExtensionId(req.headers.get('x-extension-id')) || payload.extension_id;
+  if (payload.extension_id !== requestedExtensionId) {
+    throw new Error('Invalid extension binding');
+  }
+
+  if (payload.sub !== context.userId || payload.org_id !== context.orgId || payload.profile_id !== context.profileId) {
+    throw new Error('Invalid extension principal');
+  }
+
+  return payload;
 }
 
 export function normalizePhone(value: string | null | undefined) {

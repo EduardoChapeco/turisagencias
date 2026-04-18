@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { MediaUploader } from '@/components/ui/MediaUploader';
 import { AvatarUploader } from '@/components/ui/AvatarUploader';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useCreateClient, useUpdateClient } from '@/hooks/useClients';
+import { useCreateClient, useUpdateClient, useClient } from '@/hooks/useClients';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 

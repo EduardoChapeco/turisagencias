@@ -1,9 +1,10 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { resolveExtensionContext } from "../_shared/extension.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-extension-session, x-extension-id",
 };
 
 // ─── Orchestrador de chaves por round-robin ────────────────────────────────
@@ -203,22 +204,28 @@ serve(async (req) => {
 
   try {
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader?.startsWith("Bearer ")) throw new Error("Missing Authorization header");
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-    // User-context client for RLS-safe reads
-    const supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
-      global: { headers: { Authorization: authHeader } },
-    });
+    let supabaseClient: any;
+    let userId = '';
 
-    // Validate JWT
-    const token = authHeader.replace("Bearer ", "");
-    const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
-    if (userError || !userData?.user?.id) throw new Error("Unauthorized");
-    const userId = userData.user.id;
+    if (authHeader?.startsWith("Bearer ")) {
+      supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
+        global: { headers: { Authorization: authHeader } },
+      });
+
+      const token = authHeader.replace("Bearer ", "");
+      const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
+      if (userError || !userData?.user?.id) throw new Error("Unauthorized");
+      userId = userData.user.id;
+    } else {
+      const extensionContext = await resolveExtensionContext(req);
+      supabaseClient = extensionContext.supabase;
+      userId = extensionContext.userId;
+    }
 
     // Service-role key available for future sub-table writes
     const _serviceKey = supabaseServiceKey;

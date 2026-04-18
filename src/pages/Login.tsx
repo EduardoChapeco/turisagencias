@@ -43,6 +43,41 @@ function friendlyBridgeMessage(error: unknown) {
   return message || 'Não foi possível concluir a autorização da extensão.';
 }
 
+function buildExtensionPayload(data: Record<string, any> | null | undefined, userEmail: string | null, source: string) {
+  const backend = data?.backend && typeof data.backend === 'object' ? data.backend : {};
+  return {
+    app_url: window.location.origin,
+    org_id: data?.orgId || data?.org_id || null,
+    user_name: data?.agentName || data?.user_name || userEmail || 'Equipe',
+    user_email: data?.email || userEmail || null,
+    supabase_url: backend.supabase_url || data?.supabase_url || null,
+    supabase_anon_key: backend.supabase_anon_key || data?.supabase_anon_key || null,
+    extension_session: data?.extension_session || null,
+    backend: {
+      supabase_url: backend.supabase_url || data?.supabase_url || null,
+      supabase_anon_key: backend.supabase_anon_key || data?.supabase_anon_key || null,
+      sync_url: backend.sync_url || data?.sync_url || null,
+      quotation_url: backend.quotation_url || data?.quotation_url || null,
+      extension_session_required: Boolean(backend.extension_session_required ?? true),
+    },
+    raw: {
+      source,
+      issued_at: new Date().toISOString(),
+    },
+  };
+}
+
+function redirectToExtension(redirectUri: string, payload?: unknown, error?: string) {
+  const callbackUrl = new URL(redirectUri);
+  if (payload) {
+    callbackUrl.searchParams.set('payload', encodePayload(payload));
+  }
+  if (error) {
+    callbackUrl.searchParams.set('error', error);
+  }
+  window.location.replace(callbackUrl.toString());
+}
+
 export default function Login() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -58,6 +93,7 @@ export default function Login() {
   const targetPath = returnTo && returnTo.startsWith('/') ? returnTo : '/';
   const redirectUri = searchParams.get('redirect_uri');
   const source = searchParams.get('source') || 'turis-whatsapp-extension';
+  const extensionId = searchParams.get('extension_id') || '';
   const wantsExtensionFlow = Boolean(redirectUri || searchParams.get('extension_id') || searchParams.get('source'));
   const safeRedirect = useMemo(() => isValidRedirectUri(redirectUri), [redirectUri]);
 
@@ -88,39 +124,30 @@ export default function Login() {
         const { data, error } = await supabase.functions.invoke('extension-bootstrap', {
           headers: {
             Authorization: `Bearer ${session.access_token}`,
+            'x-extension-id': extensionId,
+            'x-extension-source': source,
+            'x-platform-app-url': window.location.origin,
           },
         });
 
         if (error) throw error;
         if (cancelled) return;
 
-        const payload = {
-          ...((data && typeof data === 'object') ? data : {}),
-          app_url: window.location.origin,
-          token: session.access_token,
-          org_id: (data as Record<string, any>)?.orgId || (data as Record<string, any>)?.org_id || null,
-          user_name: (data as Record<string, any>)?.agentName || (data as Record<string, any>)?.user_name || user.email || 'Equipe',
-          user_email: (data as Record<string, any>)?.email || user.email || null,
-          backend: {
-            ...(((data as Record<string, any>)?.backend && typeof (data as Record<string, any>).backend === 'object') ? (data as Record<string, any>).backend : {}),
-            supabase_access_token: session.access_token,
-          },
-          raw: {
-            source,
-            issued_at: new Date().toISOString(),
-          },
-        };
-
-        const callbackUrl = new URL(redirectUri!);
-        callbackUrl.searchParams.set('payload', encodePayload(payload));
+        const payload = buildExtensionPayload(
+          (data && typeof data === 'object') ? data as Record<string, any> : null,
+          user.email || null,
+          source,
+        );
 
         setBridgeState('redirecting');
         setBridgeMessage('Redirecionando de volta para a extensão...');
-        window.location.replace(callbackUrl.toString());
+        redirectToExtension(redirectUri!, payload);
       } catch (error) {
         if (cancelled) return;
+        const friendlyMessage = friendlyBridgeMessage(error);
         setBridgeState('error');
-        setBridgeMessage(friendlyBridgeMessage(error));
+        setBridgeMessage(friendlyMessage);
+        redirectToExtension(redirectUri!, undefined, friendlyMessage);
       }
     };
 
@@ -129,7 +156,7 @@ export default function Login() {
     return () => {
       cancelled = true;
     };
-  }, [isLoading, redirectUri, safeRedirect, source, user, wantsExtensionFlow]);
+  }, [extensionId, isLoading, redirectUri, safeRedirect, source, user, wantsExtensionFlow]);
 
   if (!isLoading && user && !wantsExtensionFlow) {
     return <Navigate to={targetPath} replace />;

@@ -1,10 +1,11 @@
 import { useState, useMemo } from 'react';
-import { useClients } from '@/hooks/useClients';
+import { useClients, useCreateClient } from '@/hooks/useClients';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ChevronsUpDown, Search, X, User } from 'lucide-react';
+import { ChevronsUpDown, Search, X, User, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useToast } from '@/hooks/use-toast';
 
 interface Props {
   value: string;
@@ -15,6 +16,9 @@ interface Props {
 
 export function ClientSearchSelect({ value, onChange, placeholder = 'Buscar cliente...', className }: Props) {
   const { data: clients } = useClients();
+  const createClient = useCreateClient();
+  const { toast } = useToast();
+
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
 
@@ -26,6 +30,19 @@ export function ClientSearchSelect({ value, onChange, placeholder = 'Buscar clie
   }, [clients, search]);
 
   const selectedClient = clients?.find(c => c.id === value);
+
+  const handleQuickCreate = async () => {
+    const name = search.trim();
+    if (!name) return;
+    try {
+      const res = await createClient.mutateAsync({ name, origin: 'Quick Add' });
+      onChange(res.id);
+      setOpen(false);
+      setSearch('');
+    } catch (err) {
+      // Error handled by mutation
+    }
+  };
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -54,6 +71,14 @@ export function ClientSearchSelect({ value, onChange, placeholder = 'Buscar clie
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (search.trim() && filtered.length === 0) {
+                        void handleQuickCreate();
+                    }
+                }
+              }}
               placeholder="Buscar por nome ou e-mail..."
               className="pl-8 h-8 text-sm"
               autoFocus
@@ -70,8 +95,20 @@ export function ClientSearchSelect({ value, onChange, placeholder = 'Buscar clie
               <X className="h-3.5 w-3.5" /> Remover seleção
             </button>
           )}
-          {filtered.length === 0 ? (
-            <p className="p-3 text-sm text-muted-foreground text-center">Nenhum cliente encontrado</p>
+          {search.trim() && filtered.length === 0 ? (
+            <button
+                type="button"
+                onClick={handleQuickCreate}
+                disabled={createClient.isPending}
+                className="w-full p-3 text-sm text-primary hover:bg-accent/50 flex flex-col items-center justify-center gap-1 border-dashed border-2 m-2 w-[calc(100%-16px)] rounded-md cursor-pointer"
+            >
+                {createClient.isPending ? 'Criando...' : (
+                    <>
+                        <Plus className="h-4 w-4" />
+                        <span>Criar "{search}" rapidamente</span>
+                    </>
+                )}
+            </button>
           ) : (
             filtered.map(c => (
               <button

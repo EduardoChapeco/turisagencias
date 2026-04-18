@@ -1,3 +1,5 @@
+import { logger } from '@/utils/logger';
+
 import { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -79,7 +81,7 @@ async function getRoute(waypoints: { lat: number; lng: number }[]) {
       return data.routes[0].geometry;
     }
   } catch (err) {
-    console.error('Failed to get route geometry:', err);
+    logger.error('Failed to get route geometry:', err);
   }
   return null;
 }

@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { useGroupTrips, useGroupTrip, useCreateGroupTrip, useDeleteGroupTrip, useUpdateGroupTrip } from '@/hooks/useGroupTrips';
 import type { GroupTrip } from '@/hooks/useGroupTrips';
+import { useBusLayouts } from '@/hooks/useBusLayouts';
 import { AppLayout } from '@/components/AppLayout';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { SheetPage } from '@/components/ui/SheetPage';
@@ -110,7 +111,7 @@ type FormState = {
   departure_date: string; return_date: string; price_per_pax: number; max_pax: number;
   installments_count: number; description_md: string; cover_image_url: string;
   includes: string[]; excludes: string[]; important_notes: string;
-  gallery_urls: string[]; transport_type: string;
+  gallery_urls: string[]; transport_type: string; bus_layout_id: string;
   is_public: boolean; status: 'draft' | 'published' | 'closed' | 'cancelled';
 };
 
@@ -119,13 +120,14 @@ const defaultForm = (): FormState => ({
   departure_date: '', return_date: '', price_per_pax: 0, max_pax: 40,
   installments_count: 1, description_md: '', cover_image_url: '',
   includes: [], excludes: [], important_notes: '',
-  gallery_urls: [], transport_type: 'bus',
+  gallery_urls: [], transport_type: 'bus', bus_layout_id: 'none',
   is_public: false, status: 'draft',
 });
 
 export default function GroupTrips() {
   const navigate = useNavigate();
   const { data: trips, isLoading } = useGroupTrips();
+  const { data: busLayouts } = useBusLayouts();
   const create = useCreateGroupTrip();
   const update = useUpdateGroupTrip();
   const remove = useDeleteGroupTrip();
@@ -157,6 +159,7 @@ export default function GroupTrips() {
       important_notes: t.important_notes || '',
       gallery_urls: t.gallery_urls || [],
       transport_type: t.transport_type || 'bus',
+      bus_layout_id: t.bus_layout_id || 'none',
       is_public: t.is_public || false,
       status: t.status || 'draft',
     });
@@ -172,7 +175,8 @@ export default function GroupTrips() {
       includes: form.includes.length > 0 ? form.includes : null,
       excludes: form.excludes.length > 0 ? form.excludes : null,
       important_notes: form.important_notes || null,
-    } as any;
+      bus_layout_id: form.bus_layout_id === 'none' ? null : form.bus_layout_id,
+    };
     if (!payload.departure_date) delete payload.departure_date;
     if (!payload.return_date) delete payload.return_date;
 
@@ -190,7 +194,7 @@ export default function GroupTrips() {
       id,
       is_public: nowPublic,
       status: nowPublic ? 'published' : 'draft',
-    } as any);
+    });
   };
 
   const sections = [
@@ -432,16 +436,35 @@ export default function GroupTrips() {
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="p-4 rounded-xl bg-amber-50 border border-amber-100">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Bus size={16} className="text-amber-600" />
-                    <p className="font-semibold text-sm text-amber-800">Mapa de Assentos</p>
+                {form.transport_type === 'bus' && (
+                  <div>
+                    <Label>Layout de Assentos</Label>
+                    <Select value={form.bus_layout_id} onValueChange={v => set({ bus_layout_id: v })}>
+                      <SelectTrigger className="mt-1">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">Sem mapa de assentos</SelectItem>
+                        {busLayouts?.map(bl => (
+                          <SelectItem key={bl.id} value={bl.id}>
+                            {bl.name} ({bl.rows * bl.cols} lugares)
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
-                  <p className="text-xs text-amber-700">
-                    O editor visual de mapa de assentos (Fase 4) está em desenvolvimento.
-                    Por enquanto, passageiros recebem o número de assento após confirmação pela agência.
-                  </p>
-                </div>
+                )}
+                {form.bus_layout_id !== 'none' && form.transport_type === 'bus' && (
+                  <div className="p-4 rounded-xl bg-vj-green/5 border border-vj-green/20">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Bus size={16} className="text-vj-green" />
+                      <p className="font-semibold text-sm text-vj-green">Mapa de Assentos Vinculado</p>
+                    </div>
+                    <p className="text-xs text-vj-txt2">
+                      Este pacote utilizará este layout. Passageiros poderão escolher assentos disponíveis durante a visualização pública (se ativado).
+                    </p>
+                  </div>
+                )}
               </div>
             )}
 

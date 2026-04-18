@@ -22,19 +22,19 @@ describe('Auth Store', () => {
   });
 
   it('sets user correctly', () => {
-    const mockUser = { id: 'user-1', email: 'test@test.com' } as any;
+    const mockUser = { id: 'user-1', email: 'test@test.com' } as Record<string, any>;
     useAuthStore.getState().setUser(mockUser);
     expect(useAuthStore.getState().user).toEqual(mockUser);
   });
 
   it('sets profile correctly', () => {
-    const mockProfile = { id: 'p-1', user_id: 'user-1', org_id: 'org-1', first_name: 'Test', last_name: 'User', avatar_url: null, phone: null, bio: null, email: null, is_active: true, last_seen_at: null, notification_prefs: {}, whatsapp: null, created_at: '', updated_at: '' } as any;
+    const mockProfile = { id: 'p-1', user_id: 'user-1', org_id: 'org-1', first_name: 'Test', last_name: 'User', avatar_url: null, phone: null, bio: null, email: null, is_active: true, last_seen_at: null, notification_prefs: {}, whatsapp: null, created_at: '', updated_at: '' } as Record<string, any>;
     useAuthStore.getState().setProfile(mockProfile);
     expect(useAuthStore.getState().profile).toEqual(mockProfile);
   });
 
   it('sets organization correctly', () => {
-    const mockOrg = { id: 'org-1', name: 'Test Org' } as any;
+    const mockOrg = { id: 'org-1', name: 'Test Org' } as Record<string, any>;
     useAuthStore.getState().setOrganization(mockOrg);
     expect(useAuthStore.getState().organization).toEqual(mockOrg);
   });
@@ -45,7 +45,7 @@ describe('Auth Store', () => {
   });
 
   it('resets state completely', () => {
-    useAuthStore.getState().setUser({ id: 'x' } as any);
+    useAuthStore.getState().setUser({ id: 'x' } as Record<string, any>);
     useAuthStore.getState().setRoles(['agent']);
     useAuthStore.getState().setLoading(false);
 

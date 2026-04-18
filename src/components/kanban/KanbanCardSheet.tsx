@@ -323,7 +323,7 @@ function ChecklistSection({ cardId }: { cardId: string }) {
       )}
 
       {checklists?.map((cl) => {
-        const items = (cl as any).items ?? [];
+        const items = (cl as Record<string, any>).items ?? [];
         const checked = items.filter((i: any) => i.is_checked).length;
         const pct = items.length > 0 ? Math.round((checked / items.length) * 100) : 0;
 
@@ -486,7 +486,7 @@ function NotasSection({ cardId }: { cardId: string }) {
       ) : (
         <div className="space-y-3">
           {notes.map((note) => {
-            const author = (note as any).author;
+            const author = (note as Record<string, any>).author;
             const authorName = author
               ? `${author.first_name} ${author.last_name}`.trim()
               : 'Anônimo';

@@ -11,14 +11,14 @@ export default function PublicTravelerInfo() {
     queryFn: async () => {
       if (!slug) throw new Error('Slug is required');
       const { data, error } = await (supabase
-        .from('traveler_info_pages' as any)
+        .from('traveler_info_pages' as Record<string, any>)
         .select('*')
         .eq('slug', slug)
         .eq('is_published', true)
-        .single() as any);
+        .single() as Record<string, any>);
         
       if (error) throw error;
-      return data as any;
+      return data as Record<string, any>;
     },
     enabled: !!slug,
   });

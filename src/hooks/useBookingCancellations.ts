@@ -37,7 +37,7 @@ export interface TravelCredit {
   created_at: string;
 }
 
-// ── Fine preview (calls SQL function) ────────────────────────────────────────
+// ── Fine preview (calls RPC) ──────────────────────────────────────────────────
 export function useCancellationFinePreview(
   bookingId: string | null,
   cancellationDate?: string,
@@ -46,14 +46,15 @@ export function useCancellationFinePreview(
     queryKey: ['cancellation_fine_preview', bookingId, cancellationDate],
     enabled: !!bookingId,
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .rpc('calculate_cancellation_fine', {
-          _booking_id: bookingId,
+          _booking_id: bookingId!,
           _cancellation_date: cancellationDate ?? new Date().toISOString().split('T')[0],
         });
       if (error) throw error;
       // RPC returns array (RETURNS TABLE)
-      return Array.isArray(data) ? data[0] : data as {
+      const row = Array.isArray(data) ? data[0] : data;
+      return row as {
         total_paid: number;
         fine_pct: number;
         fine_amount: number;
@@ -71,16 +72,16 @@ export function useTripCancellations(tripId: string | undefined) {
     queryKey: ['trip_cancellations', tripId],
     enabled: !!tripId,
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('booking_cancellations')
         .select(`
           *,
           group_bookings ( lead_name, lead_phone )
         `)
-        .eq('group_trip_id', tripId)
+        .eq('group_trip_id', tripId!)
         .order('created_at', { ascending: false });
       if (error) throw error;
-      return (data ?? []) as (CancellationRequest & { group_bookings: any })[];
+      return (data ?? []) as unknown as (CancellationRequest & { group_bookings: any })[];
     },
   });
 }
@@ -92,7 +93,7 @@ export function useOrgPendingCancellations() {
     queryKey: ['org_pending_cancellations', organization?.id],
     enabled: !!organization?.id,
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('booking_cancellations')
         .select(`
           *,
@@ -109,7 +110,7 @@ export function useOrgPendingCancellations() {
   });
 }
 
-// ── Submit cancellation request (anon / agent) ────────────────────────────────
+// ── Submit cancellation request ────────────────────────────────────────────────
 export function useRequestCancellation() {
   const qc = useQueryClient();
   const { toast } = useToast();
@@ -128,32 +129,33 @@ export function useRequestCancellation() {
       financeResolution: 'full_refund' | 'full_credit' | 'partial_refund_partial_credit';
       requestedBy?: 'client' | 'agency';
     }) => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('booking_cancellations')
         .insert({
-          booking_id:       payload.bookingId,
-          org_id:           payload.orgId,
-          group_trip_id:    payload.tripId,
-          requested_by:     payload.requestedBy ?? 'client',
-          reason_code:      payload.reasonCode,
-          reason_notes:     payload.reasonNotes || null,
-          total_paid:       payload.totalPaid,
-          fine_pct:         payload.finePct,
-          fine_amount:      payload.fineAmount,
-          refund_amount:    payload.refundAmount,
-          credit_amount:    payload.creditAmount,
+          booking_id:         payload.bookingId,
+          org_id:             payload.orgId,
+          group_trip_id:      payload.tripId,
+          requested_by:       payload.requestedBy ?? 'client',
+          reason_code:        payload.reasonCode,
+          reason_notes:       payload.reasonNotes || null,
+          total_paid:         payload.totalPaid,
+          fine_pct:           payload.finePct,
+          fine_amount:        payload.fineAmount,
+          refund_amount:      payload.refundAmount,
+          credit_amount:      payload.creditAmount,
           finance_resolution: payload.financeResolution,
-          status:           'requested',
-        })
+          status:             'requested',
+        } as any)
         .select('id')
         .single();
       if (error) throw error;
 
-      // Mark booking as cancellation requested
-      await (supabase as any)
+      // Mark booking with cancellation reference
+      const { error: e2 } = await supabase
         .from('group_bookings')
-        .update({ cancellation_id: data.id })
+        .update({ cancellation_id: data.id } as any)
         .eq('id', payload.bookingId);
+      if (e2) throw e2;
 
       return data;
     },
@@ -167,7 +169,7 @@ export function useRequestCancellation() {
   });
 }
 
-// ── Approve / Reject cancellation (finance) ───────────────────────────────────
+// ── Approve / Reject cancellation ─────────────────────────────────────────────
 export function useProcessCancellation() {
   const qc = useQueryClient();
   const { toast } = useToast();
@@ -197,35 +199,37 @@ export function useProcessCancellation() {
     }) => {
       const now = new Date().toISOString();
 
-      // 1. Update cancellation
-      const { error: e1 } = await (supabase as any)
+      // 1. Update cancellation status
+      const { error: e1 } = await supabase
         .from('booking_cancellations')
         .update({
           status: action === 'approved' ? 'approved' : 'rejected',
           approved_at: action === 'approved' ? now : null,
           notes_finance: notesFinance ?? null,
           refund_method: refundMethod ?? null,
-        })
+        } as any)
         .eq('id', cancellationId);
       if (e1) throw e1;
 
       if (action === 'approved') {
         // 2. Cancel booking
-        await (supabase as any)
+        const { error: e2 } = await supabase
           .from('group_bookings')
-          .update({ status: 'cancelled', cancelled_at: now })
+          .update({ status: 'cancelled', cancelled_at: now } as any)
           .eq('id', bookingId);
+        if (e2) throw e2;
 
         // 3. Cancel pending installments
-        await (supabase as any)
+        const { error: e3 } = await supabase
           .from('booking_installments')
-          .update({ status: 'cancelled' })
+          .update({ status: 'cancelled' } as any)
           .eq('booking_id', bookingId)
           .in('status', ['pending', 'late']);
+        if (e3) throw e3;
 
         // 4. Generate credit if requested
         if (generateCredit && creditAmount && creditAmount > 0) {
-          await (supabase as any)
+          const { error: e4 } = await supabase
             .from('client_travel_credits')
             .insert({
               org_id: orgId,
@@ -233,14 +237,16 @@ export function useProcessCancellation() {
               amount: creditAmount,
               lead_email: leadEmail ?? null,
               lead_name: leadName ?? null,
-            });
+            } as any);
+          if (e4) throw e4;
         }
 
         // 5. Mark cancellation as processed
-        await (supabase as any)
+        const { error: e5 } = await supabase
           .from('booking_cancellations')
-          .update({ status: 'processed', refund_processed_at: now })
+          .update({ status: 'processed', refund_processed_at: now } as any)
           .eq('id', cancellationId);
+        if (e5) throw e5;
       }
     },
     onSuccess: (_, { action }) => {
@@ -261,15 +267,15 @@ export function useClientTravelCredits(email: string | null | undefined) {
     queryKey: ['travel_credits', organization?.id, email],
     enabled: !!organization?.id && !!email,
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('client_travel_credits')
         .select('*')
         .eq('org_id', organization!.id)
-        .eq('lead_email', email)
+        .eq('lead_email', email!)
         .eq('status', 'active')
         .order('expires_at');
       if (error) throw error;
-      return (data ?? []) as TravelCredit[];
+      return (data ?? []) as unknown as TravelCredit[];
     },
   });
 }

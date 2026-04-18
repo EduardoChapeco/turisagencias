@@ -60,8 +60,10 @@ export default function PublicQuotation() {
 
   useEffect(() => {
     if (!token) return;
-    
-    // Using standard select now that RLS allows Anon read with valid token check
+
+    // [SENTINEL] — Strictly relational query. No fallbacks, no simulation.
+    // If a relational section (itinerary_days, flights, etc.) has no data,
+    // the corresponding UI section will not render. This is the correct behavior.
     supabase
       .from('quotations')
       .select(`
@@ -81,10 +83,6 @@ export default function PublicQuotation() {
           ),
           flight_amenities(icon, label)
         ),
-        quote_hotels(
-          id, check_in, check_out, nights, room_type, total_price,
-          hotel_id
-        ),
         quote_transfers(
           id, tipo, nome, fornecedor, data_inicio, data_fim,
           instrucoes, ponto_encontro, adultos, criancas, valor_total, order_position
@@ -96,34 +94,53 @@ export default function PublicQuotation() {
           adultos, criancas, valor_total, order_position
         )
       `)
-      .eq('share_token', token)
+      .eq('public_token', token)
       .single()
       .then(({ data: row, error }) => {
         setLoading(false);
-        if (error || !row) { setNotFound(true); return; }
-        
-        const mappedData: any = {
+        if (error || !row) {
+          setNotFound(true);
+          console.error('[PublicQuotation] Fetch error or not found:', error?.message);
+          return;
+        }
+
+        const org = (row as Record<string, any>).organizations as Record<string, any> | null;
+
+        // [ARCHITECT] — Pure relational mapping. Only real DB data flows through.
+        // Sections with no data simply yield empty arrays — UI conditionally omits them.
+        const mappedData: PublicQuotationData & Record<string, any> = {
           ...row,
-          org_name: (row.organizations as any)?.name,
-          org_logo: (row.organizations as any)?.logo_url,
-          org_whatsapp: (row.organizations as any)?.whatsapp,
-          org_primary_color: (row.organizations as any)?.primary_color,
+          org_name: org?.name ?? null,
+          org_logo: org?.logo_url ?? null,
+          org_whatsapp: org?.whatsapp ?? null,
+          org_primary_color: org?.primary_color ?? null,
           installments: parseInstallments(row.installments),
-          // Sort itinerary days by day_number
-          itinerary: ((row as any).itinerary_days as any[] || []).sort((a: any, b: any) => a.day_number - b.day_number),
-          flights_data: ((row as any).flights as any[] || []).sort((a: any, b: any) => {
-            if (a.direction === 'outbound' && b.direction === 'return') return -1;
-            if (a.direction === 'return' && b.direction === 'outbound') return 1;
-            return 0;
-          }),
-          transfers: ((row as any).quote_transfers as any[] || []).sort((a: any, b: any) => a.order_position - b.order_position),
-          price_items: ((row as any).quote_price_items as any[] || []).sort((a: any, b: any) => a.order_position - b.order_position),
-          includes_items: ((row as any).quote_includes as any[] || []).sort((a: any, b: any) => a.order_position - b.order_position),
-          excursions: ((row as any).quote_experiences as any[] || []).sort((a: any, b: any) => a.order_position - b.order_position),
-          included_items: [],
-          excluded_items: [],
+
+          // Relational sections — sorted, never faked
+          itinerary: ([...((row as Record<string, any>).itinerary_days ?? [])]
+            .sort((a: any, b: any) => a.day_number - b.day_number)
+          ),
+          flights_data: ([...((row as Record<string, any>).flights ?? [])]
+            .sort((a: any, b: any) => {
+              if (a.direction === 'outbound' && b.direction === 'return') return -1;
+              if (a.direction === 'return' && b.direction === 'outbound') return 1;
+              return 0;
+            })
+          ),
+          transfers: ([...((row as Record<string, any>).quote_transfers ?? [])]
+            .sort((a: any, b: any) => a.order_position - b.order_position)
+          ),
+          price_items: ([...((row as Record<string, any>).quote_price_items ?? [])]
+            .sort((a: any, b: any) => a.order_position - b.order_position)
+          ),
+          includes_items: ([...((row as Record<string, any>).quote_includes ?? [])]
+            .sort((a: any, b: any) => a.order_position - b.order_position)
+          ),
+          excursions: ([...((row as Record<string, any>).quote_experiences ?? [])]
+            .sort((a: any, b: any) => a.order_position - b.order_position)
+          ),
         };
-        
+
         setData(mappedData);
       });
   }, [token]);
@@ -159,21 +176,21 @@ export default function PublicQuotation() {
   }
 
   const installments = data.installments ?? [];
-  const itinerary: any[] = (data as any).itinerary ?? [];
-  const flights: any[] = (data as any).flights_data ?? [];
-  const transfers: any[] = (data as any).transfers ?? [];
-  const priceItems: any[] = (data as any).price_items ?? [];
-  const includesItems: any[] = (data as any).includes_items ?? [];
-  const excursions: any[] = (data as any).excursions ?? [];
-  const includedItems: string[] = (data as any).included_items ?? [];
-  const excludedItems: string[] = (data as any).excluded_items ?? [];
-  const coverImageUrl = (data as any).cover_image_url || data.hotel_photo_url;
-  const pricingMode = (data as any).pricing_mode || 'per_person';
-  const validUntil = (data as any).valid_until;
-  const cancelamento = (data as any).cancelamento_texto_raw;
-  const cancelamentoData = (data as any).cancelamento_data_limite;
-  const paxAdultos = (data as any).pax_adultos;
-  const paxCriancas = (data as any).pax_criancas;
+  const itinerary: any[] = (data as Record<string, any>).itinerary ?? [];
+  const flights: any[] = (data as Record<string, any>).flights_data ?? [];
+  const transfers: any[] = (data as Record<string, any>).transfers ?? [];
+  const priceItems: any[] = (data as Record<string, any>).price_items ?? [];
+  const includesItems: any[] = (data as Record<string, any>).includes_items ?? [];
+  const excursions: any[] = (data as Record<string, any>).excursions ?? [];
+  const includedItems: string[] = (data as Record<string, any>).included_items ?? [];
+  const excludedItems: string[] = (data as Record<string, any>).excluded_items ?? [];
+  const coverImageUrl = (data as Record<string, any>).cover_image_url || data.hotel_photo_url;
+  const pricingMode = (data as Record<string, any>).pricing_mode || 'per_person';
+  const validUntil = (data as Record<string, any>).valid_until;
+  const cancelamento = (data as Record<string, any>).cancelamento_texto_raw;
+  const cancelamentoData = (data as Record<string, any>).cancelamento_data_limite;
+  const paxAdultos = (data as Record<string, any>).pax_adultos;
+  const paxCriancas = (data as Record<string, any>).pax_criancas;
   // transports kept for legacy compat
   const transports = flights;
 
@@ -200,7 +217,7 @@ export default function PublicQuotation() {
   const ref = token ? `#${token.slice(0, 8).toUpperCase()}` : '';
 
   // Se o data contiver destination via db migrations
-  const isDestinationValid = data.destination || (data as any).cover_title;
+  const isDestinationValid = data.destination || (data as Record<string, any>).cover_title;
 
 
   return (
@@ -422,10 +439,10 @@ export default function PublicQuotation() {
                     <span className="vj-dic-val">{mealLabels[data.meal_plan] || data.meal_plan}</span>
                   </div>
                 )}
-                {(data as any).valid_until && (
+                {(data as Record<string, any>).valid_until && (
                   <div className="vj-dic-row">
                     <span className="vj-dic-key">Validade</span>
-                    <span className="vj-dic-val-orange">{fmtDate((data as any).valid_until)}</span>
+                    <span className="vj-dic-val-orange">{fmtDate((data as Record<string, any>).valid_until)}</span>
                   </div>
                 )}
               </div>

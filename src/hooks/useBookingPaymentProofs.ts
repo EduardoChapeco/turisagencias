@@ -25,13 +25,13 @@ export function useBookingPaymentProofs(bookingId: string | undefined) {
     queryKey: ['payment_proofs', bookingId],
     enabled: !!bookingId,
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('booking_payment_proofs')
         .select('*')
-        .eq('booking_id', bookingId)
+        .eq('booking_id', bookingId!)
         .order('created_at', { ascending: false });
       if (error) throw error;
-      return (data ?? []) as PaymentProof[];
+      return (data ?? []) as unknown as PaymentProof[];
     },
   });
 }
@@ -43,7 +43,7 @@ export function useOrgPendingProofs() {
     queryKey: ['org_pending_proofs', organization?.id],
     enabled: !!organization?.id,
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('booking_payment_proofs')
         .select(`
           *,
@@ -81,40 +81,40 @@ export function useReviewPaymentProof() {
       rejectionReason?: string;
     }) => {
       // 1. Update proof status
-      const { error: e1 } = await (supabase as any)
+      const { error: e1 } = await supabase
         .from('booking_payment_proofs')
         .update({
           status: action,
           reviewed_at: new Date().toISOString(),
-          rejection_reason: action === 'rejected' ? rejectionReason : null,
-        })
+          rejection_reason: action === 'rejected' ? (rejectionReason ?? null) : null,
+        } as any)
         .eq('id', proofId);
       if (e1) throw e1;
 
       // 2. If approved and has installmentId → mark installment as paid
       if (action === 'approved' && installmentId) {
-        const { error: e2 } = await (supabase as any)
+        const { error: e2 } = await supabase
           .from('booking_installments')
           .update({
             status: 'paid',
             paid_at: new Date().toISOString(),
             payment_method: 'comprovante_cliente',
-          })
+          } as any)
           .eq('id', installmentId);
         if (e2) throw e2;
       }
 
-      // 3. Refresh booking payment_status
+      // 3. Refresh booking payment_status based on all installments
       if (action === 'approved') {
-        const { data: allInst } = await (supabase as any)
+        const { data: allInst } = await supabase
           .from('booking_installments')
           .select('status')
           .eq('booking_id', bookingId);
 
-        const allPaid = allInst?.every((i: any) => i.status === 'paid');
-        await (supabase as any)
+        const allPaid = (allInst ?? []).every((i) => (i as any).status === 'paid');
+        await supabase
           .from('group_bookings')
-          .update({ payment_status: allPaid ? 'fully_paid' : 'partial' })
+          .update({ payment_status: allPaid ? 'fully_paid' : 'partial' } as any)
           .eq('id', bookingId);
       }
     },
@@ -160,7 +160,7 @@ export function useUploadPaymentProof() {
       const { data: pub } = supabase.storage.from('client-media').getPublicUrl(upload.path);
 
       // Insert proof record
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('booking_payment_proofs')
         .insert({
           booking_id: bookingId,
@@ -172,7 +172,7 @@ export function useUploadPaymentProof() {
           notes_client: notesClient ?? null,
           status: 'approved', // uploaded by agent → already approved
           reviewed_at: new Date().toISOString(),
-        })
+        } as any)
         .select().single();
       if (error) throw error;
       return data;

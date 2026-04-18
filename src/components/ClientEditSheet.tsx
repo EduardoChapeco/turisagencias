@@ -1,3 +1,5 @@
+import { logger } from '@/utils/logger';
+
 import { useState, useEffect } from 'react';
 import { UserPlus, Save, Globe, Shield, Tag, X, Camera, FileText, Plane, MapPin, Plus, Trash2 } from 'lucide-react';
 import { SheetPage } from '@/components/ui/SheetPage';
@@ -47,38 +49,38 @@ export function ClientEditSheet({ id, open, onClose, onSuccess }: ClientEditShee
     tags: [] as string[],
   });
   const [tagInput, setTagInput] = useState('');
-  const [loading, setLoading] = useState(false);
   const [cepLoading, setCepLoading] = useState(false);
 
-  useEffect(() => {
-    if (open && isUpdate && id) {
-      setLoading(true);
-      (supabase.from('clients').select('*').eq('id', id).single() as any)
-        .then(({ data }: any) => {
-          if (data) {
-            const prefs = (data.preferences as any) || {};
-            
-            // Migrate legacy unstructured documents to structured blocks if needed
-            let docs = data.preferences?.documents || [];
-            if (docs.length > 0 && typeof docs[0] === 'string') {
-               docs = docs.map((url: string) => ({ type: 'Outro', url }));
-            }
+  // Fetch client if editing
+  const { data: existingClient, isLoading: isClientLoading } = useClient(isUpdate ? id || undefined : undefined);
 
-            setForm({
-              ...data,
-              preferred_destinations: prefs.destinations || '',
-              preferred_airlines: prefs.airlines || '',
-              seat_preference: prefs.seat || '',
-              meal_preference: prefs.meal || '',
-              loyalty_programs: prefs.loyalty || '',
-              proof_of_address_url: prefs.proof_of_address_url || '',
-              gallery_urls: prefs.gallery_urls || [],
-              documents: docs,
-              tags: data.tags || [],
-            });
-          }
-        })
-        .finally(() => setLoading(false));
+  useEffect(() => {
+    if (open && isUpdate && existingClient) {
+      const prefs = (existingClient.preferences as Record<string, any>) || {};
+      
+      // Migrate legacy unstructured documents to structured blocks if needed
+      let docs = prefs.documents || [];
+      if (docs.length > 0 && typeof docs[0] === 'string') {
+         docs = docs.map((url: string) => ({ type: 'Outro', url }));
+      }
+
+      setForm({
+        ...existingClient,
+        address: (existingClient.address as Record<string, any>)?.street || '',
+        city: (existingClient.address as Record<string, any>)?.city || '',
+        state: (existingClient.address as Record<string, any>)?.state || '',
+        zip_code: (existingClient.address as Record<string, any>)?.zip_code || '',
+        country: (existingClient.address as Record<string, any>)?.country || 'Brasil',
+        preferred_destinations: prefs.destinations || '',
+        preferred_airlines: prefs.airlines || '',
+        seat_preference: prefs.seat || '',
+        meal_preference: prefs.meal || '',
+        loyalty_programs: prefs.loyalty || '',
+        proof_of_address_url: prefs.proof_of_address_url || '',
+        gallery_urls: prefs.gallery_urls || [],
+        documents: docs,
+        tags: existingClient.tags || [],
+      });
     } else if (open && !isUpdate) {
       setForm({
         name: '', email: '', phone: '', cpf: '', birth_date: '',
@@ -92,7 +94,7 @@ export function ClientEditSheet({ id, open, onClose, onSuccess }: ClientEditShee
       });
       setTagInput('');
     }
-  }, [open, isUpdate, id]);
+  }, [open, isUpdate, existingClient]);
 
   const update = (field: string, value: any) => setForm((p: any) => ({ ...p, [field]: value }));
 
@@ -125,7 +127,7 @@ export function ClientEditSheet({ id, open, onClose, onSuccess }: ClientEditShee
         toast({ title: 'CEP não encontrado', variant: 'destructive' });
       }
     } catch(err) {
-      console.error(err);
+      logger.error(err);
     } finally {
       setCepLoading(false);
     }
@@ -157,7 +159,12 @@ export function ClientEditSheet({ id, open, onClose, onSuccess }: ClientEditShee
   const handleSave = async () => {
     if (!form.name?.trim()) return;
 
+    const basePreferences = isUpdate && existingClient && typeof existingClient.preferences === 'object' 
+        ? existingClient.preferences 
+        : {};
+
     const preferences = {
+      ...basePreferences,
       ...(form.preferred_destinations ? { destinations: form.preferred_destinations } : {}),
       ...(form.preferred_airlines ? { airlines: form.preferred_airlines } : {}),
       ...(form.seat_preference ? { seat: form.seat_preference } : {}),
@@ -191,7 +198,7 @@ export function ClientEditSheet({ id, open, onClose, onSuccess }: ClientEditShee
       const res = await updateClient.mutateAsync({ id: id!, ...payload });
       onSuccess?.(res.id);
     } else {
-      const res = await createClient.mutateAsync(payload as any);
+      const res = await createClient.mutateAsync(payload as Record<string, any>);
       onSuccess?.(res.id);
     }
     onClose();
@@ -218,7 +225,7 @@ export function ClientEditSheet({ id, open, onClose, onSuccess }: ClientEditShee
           <Button variant="outline" onClick={onClose}>Cancelar</Button>
           <Button
             onClick={() => void handleSave()}
-            disabled={loading || !form.name || isPending}
+            disabled={!form.name || isPending}
             className="bg-vj-green text-white hover:bg-vj-green/90"
           >
             <Save className="mr-2 h-4 w-4" />
@@ -228,7 +235,7 @@ export function ClientEditSheet({ id, open, onClose, onSuccess }: ClientEditShee
       }
     >
       {(activeSection) => {
-        if (loading) return <div className="text-sm text-vj-txt3 animate-pulse py-8 text-center">Carregando ficha do cliente...</div>;
+        if (isClientLoading && isUpdate) return <div className="text-sm text-vj-txt3 animate-pulse py-8 text-center">Carregando ficha do cliente...</div>;
 
         return (
           <>

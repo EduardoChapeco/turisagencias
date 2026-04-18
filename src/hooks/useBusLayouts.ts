@@ -25,7 +25,7 @@ export function useBusLayouts() {
     queryKey: ['bus_layouts', organization?.id],
     enabled: !!organization?.id,
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('bus_layouts')
         .select('*')
         .eq('org_id', organization!.id)
@@ -51,7 +51,7 @@ export function useCreateBusLayout() {
       notes?: string | null;
     }) => {
       const layout = generateDefaultBusLayout(payload.rows - 1, payload.cols > 4 ? payload.cols - 1 : payload.cols);
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('bus_layouts')
         .insert({
           org_id: organization!.id,
@@ -59,7 +59,7 @@ export function useCreateBusLayout() {
           vehicle_type: payload.vehicle_type,
           rows: layout.rows,
           cols: layout.cols,
-          seat_map: layout.seat_map,
+          seat_map: layout.seat_map as any, // Cast JSON compatibility for insertion
           notes: payload.notes ?? null,
         })
         .select()
@@ -82,7 +82,7 @@ export function useDeleteBusLayout() {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await (supabase as any).from('bus_layouts').delete().eq('id', id);
+      const { error } = await supabase.from('bus_layouts').delete().eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => {

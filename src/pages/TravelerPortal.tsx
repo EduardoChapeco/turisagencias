@@ -207,7 +207,7 @@ function CancelRequestDialog({
       });
       const data = await res.json();
       // Calculate fine client-side based on policy
-      const policy = (trip.cancellation_policy ?? []) as any[];
+      const policy = (trip.cancellation_policy ?? []) as Record<string, any>[];
       const today = new Date();
       const departure = trip.departure_date ? new Date(trip.departure_date) : null;
       const daysBefore = departure ? Math.ceil((departure.getTime() - today.getTime()) / 86400000) : 999;
@@ -330,8 +330,8 @@ function CancelRequestDialog({
                   ].map(opt => (
                     <label key={opt.v} className="flex items-center gap-2 cursor-pointer text-sm">
                       <input type="radio" name="resolution" value={opt.v}
-                        checked={resolution === opt.v as any}
-                        onChange={() => setResolution(opt.v as any)}
+                        checked={resolution === opt.v as Record<string, any>}
+                        onChange={() => setResolution(opt.v as Record<string, any>)}
                         className="accent-emerald-600" />
                       {opt.l}
                     </label>

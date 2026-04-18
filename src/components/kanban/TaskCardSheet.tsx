@@ -56,7 +56,7 @@ export function TaskCardSheet({ card, isOpen, onClose, onDeleted }: Props) {
       client_id: form.client_id || null,
       trip_id: form.trip_id || null,
       metadata: { task_type: form.task_type, priority: form.priority, due_date: form.due_date || null },
-    } as any);
+    } as Record<string, any>);
     onClose();
   };
 

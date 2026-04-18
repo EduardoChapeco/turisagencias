@@ -38,8 +38,6 @@ export type GroupTrip = {
   updated_at: string;
 };
 
-const TABLE = 'group_trips' as any;
-
 function slugify(s: string): string {
   return s.toLowerCase()
     .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
@@ -54,8 +52,8 @@ export function useGroupTrips() {
     queryKey: ['group_trips', organization?.id],
     queryFn: async () => {
       if (!organization?.id) return [];
-      const { data, error } = await (supabase as any)
-        .from(TABLE)
+      const { data, error } = await supabase
+        .from('group_trips')
         .select('*')
         .eq('org_id', organization.id)
         .order('created_at', { ascending: false });
@@ -71,8 +69,8 @@ export function useGroupTrip(id: string | undefined) {
     queryKey: ['group_trip', id],
     queryFn: async () => {
       if (!id) return null;
-      const { data, error } = await (supabase as any)
-        .from(TABLE)
+      const { data, error } = await supabase
+        .from('group_trips')
         .select('*')
         .eq('id', id)
         .maybeSingle();
@@ -93,8 +91,8 @@ export function useCreateGroupTrip() {
       const title = payload.title || 'Novo Pacote';
       const baseSlug = slugify(title) || 'pacote';
       const uniqueSlug = `${baseSlug}-${Date.now().toString(36)}`;
-      const { data, error } = await (supabase as any)
-        .from(TABLE)
+      const { data, error } = await supabase
+        .from('group_trips')
         .insert({
           ...payload,
           title,
@@ -119,9 +117,9 @@ export function useUpdateGroupTrip() {
   const { toast } = useToast();
   return useMutation({
     mutationFn: async ({ id, ...payload }: Partial<GroupTrip> & { id: string }) => {
-      const { data, error } = await (supabase as any)
-        .from(TABLE)
-        .update(payload)
+      const { data, error } = await supabase
+        .from('group_trips')
+        .update(payload as any)
         .eq('id', id)
         .select()
         .single();
@@ -142,7 +140,7 @@ export function useDeleteGroupTrip() {
   const { toast } = useToast();
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await (supabase as any).from(TABLE).delete().eq('id', id);
+      const { error } = await supabase.from('group_trips').delete().eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -170,7 +168,7 @@ export function useGroupTripDays(tripId: string | undefined) {
     queryKey: ['group_trip_days', tripId],
     queryFn: async () => {
       if (!tripId) return [];
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('group_trip_days')
         .select('*')
         .eq('group_trip_id', tripId)
@@ -187,17 +185,17 @@ export function useUpsertGroupTripDay() {
   const { toast } = useToast();
   return useMutation({
     mutationFn: async (payload: Partial<GroupTripDay> & { group_trip_id: string }) => {
-      const { id, ...rest } = payload as any;
+      const { id, ...rest } = payload;
       if (id) {
-        const { data, error } = await (supabase as any)
+        const { data, error } = await supabase
           .from('group_trip_days').update(rest).eq('id', id).select().single();
         if (error) throw error;
-        return data;
+        return data as GroupTripDay;
       }
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('group_trip_days').insert(rest).select().single();
       if (error) throw error;
-      return data;
+      return data as GroupTripDay;
     },
     onSuccess: (_, vars) => {
       qc.invalidateQueries({ queryKey: ['group_trip_days', vars.group_trip_id] });
@@ -210,7 +208,7 @@ export function useDeleteGroupTripDay() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, tripId: _ }: { id: string; tripId: string }) => {
-      const { error } = await (supabase as any).from('group_trip_days').delete().eq('id', id);
+      const { error } = await supabase.from('group_trip_days').delete().eq('id', id);
       if (error) throw error;
     },
     onSuccess: (_, vars) => {
@@ -233,14 +231,14 @@ export function useCreatePublicBooking() {
       pax_count: number;
       total_amount: number;
     }) => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('group_bookings')
         .insert({ ...payload, status: 'pending' })
         .select('id, public_token')
         .single();
       if (error) throw error;
       // gera carnê
-      const { error: rpcError } = await (supabase as any).rpc('generate_booking_installments', { _booking_id: data.id });
+      const { error: rpcError } = await supabase.rpc('generate_booking_installments', { _booking_id: data.id });
       if (rpcError) throw rpcError;
       return data as { id: string; public_token: string };
     },
@@ -253,18 +251,40 @@ export function usePublicBooking(token: string | undefined) {
     queryKey: ['public_booking', token],
     queryFn: async () => {
       if (!token) return null;
-      const { data: booking, error } = await (supabase as any)
+      // [SENTINEL] — Include org branding (logo, color, whatsapp) via nested join
+      // group_trips does NOT have org_logo — it must come from organizations
+      const { data: booking, error } = await supabase
         .from('group_bookings')
-        .select('*, group_trips(title, destination, departure_date, return_date, currency, cover_image_url, slug)')
+        .select(`
+          *,
+          group_trips(
+            title, destination, departure_date, return_date,
+            currency, cover_image_url, slug,
+            organizations(name, logo_url, primary_color, whatsapp)
+          )
+        `)
         .eq('public_token', token)
         .maybeSingle();
       if (error) throw error;
       if (!booking) return null;
-      const { data: installments } = await (supabase as any)
+
+      const { data: installments, error: instError } = await supabase
         .from('booking_installments')
         .select('*')
         .eq('booking_id', booking.id)
         .order('installment_number');
+      if (instError) throw instError;
+
+      // Flatten org branding to trip level for convenient access in UI
+      const trip = (booking as any).group_trips;
+      const org = trip?.organizations ?? null;
+      if (trip && org) {
+        trip.org_name = org.name;
+        trip.org_logo = org.logo_url;
+        trip.org_primary_color = org.primary_color;
+        trip.org_whatsapp = org.whatsapp;
+      }
+
       return { booking, installments: installments || [] };
     },
     enabled: !!token,
@@ -307,11 +327,11 @@ export function usePublicGroupTrip(slug: string | undefined) {
     queryKey: ['public_group_trip', slug],
     queryFn: async () => {
       if (!slug) return null;
-      const { data, error } = await (supabase as any).rpc('get_public_group_trip', { _slug: slug });
+      const { data, error } = await supabase.rpc('get_public_group_trip', { _slug: slug });
       if (error) throw error;
       const row = (data as PublicGroupTrip[])?.[0] || null;
       if (!row) return { trip: null, days: [] as GroupTripDay[] };
-      const { data: days } = await (supabase as any)
+      const { data: days } = await supabase
         .from('group_trip_days')
         .select('*')
         .eq('group_trip_id', row.id)
@@ -336,7 +356,7 @@ export function useTransferBooking() {
       newTripId: string;
       reason: string;
     }) => {
-      const { error } = await (supabase as any).rpc('transfer_booking_to_trip', {
+      const { error } = await supabase.rpc('transfer_booking_to_trip', {
         p_booking_id: bookingId,
         p_new_trip_id: newTripId,
         p_reason: reason,

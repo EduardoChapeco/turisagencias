@@ -65,12 +65,12 @@ export function useGroupTripFinancialSummary(tripId: string | undefined) {
     queryKey: ['group_trip_finance_summary', tripId],
     enabled: !!tripId,
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
-        .rpc('get_group_trip_financial_summary', { _trip_id: tripId });
+      const { data, error } = await supabase
+        .rpc('get_group_trip_financial_summary', { _trip_id: tripId! });
       if (error) throw error;
-      return data as FinancialSummary;
+      return data as unknown as FinancialSummary;
     },
-    refetchInterval: 30_000, // refresh a cada 30s
+    refetchInterval: 30_000,
   });
 }
 
@@ -80,7 +80,7 @@ export function useGroupTripBookings(tripId: string | undefined) {
     queryKey: ['group_trip_bookings_full', tripId],
     enabled: !!tripId,
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('group_bookings')
         .select(`
           id, lead_name, lead_phone, lead_email, pax_count, total_amount,
@@ -91,14 +91,14 @@ export function useGroupTripBookings(tripId: string | undefined) {
           ),
           booking_payment_proofs ( id, status )
         `)
-        .eq('group_trip_id', tripId)
+        .eq('group_trip_id', tripId!)
         .order('created_at', { ascending: false });
       if (error) throw error;
-      return (data ?? []).map((b: any) => ({
+      return (data ?? []).map((b) => ({
         ...b,
-        installments: b.booking_installments ?? [],
-        proofs_count: b.booking_payment_proofs?.length ?? 0,
-        proofs_pending_count: b.booking_payment_proofs?.filter((p: any) => p.status === 'pending_review').length ?? 0,
+        installments: (b as any).booking_installments ?? [],
+        proofs_count: (b as any).booking_payment_proofs?.length ?? 0,
+        proofs_pending_count: (b as any).booking_payment_proofs?.filter((p: any) => p.status === 'pending_review').length ?? 0,
       })) as BookingWithInstallments[];
     },
   });
@@ -110,13 +110,13 @@ export function useGroupTripLedger(tripId: string | undefined) {
     queryKey: ['group_trip_ledger', tripId],
     enabled: !!tripId,
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('group_trip_ledger')
         .select('*')
-        .eq('group_trip_id', tripId)
+        .eq('group_trip_id', tripId!)
         .order('created_at', { ascending: false });
       if (error) throw error;
-      return (data ?? []) as TripLedgerEntry[];
+      return (data ?? []) as unknown as TripLedgerEntry[];
     },
   });
 }
@@ -127,9 +127,9 @@ export function useCreateLedgerEntry(tripId: string) {
   const { toast } = useToast();
   return useMutation({
     mutationFn: async (payload: Partial<TripLedgerEntry>) => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('group_trip_ledger')
-        .insert({ ...payload, group_trip_id: tripId, org_id: organization!.id })
+        .insert({ ...(payload as any), group_trip_id: tripId, org_id: organization!.id })
         .select().single();
       if (error) throw error;
       return data;
@@ -161,13 +161,13 @@ export function useUpdateInstallmentStatus(tripId: string) {
       payment_method?: string | null;
       notes_finance?: string | null;
     }) => {
-      const update: any = { status };
+      const update: Record<string, unknown> = { status };
       if (paid_at !== undefined) update.paid_at = paid_at;
       if (payment_method !== undefined) update.payment_method = payment_method;
       if (notes_finance !== undefined) update.notes_finance = notes_finance;
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('booking_installments')
-        .update(update)
+        .update(update as any)
         .eq('id', installmentId);
       if (error) throw error;
     },
@@ -187,7 +187,7 @@ export function useAssignSeats(tripId: string) {
   return useMutation({
     mutationFn: async ({ bookingId, seats }: { bookingId: string; seats: string[] }) => {
       // 1. Update booking seat_numbers
-      const { error: e1 } = await (supabase as any)
+      const { error: e1 } = await supabase
         .from('group_bookings')
         .update({ seat_numbers: seats })
         .eq('id', bookingId);
@@ -201,9 +201,9 @@ export function useAssignSeats(tripId: string) {
         assigned_by: 'agent',
         assigned_at: new Date().toISOString(),
       }));
-      const { error: e2 } = await (supabase as any)
+      const { error: e2 } = await supabase
         .from('bus_seat_assignments')
-        .upsert(assignments, { onConflict: 'group_trip_id,seat_label,floor_number' });
+        .upsert(assignments as any, { onConflict: 'group_trip_id,seat_label,floor_number' });
       if (e2) throw e2;
     },
     onSuccess: () => {
@@ -220,7 +220,7 @@ export function useToggleSeatMapVisibility() {
   const { toast } = useToast();
   return useMutation({
     mutationFn: async ({ tripId, visible }: { tripId: string; visible: boolean }) => {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from('group_trips')
         .update({ seat_map_visible_to_client: visible })
         .eq('id', tripId);

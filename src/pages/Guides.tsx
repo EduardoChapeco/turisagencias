@@ -109,7 +109,7 @@ export default function Guides() {
                         </p>
                      </CardContent>
                      <CardFooter className="pt-0 pb-4 border-t border-vj-border mt-4 flex items-center justify-between text-muted-foreground text-xs font-medium">
-                        <span className="flex items-center gap-1.5"><BookOpen className="h-3.5 w-3.5"/> {(guide.tips as any[])?.length || 0} Dicas</span>
+                        <span className="flex items-center gap-1.5"><BookOpen className="h-3.5 w-3.5"/> {(guide.tips as Record<string, any>[])?.length || 0} Dicas</span>
                         <span>Atualizado há pouco</span>
                      </CardFooter>
                   </Card>

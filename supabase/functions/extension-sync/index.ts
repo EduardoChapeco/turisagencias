@@ -140,7 +140,7 @@ async function findExistingClient(context: Awaited<ReturnType<typeof resolveExte
   if (isUuid(snapshot.id)) {
     const { data } = await context.supabase
       .from('clients')
-      .select('id, org_id, name, email, phone, tags, notes, preferences, ltv, ltv_max, created_at, updated_at')
+      .select('id, org_id, name, email, phone, tags, notes, preferences, created_at, updated_at')
       .eq('org_id', context.orgId)
       .eq('id', snapshot.id)
       .maybeSingle();
@@ -156,7 +156,7 @@ async function findExistingClient(context: Awaited<ReturnType<typeof resolveExte
 
   const { data } = await context.supabase
     .from('clients')
-    .select('id, org_id, name, email, phone, tags, notes, preferences, ltv, ltv_max, created_at, updated_at')
+    .select('id, org_id, name, email, phone, tags, notes, preferences, created_at, updated_at')
     .eq('org_id', context.orgId)
     .eq('email', email)
     .maybeSingle();
@@ -183,17 +183,12 @@ async function upsertClientBase(context: Awaited<ReturnType<typeof resolveExtens
     preferences,
   };
 
-  const ltv = numberOrNull(snapshot.ltv);
-  const ltvMax = numberOrNull(snapshot.ltv_max);
-  if (ltv !== null) payload.ltv = ltv;
-  if (ltvMax !== null) payload.ltv_max = ltvMax;
-
   if (existing?.id) {
     const { data, error } = await context.supabase
       .from('clients')
       .update(payload)
       .eq('id', existing.id)
-      .select('id, org_id, name, email, phone, tags, notes, preferences, ltv, ltv_max, created_at, updated_at')
+      .select('id, org_id, name, email, phone, tags, notes, preferences, created_at, updated_at')
       .single();
 
     if (error) throw new Error(error.message);
@@ -203,7 +198,7 @@ async function upsertClientBase(context: Awaited<ReturnType<typeof resolveExtens
   const { data, error } = await context.supabase
     .from('clients')
     .insert(payload)
-    .select('id, org_id, name, email, phone, tags, notes, preferences, ltv, ltv_max, created_at, updated_at')
+    .select('id, org_id, name, email, phone, tags, notes, preferences, created_at, updated_at')
     .single();
 
   if (error) throw new Error(error.message);
@@ -378,14 +373,17 @@ async function upsertTravelers(context: Awaited<ReturnType<typeof resolveExtensi
     }
 
     if (!existing && firstText(traveler.full_name, traveler.name)) {
-      const { data, error } = await context.supabase
+      let query = context.supabase
         .from('travelers')
         .select('id')
         .eq('org_id', context.orgId)
         .eq('client_id', clientId)
-        .eq('full_name', firstText(traveler.full_name, traveler.name))
-        .eq('birth_date', parseDateInput(traveler.birth_date))
-        .maybeSingle();
+        .eq('full_name', firstText(traveler.full_name, traveler.name));
+
+      const birthDate = parseDateInput(traveler.birth_date);
+      if (birthDate) query = query.eq('birth_date', birthDate);
+
+      const { data, error } = await query.maybeSingle();
       if (error) throw new Error(error.message);
       existing = data || null;
     }

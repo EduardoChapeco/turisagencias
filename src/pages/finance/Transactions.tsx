@@ -37,7 +37,7 @@ export default function Transactions() {
       supplier_id: null,
       ...formData,
       paid_at: null,
-    } as any);
+    } as Record<string, any>);
     setIsDialogOpen(false);
     setFormData({ type: 'receivable', status: 'pending', amount: 0, due_date: '', description: '', payment_method: '' });
   };

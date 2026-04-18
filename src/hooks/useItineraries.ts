@@ -151,7 +151,7 @@ export function useItineraryStops(itineraryId: string | undefined) {
     mutationFn: async (newStop: Partial<ItineraryStop>) => {
       const { data, error } = await supabase
         .from('itinerary_stops')
-        .insert([{ ...newStop, itinerary_id: itineraryId } as any])
+        .insert([{ ...newStop, itinerary_id: itineraryId }])
         .select()
         .single();
       if (error) throw error;
@@ -214,7 +214,7 @@ export function useItineraryStops(itineraryId: string | undefined) {
       }
 
       if (stopsToInsert.length > 0) {
-        const { error: insErr } = await supabase.from('itinerary_stops').insert(stopsToInsert as any);
+        const { error: insErr } = await supabase.from('itinerary_stops').insert(stopsToInsert);
         if (insErr) throw insErr;
       }
 

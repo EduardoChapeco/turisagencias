@@ -125,6 +125,36 @@ function normalizePriority(value: string | null | undefined) {
   return raw || 'normal';
 }
 
+function normalizeTicketStatusForExtension(value: string | null | undefined) {
+  const raw = String(value || '').toLowerCase();
+  if (!raw || raw === 'open' || raw === 'aberto') return 'aberto';
+  if (['closed', 'resolved', 'done', 'fechado', 'resolvido', 'concluido', 'concluida'].includes(raw)) return 'fechado';
+  return 'em_andamento';
+}
+
+function normalizeFinancialStatusForExtension(value: string | null | undefined) {
+  const raw = String(value || '').toLowerCase();
+  if (['paid', 'pago', 'quitado', 'liquidado', 'baixado'].includes(raw)) return 'pago';
+  if (['cancelled', 'canceled', 'cancelado', 'cancelada'].includes(raw)) return 'cancelado';
+  if (['overdue', 'late', 'vencido', 'vencida'].includes(raw)) return 'vencido';
+  return 'aberto';
+}
+
+function isRevenueFinancialType(value: string | null | undefined) {
+  const raw = String(value || '').toLowerCase();
+  return !['expense', 'payable', 'despesa', 'saida', 'saÃ­da', 'refund_out'].includes(raw);
+}
+
+function computeClientLtv(financialRows: Array<Record<string, any>>) {
+  return (Array.isArray(financialRows) ? financialRows : []).reduce((sum, row) => {
+    const status = String(row?.status || '').toLowerCase();
+    if (['cancelled', 'canceled', 'cancelado', 'cancelada'].includes(status)) return sum;
+    if (!isRevenueFinancialType(row?.type || row?.kind)) return sum;
+    const amount = Number(row?.amount || 0);
+    return Number.isFinite(amount) ? sum + Math.max(amount, 0) : sum;
+  }, 0);
+}
+
 function defaultAiBaseUrl(provider: string | null | undefined) {
   const raw = String(provider || '').toLowerCase();
   if (raw === 'openrouter') return 'https://openrouter.ai/api/v1';
@@ -269,7 +299,7 @@ export async function findClientByPhone(
   for (const pattern of patterns) {
     const { data, error } = await supabase
       .from('clients')
-      .select('id, org_id, name, email, phone, tags, notes, preferences, ltv, ltv_max, created_at, updated_at')
+      .select('id, org_id, name, email, phone, tags, notes, preferences, created_at, updated_at')
       .eq('org_id', orgId)
       .ilike('phone', `%${pattern}%`)
       .limit(20);
@@ -300,7 +330,7 @@ export async function searchClients(
 
   const { data, error } = await supabase
     .from('clients')
-    .select('id, org_id, name, email, phone, tags, notes, preferences, ltv, ltv_max, created_at, updated_at')
+    .select('id, org_id, name, email, phone, tags, notes, preferences, created_at, updated_at')
     .eq('org_id', orgId)
     .or(orParts.join(','))
     .order('updated_at', { ascending: false })
@@ -355,7 +385,7 @@ function mapTicketRow(row: Record<string, any>, agentName: string) {
     code: row.ticket_code || `TCKR-${row.id.slice(0, 8).toUpperCase()}`,
     title: row.title,
     priority: normalizePriority(row.priority),
-    status: row.status === 'open' ? 'aberto' : 'em_andamento',
+    status: normalizeTicketStatusForExtension(row.status),
     agent: agentName,
     date: row.created_at ? new Date(row.created_at).toLocaleString('pt-BR') : 'agora',
     type: row.type || 'support',
@@ -404,7 +434,7 @@ function mapFinancialRow(row: Record<string, any>) {
     amount: row.amount ?? null,
     currency: row.currency || 'BRL',
     due_date: row.due_date || null,
-    status: row.status || 'aberto',
+    status: normalizeFinancialStatusForExtension(row.status),
     payment_method: row.payment_method || '',
     external_ref: row.reference_number || row.external_ref || '',
     created_at: row.created_at || null,
@@ -553,6 +583,7 @@ export async function hydrateExtensionClient(
   const cards = taskCards ?? [];
   const tasks = cards.filter((row) => !isDemandCard(row));
   const demands = cards.filter((row) => isDemandCard(row));
+  const lifetimeValue = computeClientLtv(financial ?? []);
 
   return {
     id: clientRow.id,
@@ -560,8 +591,8 @@ export async function hydrateExtensionClient(
     phone: clientRow.phone || '',
     email: clientRow.email || '',
     tags: Array.isArray(clientRow.tags) ? clientRow.tags : [],
-    ltv: Number(clientRow.ltv || 0),
-    ltv_max: Math.max(Number(clientRow.ltv_max || 60000), Number(clientRow.ltv || 0), 1),
+    ltv: lifetimeValue,
+    ltv_max: Math.max(60000, lifetimeValue, 1),
     trips: (trips ?? []).map(mapTripRow),
     tickets: (tickets ?? []).map((ticket) => mapTicketRow(ticket, agentName)),
     tasks: tasks.map((task) => mapTaskCardRow(task, doneColumnId || null)),

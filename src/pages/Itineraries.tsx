@@ -1,3 +1,5 @@
+import { logger } from '@/utils/logger';
+
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AppLayout } from '@/components/AppLayout';
@@ -40,7 +42,7 @@ export default function Itineraries() {
       setShowDialog(false);
       navigate(`/itineraries/${newItinerary.id}/builder`);
     } catch (e) {
-      console.error(e);
+      logger.error(e);
     } finally {
       setIsCreating(false);
     }
@@ -132,7 +134,7 @@ export default function Itineraries() {
                 <CardFooter className="p-5 pt-0 flex justify-between items-center text-xs text-vj-txt3">
                   <span className="flex items-center gap-1 font-medium bg-vj-bg px-2 py-1 rounded-md">
                     <Eye className="w-3.5 h-3.5" />
-                    {(itinerary as any).view_count || 0} views
+                    {(itinerary as Record<string, any>).view_count || 0} views
                   </span>
                 </CardFooter>
               </Card>

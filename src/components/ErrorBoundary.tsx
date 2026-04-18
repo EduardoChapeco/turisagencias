@@ -1,3 +1,5 @@
+import { logger } from '@/utils/logger';
+
 import React from 'react';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 
@@ -25,7 +27,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
     // In production, you'd send this to an error reporting service
     if (import.meta.env.DEV) {
       // eslint-disable-next-line no-console
-      console.error('[ErrorBoundary]', error, errorInfo);
+      logger.error('[ErrorBoundary]', error, errorInfo);
     }
   }
 

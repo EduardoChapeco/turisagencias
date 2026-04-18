@@ -50,7 +50,7 @@ export function HotelEdit({ id, open, onClose, onSuccess }: HotelEditProps) {
         .from('hotels_bank')
         .select('*')
         .eq('id', id)
-        .single() as any)
+        .single() as Record<string, any>)
         .then(({ data }: any) => {
           if (data) {
             setForm({
@@ -111,7 +111,7 @@ export function HotelEdit({ id, open, onClose, onSuccess }: HotelEditProps) {
       onSuccess?.(dbRes.id);
       onClose();
     } else {
-      const dbRes = await createHotel.mutateAsync(payload as any);
+      const dbRes = await createHotel.mutateAsync(payload as Record<string, any>);
       onSuccess?.(dbRes.id);
       onClose();
     }

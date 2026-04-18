@@ -97,11 +97,11 @@ export default function ClientDetail() {
         <div className="relative rounded-3xl overflow-hidden  border border-vj-border bg-white">
            {/* Cover Banner */}
            <div 
-             className={`h-32 w-full relative group cursor-pointer ${!(client as any).cover_url ? (isVip ? 'bg-gradient-to-r from-purple-600 to-indigo-900' : 'bg-gradient-to-r from-primary to-accent') : ''} opacity-90`}
+             className={`h-32 w-full relative group cursor-pointer ${!client.cover_url ? (isVip ? 'bg-gradient-to-r from-purple-600 to-indigo-900' : 'bg-gradient-to-r from-primary to-accent') : ''} opacity-90`}
              onClick={() => coverInputRef.current?.click()}
            >
-             {(client as any).cover_url && (
-               <img src={(client as any).cover_url} alt="Cover" className="w-full h-full object-cover" />
+             {client.cover_url && (
+               <img src={client.cover_url} alt="Cover" className="w-full h-full object-cover" />
              )}
              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
                <span className="text-white opacity-0 group-hover:opacity-100 transition-opacity text-sm font-medium flex items-center gap-2">
@@ -123,7 +123,7 @@ export default function ClientDetail() {
                  const path = `covers/${client.id}.${ext}`;
                  await StorageService.uploadFile('client-media', path, file);
                  const publicUrl = StorageService.getPublicUrl('client-media', path);
-                 await updateClient.mutateAsync({ id: client.id, cover_url: publicUrl } as any);
+                 await updateClient.mutateAsync({ id: client.id, cover_url: publicUrl });
                  toast({ title: 'Capa atualizada!' });
                } catch (err: any) {
                  toast({ title: 'Erro ao enviar capa', description: err.message, variant: 'destructive' });
@@ -264,21 +264,21 @@ export default function ClientDetail() {
                 <CardContent className="pt-6 space-y-4">
                   <div>
                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Endereço</p>
-                    <p className="text-sm">{(client.address as any)?.street || 'Não preenchido'}</p>
+                    <p className="text-sm">{(client.address as Record<string, any>)?.street || 'Não preenchido'}</p>
                   </div>
                   <div className="grid grid-cols-2 gap-2">
                      <div>
                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Cidade</p>
-                       <p className="text-sm">{(client.address as any)?.city || '—'}</p>
+                       <p className="text-sm">{(client.address as Record<string, any>)?.city || '—'}</p>
                      </div>
                      <div>
                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Estado</p>
-                       <p className="text-sm">{(client.address as any)?.state || '—'}</p>
+                       <p className="text-sm">{(client.address as Record<string, any>)?.state || '—'}</p>
                      </div>
                   </div>
                   <div>
                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">CEP e País</p>
-                    <p className="text-sm">{[(client.address as any)?.zip_code, (client.address as any)?.country].filter(Boolean).join(' • ') || '—'}</p>
+                    <p className="text-sm">{[(client.address as Record<string, any>)?.zip_code, (client.address as Record<string, any>)?.country].filter(Boolean).join(' • ') || '—'}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -421,7 +421,7 @@ export default function ClientDetail() {
           
           <TabsContent value="docs" className="focus-visible:outline-none">
              {(() => {
-               const prefs = (client.preferences as any) || {};
+               const prefs = (client.preferences as Record<string, any>) || {};
                const docs: any[] = prefs.documents || [];
                return docs.length === 0 ? (
                  <div className="flex flex-col items-center justify-center py-20 border border-dashed border-vj-border rounded-2xl bg-vj-bg">

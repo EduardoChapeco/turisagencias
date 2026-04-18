@@ -53,9 +53,9 @@ export default function HotelDetail() {
   };
 
   const stars = Number(hotel.category) || 0;
-  const amenities = (hotel as any).amenities || [];
-  const gallery = (hotel as any).gallery_urls || [];
-  const sections = (hotel as any).sections || [];
+  const amenities = (hotel as Record<string, any>).amenities || [];
+  const gallery = (hotel as Record<string, any>).gallery_urls || [];
+  const sections = (hotel as Record<string, any>).sections || [];
   const carouselImages = [hotel.photo_url, ...gallery].filter(Boolean);
 
   return (
@@ -224,14 +224,14 @@ export default function HotelDetail() {
         )}
 
         {/* Video Section */}
-        {(hotel as any).video_url && (
+        {(hotel as Record<string, any>).video_url && (
            <div className="pt-8">
             <h2 className="text-2xl font-bold mb-6 text-vj-txt flex items-center gap-3">
               <Video className="h-6 w-6 text-vj-green" /> Apresentação em Vídeo
             </h2>
             <div className="aspect-video rounded-3xl overflow-hidden  border border-vj-border">
               <iframe 
-                src={(hotel as any).video_url.replace('watch?v=', 'embed/')} 
+                src={(hotel as Record<string, any>).video_url.replace('watch?v=', 'embed/')} 
                 className="w-full h-full" 
                 allowFullScreen
               />

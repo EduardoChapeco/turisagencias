@@ -52,8 +52,8 @@ export default function GuideDetail() {
     navigate('/guides');
   };
 
-  const gallery = (guide as any).gallery_urls || [];
-  const sections = (guide as any).sections || [];
+  const gallery = (guide as Record<string, any>).gallery_urls || [];
+  const sections = (guide as Record<string, any>).sections || [];
   const carouselImages = [guide.cover_image_url, ...gallery].filter(Boolean);
 
   return (
@@ -191,14 +191,14 @@ export default function GuideDetail() {
         )}
 
         {/* Video Section */}
-        {(guide as any).video_url && (
+        {(guide as Record<string, any>).video_url && (
            <div className="pt-8">
             <h2 className="text-2xl font-bold mb-6 text-vj-txt flex items-center gap-3">
               <Video className="h-6 w-6 text-vj-green" /> Documentário/Vídeo do Destino
             </h2>
             <div className="aspect-video rounded-3xl overflow-hidden  border border-vj-border">
               <iframe 
-                src={(guide as any).video_url.replace('watch?v=', 'embed/')} 
+                src={(guide as Record<string, any>).video_url.replace('watch?v=', 'embed/')} 
                 className="w-full h-full" 
                 allowFullScreen
               />

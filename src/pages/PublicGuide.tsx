@@ -35,9 +35,9 @@ export default function PublicGuide() {
       const { data, error } = await supabase
         .from('destination_guides')
         .select('*')
-        .eq('is_published', true) as any;
+        .eq('is_published', true) as Record<string, any>;
       if (error) throw error;
-      const match = (data as any[])?.find((g: any) => g.slug === slug);
+      const match = (data as Record<string, any>[])?.find((g: any) => g.slug === slug);
       if (!match) throw new Error('Guide not found');
       return match;
     },

@@ -4,7 +4,7 @@ import { SheetPage } from '@/components/ui/SheetPage';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
-import { useQuery } from '@tanstack/react-query';
+import { useClient } from '@/hooks/useClients';
 import {
   User, Mail, Phone, MapPin, Globe, Shield, FileText, Copy,
   Plane, Edit, Star, Calendar
@@ -22,15 +22,7 @@ export function ClientQuickView({ clientId, open, onClose, onEdit }: ClientQuick
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const { data: client, isLoading } = useQuery({
-    queryKey: ['client-quick', clientId],
-    queryFn: async () => {
-      if (!clientId) return null;
-      const { data } = await (supabase.from('clients').select('*').eq('id', clientId).single() as any);
-      return data;
-    },
-    enabled: !!clientId && open,
-  });
+  const { data: client, isLoading } = useClient(open && clientId ? clientId : undefined);
 
   const copyPortalLink = () => {
     if (!clientId) return;
@@ -39,7 +31,7 @@ export function ClientQuickView({ clientId, open, onClose, onEdit }: ClientQuick
     toast({ title: '🔗 Link do portal copiado!', description: link });
   };
 
-  const prefs = (client?.preferences as any) || {};
+  const prefs = (client?.preferences as Record<string, any>) || {};
   const documents: any[] = prefs.documents || [];
   const isVip = client?.tags?.map((t: string) => t.toLowerCase()).includes('vip');
 

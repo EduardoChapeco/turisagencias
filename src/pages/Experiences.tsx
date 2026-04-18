@@ -352,8 +352,8 @@ export default function Experiences() {
                     <button
                       key={opt.key}
                       type="button"
-                      onClick={() => update(opt.key, !(form as any)[opt.key])}
-                      className={`flex-1 px-4 py-3 rounded-vj-lg border text-sm font-medium transition-all ${(form as any)[opt.key] ? 'bg-vj-green/10 border-vj-green text-vj-green' : 'bg-vj-bg border-vj-border text-vj-txt3'}`}
+                      onClick={() => update(opt.key, !(form as Record<string, any>)[opt.key])}
+                      className={`flex-1 px-4 py-3 rounded-vj-lg border text-sm font-medium transition-all ${(form as Record<string, any>)[opt.key] ? 'bg-vj-green/10 border-vj-green text-vj-green' : 'bg-vj-bg border-vj-border text-vj-txt3'}`}
                     >
                       {opt.label}
                     </button>
@@ -396,7 +396,7 @@ export default function Experiences() {
                       <Input
                         type="number"
                         className="flex-1"
-                        value={(form as any)[cat.key]}
+                        value={(form as Record<string, any>)[cat.key]}
                         onChange={e => update(cat.key, e.target.value)}
                         placeholder="0,00"
                         step="0.01"

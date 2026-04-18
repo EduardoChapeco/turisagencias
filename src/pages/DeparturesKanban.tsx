@@ -195,8 +195,8 @@ function DepartureColumn({
   // Sort: cards with check_in_date first, ordered by date ascending
   const sortedCards = useMemo(() => {
     return [...cards].sort((a, b) => {
-      const da = ((a.metadata ?? (a as any).meta) as any)?.check_in_date;
-      const db = ((b.metadata ?? (b as any).meta) as any)?.check_in_date;
+      const da = ((a.metadata ?? (a as Record<string, any>).meta) as Record<string, any>)?.check_in_date;
+      const db = ((b.metadata ?? (b as Record<string, any>).meta) as Record<string, any>)?.check_in_date;
       if (!da && !db) return 0;
       if (!da) return 1;
       if (!db) return -1;
@@ -274,7 +274,7 @@ export default function DeparturesKanban() {
   const urgentCount = useMemo(() => {
     return data?.cards?.filter((c) => {
       if (viewMode === 'me' && c.assigned_to !== user?.id) return false;
-      const date = ((c as any).metadata ?? (c as any).meta)?.check_in_date;
+      const date = ((c as Record<string, any>).metadata ?? (c as Record<string, any>).meta)?.check_in_date;
       if (!date) return false;
       const diff = Math.ceil((new Date(date + 'T00:00:00').getTime() - Date.now()) / 86400000);
       return diff >= 0 && diff <= 7;

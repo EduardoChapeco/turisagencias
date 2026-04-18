@@ -67,7 +67,7 @@ export default function TicketDetail() {
         {/* --- Unified Timeline Builder --- */}
         {(() => {
           // Flatten messages
-          const msgs = ((ticket as any).ticket_messages || []).map((m: Record<string, unknown>) => ({
+          const msgs = ((ticket as Record<string, any>).ticket_messages || []).map((m: Record<string, unknown>) => ({
              _type: 'msg',
              id: m.id as string,
              date: new Date(m.created_at as string),

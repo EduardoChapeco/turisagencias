@@ -1,3 +1,5 @@
+import { logger } from '@/utils/logger';
+
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthStore } from '@/stores/authStore';
@@ -19,7 +21,7 @@ export function useAIInsights() {
         .limit(3);
 
       if (error) {
-        console.error('Error fetching AI insights:', error);
+        logger.error('Error fetching AI insights:', error);
         return [];
       }
       return data || [];

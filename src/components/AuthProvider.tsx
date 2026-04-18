@@ -1,3 +1,5 @@
+import { logger } from '@/utils/logger';
+
 import { useCallback, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthStore } from '@/stores/authStore';
@@ -42,7 +44,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         try {
           await fetchUserData(session.user.id);
         } catch (error) {
-          console.error('Erro ao carregar contexto do usuário', error);
+          logger.error('Erro ao carregar contexto do usuário', error);
           reset();
         }
       } else {
@@ -66,7 +68,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       queueMicrotask(() => {
         fetchUserData(session.user.id)
           .catch((error) => {
-            console.error('Erro ao sincronizar sessão', error);
+            logger.error('Erro ao sincronizar sessão', error);
             reset();
           })
           .finally(() => setLoading(false));

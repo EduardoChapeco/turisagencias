@@ -61,7 +61,7 @@ export default function TripDetail() {
   const [editOpen, setEditOpen] = useState(false);
 
   // Itinerary linked to this trip
-  const tripItineraryId = (trip as any)?.itinerary_id as string | undefined;
+  const tripItineraryId = (trip as Record<string, any>)?.itinerary_id as string | undefined;
   const { data: linkedItinerary } = useItineraryDetail(tripItineraryId);
   const { stops: linkedStops } = useItineraryStops(tripItineraryId);
 
@@ -167,7 +167,7 @@ export default function TripDetail() {
               </div>
               <div className="space-y-1">
                 <p className="text-[10px] font-bold text-vj-txt3 uppercase tracking-wider">Passageiros</p>
-                <p className="text-xl font-bold">{((trip as any).pax_count) ?? 0} Pax</p>
+                <p className="text-xl font-bold">{((trip as Record<string, any>).pax_count) ?? 0} Pax</p>
                 <p className="text-xs text-vj-txt3 font-medium">Ocupação total</p>
               </div>
             </div>
@@ -203,8 +203,8 @@ export default function TripDetail() {
             </div>
 
             <div className="relative z-10 pt-4 border-t border-zinc-800 grid grid-cols-2 gap-2 text-[10px] font-bold uppercase tracking-widest text-zinc-500">
-               <div>LOC: <span className="text-white ml-1">{(trip as any).locator_code || '---'}</span></div>
-               <div className="text-right font-mono">{(trip as any).flight_number || 'S/V'}</div>
+               <div>LOC: <span className="text-white ml-1">{(trip as Record<string, any>).locator_code || '---'}</span></div>
+               <div className="text-right font-mono">{(trip as Record<string, any>).flight_number || 'S/V'}</div>
             </div>
           </div>
 
@@ -217,7 +217,7 @@ export default function TripDetail() {
             
             <div className="mt-8">
               <h4 className="text-lg font-bold truncate max-w-full text-vj-txt">{trip.hotel_name || "Sem Hotel Definido"}</h4>
-              <p className="text-xs text-vj-txt3 font-medium mt-1">{(trip as any).meal_plan || "Regime não informado"}</p>
+              <p className="text-xs text-vj-txt3 font-medium mt-1">{(trip as Record<string, any>).meal_plan || "Regime não informado"}</p>
               
               <div className="flex items-center gap-1 mt-3">
                 {[1,2,3,4,5].map(s => <div key={s} className="w-1.5 h-1.5 rounded-full bg-vj-green/20" />)}
@@ -232,12 +232,12 @@ export default function TripDetail() {
              <div className="space-y-6">
                 <div>
                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Valor do Pacote</p>
-                   <p className="stat-value text-vj-txt text-3xl leading-none">{fmtCurrency((trip as any).total_value)}</p>
+                   <p className="stat-value text-vj-txt text-3xl leading-none">{fmtCurrency((trip as Record<string, any>).total_value)}</p>
                 </div>
                 <div className="pt-4 border-t border-slate-200">
                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1.5"><Shield className="w-3 h-3"/> Seguro Viagem</p>
-                   <p className="text-xs font-bold text-vj-txt truncate">{(trip as any).insurance_company || "Não Contratado"}</p>
-                   <p className="text-[10px] font-mono text-slate-400 mt-0.5">{(trip as any).insurance_policy || "---"}</p>
+                   <p className="text-xs font-bold text-vj-txt truncate">{(trip as Record<string, any>).insurance_company || "Não Contratado"}</p>
+                   <p className="text-[10px] font-mono text-slate-400 mt-0.5">{(trip as Record<string, any>).insurance_policy || "---"}</p>
                 </div>
              </div>
           </div>
@@ -254,11 +254,11 @@ export default function TripDetail() {
               {trip.clients && (
                 <div className="p-4 rounded-[20px] bg-zinc-50 border border-zinc-100 flex items-center gap-4">
                   <div className="w-12 h-12 rounded-full bg-vj-green flex items-center justify-center text-white font-black  ">
-                    {(trip.clients as any).name?.charAt(0) || 'C'}
+                    {(trip.clients as Record<string, any>).name?.charAt(0) || 'C'}
                   </div>
                   <div className="min-w-0">
                     <p className="text-[9px] font-bold text-vj-green uppercase tracking-widest">Contratante</p>
-                    <p className="text-sm font-bold text-vj-txt truncate">{(trip.clients as any).name}</p>
+                    <p className="text-sm font-bold text-vj-txt truncate">{(trip.clients as Record<string, any>).name}</p>
                   </div>
                 </div>
               )}
@@ -369,7 +369,7 @@ export default function TripDetail() {
                              </div>
                              <div>
                                <p className="text-xs font-bold truncate w-full">{doc.title}</p>
-                               <p className="text-[10px] text-vj-txt3 uppercase font-bold mt-1">{(doc as any).doc_type}</p>
+                               <p className="text-[10px] text-vj-txt3 uppercase font-bold mt-1">{(doc as Record<string, any>).doc_type}</p>
                              </div>
                           </div>
                         ))}

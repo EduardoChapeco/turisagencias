@@ -46,7 +46,7 @@ export function GuideEdit({ id, open, onClose, onSuccess }: GuideEditProps) {
         .from('destination_guides')
         .select('*')
         .eq('id', id)
-        .single() as any)
+        .single() as Record<string, any>)
         .then(({ data }: any) => {
           if (data) {
             setForm({
@@ -56,7 +56,7 @@ export function GuideEdit({ id, open, onClose, onSuccess }: GuideEditProps) {
               gallery_urls: data.gallery_urls || [],
               sections: data.sections || [],
               video_url: data.video_url || '',
-              tips: (data.tips as any) || [],
+              tips: (data.tips as Record<string, any>) || [],
             });
           }
         })

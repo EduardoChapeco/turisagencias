@@ -157,7 +157,7 @@ export default function TravelerInfo() {
                         </p>
                      </CardContent>
                      <CardFooter className="pt-0 pb-4 border-t border-vj-border/30 mt-4 flex items-center justify-between text-vj-txt3 text-[11px] font-medium uppercase tracking-wider">
-                        <span>{(page.content_blocks as any[])?.length || 0} blocos</span>
+                        <span>{(page.content_blocks as Record<string, any>[])?.length || 0} blocos</span>
                         <span>{new Date(page.updated_at).toLocaleDateString('pt-BR')}</span>
                      </CardFooter>
                   </Card>

@@ -46,7 +46,7 @@ export default function Quotations() {
   const quotations = allQuotations ?? [];
   const filteredQuotations = quotations.filter(q => {
     const s = search.toLowerCase();
-    const searchMatch = !s || (q.destination?.toLowerCase().includes(s) || q.hotel_name?.toLowerCase().includes(s) || (q.clients as any)?.name?.toLowerCase().includes(s));
+    const searchMatch = !s || (q.destination?.toLowerCase().includes(s) || q.hotel_name?.toLowerCase().includes(s) || (q.clients as Record<string, any>)?.name?.toLowerCase().includes(s));
     const statusMatch = statusFilter === 'all' || q.status === statusFilter;
     return searchMatch && statusMatch;
   });
@@ -152,7 +152,7 @@ export default function Quotations() {
             {filteredQuotations.map((q) => {
               const clientName = getClientName(q.clients);
               const style = STATUS_STYLES[q.status] ?? STATUS_STYLES.draft;
-              const coverImage = (q as any).cover_image_url;
+              const coverImage = (q as Record<string, any>).cover_image_url;
 
               return (
                 <div

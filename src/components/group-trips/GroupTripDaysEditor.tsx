@@ -28,7 +28,7 @@ export function GroupTripDaysEditor({ tripId }: Props) {
 
   const handleSave = async () => {
     if (!editing) return;
-    await upsert.mutateAsync(editing as any);
+    await upsert.mutateAsync(editing as Record<string, any>);
     toast({ title: 'Dia salvo' });
     setEditing(null);
   };

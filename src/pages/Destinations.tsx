@@ -203,7 +203,7 @@ function DestinationForm({
         min_connection_hours: form.min_connection_hours ? Number(form.min_connection_hours) : undefined,
       } : undefined,
       is_active: true,
-    } as any);
+    } as Record<string, any>);
 
     onClose();
   };

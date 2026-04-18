@@ -57,7 +57,7 @@ export function useCreateClient() {
       passport_number?: string; passport_expiry?: string;
     }) => {
       const { documents, passport_url, preferences, address, city, state, zip_code, country, ...restData } = data;
-      const insertData = { ...restData, org_id: organization!.id, created_by: user!.id } as any;
+      const insertData: Record<string, unknown> = { ...restData, org_id: organization!.id, created_by: user!.id };
       
       const newPreferences = { ...(preferences || {}) };
       if (documents && documents.length > 0) newPreferences.documents = documents;
@@ -102,7 +102,7 @@ export function useUpdateClient() {
       cover_url: string; passport_url: string; preferences: any;
     }>) => {
       const { documents, passport_url, preferences, address, city, state, zip_code, country, ...restData } = data;
-      const updateData = { ...restData } as any;
+      const updateData: Record<string, unknown> = { ...restData };
 
       if (documents !== undefined || passport_url !== undefined) {
         updateData.preferences = { ...(preferences || {}) };

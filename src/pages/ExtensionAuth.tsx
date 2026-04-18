@@ -97,11 +97,11 @@ export default function ExtensionAuth() {
           ...((data && typeof data === 'object') ? data : {}),
           app_url: window.location.origin,
           token: session.access_token,
-          org_id: (data as any)?.orgId || (data as any)?.org_id || null,
-          user_name: (data as any)?.agentName || (data as any)?.user_name || user.email || 'Equipe',
-          user_email: (data as any)?.email || user.email || null,
+          org_id: (data as Record<string, any>)?.orgId || (data as Record<string, any>)?.org_id || null,
+          user_name: (data as Record<string, any>)?.agentName || (data as Record<string, any>)?.user_name || user.email || 'Equipe',
+          user_email: (data as Record<string, any>)?.email || user.email || null,
           backend: {
-            ...(((data as any)?.backend && typeof (data as any).backend === 'object') ? (data as any).backend : {}),
+            ...(((data as Record<string, any>)?.backend && typeof (data as Record<string, any>).backend === 'object') ? (data as Record<string, any>).backend : {}),
             supabase_access_token: session.access_token,
           },
           raw: {

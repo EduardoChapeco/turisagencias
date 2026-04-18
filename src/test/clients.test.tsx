@@ -43,9 +43,9 @@ import ClientNew from '@/pages/ClientNew';
 function renderWithProviders(ui: React.ReactElement, route = '/clients') {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   useAuthStore.setState({
-    user: { id: 'user-1', email: 'test@test.com' } as any,
-    profile: mockProfile as any,
-    organization: mockOrganization as any,
+    user: { id: 'user-1', email: 'test@test.com' } as Record<string, any>,
+    profile: mockProfile as Record<string, any>,
+    organization: mockOrganization as Record<string, any>,
     roles: ['org_admin'],
     isLoading: false,
   });

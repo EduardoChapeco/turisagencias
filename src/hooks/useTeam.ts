@@ -1,3 +1,5 @@
+import { logger } from '@/utils/logger';
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -44,7 +46,7 @@ export const useCreateTeamMember = () => {
     },
     onError: (error) => {
       toast.error('Erro ao adicionar membro à equipe.');
-      console.error(error);
+      logger.error(error);
     }
   });
 };

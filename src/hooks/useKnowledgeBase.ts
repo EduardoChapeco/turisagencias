@@ -1,3 +1,5 @@
+import { logger } from '@/utils/logger';
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthStore } from '@/stores/authStore';
@@ -60,10 +62,10 @@ export function useUpsertKnowledge() {
         });
         if (embError) {
           // Não bloqueia: salva sem embedding, RAG por texto ainda funciona
-          console.warn('[useUpsertKnowledge] Embedding não gerado:', embError.message);
+          logger.warn('[useUpsertKnowledge] Embedding não gerado:', embError.message);
         }
       } catch (embErr) {
-        console.warn('[useUpsertKnowledge] Falha na edge fn de embedding:', embErr);
+        logger.warn('[useUpsertKnowledge] Falha na edge fn de embedding:', embErr);
       }
 
       return data;

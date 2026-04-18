@@ -52,8 +52,9 @@ export function useKanbanBoard(slug: string) {
       if (!board) {
         try {
           await supabase.rpc('ensure_default_kanban_boards', { _org_id: organization.id });
-        } catch (_) {
-          // RPC might not exist yet — proceed gracefully
+        } catch (rpcErr) {
+          // [SENTINEL] Log explicitly — never silently discard errors
+          console.error('[useKanbanBoard] ensure_default_kanban_boards RPC failed:', rpcErr);
         }
 
         const { data: seededBoard } = await supabase
@@ -107,7 +108,7 @@ export function useKanbanBoard(slug: string) {
 
         await supabase
           .from('kanban_columns')
-          .insert(defaultColumns.map((c) => ({ ...c, board_id: board!.id })) as any);
+          .insert(defaultColumns.map((c) => ({ ...c, board_id: board!.id, org_id: organization.id })));
       }
 
       // Step 4: Fetch columns + cards

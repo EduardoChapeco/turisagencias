@@ -97,9 +97,14 @@ export default function PublicBookingVoucher() {
         <div className="max-w-2xl mx-auto space-y-4">
 
           {/* ── Agency branding strip ─────────────────────────────────── */}
-          {trip?.org_logo && (
-            <div className="flex items-center justify-between px-4 py-2 no-print">
-              <img src={trip.org_logo} alt="Logo" className="h-8 object-contain" />
+          {(trip?.org_logo || trip?.org_name) && (
+            <div className="flex items-center gap-3 px-4 py-2 no-print">
+              {trip.org_logo && (
+                <img src={trip.org_logo} alt={trip.org_name ?? 'Agência'} className="h-8 object-contain" />
+              )}
+              {trip.org_name && !trip.org_logo && (
+                <span className="font-semibold text-sm text-vj-txt">{trip.org_name}</span>
+              )}
             </div>
           )}
 
@@ -140,12 +145,14 @@ export default function PublicBookingVoucher() {
                 <Badge
                   className={`text-sm px-4 py-1.5 rounded-full font-bold ${
                     booking.status === 'confirmed' ? 'bg-vj-green text-white'
-                    : booking.status === 'paid' ? 'bg-blue-600 text-white'
+                    : booking.status === 'cancelled' ? 'bg-red-100 text-red-700'
+                    : booking.status === 'transferred' ? 'bg-blue-100 text-blue-700'
                     : 'bg-amber-50 text-amber-700 border border-amber-200'
                   }`}
                 >
                   {booking.status === 'confirmed' ? '✅ Confirmada'
-                    : booking.status === 'paid' ? '💳 Paga'
+                    : booking.status === 'cancelled' ? '❌ Cancelada'
+                    : booking.status === 'transferred' ? '↔ Transferida'
                     : '⏳ Aguardando'}
                 </Badge>
               </div>

@@ -215,16 +215,16 @@ export function QuotationBuilderSheet({ open, onClose, clientId }: QuotationBuil
       ai_raw_response: aiRawResponse,
       // Extended fields (new columns)
       cover_image_url: form.cover_image_url || undefined,
-      itinerary: itinerary.length > 0 ? itinerary as any : undefined,
-      transports: transports.length > 0 ? transports as any : undefined,
-      excursions: excursions.length > 0 ? excursions as any : undefined,
+      itinerary: itinerary.length > 0 ? itinerary as Record<string, any> : undefined,
+      transports: transports.length > 0 ? transports as Record<string, any> : undefined,
+      excursions: excursions.length > 0 ? excursions as Record<string, any> : undefined,
       pricing_mode: form.pricing_mode || undefined,
       valid_until: form.valid_until || undefined,
       notes_internal: form.notes_internal || undefined,
       included_items: form.included_items,
       excluded_items: form.excluded_items,
       media_urls: form.media_urls,
-    } as any);
+    } as Record<string, any>);
     if (result) {
       onClose();
       navigate(`/quotations/${result.id}`);
@@ -484,7 +484,7 @@ export function QuotationBuilderSheet({ open, onClose, clientId }: QuotationBuil
                       <X className="h-3 w-3" />
                     </button>
 
-                    <Select value={t.type} onValueChange={(v) => updateTransport(t.id, { type: v as any })}>
+                    <Select value={t.type} onValueChange={(v) => updateTransport(t.id, { type: v as Record<string, any> })}>
                       <SelectTrigger className="border-vj-border bg-vj-bg">
                         <SelectValue />
                       </SelectTrigger>

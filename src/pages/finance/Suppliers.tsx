@@ -54,9 +54,9 @@ export default function Suppliers() {
   const handleSubmit = async () => {
     if (!formData.name) return;
     if (editingSupplier) {
-      await updateSupplier.mutateAsync({ id: editingSupplier.id, ...formData } as any);
+      await updateSupplier.mutateAsync({ id: editingSupplier.id, ...formData } as Record<string, any>);
     } else {
-      await createSupplier.mutateAsync({ org_id: profile!.org_id!, ...formData } as any);
+      await createSupplier.mutateAsync({ org_id: profile!.org_id!, ...formData } as Record<string, any>);
     }
     setIsDialogOpen(false);
   };

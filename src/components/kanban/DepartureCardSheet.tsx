@@ -83,7 +83,7 @@ function EmbarqueSection({ card }: { card: DepartureCardData }) {
       estimated_value: form.estimated_value ? Number(form.estimated_value) : null,
       meta: newMeta,
       metadata: newMeta,   // keep both columns in sync
-    } as any);
+    } as Record<string, any>);
     setDirty(false);
   };
 
@@ -230,7 +230,7 @@ function DocsSection({ cardId }: { cardId: string }) {
         />
       )}
       {checklists?.map((cl) => {
-        const items = (cl as any).items ?? [];
+        const items = (cl as Record<string, any>).items ?? [];
         const checked = items.filter((i: any) => i.is_checked).length;
         const pct = items.length > 0 ? Math.round((checked / items.length) * 100) : 0;
         return (
@@ -312,7 +312,7 @@ function NotasSection({ cardId }: { cardId: string }) {
       ) : (
         <div className="space-y-3">
           {notes.map((note) => {
-            const author = (note as any).author;
+            const author = (note as Record<string, any>).author;
             const authorName = author ? `${author.first_name} ${author.last_name}`.trim() : 'Agente';
             return (
               <div key={note.id} className="border border-vj-border rounded-xl p-3 bg-white space-y-1.5">

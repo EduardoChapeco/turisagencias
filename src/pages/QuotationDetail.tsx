@@ -1,3 +1,5 @@
+import { logger } from '@/utils/logger';
+
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { AppLayout } from '@/components/AppLayout';
@@ -212,9 +214,11 @@ export default function QuotationDetail() {
   };
 
   const copyPublicLink = () => {
-    if (quotation?.share_token) {
-      navigator.clipboard.writeText(`${window.location.origin}/q/${quotation.share_token}`);
+    if (quotation?.public_token) {
+      navigator.clipboard.writeText(`${window.location.origin}/q/${quotation.public_token}`);
       toast({ title: 'Link da página pública copiado!' });
+    } else {
+      toast({ title: 'Token público não gerado.', variant: 'destructive' });
     }
   };
 
@@ -232,7 +236,7 @@ export default function QuotationDetail() {
         body: { quotation_id: id, org_id: quotation?.org_id, status }
       });
     } catch (e) {
-      console.error('Feedback loop error', e);
+      logger.error('Feedback loop error', e);
     }
   };
 
@@ -252,7 +256,7 @@ export default function QuotationDetail() {
         total_value: quotation.total_value ?? null,
         status: 'confirmed',
         quotation_id: quotation.id,
-      } as any);
+      } as Record<string, any>);
       if (trip?.id) {
         toast({ title: 'Viagem criada!', description: 'Redirecionando para o workspace da viagem...' });
         navigate(`/trips/${trip.id}`);

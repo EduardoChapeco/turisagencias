@@ -16,6 +16,31 @@ import { useAIInsights } from '@/hooks/useAIInsights';
 
 const MONTH_LABELS = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
 
+// ── Dashboard Stats shape returned by get_dashboard_stats RPC ─────────────────
+interface DashboardStats {
+  finances: {
+    profit: number;
+    receivable: number;
+    payable: number;
+  };
+  lastMonthFinances: {
+    profit: number;
+    receivable: number;
+    payable: number;
+  } | null;
+  activeTrips: number;
+  pendingQuotations: number;
+  urgentTickets: number;
+  quotations: {
+    draft: number;
+    sent: number;
+    accepted: number;
+    total: number;
+    conversionRate: number;
+  };
+  profitDelta: number | null;
+}
+
 function useFinancialChart(orgId: string | undefined) {
   return useQuery({
     queryKey: ['dashboard-chart', orgId],
@@ -43,25 +68,23 @@ function useFinancialChart(orgId: string | undefined) {
 }
 
 function useDashboardStats(orgId: string | undefined) {
-  return useQuery({
+  return useQuery<DashboardStats | null>({
     queryKey: ['dashboard-stats', orgId],
     queryFn: async () => {
       if (!orgId) return null;
       const { data, error } = await supabase.rpc('get_dashboard_stats', { p_org_id: orgId });
       if (error) throw error;
-      
-      const stats = data as any;
-      const profitDelta = stats.lastMonthFinances?.profit > 0 
-        ? ((stats.finances.profit - stats.lastMonthFinances.profit) / stats.lastMonthFinances.profit) * 100 
+
+      // Single cast at the Supabase RPC boundary — result is untyped Json
+      const stats = data as unknown as DashboardStats;
+      const profitDelta = stats.lastMonthFinances?.profit
+        ? ((stats.finances.profit - stats.lastMonthFinances.profit) / stats.lastMonthFinances.profit) * 100
         : null;
 
-      return {
-        ...stats,
-        profitDelta
-      };
+      return { ...stats, profitDelta };
     },
     enabled: !!orgId,
-    staleTime: 60 * 1000, 
+    staleTime: 60 * 1000,
   });
 }
 

@@ -38,7 +38,7 @@ function QuickAddForm({ boardId, columnId, onCancel }: { boardId: string; column
       board_id: boardId, 
       column_id: columnId, 
       title: title.trim(),
-    } as any);
+    } as Record<string, any>);
     setTitle('');
     onCancel();
   };

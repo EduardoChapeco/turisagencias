@@ -56,7 +56,7 @@ export function useUpdateMemberRole() {
       if (role !== undefined) updates.role = role;
       if (is_active !== undefined) updates.is_active = is_active;
 
-      const { error } = await supabase.from('profiles').update(updates as any).eq('id', profileId);
+      const { error } = await supabase.from('profiles').update(updates).eq('id', profileId);
       if (error) throw error;
     },
     onSuccess: () => {

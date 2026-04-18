@@ -1,11 +1,18 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.6";
-import OpenAI from "https://esm.sh/openai@4.56.0";
+import { parseFeed } from "https://deno.land/x/rss@1.0.0/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+
+// Fallback RSS feeds focused on travel B2B
+const FALLBACK_FEEDS = [
+  "https://www.panrotas.com.br/rss.xml",
+  "https://www.mercadoeeventos.com.br/feed/",
+  "https://brasilturis.com.br/feed/"
+];
 
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
@@ -18,28 +25,54 @@ Deno.serve(async (req: Request) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
     );
 
-    // MOCK DE RSS FEEDS (Simplified for demonstration)
-    const rawNewsFeeds = [
-      {
-         title: "Gol suspende viagens e afeta 300 embarques",
-         source: "Panrotas",
-         url: `https://mock.url/${Date.now()}-1`,
-         body: "A cia aérea comunicou que os aeroportos estarão fechados..."
-      },
-      {
-         title: "Nova promoção All Inclusive na Bahia",
-         source: "Melhores Destinos",
-         url: `https://mock.url/${Date.now()}-2`,
-         body: "A rede Iberostar lançou tarifas para o fim do ano de 2026..."
-      }
-    ];
+    // Get Groq/OpenRouter keys
+    const apiKey = Deno.env.get("GROQ_API_KEY") || Deno.env.get("OPENROUTER_API_KEY");
+    const aiBaseUrl = Deno.env.get("GROQ_API_KEY") 
+        ? "https://api.groq.com/openai/v1/chat/completions" 
+        : "https://openrouter.ai/api/v1/chat/completions";
+    const aiModel = Deno.env.get("GROQ_API_KEY") ? "llama-3.3-70b-versatile" : "google/gemini-2.5-flash";
 
-    const openai = new OpenAI({ apiKey: Deno.env.get("OPENAI_API_KEY") || "dummy_key" });
+    const firecrawlKey = Deno.env.get("FIRECRAWL_API_KEY");
+
+    // 1. Fetch available RSS feeds from the database
+    let { data: dbFeeds, error: dbError } = await supabaseClient.from('rss_feeds').select('url').eq('is_active', true);
+    
+    let feedUrls = FALLBACK_FEEDS;
+    if (!dbError && dbFeeds && dbFeeds.length > 0) {
+        feedUrls = [...new Set([...feedUrls, ...dbFeeds.map(f => f.url)])];
+    }
 
     let processedCount = 0;
+    
+    // 2. Aggregate recent articles from RSS feeds
+    const rawArticles = [];
+    for (const feedUrl of feedUrls) {
+      try {
+        const response = await fetch(feedUrl);
+        if (!response.ok) continue;
+        const xml = await response.text();
+        const feed = await parseFeed(xml);
+        
+        // Take top 3 most recent articles per feed to avoid overload
+        const entries = feed.entries.slice(0, 3);
+        for (const entry of entries) {
+           rawArticles.push({
+             title: entry.title?.value || "Sem Título",
+             url: entry.links[0]?.href || "",
+             source: feed.title.value || "RSS Feed",
+             body: entry.description?.value || ""
+           });
+        }
+      } catch (e) {
+        console.error(`Erro ao parsear feed ${feedUrl}:`, e);
+      }
+    }
 
-    for (const item of rawNewsFeeds) {
-      // Verifica se a URL já existe para evitar duplicidade
+    // 3. Process each article with Crawling & AI Scoring
+    for (const item of rawArticles) {
+      if (!item.url) continue;
+
+      // Check if already processed
       const { data: existing } = await supabaseClient
         .from('ai_radar_news')
         .select('id')
@@ -48,63 +81,91 @@ Deno.serve(async (req: Request) => {
 
       if (existing) continue;
 
+      let fullContent = item.body;
+      
+      // se houver chave do Firecrawl e a URL for válida, raspar o conteúdo real!
+      if (firecrawlKey && item.url) {
+         try {
+             console.log("Scraping with Firecrawl:", item.url);
+             const scrapeRes = await fetch("https://api.firecrawl.dev/v1/scrape", {
+                 method: "POST",
+                 headers: {
+                     "Content-Type": "application/json",
+                     "Authorization": `Bearer ${firecrawlKey}`
+                 },
+                 body: JSON.stringify({ url: item.url, formats: ["markdown"] })
+             });
+             const scrapeData = await scrapeRes.json();
+             if (scrapeData.success && scrapeData.data?.markdown) {
+                 // limita o texto para n estourar o contexto
+                 fullContent = scrapeData.data.markdown.substring(0, 4000); 
+             }
+         } catch(e) {
+             console.error("Erro no Firecrawl:", e);
+         }
+      }
+
       let score = 50;
       let tags = ['Turismo'];
       let is_alert = false;
-      let ai_validation_reason = "Informação útil para agências.";
-      let content_summary = "Resumo indisponível - chave AI não fornecida.";
+      let ai_validation_reason = "Curadoria automática via RSS.";
+      let content_summary = fullContent.substring(0, 200) + "...";
 
-      // Se tivermos a chave OpenAI, invocamos a IA
-      if (Deno.env.get("OPENAI_API_KEY")) {
-        const aiPrompt = `Você é um curador de notícias para agências de viagem. Avalie esta notícia: "${item.title}". Contexto: "${item.body}"
-Retorne APENAS um JSON válido seguindo este formato:
-{ "relevance_score": [0 a 100], "tags": ["array de tags"], "is_alert": true/false, "summary": "Resumo executivo de 2 frases", "reason": "Porque importa para a agência" }`;
+      // Classificação com LLM Gratuita/Baixo custo (Groq/OpenRouter)
+      if (apiKey) {
+        const aiPrompt = `Você é um curador de notícias para agências de viagem atuando no Brasil. Analise:
+Título: "${item.title}"
+Conteúdo: "${fullContent}"
+
+Retorne APENAS um JSON:
+{"relevance_score": [int 0-100], "tags": ["array strings"], "is_alert": boolean, "summary": "Resumo executivo limpo", "reason": "Motivo da relevância p/ agência B2B"}`;
         
         try {
-          const aiResponse = await openai.chat.completions.create({
-            model: "gpt-4o-mini",
-            messages: [{ role: "system", content: aiPrompt }],
-            response_format: { type: "json_object" }
+          const aiRes = await fetch(aiBaseUrl, {
+             method: 'POST',
+             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+             body: JSON.stringify({
+                 model: aiModel,
+                 messages: [{ role: "user", content: aiPrompt }],
+                 temperature: 0.1,
+                 response_format: { type: "json_object" }
+             })
           });
-          const rawResult = aiResponse.choices[0]?.message?.content || "{}";
-          const parsed = JSON.parse(rawResult);
-          
-          score = parsed.relevance_score || score;
-          tags = parsed.tags || tags;
-          is_alert = parsed.is_alert || is_alert;
-          content_summary = parsed.summary || item.body;
-          ai_validation_reason = parsed.reason || ai_validation_reason;
-        } catch (e) {
-          console.error("Erro na OpenAI, utilizando fallback manual", e);
-          if (item.title.toLowerCase().includes("suspende")) {
-             is_alert = true;
-             score = 95;
-             tags = ["Aéreo", "Aviso"];
+
+          if (aiRes.ok) {
+             const aiData = await aiRes.json();
+             const rawResult = aiData.choices[0]?.message?.content || "{}";
+             const parsed = JSON.parse(rawResult);
+             
+             score = parsed.relevance_score ?? score;
+             tags = parsed.tags && parsed.tags.length > 0 ? parsed.tags : tags;
+             is_alert = parsed.is_alert || false;
+             content_summary = parsed.summary || content_summary;
+             ai_validation_reason = parsed.reason || ai_validation_reason;
           }
+        } catch (e) {
+          console.error("Erro no LLM (Groq/OpenRouter)", e);
         }
       } else {
-        // Fallback simulation sem chave OpenAI  
-        if (item.title.toLowerCase().includes("suspende")) {
-          is_alert = true;
-          score = 95;
-          tags = ["Aéreo", "Aviso Útil"];
+        // Fallback local se não houver chave
+        if (item.title.toLowerCase().includes("suspende") || item.title.toLowerCase().includes("cancelado")) {
+           is_alert = true; score = 90; tags.push("Aviso Crítico");
         }
-        content_summary = item.body;
       }
 
-      const { error: insertError } = await supabaseClient.from('ai_radar_news').insert({
+      await supabaseClient.from('ai_radar_news').insert({
           title: item.title,
           source: item.source,
           url: item.url,
           content_summary: content_summary,
-          full_extracted_content: item.body,
+          full_extracted_content: fullContent,
           ai_classification_tags: tags,
           ai_relevance_score: score,
           ai_validation_reason: ai_validation_reason,
           is_alert: is_alert
       });
 
-      if (!insertError) processedCount++;
+      processedCount++;
     }
 
     return new Response(JSON.stringify({ success: true, processed: processedCount }), {
@@ -113,6 +174,7 @@ Retorne APENAS um JSON válido seguindo este formato:
     });
 
   } catch (error) {
+    console.error("Agent Crawler Exception:", error);
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,

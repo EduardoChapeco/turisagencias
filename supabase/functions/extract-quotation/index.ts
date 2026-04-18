@@ -348,6 +348,8 @@ serve(async (req) => {
           check_in: extracted.check_in || null,
           check_out: extracted.check_out || null,
           num_nights: extracted.num_nights || null,
+          num_adults: extracted.pax_adultos || 2,
+          num_children: extracted.pax_criancas || 0,
           meal_plan: extracted.meal_plan || null,
           room_type: extracted.room_type || null,
           total_value: extracted.total_value,

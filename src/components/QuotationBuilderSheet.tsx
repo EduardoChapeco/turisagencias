@@ -78,6 +78,8 @@ export function QuotationBuilderSheet({ open, onClose, clientId }: QuotationBuil
     check_in: '',
     check_out: '',
     num_nights: '',
+    num_adults: '2',
+    num_children: '0',
     meal_plan: '',
     room_type: '',
     total_value: '',
@@ -139,6 +141,8 @@ export function QuotationBuilderSheet({ open, onClose, clientId }: QuotationBuil
           check_in: d.check_in || p.check_in,
           check_out: d.check_out || p.check_out,
           num_nights: d.num_nights?.toString() || p.num_nights,
+          num_adults: (d.num_adults ?? d.pax_adultos)?.toString() || p.num_adults,
+          num_children: (d.num_children ?? d.pax_criancas)?.toString() || p.num_children,
           meal_plan: d.meal_plan || p.meal_plan,
           room_type: d.room_type || p.room_type,
           total_value: d.total_value?.toString() || p.total_value,
@@ -204,6 +208,8 @@ export function QuotationBuilderSheet({ open, onClose, clientId }: QuotationBuil
       check_in: form.check_in || undefined,
       check_out: form.check_out || undefined,
       num_nights: form.num_nights ? parseInt(form.num_nights) : undefined,
+      num_adults: form.num_adults ? parseInt(form.num_adults) : 1,
+      num_children: form.num_children ? parseInt(form.num_children) : 0,
       meal_plan: form.meal_plan || undefined,
       room_type: form.room_type || undefined,
       total_value: form.total_value ? parseFloat(form.total_value) : undefined,
@@ -351,8 +357,19 @@ export function QuotationBuilderSheet({ open, onClose, clientId }: QuotationBuil
                       <Input type="date" value={form.check_out} onChange={(e) => update('check_out', e.target.value)} className="border-vj-border bg-white" />
                     </div>
                     <div className="space-y-1.5">
-                      <Label>Noites</Label>
+                      <Label>Total de Noites</Label>
                       <Input type="number" value={form.num_nights} onChange={(e) => update('num_nights', e.target.value)} className="border-vj-border bg-white" />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <Label>Adultos</Label>
+                      <Input type="number" min="1" value={form.num_adults} onChange={(e) => update('num_adults', e.target.value)} className="border-vj-border bg-white" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label>Crianças (<span className="text-[10px]">Até 12a</span>)</Label>
+                      <Input type="number" min="0" value={form.num_children} onChange={(e) => update('num_children', e.target.value)} className="border-vj-border bg-white" />
                     </div>
                   </div>
 

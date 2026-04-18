@@ -33,18 +33,18 @@ export default function RadarPortal() {
           <div>
             <div className="flex items-center gap-3 mb-2">
               <span className="bg-indigo-100 text-indigo-600 p-2 rounded-xl">
-                <Radar className="w-6 h-6" />
+                <Newspaper className="w-6 h-6" />
               </span>
-              <h1 className="font-heading text-4xl font-extrabold tracking-tight">AI Radar Portal</h1>
+              <h1 className="font-heading text-4xl font-extrabold tracking-tight">Portal de Notícias</h1>
             </div>
             <p className="text-muted-foreground max-w-2xl">
-              Curadoria automatizada em tempo real. A nossa IA monitora portais globais e filtra apenas aquilo que impacta diretamente a rotina e as vendas das agências de turismo.
+              Curadoria inteligente em tempo real. Filtramos conteúdos globais para fornecer atualizações estratégicas voltadas ao turismo B2B e operações de agências.
             </p>
           </div>
           <div className="flex items-center gap-3">
              <Button variant="outline" className="h-12 rounded-xl px-6" onClick={handleScan} disabled={isScanning}>
                 <RefreshCw className={`w-4 h-4 mr-2 ${isScanning ? 'animate-spin' : ''}`} />
-                {isScanning ? 'Scaneando a rede...' : 'Forçar Varredura (Crawler)'}
+                {isScanning ? 'Sincronizando...' : 'Atualizar Portal'}
              </Button>
           </div>
         </div>
@@ -156,10 +156,10 @@ export default function RadarPortal() {
 
           {!isLoading && filteredNews?.length === 0 && (
             <div className="col-span-full py-20 text-center flex flex-col items-center justify-center border-2 border-dashed border-zinc-200 rounded-[32px]">
-               <Radar className="w-12 h-12 text-zinc-300 mb-4" />
-               <h3 className="text-xl font-bold text-zinc-700">Radar Limpo</h3>
-               <p className="text-zinc-500 max-w-sm mt-2">A inteligência artificial ainda não capturou nenhuma notícia relevante para os filtros atuais.</p>
-               <Button className="mt-6 rounded-xl" onClick={handleScan}>Fazer varredura agora</Button>
+               <Newspaper className="w-12 h-12 text-zinc-300 mb-4" />
+               <h3 className="text-xl font-bold text-zinc-700">Central Limpa</h3>
+               <p className="text-zinc-500 max-w-sm mt-2">Ainda não há novas notícias curadas para os filtros de sua agência hoje.</p>
+               <Button className="mt-6 rounded-xl" onClick={handleScan}>Sincronizar Atualizações</Button>
             </div>
           )}
         </div>

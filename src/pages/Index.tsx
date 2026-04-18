@@ -157,9 +157,9 @@ export default function Dashboard() {
            <div className="bg-white border border-vj-border rounded-[32px] p-6 lg:row-span-2">
               <div className="flex items-center gap-2 mb-2">
                   <div className="bg-vj-green/10 text-vj-green p-2 rounded-xl"><Newspaper className="w-5 h-5" /></div>
-                  <h3 className="font-bold text-lg text-vj-txt">Radar de Notícias</h3>
+                  <h3 className="font-bold text-lg text-vj-txt">Portal de Notícias</h3>
               </div>
-              <p className="text-sm text-vj-txt3 mb-6">Notícias filtradas e validadas pela Inteligência Artificial para agentes.</p>
+              <p className="text-sm text-vj-txt3 mb-6">Atualizações estratégicas e comunicados importantes do setor de turismo B2B.</p>
 
               <div className="space-y-4">
                  <div>
@@ -171,7 +171,7 @@ export default function Dashboard() {
                     </div>
                  </div>
                  <Button variant="outline" className="w-full justify-between group h-12 rounded-xl border-vj-border hover:bg-zinc-50">
-                     <span>Personalizar Radar</span>
+                     <span>Acessar Portal Completo</span>
                      <ArrowRight className="w-4 h-4 text-vj-txt3 group-hover:translate-x-1 transition-transform" />
                  </Button>
               </div>
@@ -182,7 +182,7 @@ export default function Dashboard() {
              [1,2,3,4].map(i => <Skeleton key={i} className="h-48 rounded-[32px]" />)
            ) : aiNews.length === 0 ? (
              <div className="col-span-full xl:col-span-3 text-center py-10 italic text-vj-txt3 text-sm">
-                Radar limpo. Escaneie as notícias no Portal Radar.
+                Portal aguardando novas informações corporativas.
              </div>
            ) : aiNews.map((news) => (
                <div key={news.id} onClick={() => navigate('/radar')} className={`p-6 rounded-[32px] border flex flex-col justify-between cursor-pointer transition-transform hover:-translate-y-1 ${news.alert ? 'bg-red-50 border-red-200' : 'bg-white border-vj-border'}`}>

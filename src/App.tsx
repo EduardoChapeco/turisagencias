@@ -59,6 +59,7 @@ const PendingCancellations = lazy(() => import('./pages/finance/PendingCancellat
 const ContractTemplates = lazy(() => import('./pages/legal/ContractTemplates'));
 const Automations = lazy(() => import('./pages/automations/Automations'));
 const Team = lazy(() => import('./pages/admin/Team'));
+const RadarPortal = lazy(() => import('./pages/RadarPortal'));
 
 const PublicTravelerForm = lazy(() => import('./pages/PublicTravelerForm'));
 const PublicQuotation = lazy(() => import('./pages/PublicQuotation'));
@@ -147,6 +148,7 @@ const App = () => (
               <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
 
               <Route path="/" element={<ProtectedWithOrg><Dashboard /></ProtectedWithOrg>} />
+              <Route path="/radar" element={<ProtectedWithOrg><RadarPortal /></ProtectedWithOrg>} />
 
               <Route path="/clients" element={<ProtectedWithOrg><Clients /></ProtectedWithOrg>} />
               <Route path="/clients/:id" element={<ProtectedWithOrg><ClientDetail /></ProtectedWithOrg>} />

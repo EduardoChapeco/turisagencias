@@ -11,11 +11,14 @@ import { Button } from '@/components/ui/button';
 import { QuotationBuilderSheet } from '@/components/QuotationBuilderSheet';
 import { useState } from 'react';
 import { Input } from '@/components/ui/input';
+import { useRadarNews } from '@/hooks/useAiRadar';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const { organization, profile } = useAuthStore();
   const [quotationBuilderOpen, setQuotationBuilderOpen] = useState(false);
+  const { data: realNews, isLoading: isNewsLoading } = useRadarNews();
 
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Bom dia' : hour < 18 ? 'Boa tarde' : 'Boa noite';
@@ -29,13 +32,18 @@ export default function Dashboard() {
     { id: 5, loc: 'Rio de Janeiro, BR', top: '65%', left: '34%', pax: 12 },
   ];
 
-  // Mocked AI Curated News (Simulating RSS feed validation)
-  const aiNews = [
-    { id: 1, tag: 'Mundo', source: 'Panrotas', title: 'França remove restrições de visto de trânsito em CDG para brasileiros na temporada de inverno.', date: 'Hoje, 08h30', rating: 98, verified: true },
-    { id: 2, tag: 'Aéreo', source: 'Mercado & Eventos', title: 'LATAM anuncia retomada de voos diários para Orlando a partir de novembro, com novas aeronaves.', date: 'Hoje, 07h15', rating: 95, verified: true },
-    { id: 3, tag: 'Hotelaria', source: 'Hosteltur', title: 'Nova rede de resorts all-inclusive foca em luxo na Riviera Maya; veja tarifas comissionadas.', date: 'Ontem, 16h40', rating: 88, verified: true },
-    { id: 4, tag: 'Clima', source: 'Reuters', title: 'Furacão na Flórida: Voos cancelados e aeroportos fechados nas próximas 48h.', date: 'Em alta', rating: 100, verified: true, alert: true },
-  ];
+  // Map real news to fit the existing UI, taking top 4 most critical
+  const aiNews = (realNews || []).slice(0, 4).map(n => ({
+    id: n.id,
+    tag: n.ai_classification_tags?.[0] || 'Geral',
+    source: n.source,
+    title: n.title,
+    date: new Date(n.published_at).toLocaleDateString('pt-BR'),
+    rating: n.ai_relevance_score,
+    verified: true,
+    alert: n.is_alert,
+    url: n.url
+  }));
 
   return (
     <AppLayout>
@@ -170,8 +178,14 @@ export default function Dashboard() {
            </div>
 
            {/* News Cards */}
-           {aiNews.map((news) => (
-               <div key={news.id} className={`p-6 rounded-[32px] border flex flex-col justify-between cursor-pointer transition-transform hover:-translate-y-1 ${news.alert ? 'bg-red-50 border-red-200' : 'bg-white border-vj-border'}`}>
+           {isNewsLoading ? (
+             [1,2,3,4].map(i => <Skeleton key={i} className="h-48 rounded-[32px]" />)
+           ) : aiNews.length === 0 ? (
+             <div className="col-span-full xl:col-span-3 text-center py-10 italic text-vj-txt3 text-sm">
+                Radar limpo. Escaneie as notícias no Portal Radar.
+             </div>
+           ) : aiNews.map((news) => (
+               <div key={news.id} onClick={() => navigate('/radar')} className={`p-6 rounded-[32px] border flex flex-col justify-between cursor-pointer transition-transform hover:-translate-y-1 ${news.alert ? 'bg-red-50 border-red-200' : 'bg-white border-vj-border'}`}>
                   <div>
                       <div className="flex items-center justify-between mb-4">
                          <div className="flex items-center gap-2">
@@ -180,18 +194,18 @@ export default function Dashboard() {
                          </div>
                          {news.verified && (
                              <div className="flex flex-col items-end">
-                                <span className="text-[9px] font-bold text-vj-green uppercase">Validado - AI Match</span>
+                                <span className="text-[9px] font-bold text-vj-green uppercase">Validado - AI</span>
                                 <span className="text-[10px] text-vj-txt3">{news.rating}% relevância</span>
                              </div>
                          )}
                       </div>
-                      <h4 className={`font-bold leading-snug ${news.alert ? 'text-red-950 text-base' : 'text-vj-txt text-sm'}`}>
+                      <h4 className={`font-bold leading-snug line-clamp-3 ${news.alert ? 'text-red-950 text-base' : 'text-vj-txt text-sm'}`}>
                           {news.title}
                       </h4>
                   </div>
                   <div className="mt-4 pt-4 border-t border-black/5 flex items-center justify-between">
-                      <span className="text-xs font-semibold text-vj-txt3">{news.date}</span>
-                      <Button variant="ghost" size="sm" className="h-8 px-2 text-vj-green hover:bg-vj-green/10 -mr-2">Ver resumo</Button>
+                      <span className="text-[10px] font-semibold text-vj-txt3">{news.date}</span>
+                      <Button variant="ghost" size="sm" className="h-8 px-2 text-vj-green hover:bg-vj-green/10 -mr-2">Detalhes</Button>
                   </div>
                </div>
            ))}

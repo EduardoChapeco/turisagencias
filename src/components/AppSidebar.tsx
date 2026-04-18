@@ -9,6 +9,7 @@ import {
   LayoutDashboard,
   LifeBuoy,
   LogOut,
+  Newspaper,
   Plane,
   Users,
   Settings as SettingsIcon,

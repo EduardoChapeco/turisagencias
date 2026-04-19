@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import {
   ArrowLeft, Copy, ExternalLink, Send, MapPin, Hotel, Calendar,
@@ -473,13 +474,24 @@ export default function QuotationDetail() {
           </Card>
         </div>
 
-        {/* ── PAINEL DE CENÁRIOS DA IA ── */}
-        <div>
-          <div className="flex items-center justify-between mb-4">
+        <Tabs defaultValue="scenarios" className="w-full mt-6 space-y-6">
+          <TabsList className="bg-zinc-100/50 p-1.5 rounded-2xl flex gap-1 w-full max-w-sm">
+            <TabsTrigger value="scenarios" className="flex-1 rounded-xl text-xs font-bold uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:text-vj-green data-[state=active]:shadow-sm">
+              <Sparkles className="w-3.5 h-3.5 mr-1.5" /> Cenários IA
+            </TabsTrigger>
+            <TabsTrigger value="proposal" className="flex-1 rounded-xl text-xs font-bold uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-sm">
+              <FileText className="w-3.5 h-3.5 mr-1.5" /> Proposta
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="scenarios" className="animate-in fade-in slide-in-from-bottom-2 duration-300 outline-none">
+            {/* ── PAINEL DE CENÁRIOS DA IA ── */}
             <div>
-              <h2 className="text-lg font-bold text-zinc-800 flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-vj-green" /> Análise Inteligente de Cenários
-              </h2>
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h2 className="text-lg font-bold text-zinc-800 flex items-center gap-2">
+                    <Sparkles className="w-5 h-5 text-vj-green" /> Análise Inteligente de Cenários
+                  </h2>
               <p className="text-xs text-zinc-500 mt-0.5">
                 {scenarios && scenarios.length > 0
                   ? `${scenarios.length} cenários gerados · Clique em "Analisar com IA" para regenerar`
@@ -520,66 +532,74 @@ export default function QuotationDetail() {
               <p className="font-semibold text-zinc-600 text-sm">Nenhum cenário gerado ainda</p>
               <p className="text-xs text-zinc-400">Clique aqui ou no botão "Analisar com IA" para gerar 3 cenários alternativos com scoring completo</p>
             </div>
-          )}
-        </div>
+              )}
+            </div>
+          </TabsContent>
 
-        {/* WhatsApp text preview */}
-        {quotation.whatsapp_text && (
-          <Card className="premium-card">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-xs text-muted-foreground uppercase tracking-widest font-bold flex items-center gap-2">
-                💬 Texto WhatsApp
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="p-4 rounded-2xl bg-[#dcf8c6] border border-green-200">
-                <pre className="whitespace-pre-wrap text-sm text-gray-800 leading-relaxed font-sans">{quotation.whatsapp_text}</pre>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+          <TabsContent value="proposal" className="animate-in fade-in slide-in-from-bottom-2 duration-300 space-y-6 outline-none">
+            {/* WhatsApp text preview */}
+            {quotation.whatsapp_text ? (
+              <Card className="premium-card">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-xs text-muted-foreground uppercase tracking-widest font-bold flex items-center gap-2">
+                    💬 Texto WhatsApp
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="p-4 rounded-2xl bg-[#dcf8c6] border border-green-200">
+                    <pre className="whitespace-pre-wrap text-sm text-gray-800 leading-relaxed font-sans">{quotation.whatsapp_text}</pre>
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+               <div className="border border-dashed border-zinc-200 rounded-2xl p-8 text-center text-zinc-400">
+                  <p className="text-sm">O texto persuasivo de WhatsApp ainda não foi gerado ou salvo.</p>
+               </div>
+            )}
 
-        {/* Proposta Comercial Gerada */}
-        {proposalMarkdown && (
-          <Card className="premium-card border-blue-100">
-            <CardHeader className="pb-2">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-xs text-blue-600 uppercase tracking-widest font-bold flex items-center gap-2">
-                  <FileText className="w-3.5 h-3.5" /> Proposta Comercial (IA)
-                </CardTitle>
-                <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="h-7 text-xs rounded-xl"
-                    onClick={() => {
-                      navigator.clipboard.writeText(proposalMarkdown);
-                      toast({ title: 'Proposta copiada!' });
-                    }}
-                  >
-                    <Copy className="w-3 h-3 mr-1" /> Copiar Markdown
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="h-7 text-xs rounded-xl text-zinc-400"
-                    onClick={() => setProposalMarkdown(null)}
-                  >
-                    Fechar
-                  </Button>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="p-4 rounded-2xl bg-blue-50/50 border border-blue-100 max-h-96 overflow-y-auto">
-                <pre className="whitespace-pre-wrap text-xs text-zinc-700 leading-relaxed font-mono">{proposalMarkdown}</pre>
-              </div>
-              <p className="text-[9px] text-zinc-400 mt-2 text-center">
-                Markdown pronto para colar no WhatsApp, Email ou ferramenta de PDF
-              </p>
-            </CardContent>
-          </Card>
-        )}
+            {/* Proposta Comercial Gerada */}
+            {proposalMarkdown && (
+              <Card className="premium-card border-blue-100">
+                <CardHeader className="pb-2">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-xs text-blue-600 uppercase tracking-widest font-bold flex items-center gap-2">
+                      <FileText className="w-3.5 h-3.5" /> Proposta Comercial (IA)
+                    </CardTitle>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-7 text-xs rounded-xl"
+                        onClick={() => {
+                          navigator.clipboard.writeText(proposalMarkdown);
+                          toast({ title: 'Proposta copiada!' });
+                        }}
+                      >
+                        <Copy className="w-3 h-3 mr-1" /> Copiar Markdown
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-7 text-xs rounded-xl text-zinc-400"
+                        onClick={() => setProposalMarkdown(null)}
+                      >
+                        Fechar
+                      </Button>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="p-4 rounded-2xl bg-blue-50/50 border border-blue-100 max-h-96 overflow-y-auto">
+                    <pre className="whitespace-pre-wrap text-xs text-zinc-700 leading-relaxed font-mono">{proposalMarkdown}</pre>
+                  </div>
+                  <p className="text-[9px] text-zinc-400 mt-2 text-center">
+                    Markdown pronto para colar no WhatsApp, Email ou ferramenta de PDF
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+        </Tabs>
       </div>
     </AppLayout>
   );

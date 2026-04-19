@@ -48,7 +48,16 @@ export function useQuotationScenarios(quotationId: string | undefined) {
         .eq('quotation_id', quotationId)
         .order('score', { ascending: false });
       if (error) throw error;
-      return data as QuotationScenario[];
+      
+      return data.map((row: any) => ({
+        ...row,
+        scenario_type: row.metadata?.scenario_type || 'direct',
+        title: row.scenario_label || row.metadata?.title,
+        description: row.rationale || row.metadata?.description,
+        score_breakdown: row.metadata?.score_breakdown,
+        estimated_savings_brl: row.metadata?.estimated_savings_brl || (row.price_delta < 0 ? Math.abs(row.price_delta) : null),
+        estimated_extra_cost_brl: row.metadata?.estimated_extra_cost_brl || (row.price_delta > 0 ? row.price_delta : null),
+      })) as QuotationScenario[];
     },
     enabled: !!quotationId,
     staleTime: 5 * 60_000,

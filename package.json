@@ -11,8 +11,9 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
+    "db:push": "node push-db.cjs",
     "deploy": "npm run build && wrangler pages deploy dist --project-name turisagencias --commit-dirty=true",
-    "deploy:cf": "set VITE_SUPABASE_URL=https://mdulkbvdedfgwzesgeuh.supabase.co&& set VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_alNhQs2BUjql4nXP5bzkxA_Q3pJYaLo&& npm run build && wrangler pages deploy dist --project-name turisagencias --commit-dirty=true"
+    "deploy:cf": "set VITE_SUPABASE_URL=https://mdulkbvdedfgwzesgeuh.supabase.co&& set VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_alNhQs2BUjql4nXP5bzkxA_Q3pJYaLo&& npm run build && npx wrangler pages deploy dist --project-name turisagencias --commit-dirty=true"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

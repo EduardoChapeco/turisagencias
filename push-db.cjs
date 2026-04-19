@@ -1,13 +1,20 @@
 const { execSync } = require('child_process');
 
+const dbUrl = String(process.env.SUPABASE_DB_URL || '').trim();
+
+if (!dbUrl) {
+  console.error('Missing SUPABASE_DB_URL. Configure the new database URL before running migrations.');
+  process.exit(1);
+}
+
 try {
-  console.log('Pushing ALL 45 Migrations to the blank DB...');
-  execSync('npx supabase db push --yes --db-url "postgresql://postgres:EEaR6399%21%40%232026@db.mdulkbvdedfgwzesgeuh.supabase.co:5432/postgres"', {
+  console.log('Pushing all migrations to the linked Supabase database...');
+  execSync(`npx supabase db push --yes --db-url "${dbUrl}"`, {
     stdio: 'inherit',
-    env: { ...process.env, SUPABASE_DB_PASSWORD: 'EEaR6399!@#2026' }
+    env: process.env,
   });
-  console.log('Database migrated successfully! All Schemas, Triggers, RLS and Hooks applied.');
-} catch (e) {
-  console.error('Error pushing db:', e.message);
+  console.log('Database migrated successfully. Schemas, triggers, RLS and hooks were applied.');
+} catch (error) {
+  console.error('Error pushing db:', error.message);
   process.exit(1);
 }

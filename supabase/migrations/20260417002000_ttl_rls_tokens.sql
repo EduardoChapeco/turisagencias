@@ -3,6 +3,7 @@
 -- 1. Quotations
 ALTER TABLE public.quotations ADD COLUMN IF NOT EXISTS token_expires_at TIMESTAMP WITH TIME ZONE;
 
+DROP FUNCTION IF EXISTS public.get_public_quotation CASCADE;
 CREATE OR REPLACE FUNCTION public.get_public_quotation(_token UUID)
 RETURNS TABLE (
   id UUID,
@@ -15,7 +16,6 @@ RETURNS TABLE (
   total_price NUMERIC,
   currency TEXT,
   status TEXT,
-  items JSONB,
   org_name TEXT,
   org_logo TEXT
 )
@@ -32,10 +32,9 @@ AS $$
     q.hotel_name,
     q.check_in,
     q.check_out,
-    q.total_price,
+    q.total_value,
     q.currency,
     q.status,
-    q.items,
     o.name,
     o.logo_url
   FROM public.quotations q
@@ -45,18 +44,23 @@ AS $$
 $$;
 
 
+
 -- 2. Itineraries
 ALTER TABLE public.itineraries ADD COLUMN IF NOT EXISTS token_expires_at TIMESTAMP WITH TIME ZONE;
 -- (RLS Policies on itineraries usually check the token in a SELECT policy, so we update the policy)
 DROP POLICY IF EXISTS "Anon reads valid token" ON public.itineraries;
-CREATE POLICY "Anon reads valid token"
-  ON public.itineraries FOR SELECT TO anon
+DROP POLICY IF EXISTS "Anon reads valid token" ON public.itineraries;
+DROP POLICY IF EXISTS "Anon reads valid token" ON public.itineraries;
+DROP POLICY IF EXISTS "Anon reads valid token" ON public.itineraries;
+DROP POLICY IF EXISTS "Anon reads valid token" ON public.itineraries;
+CREATE POLICY "Anon reads valid token" ON public.itineraries FOR SELECT TO anon
   USING (public_token IS NOT NULL AND (token_expires_at IS NULL OR token_expires_at > now()));
 
 
 -- 3. Checklists
 ALTER TABLE public.checklists ADD COLUMN IF NOT EXISTS token_expires_at TIMESTAMP WITH TIME ZONE;
 
+DROP FUNCTION IF EXISTS public.get_public_checklist CASCADE;
 CREATE OR REPLACE FUNCTION public.get_public_checklist(_token UUID)
 RETURNS TABLE (
   checklist_id UUID,
@@ -65,7 +69,7 @@ RETURNS TABLE (
   item_title TEXT,
   item_description TEXT,
   is_completed BOOLEAN,
-  position INT
+  "position" INT
 )
 LANGUAGE sql
 STABLE
@@ -79,15 +83,18 @@ AS $$
     i.title,
     i.description,
     i.is_completed,
-    i.position
+    i."position"
   FROM public.checklists c
   JOIN public.checklist_items i ON i.checklist_id = c.id
   WHERE c.share_token = _token
     AND c.is_visible_to_client = true
     AND (c.token_expires_at IS NULL OR c.token_expires_at > now())
-  ORDER BY i.position, i.created_at
+  ORDER BY i."position", i.created_at
 $$;
 
+
+DROP FUNCTION IF EXISTS public.toggle_public_checklist_item CASCADE;
+DROP FUNCTION IF EXISTS public.toggle_public_checklist_item CASCADE;
 CREATE OR REPLACE FUNCTION public.toggle_public_checklist_item(_token UUID, _item_id UUID, _is_completed BOOLEAN)
 RETURNS UUID
 LANGUAGE plpgsql
@@ -118,8 +125,11 @@ $$;
 ALTER TABLE public.group_bookings ADD COLUMN IF NOT EXISTS token_expires_at TIMESTAMP WITH TIME ZONE;
 
 DROP POLICY IF EXISTS "public read booking by token" ON public.group_bookings;
-CREATE POLICY "public read booking by token"
-  ON public.group_bookings FOR SELECT
+DROP POLICY IF EXISTS "public read booking by token" ON public.group_bookings;
+DROP POLICY IF EXISTS "public read booking by token" ON public.group_bookings;
+DROP POLICY IF EXISTS "public read booking by token" ON public.group_bookings;
+DROP POLICY IF EXISTS "public read booking by token" ON public.group_bookings;
+CREATE POLICY "public read booking by token" ON public.group_bookings FOR SELECT
   USING (public_token IS NOT NULL AND (token_expires_at IS NULL OR token_expires_at > now()));
 
 

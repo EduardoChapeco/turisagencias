@@ -1,5 +1,7 @@
 DROP FUNCTION IF EXISTS public.get_public_group_trip(text);
 
+DROP FUNCTION IF EXISTS public.get_public_group_trip CASCADE;
+DROP FUNCTION IF EXISTS public.get_public_group_trip CASCADE;
 CREATE OR REPLACE FUNCTION public.get_public_group_trip(_slug text)
  RETURNS TABLE(id uuid, org_id uuid, title text, subtitle text, slug text, cover_image_url text, gallery_urls text[], destination text, origin_city text, departure_date date, return_date date, num_days integer, num_nights integer, price_per_pax numeric, currency text, max_pax integer, current_pax integer, description_md text, includes text[], excludes text[], important_notes text, transport_type text, installments_count integer, org_name text, org_logo text, org_whatsapp text, org_primary_color text)
  LANGUAGE plpgsql
@@ -27,8 +29,11 @@ END;
 $function$;
 
 DROP POLICY IF EXISTS "public can create bookings for published trips" ON public.group_bookings;
-CREATE POLICY "public can create bookings for published trips"
-ON public.group_bookings
+DROP POLICY IF EXISTS "public can create bookings for published trips" ON public.group_bookings;
+DROP POLICY IF EXISTS "public can create bookings for published trips" ON public.group_bookings;
+DROP POLICY IF EXISTS "public can create bookings for published trips" ON public.group_bookings;
+DROP POLICY IF EXISTS "public can create bookings for published trips" ON public.group_bookings;
+CREATE POLICY "public can create bookings for published trips" ON public.group_bookings
 FOR INSERT
 TO anon, authenticated
 WITH CHECK (
@@ -42,15 +47,21 @@ WITH CHECK (
 );
 
 DROP POLICY IF EXISTS "public read booking by token" ON public.group_bookings;
-CREATE POLICY "public read booking by token"
-ON public.group_bookings
+DROP POLICY IF EXISTS "public read booking by token" ON public.group_bookings;
+DROP POLICY IF EXISTS "public read booking by token" ON public.group_bookings;
+DROP POLICY IF EXISTS "public read booking by token" ON public.group_bookings;
+DROP POLICY IF EXISTS "public read booking by token" ON public.group_bookings;
+CREATE POLICY "public read booking by token" ON public.group_bookings
 FOR SELECT
 TO anon, authenticated
 USING (true);
 
 DROP POLICY IF EXISTS "public read installments via booking" ON public.booking_installments;
-CREATE POLICY "public read installments via booking"
-ON public.booking_installments
+DROP POLICY IF EXISTS "public read installments via booking" ON public.booking_installments;
+DROP POLICY IF EXISTS "public read installments via booking" ON public.booking_installments;
+DROP POLICY IF EXISTS "public read installments via booking" ON public.booking_installments;
+DROP POLICY IF EXISTS "public read installments via booking" ON public.booking_installments;
+CREATE POLICY "public read installments via booking" ON public.booking_installments
 FOR SELECT
 TO anon, authenticated
 USING (true);

@@ -1,5 +1,7 @@
 -- Basic client portal support
 
+DROP FUNCTION IF EXISTS public.get_public_organization_by_slug CASCADE;
+DROP FUNCTION IF EXISTS public.get_public_organization_by_slug CASCADE;
 CREATE OR REPLACE FUNCTION public.get_public_organization_by_slug(_slug TEXT)
 RETURNS TABLE (
   id UUID,
@@ -21,8 +23,11 @@ AS $$
 $$;
 
 DROP POLICY IF EXISTS "Clients can view own trips by email" ON public.trips;
-CREATE POLICY "Clients can view own trips by email"
-  ON public.trips FOR SELECT TO authenticated
+DROP POLICY IF EXISTS "Clients can view own trips by email" ON public.trips;
+DROP POLICY IF EXISTS "Clients can view own trips by email" ON public.trips;
+DROP POLICY IF EXISTS "Clients can view own trips by email" ON public.trips;
+DROP POLICY IF EXISTS "Clients can view own trips by email" ON public.trips;
+CREATE POLICY "Clients can view own trips by email" ON public.trips FOR SELECT TO authenticated
   USING (
     EXISTS (
       SELECT 1
@@ -34,8 +39,11 @@ CREATE POLICY "Clients can view own trips by email"
   );
 
 DROP POLICY IF EXISTS "Clients can view own trip flights by email" ON public.trip_flights;
-CREATE POLICY "Clients can view own trip flights by email"
-  ON public.trip_flights FOR SELECT TO authenticated
+DROP POLICY IF EXISTS "Clients can view own trip flights by email" ON public.trip_flights;
+DROP POLICY IF EXISTS "Clients can view own trip flights by email" ON public.trip_flights;
+DROP POLICY IF EXISTS "Clients can view own trip flights by email" ON public.trip_flights;
+DROP POLICY IF EXISTS "Clients can view own trip flights by email" ON public.trip_flights;
+CREATE POLICY "Clients can view own trip flights by email" ON public.trip_flights FOR SELECT TO authenticated
   USING (
     EXISTS (
       SELECT 1
@@ -48,8 +56,11 @@ CREATE POLICY "Clients can view own trip flights by email"
   );
 
 DROP POLICY IF EXISTS "Clients can view own trip travelers by email" ON public.trip_travelers;
-CREATE POLICY "Clients can view own trip travelers by email"
-  ON public.trip_travelers FOR SELECT TO authenticated
+DROP POLICY IF EXISTS "Clients can view own trip travelers by email" ON public.trip_travelers;
+DROP POLICY IF EXISTS "Clients can view own trip travelers by email" ON public.trip_travelers;
+DROP POLICY IF EXISTS "Clients can view own trip travelers by email" ON public.trip_travelers;
+DROP POLICY IF EXISTS "Clients can view own trip travelers by email" ON public.trip_travelers;
+CREATE POLICY "Clients can view own trip travelers by email" ON public.trip_travelers FOR SELECT TO authenticated
   USING (
     EXISTS (
       SELECT 1
@@ -62,8 +73,11 @@ CREATE POLICY "Clients can view own trip travelers by email"
   );
 
 DROP POLICY IF EXISTS "Clients can view visible trip documents by email" ON public.trip_documents;
-CREATE POLICY "Clients can view visible trip documents by email"
-  ON public.trip_documents FOR SELECT TO authenticated
+DROP POLICY IF EXISTS "Clients can view visible trip documents by email" ON public.trip_documents;
+DROP POLICY IF EXISTS "Clients can view visible trip documents by email" ON public.trip_documents;
+DROP POLICY IF EXISTS "Clients can view visible trip documents by email" ON public.trip_documents;
+DROP POLICY IF EXISTS "Clients can view visible trip documents by email" ON public.trip_documents;
+CREATE POLICY "Clients can view visible trip documents by email" ON public.trip_documents FOR SELECT TO authenticated
   USING (
     is_visible_to_client = true
     AND EXISTS (

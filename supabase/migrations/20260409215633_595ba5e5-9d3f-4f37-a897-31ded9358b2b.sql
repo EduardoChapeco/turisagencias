@@ -30,7 +30,7 @@ ALTER TABLE public.checklists ADD COLUMN IF NOT EXISTS type text DEFAULT 'genera
 ALTER TABLE public.checklists ADD COLUMN IF NOT EXISTS is_visible_to_client boolean DEFAULT true;
 
 -- trip_flights
-CREATE TABLE public.trip_flights (
+CREATE TABLE IF NOT EXISTS public.trip_flights (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   trip_id uuid NOT NULL REFERENCES public.trips(id) ON DELETE CASCADE,
   airline_name text,
@@ -45,17 +45,33 @@ CREATE TABLE public.trip_flights (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 ALTER TABLE public.trip_flights ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Users can view flights via trip org" ON public.trip_flights;
+DROP POLICY IF EXISTS "Users can view flights via trip org" ON public.trip_flights;
+DROP POLICY IF EXISTS "Users can view flights via trip org" ON public.trip_flights;
+DROP POLICY IF EXISTS "Users can view flights via trip org" ON public.trip_flights;
 CREATE POLICY "Users can view flights via trip org" ON public.trip_flights FOR SELECT TO authenticated
   USING (EXISTS (SELECT 1 FROM public.trips t WHERE t.id = trip_flights.trip_id AND t.org_id = get_my_org_id()));
+DROP POLICY IF EXISTS "Users can create flights via trip org" ON public.trip_flights;
+DROP POLICY IF EXISTS "Users can create flights via trip org" ON public.trip_flights;
+DROP POLICY IF EXISTS "Users can create flights via trip org" ON public.trip_flights;
+DROP POLICY IF EXISTS "Users can create flights via trip org" ON public.trip_flights;
 CREATE POLICY "Users can create flights via trip org" ON public.trip_flights FOR INSERT TO authenticated
   WITH CHECK (EXISTS (SELECT 1 FROM public.trips t WHERE t.id = trip_flights.trip_id AND t.org_id = get_my_org_id()));
+DROP POLICY IF EXISTS "Users can update flights via trip org" ON public.trip_flights;
+DROP POLICY IF EXISTS "Users can update flights via trip org" ON public.trip_flights;
+DROP POLICY IF EXISTS "Users can update flights via trip org" ON public.trip_flights;
+DROP POLICY IF EXISTS "Users can update flights via trip org" ON public.trip_flights;
 CREATE POLICY "Users can update flights via trip org" ON public.trip_flights FOR UPDATE TO authenticated
   USING (EXISTS (SELECT 1 FROM public.trips t WHERE t.id = trip_flights.trip_id AND t.org_id = get_my_org_id()));
+DROP POLICY IF EXISTS "Users can delete flights via trip org" ON public.trip_flights;
+DROP POLICY IF EXISTS "Users can delete flights via trip org" ON public.trip_flights;
+DROP POLICY IF EXISTS "Users can delete flights via trip org" ON public.trip_flights;
+DROP POLICY IF EXISTS "Users can delete flights via trip org" ON public.trip_flights;
 CREATE POLICY "Users can delete flights via trip org" ON public.trip_flights FOR DELETE TO authenticated
   USING (EXISTS (SELECT 1 FROM public.trips t WHERE t.id = trip_flights.trip_id AND t.org_id = get_my_org_id()));
 
 -- trip_documents
-CREATE TABLE public.trip_documents (
+CREATE TABLE IF NOT EXISTS public.trip_documents (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   trip_id uuid NOT NULL REFERENCES public.trips(id) ON DELETE CASCADE,
   title text NOT NULL,
@@ -65,17 +81,33 @@ CREATE TABLE public.trip_documents (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 ALTER TABLE public.trip_documents ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Users can view docs via trip org" ON public.trip_documents;
+DROP POLICY IF EXISTS "Users can view docs via trip org" ON public.trip_documents;
+DROP POLICY IF EXISTS "Users can view docs via trip org" ON public.trip_documents;
+DROP POLICY IF EXISTS "Users can view docs via trip org" ON public.trip_documents;
 CREATE POLICY "Users can view docs via trip org" ON public.trip_documents FOR SELECT TO authenticated
   USING (EXISTS (SELECT 1 FROM public.trips t WHERE t.id = trip_documents.trip_id AND t.org_id = get_my_org_id()));
+DROP POLICY IF EXISTS "Users can create docs via trip org" ON public.trip_documents;
+DROP POLICY IF EXISTS "Users can create docs via trip org" ON public.trip_documents;
+DROP POLICY IF EXISTS "Users can create docs via trip org" ON public.trip_documents;
+DROP POLICY IF EXISTS "Users can create docs via trip org" ON public.trip_documents;
 CREATE POLICY "Users can create docs via trip org" ON public.trip_documents FOR INSERT TO authenticated
   WITH CHECK (EXISTS (SELECT 1 FROM public.trips t WHERE t.id = trip_documents.trip_id AND t.org_id = get_my_org_id()));
+DROP POLICY IF EXISTS "Users can update docs via trip org" ON public.trip_documents;
+DROP POLICY IF EXISTS "Users can update docs via trip org" ON public.trip_documents;
+DROP POLICY IF EXISTS "Users can update docs via trip org" ON public.trip_documents;
+DROP POLICY IF EXISTS "Users can update docs via trip org" ON public.trip_documents;
 CREATE POLICY "Users can update docs via trip org" ON public.trip_documents FOR UPDATE TO authenticated
   USING (EXISTS (SELECT 1 FROM public.trips t WHERE t.id = trip_documents.trip_id AND t.org_id = get_my_org_id()));
+DROP POLICY IF EXISTS "Users can delete docs via trip org" ON public.trip_documents;
+DROP POLICY IF EXISTS "Users can delete docs via trip org" ON public.trip_documents;
+DROP POLICY IF EXISTS "Users can delete docs via trip org" ON public.trip_documents;
+DROP POLICY IF EXISTS "Users can delete docs via trip org" ON public.trip_documents;
 CREATE POLICY "Users can delete docs via trip org" ON public.trip_documents FOR DELETE TO authenticated
   USING (EXISTS (SELECT 1 FROM public.trips t WHERE t.id = trip_documents.trip_id AND t.org_id = get_my_org_id()));
 
 -- trip_travelers
-CREATE TABLE public.trip_travelers (
+CREATE TABLE IF NOT EXISTS public.trip_travelers (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   trip_id uuid NOT NULL REFERENCES public.trips(id) ON DELETE CASCADE,
   traveler_id uuid NOT NULL REFERENCES public.travelers(id) ON DELETE CASCADE,
@@ -84,16 +116,34 @@ CREATE TABLE public.trip_travelers (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 ALTER TABLE public.trip_travelers ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Users can view trip travelers via trip org" ON public.trip_travelers;
+DROP POLICY IF EXISTS "Users can view trip travelers via trip org" ON public.trip_travelers;
+DROP POLICY IF EXISTS "Users can view trip travelers via trip org" ON public.trip_travelers;
+DROP POLICY IF EXISTS "Users can view trip travelers via trip org" ON public.trip_travelers;
 CREATE POLICY "Users can view trip travelers via trip org" ON public.trip_travelers FOR SELECT TO authenticated
   USING (EXISTS (SELECT 1 FROM public.trips t WHERE t.id = trip_travelers.trip_id AND t.org_id = get_my_org_id()));
+DROP POLICY IF EXISTS "Users can create trip travelers via trip org" ON public.trip_travelers;
+DROP POLICY IF EXISTS "Users can create trip travelers via trip org" ON public.trip_travelers;
+DROP POLICY IF EXISTS "Users can create trip travelers via trip org" ON public.trip_travelers;
+DROP POLICY IF EXISTS "Users can create trip travelers via trip org" ON public.trip_travelers;
 CREATE POLICY "Users can create trip travelers via trip org" ON public.trip_travelers FOR INSERT TO authenticated
   WITH CHECK (EXISTS (SELECT 1 FROM public.trips t WHERE t.id = trip_travelers.trip_id AND t.org_id = get_my_org_id()));
+DROP POLICY IF EXISTS "Users can update trip travelers via trip org" ON public.trip_travelers;
+DROP POLICY IF EXISTS "Users can update trip travelers via trip org" ON public.trip_travelers;
+DROP POLICY IF EXISTS "Users can update trip travelers via trip org" ON public.trip_travelers;
+DROP POLICY IF EXISTS "Users can update trip travelers via trip org" ON public.trip_travelers;
 CREATE POLICY "Users can update trip travelers via trip org" ON public.trip_travelers FOR UPDATE TO authenticated
   USING (EXISTS (SELECT 1 FROM public.trips t WHERE t.id = trip_travelers.trip_id AND t.org_id = get_my_org_id()));
+DROP POLICY IF EXISTS "Users can delete trip travelers via trip org" ON public.trip_travelers;
+DROP POLICY IF EXISTS "Users can delete trip travelers via trip org" ON public.trip_travelers;
+DROP POLICY IF EXISTS "Users can delete trip travelers via trip org" ON public.trip_travelers;
+DROP POLICY IF EXISTS "Users can delete trip travelers via trip org" ON public.trip_travelers;
 CREATE POLICY "Users can delete trip travelers via trip org" ON public.trip_travelers FOR DELETE TO authenticated
   USING (EXISTS (SELECT 1 FROM public.trips t WHERE t.id = trip_travelers.trip_id AND t.org_id = get_my_org_id()));
 
 -- RPC: get_public_organization_by_slug
+DROP FUNCTION IF EXISTS public.get_public_organization_by_slug CASCADE;
+DROP FUNCTION IF EXISTS public.get_public_organization_by_slug CASCADE;
 CREATE OR REPLACE FUNCTION public.get_public_organization_by_slug(_slug text)
 RETURNS TABLE(
   id uuid,

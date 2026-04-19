@@ -22,18 +22,33 @@ ALTER TABLE public.tickets ENABLE ROW LEVEL SECURITY;
 CREATE INDEX IF NOT EXISTS idx_tickets_org ON public.tickets(org_id);
 CREATE INDEX IF NOT EXISTS idx_tickets_trip ON public.tickets(trip_id);
 DROP TRIGGER IF EXISTS update_tickets_updated_at ON public.tickets;
-CREATE TRIGGER update_tickets_updated_at
-  BEFORE UPDATE ON public.tickets
+DROP TRIGGER IF EXISTS update_tickets_updated_at ON public.tickets;
+DROP TRIGGER IF EXISTS update_tickets_updated_at ON public.tickets;
+DROP TRIGGER IF EXISTS update_tickets_updated_at ON public.tickets;
+DROP TRIGGER IF EXISTS update_tickets_updated_at ON public.tickets;
+CREATE TRIGGER update_tickets_updated_at BEFORE UPDATE ON public.tickets
   FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
-CREATE POLICY "Users can view tickets in own org"
-  ON public.tickets FOR SELECT TO authenticated USING (org_id = get_my_org_id());
-CREATE POLICY "Users can create tickets in own org"
-  ON public.tickets FOR INSERT TO authenticated WITH CHECK (org_id = get_my_org_id());
-CREATE POLICY "Users can update tickets in own org"
-  ON public.tickets FOR UPDATE TO authenticated USING (org_id = get_my_org_id()) WITH CHECK (org_id = get_my_org_id());
-CREATE POLICY "Users can delete tickets in own org"
-  ON public.tickets FOR DELETE TO authenticated USING (org_id = get_my_org_id());
+DROP POLICY IF EXISTS "Users can view tickets in own org" ON public.tickets;
+DROP POLICY IF EXISTS "Users can view tickets in own org" ON public.tickets;
+DROP POLICY IF EXISTS "Users can view tickets in own org" ON public.tickets;
+DROP POLICY IF EXISTS "Users can view tickets in own org" ON public.tickets;
+CREATE POLICY "Users can view tickets in own org" ON public.tickets FOR SELECT TO authenticated USING (org_id = get_my_org_id());
+DROP POLICY IF EXISTS "Users can create tickets in own org" ON public.tickets;
+DROP POLICY IF EXISTS "Users can create tickets in own org" ON public.tickets;
+DROP POLICY IF EXISTS "Users can create tickets in own org" ON public.tickets;
+DROP POLICY IF EXISTS "Users can create tickets in own org" ON public.tickets;
+CREATE POLICY "Users can create tickets in own org" ON public.tickets FOR INSERT TO authenticated WITH CHECK (org_id = get_my_org_id());
+DROP POLICY IF EXISTS "Users can update tickets in own org" ON public.tickets;
+DROP POLICY IF EXISTS "Users can update tickets in own org" ON public.tickets;
+DROP POLICY IF EXISTS "Users can update tickets in own org" ON public.tickets;
+DROP POLICY IF EXISTS "Users can update tickets in own org" ON public.tickets;
+CREATE POLICY "Users can update tickets in own org" ON public.tickets FOR UPDATE TO authenticated USING (org_id = get_my_org_id()) WITH CHECK (org_id = get_my_org_id());
+DROP POLICY IF EXISTS "Users can delete tickets in own org" ON public.tickets;
+DROP POLICY IF EXISTS "Users can delete tickets in own org" ON public.tickets;
+DROP POLICY IF EXISTS "Users can delete tickets in own org" ON public.tickets;
+DROP POLICY IF EXISTS "Users can delete tickets in own org" ON public.tickets;
+CREATE POLICY "Users can delete tickets in own org" ON public.tickets FOR DELETE TO authenticated USING (org_id = get_my_org_id());
 
 CREATE TABLE IF NOT EXISTS public.ticket_messages (
   id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -47,18 +62,30 @@ CREATE TABLE IF NOT EXISTS public.ticket_messages (
 );
 
 ALTER TABLE public.ticket_messages ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Users can view ticket messages via ticket org"
-  ON public.ticket_messages FOR SELECT TO authenticated
+DROP POLICY IF EXISTS "Users can view ticket messages via ticket org" ON public.ticket_messages;
+DROP POLICY IF EXISTS "Users can view ticket messages via ticket org" ON public.ticket_messages;
+DROP POLICY IF EXISTS "Users can view ticket messages via ticket org" ON public.ticket_messages;
+DROP POLICY IF EXISTS "Users can view ticket messages via ticket org" ON public.ticket_messages;
+CREATE POLICY "Users can view ticket messages via ticket org" ON public.ticket_messages FOR SELECT TO authenticated
   USING (EXISTS (SELECT 1 FROM public.tickets t WHERE t.id = ticket_id AND t.org_id = get_my_org_id()));
-CREATE POLICY "Users can create ticket messages via ticket org"
-  ON public.ticket_messages FOR INSERT TO authenticated
+DROP POLICY IF EXISTS "Users can create ticket messages via ticket org" ON public.ticket_messages;
+DROP POLICY IF EXISTS "Users can create ticket messages via ticket org" ON public.ticket_messages;
+DROP POLICY IF EXISTS "Users can create ticket messages via ticket org" ON public.ticket_messages;
+DROP POLICY IF EXISTS "Users can create ticket messages via ticket org" ON public.ticket_messages;
+CREATE POLICY "Users can create ticket messages via ticket org" ON public.ticket_messages FOR INSERT TO authenticated
   WITH CHECK (EXISTS (SELECT 1 FROM public.tickets t WHERE t.id = ticket_id AND t.org_id = get_my_org_id()));
-CREATE POLICY "Users can update ticket messages via ticket org"
-  ON public.ticket_messages FOR UPDATE TO authenticated
+DROP POLICY IF EXISTS "Users can update ticket messages via ticket org" ON public.ticket_messages;
+DROP POLICY IF EXISTS "Users can update ticket messages via ticket org" ON public.ticket_messages;
+DROP POLICY IF EXISTS "Users can update ticket messages via ticket org" ON public.ticket_messages;
+DROP POLICY IF EXISTS "Users can update ticket messages via ticket org" ON public.ticket_messages;
+CREATE POLICY "Users can update ticket messages via ticket org" ON public.ticket_messages FOR UPDATE TO authenticated
   USING (EXISTS (SELECT 1 FROM public.tickets t WHERE t.id = ticket_id AND t.org_id = get_my_org_id()))
   WITH CHECK (EXISTS (SELECT 1 FROM public.tickets t WHERE t.id = ticket_id AND t.org_id = get_my_org_id()));
-CREATE POLICY "Users can delete ticket messages via ticket org"
-  ON public.ticket_messages FOR DELETE TO authenticated
+DROP POLICY IF EXISTS "Users can delete ticket messages via ticket org" ON public.ticket_messages;
+DROP POLICY IF EXISTS "Users can delete ticket messages via ticket org" ON public.ticket_messages;
+DROP POLICY IF EXISTS "Users can delete ticket messages via ticket org" ON public.ticket_messages;
+DROP POLICY IF EXISTS "Users can delete ticket messages via ticket org" ON public.ticket_messages;
+CREATE POLICY "Users can delete ticket messages via ticket org" ON public.ticket_messages FOR DELETE TO authenticated
   USING (EXISTS (SELECT 1 FROM public.tickets t WHERE t.id = ticket_id AND t.org_id = get_my_org_id()));
 
 CREATE TABLE IF NOT EXISTS public.checklists (
@@ -78,14 +105,26 @@ ALTER TABLE public.checklists ENABLE ROW LEVEL SECURITY;
 CREATE INDEX IF NOT EXISTS idx_checklists_org ON public.checklists(org_id);
 CREATE INDEX IF NOT EXISTS idx_checklists_trip ON public.checklists(trip_id);
 
-CREATE POLICY "Users can view checklists in own org"
-  ON public.checklists FOR SELECT TO authenticated USING (org_id = get_my_org_id());
-CREATE POLICY "Users can create checklists in own org"
-  ON public.checklists FOR INSERT TO authenticated WITH CHECK (org_id = get_my_org_id());
-CREATE POLICY "Users can update checklists in own org"
-  ON public.checklists FOR UPDATE TO authenticated USING (org_id = get_my_org_id()) WITH CHECK (org_id = get_my_org_id());
-CREATE POLICY "Users can delete checklists in own org"
-  ON public.checklists FOR DELETE TO authenticated USING (org_id = get_my_org_id());
+DROP POLICY IF EXISTS "Users can view checklists in own org" ON public.checklists;
+DROP POLICY IF EXISTS "Users can view checklists in own org" ON public.checklists;
+DROP POLICY IF EXISTS "Users can view checklists in own org" ON public.checklists;
+DROP POLICY IF EXISTS "Users can view checklists in own org" ON public.checklists;
+CREATE POLICY "Users can view checklists in own org" ON public.checklists FOR SELECT TO authenticated USING (org_id = get_my_org_id());
+DROP POLICY IF EXISTS "Users can create checklists in own org" ON public.checklists;
+DROP POLICY IF EXISTS "Users can create checklists in own org" ON public.checklists;
+DROP POLICY IF EXISTS "Users can create checklists in own org" ON public.checklists;
+DROP POLICY IF EXISTS "Users can create checklists in own org" ON public.checklists;
+CREATE POLICY "Users can create checklists in own org" ON public.checklists FOR INSERT TO authenticated WITH CHECK (org_id = get_my_org_id());
+DROP POLICY IF EXISTS "Users can update checklists in own org" ON public.checklists;
+DROP POLICY IF EXISTS "Users can update checklists in own org" ON public.checklists;
+DROP POLICY IF EXISTS "Users can update checklists in own org" ON public.checklists;
+DROP POLICY IF EXISTS "Users can update checklists in own org" ON public.checklists;
+CREATE POLICY "Users can update checklists in own org" ON public.checklists FOR UPDATE TO authenticated USING (org_id = get_my_org_id()) WITH CHECK (org_id = get_my_org_id());
+DROP POLICY IF EXISTS "Users can delete checklists in own org" ON public.checklists;
+DROP POLICY IF EXISTS "Users can delete checklists in own org" ON public.checklists;
+DROP POLICY IF EXISTS "Users can delete checklists in own org" ON public.checklists;
+DROP POLICY IF EXISTS "Users can delete checklists in own org" ON public.checklists;
+CREATE POLICY "Users can delete checklists in own org" ON public.checklists FOR DELETE TO authenticated USING (org_id = get_my_org_id());
 
 CREATE TABLE IF NOT EXISTS public.checklist_items (
   id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -99,20 +138,34 @@ CREATE TABLE IF NOT EXISTS public.checklist_items (
 );
 
 ALTER TABLE public.checklist_items ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Users can view checklist items via checklist org"
-  ON public.checklist_items FOR SELECT TO authenticated
+DROP POLICY IF EXISTS "Users can view checklist items via checklist org" ON public.checklist_items;
+DROP POLICY IF EXISTS "Users can view checklist items via checklist org" ON public.checklist_items;
+DROP POLICY IF EXISTS "Users can view checklist items via checklist org" ON public.checklist_items;
+DROP POLICY IF EXISTS "Users can view checklist items via checklist org" ON public.checklist_items;
+CREATE POLICY "Users can view checklist items via checklist org" ON public.checklist_items FOR SELECT TO authenticated
   USING (EXISTS (SELECT 1 FROM public.checklists c WHERE c.id = checklist_id AND c.org_id = get_my_org_id()));
-CREATE POLICY "Users can create checklist items via checklist org"
-  ON public.checklist_items FOR INSERT TO authenticated
+DROP POLICY IF EXISTS "Users can create checklist items via checklist org" ON public.checklist_items;
+DROP POLICY IF EXISTS "Users can create checklist items via checklist org" ON public.checklist_items;
+DROP POLICY IF EXISTS "Users can create checklist items via checklist org" ON public.checklist_items;
+DROP POLICY IF EXISTS "Users can create checklist items via checklist org" ON public.checklist_items;
+CREATE POLICY "Users can create checklist items via checklist org" ON public.checklist_items FOR INSERT TO authenticated
   WITH CHECK (EXISTS (SELECT 1 FROM public.checklists c WHERE c.id = checklist_id AND c.org_id = get_my_org_id()));
-CREATE POLICY "Users can update checklist items via checklist org"
-  ON public.checklist_items FOR UPDATE TO authenticated
+DROP POLICY IF EXISTS "Users can update checklist items via checklist org" ON public.checklist_items;
+DROP POLICY IF EXISTS "Users can update checklist items via checklist org" ON public.checklist_items;
+DROP POLICY IF EXISTS "Users can update checklist items via checklist org" ON public.checklist_items;
+DROP POLICY IF EXISTS "Users can update checklist items via checklist org" ON public.checklist_items;
+CREATE POLICY "Users can update checklist items via checklist org" ON public.checklist_items FOR UPDATE TO authenticated
   USING (EXISTS (SELECT 1 FROM public.checklists c WHERE c.id = checklist_id AND c.org_id = get_my_org_id()))
   WITH CHECK (EXISTS (SELECT 1 FROM public.checklists c WHERE c.id = checklist_id AND c.org_id = get_my_org_id()));
-CREATE POLICY "Users can delete checklist items via checklist org"
-  ON public.checklist_items FOR DELETE TO authenticated
+DROP POLICY IF EXISTS "Users can delete checklist items via checklist org" ON public.checklist_items;
+DROP POLICY IF EXISTS "Users can delete checklist items via checklist org" ON public.checklist_items;
+DROP POLICY IF EXISTS "Users can delete checklist items via checklist org" ON public.checklist_items;
+DROP POLICY IF EXISTS "Users can delete checklist items via checklist org" ON public.checklist_items;
+CREATE POLICY "Users can delete checklist items via checklist org" ON public.checklist_items FOR DELETE TO authenticated
   USING (EXISTS (SELECT 1 FROM public.checklists c WHERE c.id = checklist_id AND c.org_id = get_my_org_id()));
 
+DROP FUNCTION IF EXISTS public.get_public_checklist CASCADE;
+DROP FUNCTION IF EXISTS public.get_public_checklist CASCADE;
 CREATE OR REPLACE FUNCTION public.get_public_checklist(_token UUID)
 RETURNS TABLE (
   checklist_id UUID,
@@ -121,7 +174,7 @@ RETURNS TABLE (
   item_title TEXT,
   item_description TEXT,
   is_completed BOOLEAN,
-  position INT
+  "position" INT
 )
 LANGUAGE sql
 STABLE
@@ -135,14 +188,16 @@ AS $$
     i.title,
     i.description,
     i.is_completed,
-    i.position
+    i."position"
   FROM public.checklists c
   JOIN public.checklist_items i ON i.checklist_id = c.id
   WHERE c.share_token = _token
     AND c.is_visible_to_client = true
-  ORDER BY i.position, i.created_at
+  ORDER BY i."position", i.created_at
 $$;
 
+DROP FUNCTION IF EXISTS public.toggle_public_checklist_item CASCADE;
+DROP FUNCTION IF EXISTS public.toggle_public_checklist_item CASCADE;
 CREATE OR REPLACE FUNCTION public.toggle_public_checklist_item(_token UUID, _item_id UUID, _is_completed BOOLEAN)
 RETURNS UUID
 LANGUAGE plpgsql

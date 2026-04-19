@@ -21,23 +21,23 @@ CREATE INDEX IF NOT EXISTS idx_traveler_info_slug ON traveler_info_pages(slug);
 
 ALTER TABLE traveler_info_pages ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Users can view their organization info pages"
-    ON traveler_info_pages FOR SELECT
-    USING (auth.uid() IN (SELECT profile_id FROM organization_members WHERE organization_id = traveler_info_pages.org_id));
+DROP POLICY IF EXISTS "Users can view their organization info pages" ON traveler_info_pages;
+CREATE POLICY "Users can view their organization info pages" ON traveler_info_pages FOR SELECT
+    USING (org_id = get_my_org_id());
 
-CREATE POLICY "Users can insert their organization info pages"
-    ON traveler_info_pages FOR INSERT
-    WITH CHECK (auth.uid() IN (SELECT profile_id FROM organization_members WHERE organization_id = traveler_info_pages.org_id));
+DROP POLICY IF EXISTS "Users can insert their organization info pages" ON traveler_info_pages;
+CREATE POLICY "Users can insert their organization info pages" ON traveler_info_pages FOR INSERT
+    WITH CHECK (org_id = get_my_org_id());
 
-CREATE POLICY "Users can update their organization info pages"
-    ON traveler_info_pages FOR UPDATE
-    USING (auth.uid() IN (SELECT profile_id FROM organization_members WHERE organization_id = traveler_info_pages.org_id));
+DROP POLICY IF EXISTS "Users can update their organization info pages" ON traveler_info_pages;
+CREATE POLICY "Users can update their organization info pages" ON traveler_info_pages FOR UPDATE
+    USING (org_id = get_my_org_id());
 
-CREATE POLICY "Users can delete their organization info pages"
-    ON traveler_info_pages FOR DELETE
-    USING (auth.uid() IN (SELECT profile_id FROM organization_members WHERE organization_id = traveler_info_pages.org_id));
+DROP POLICY IF EXISTS "Users can delete their organization info pages" ON traveler_info_pages;
+CREATE POLICY "Users can delete their organization info pages" ON traveler_info_pages FOR DELETE
+    USING (org_id = get_my_org_id());
 
 -- Permite visualização anônima caso seja publicado
-CREATE POLICY "Public info pages are viewable by everyone"
-    ON traveler_info_pages FOR SELECT
+DROP POLICY IF EXISTS "Public info pages are viewable by everyone" ON traveler_info_pages;
+CREATE POLICY "Public info pages are viewable by everyone" ON traveler_info_pages FOR SELECT
     USING (is_published = true);

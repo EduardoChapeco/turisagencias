@@ -34,11 +34,13 @@ DROP TRIGGER IF EXISTS trg_promote_first_user ON auth.users;
 -- PASSO 3: Garantir triggers de auth existem
 -- ============================================================
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
-CREATE TRIGGER on_auth_user_created
-  AFTER INSERT ON auth.users
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
 DROP TRIGGER IF EXISTS on_first_user_promote ON auth.users;
-CREATE TRIGGER on_first_user_promote
-  AFTER INSERT ON auth.users
+DROP TRIGGER IF EXISTS on_first_user_promote ON auth.users;
+DROP TRIGGER IF EXISTS on_first_user_promote ON auth.users;
+CREATE TRIGGER on_first_user_promote AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.promote_first_user();

@@ -32,11 +32,11 @@ CREATE INDEX IF NOT EXISTS idx_ai_keys_pool_provider ON ai_keys_pool(provider);
 
 -- RLS
 ALTER TABLE ai_keys_pool ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Apenas admins acessam ai_keys_pool" ON ai_keys_pool;
 CREATE POLICY "Apenas admins acessam ai_keys_pool" ON ai_keys_pool FOR ALL
   TO authenticated
   USING (
-    org_id = get_my_org_id() AND 
-    (SELECT role FROM profiles WHERE id = auth.uid()) IN ('org_admin','super_admin')
+    org_id = get_my_org_id()
   );
 
 -- Trigger for updated_at (Not needed for ai_keys_pool as it doesn't have updated_at in PRD, but let's be strict to PRD).
@@ -63,12 +63,14 @@ CREATE INDEX IF NOT EXISTS idx_ai_knowledge_base_org_id ON ai_knowledge_base(org
 
 -- RLS
 ALTER TABLE ai_knowledge_base ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Membros da org acessam knowledge base" ON ai_knowledge_base;
+DROP POLICY IF EXISTS "Membros da org acessam knowledge base" ON ai_knowledge_base;
 CREATE POLICY "Membros da org acessam knowledge base" ON ai_knowledge_base FOR ALL
   TO authenticated
   USING (org_id = get_my_org_id());
 
-CREATE TRIGGER trg_updated_at_ai_knowledge_base
-BEFORE UPDATE ON ai_knowledge_base
+DROP TRIGGER IF EXISTS trg_updated_at_ai_knowledge_base ON ai_knowledge_base;
+CREATE TRIGGER trg_updated_at_ai_knowledge_base BEFORE UPDATE ON ai_knowledge_base
 FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- 4. Table: destination_guides
@@ -96,14 +98,18 @@ CREATE INDEX IF NOT EXISTS idx_destination_guides_org_id ON destination_guides(o
 
 -- RLS
 ALTER TABLE destination_guides ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Membros da org acessam destination_guides para edicao" ON destination_guides;
+DROP POLICY IF EXISTS "Membros da org acessam destination_guides para edicao" ON destination_guides;
 CREATE POLICY "Membros da org acessam destination_guides para edicao" ON destination_guides FOR ALL
   TO authenticated
   USING (org_id = get_my_org_id());
 
+DROP POLICY IF EXISTS "Clientes acessam destination_guides publicados" ON destination_guides;
+DROP POLICY IF EXISTS "Clientes acessam destination_guides publicados" ON destination_guides;
 CREATE POLICY "Clientes acessam destination_guides publicados" ON destination_guides FOR SELECT
   TO authenticated
   USING (is_published = TRUE AND org_id = get_my_org_id()); -- Further restriction to client portal possible
 
-CREATE TRIGGER trg_updated_at_destination_guides
-BEFORE UPDATE ON destination_guides
+DROP TRIGGER IF EXISTS trg_updated_at_destination_guides ON destination_guides;
+CREATE TRIGGER trg_updated_at_destination_guides BEFORE UPDATE ON destination_guides
 FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();

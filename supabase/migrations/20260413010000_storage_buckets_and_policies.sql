@@ -37,41 +37,55 @@ ON CONFLICT (id) DO UPDATE SET
 -- =============================================
 
 -- Leitura pública
-CREATE POLICY IF NOT EXISTS "media_public_select"
-  ON storage.objects FOR SELECT
+DROP POLICY IF EXISTS "media_public_select" ON storage.objects;
+DROP POLICY IF EXISTS "media_public_select" ON storage.objects;
+CREATE POLICY "media_public_select" ON storage.objects FOR SELECT
   USING (bucket_id = 'media');
 
 -- Upload permitido somente para usuários autenticados
-CREATE POLICY IF NOT EXISTS "media_auth_insert"
-  ON storage.objects FOR INSERT
-  WITH CHECK (bucket_id = 'media' AND auth.role() = 'authenticated');
+DROP POLICY IF EXISTS "media_auth_insert" ON storage.objects;
+DROP POLICY IF EXISTS "media_auth_insert" ON storage.objects;
+CREATE POLICY "media_auth_insert" ON storage.objects FOR INSERT
+  TO authenticated
+  WITH CHECK (bucket_id = 'media');
 
 -- Update permitido somente para usuários autenticados
-CREATE POLICY IF NOT EXISTS "media_auth_update"
-  ON storage.objects FOR UPDATE
-  USING (bucket_id = 'media' AND auth.role() = 'authenticated');
+DROP POLICY IF EXISTS "media_auth_update" ON storage.objects;
+DROP POLICY IF EXISTS "media_auth_update" ON storage.objects;
+CREATE POLICY "media_auth_update" ON storage.objects FOR UPDATE
+  TO authenticated
+  USING (bucket_id = 'media');
 
 -- Delete permitido somente para usuários autenticados
-CREATE POLICY IF NOT EXISTS "media_auth_delete"
-  ON storage.objects FOR DELETE
-  USING (bucket_id = 'media' AND auth.role() = 'authenticated');
+DROP POLICY IF EXISTS "media_auth_delete" ON storage.objects;
+DROP POLICY IF EXISTS "media_auth_delete" ON storage.objects;
+CREATE POLICY "media_auth_delete" ON storage.objects FOR DELETE
+  TO authenticated
+  USING (bucket_id = 'media');
 
 -- =============================================
 -- RLS Policies — bucket: documents
 -- =============================================
 
-CREATE POLICY IF NOT EXISTS "docs_public_select"
-  ON storage.objects FOR SELECT
+DROP POLICY IF EXISTS "docs_public_select" ON storage.objects;
+DROP POLICY IF EXISTS "docs_public_select" ON storage.objects;
+CREATE POLICY "docs_public_select" ON storage.objects FOR SELECT
   USING (bucket_id = 'documents');
 
-CREATE POLICY IF NOT EXISTS "docs_auth_insert"
-  ON storage.objects FOR INSERT
-  WITH CHECK (bucket_id = 'documents' AND auth.role() = 'authenticated');
+DROP POLICY IF EXISTS "docs_auth_insert" ON storage.objects;
+DROP POLICY IF EXISTS "docs_auth_insert" ON storage.objects;
+CREATE POLICY "docs_auth_insert" ON storage.objects FOR INSERT
+  TO authenticated
+  WITH CHECK (bucket_id = 'documents');
 
-CREATE POLICY IF NOT EXISTS "docs_auth_update"
-  ON storage.objects FOR UPDATE
-  USING (bucket_id = 'documents' AND auth.role() = 'authenticated');
+DROP POLICY IF EXISTS "docs_auth_update" ON storage.objects;
+DROP POLICY IF EXISTS "docs_auth_update" ON storage.objects;
+CREATE POLICY "docs_auth_update" ON storage.objects FOR UPDATE
+  TO authenticated
+  USING (bucket_id = 'documents');
 
-CREATE POLICY IF NOT EXISTS "docs_auth_delete"
-  ON storage.objects FOR DELETE
-  USING (bucket_id = 'documents' AND auth.role() = 'authenticated');
+DROP POLICY IF EXISTS "docs_auth_delete" ON storage.objects;
+DROP POLICY IF EXISTS "docs_auth_delete" ON storage.objects;
+CREATE POLICY "docs_auth_delete" ON storage.objects FOR DELETE
+  TO authenticated
+  USING (bucket_id = 'documents');

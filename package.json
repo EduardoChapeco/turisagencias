@@ -12,7 +12,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "deploy": "npm run build && wrangler pages deploy dist --project-name turisagencias --commit-dirty=true",
-    "deploy:cf": "set VITE_SUPABASE_URL=https://yfofiwxeprlwqgjnqwyw.supabase.co&& set VITE_SUPABASE_PUBLISHABLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlmb2Zpd3hlcHJsd3Fnam5xd3l3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU3NDQyNTUsImV4cCI6MjA5MTMyMDI1NX0.jx66BE6SUFNxBcfuBPEOIicNB_KgyjKTI2cYykSQdII&& npm run build && wrangler pages deploy dist --project-name turisagencias --commit-dirty=true"
+    "deploy:cf": "set VITE_SUPABASE_URL=https://mdulkbvdedfgwzesgeuh.supabase.co&& set VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_alNhQs2BUjql4nXP5bzkxA_Q3pJYaLo&& npm run build && wrangler pages deploy dist --project-name turisagencias --commit-dirty=true"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

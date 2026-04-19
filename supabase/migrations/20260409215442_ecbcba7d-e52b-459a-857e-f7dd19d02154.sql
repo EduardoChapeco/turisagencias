@@ -1,5 +1,5 @@
 
-CREATE TABLE public.trips (
+CREATE TABLE IF NOT EXISTS public.trips (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   org_id uuid NOT NULL REFERENCES public.organizations(id) ON DELETE CASCADE,
   primary_client_id uuid REFERENCES public.clients(id) ON DELETE SET NULL,
@@ -13,13 +13,33 @@ CREATE TABLE public.trips (
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 ALTER TABLE public.trips ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Users can view trips in own org" ON public.trips;
+DROP POLICY IF EXISTS "Users can view trips in own org" ON public.trips;
+DROP POLICY IF EXISTS "Users can view trips in own org" ON public.trips;
+DROP POLICY IF EXISTS "Users can view trips in own org" ON public.trips;
 CREATE POLICY "Users can view trips in own org" ON public.trips FOR SELECT TO authenticated USING (org_id = get_my_org_id());
+DROP POLICY IF EXISTS "Users can create trips in own org" ON public.trips;
+DROP POLICY IF EXISTS "Users can create trips in own org" ON public.trips;
+DROP POLICY IF EXISTS "Users can create trips in own org" ON public.trips;
+DROP POLICY IF EXISTS "Users can create trips in own org" ON public.trips;
 CREATE POLICY "Users can create trips in own org" ON public.trips FOR INSERT TO authenticated WITH CHECK (org_id = get_my_org_id());
+DROP POLICY IF EXISTS "Users can update trips in own org" ON public.trips;
+DROP POLICY IF EXISTS "Users can update trips in own org" ON public.trips;
+DROP POLICY IF EXISTS "Users can update trips in own org" ON public.trips;
+DROP POLICY IF EXISTS "Users can update trips in own org" ON public.trips;
 CREATE POLICY "Users can update trips in own org" ON public.trips FOR UPDATE TO authenticated USING (org_id = get_my_org_id()) WITH CHECK (org_id = get_my_org_id());
+DROP POLICY IF EXISTS "Users can delete trips in own org" ON public.trips;
+DROP POLICY IF EXISTS "Users can delete trips in own org" ON public.trips;
+DROP POLICY IF EXISTS "Users can delete trips in own org" ON public.trips;
+DROP POLICY IF EXISTS "Users can delete trips in own org" ON public.trips;
 CREATE POLICY "Users can delete trips in own org" ON public.trips FOR DELETE TO authenticated USING (org_id = get_my_org_id());
+DROP TRIGGER IF EXISTS update_trips_updated_at ON public.trips;
+DROP TRIGGER IF EXISTS update_trips_updated_at ON public.trips;
+DROP TRIGGER IF EXISTS update_trips_updated_at ON public.trips;
+DROP TRIGGER IF EXISTS update_trips_updated_at ON public.trips;
 CREATE TRIGGER update_trips_updated_at BEFORE UPDATE ON public.trips FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
-CREATE TABLE public.kanban_boards (
+CREATE TABLE IF NOT EXISTS public.kanban_boards (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   org_id uuid NOT NULL REFERENCES public.organizations(id) ON DELETE CASCADE,
   name text NOT NULL,
@@ -29,13 +49,33 @@ CREATE TABLE public.kanban_boards (
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 ALTER TABLE public.kanban_boards ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Users can view boards in own org" ON public.kanban_boards;
+DROP POLICY IF EXISTS "Users can view boards in own org" ON public.kanban_boards;
+DROP POLICY IF EXISTS "Users can view boards in own org" ON public.kanban_boards;
+DROP POLICY IF EXISTS "Users can view boards in own org" ON public.kanban_boards;
 CREATE POLICY "Users can view boards in own org" ON public.kanban_boards FOR SELECT TO authenticated USING (org_id = get_my_org_id());
+DROP POLICY IF EXISTS "Users can create boards in own org" ON public.kanban_boards;
+DROP POLICY IF EXISTS "Users can create boards in own org" ON public.kanban_boards;
+DROP POLICY IF EXISTS "Users can create boards in own org" ON public.kanban_boards;
+DROP POLICY IF EXISTS "Users can create boards in own org" ON public.kanban_boards;
 CREATE POLICY "Users can create boards in own org" ON public.kanban_boards FOR INSERT TO authenticated WITH CHECK (org_id = get_my_org_id());
+DROP POLICY IF EXISTS "Users can update boards in own org" ON public.kanban_boards;
+DROP POLICY IF EXISTS "Users can update boards in own org" ON public.kanban_boards;
+DROP POLICY IF EXISTS "Users can update boards in own org" ON public.kanban_boards;
+DROP POLICY IF EXISTS "Users can update boards in own org" ON public.kanban_boards;
 CREATE POLICY "Users can update boards in own org" ON public.kanban_boards FOR UPDATE TO authenticated USING (org_id = get_my_org_id()) WITH CHECK (org_id = get_my_org_id());
+DROP POLICY IF EXISTS "Users can delete boards in own org" ON public.kanban_boards;
+DROP POLICY IF EXISTS "Users can delete boards in own org" ON public.kanban_boards;
+DROP POLICY IF EXISTS "Users can delete boards in own org" ON public.kanban_boards;
+DROP POLICY IF EXISTS "Users can delete boards in own org" ON public.kanban_boards;
 CREATE POLICY "Users can delete boards in own org" ON public.kanban_boards FOR DELETE TO authenticated USING (org_id = get_my_org_id());
+DROP TRIGGER IF EXISTS update_kanban_boards_updated_at ON public.kanban_boards;
+DROP TRIGGER IF EXISTS update_kanban_boards_updated_at ON public.kanban_boards;
+DROP TRIGGER IF EXISTS update_kanban_boards_updated_at ON public.kanban_boards;
+DROP TRIGGER IF EXISTS update_kanban_boards_updated_at ON public.kanban_boards;
 CREATE TRIGGER update_kanban_boards_updated_at BEFORE UPDATE ON public.kanban_boards FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
-CREATE TABLE public.kanban_columns (
+CREATE TABLE IF NOT EXISTS public.kanban_columns (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   board_id uuid NOT NULL REFERENCES public.kanban_boards(id) ON DELETE CASCADE,
   name text NOT NULL,
@@ -44,16 +84,32 @@ CREATE TABLE public.kanban_columns (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 ALTER TABLE public.kanban_columns ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Users can view columns via board org" ON public.kanban_columns;
+DROP POLICY IF EXISTS "Users can view columns via board org" ON public.kanban_columns;
+DROP POLICY IF EXISTS "Users can view columns via board org" ON public.kanban_columns;
+DROP POLICY IF EXISTS "Users can view columns via board org" ON public.kanban_columns;
 CREATE POLICY "Users can view columns via board org" ON public.kanban_columns FOR SELECT TO authenticated
   USING (EXISTS (SELECT 1 FROM public.kanban_boards b WHERE b.id = kanban_columns.board_id AND b.org_id = get_my_org_id()));
+DROP POLICY IF EXISTS "Users can create columns via board org" ON public.kanban_columns;
+DROP POLICY IF EXISTS "Users can create columns via board org" ON public.kanban_columns;
+DROP POLICY IF EXISTS "Users can create columns via board org" ON public.kanban_columns;
+DROP POLICY IF EXISTS "Users can create columns via board org" ON public.kanban_columns;
 CREATE POLICY "Users can create columns via board org" ON public.kanban_columns FOR INSERT TO authenticated
   WITH CHECK (EXISTS (SELECT 1 FROM public.kanban_boards b WHERE b.id = kanban_columns.board_id AND b.org_id = get_my_org_id()));
+DROP POLICY IF EXISTS "Users can update columns via board org" ON public.kanban_columns;
+DROP POLICY IF EXISTS "Users can update columns via board org" ON public.kanban_columns;
+DROP POLICY IF EXISTS "Users can update columns via board org" ON public.kanban_columns;
+DROP POLICY IF EXISTS "Users can update columns via board org" ON public.kanban_columns;
 CREATE POLICY "Users can update columns via board org" ON public.kanban_columns FOR UPDATE TO authenticated
   USING (EXISTS (SELECT 1 FROM public.kanban_boards b WHERE b.id = kanban_columns.board_id AND b.org_id = get_my_org_id()));
+DROP POLICY IF EXISTS "Users can delete columns via board org" ON public.kanban_columns;
+DROP POLICY IF EXISTS "Users can delete columns via board org" ON public.kanban_columns;
+DROP POLICY IF EXISTS "Users can delete columns via board org" ON public.kanban_columns;
+DROP POLICY IF EXISTS "Users can delete columns via board org" ON public.kanban_columns;
 CREATE POLICY "Users can delete columns via board org" ON public.kanban_columns FOR DELETE TO authenticated
   USING (EXISTS (SELECT 1 FROM public.kanban_boards b WHERE b.id = kanban_columns.board_id AND b.org_id = get_my_org_id()));
 
-CREATE TABLE public.kanban_cards (
+CREATE TABLE IF NOT EXISTS public.kanban_cards (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   column_id uuid NOT NULL REFERENCES public.kanban_columns(id) ON DELETE CASCADE,
   board_id uuid NOT NULL REFERENCES public.kanban_boards(id) ON DELETE CASCADE,
@@ -69,17 +125,37 @@ CREATE TABLE public.kanban_cards (
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 ALTER TABLE public.kanban_cards ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Users can view cards via board org" ON public.kanban_cards;
+DROP POLICY IF EXISTS "Users can view cards via board org" ON public.kanban_cards;
+DROP POLICY IF EXISTS "Users can view cards via board org" ON public.kanban_cards;
+DROP POLICY IF EXISTS "Users can view cards via board org" ON public.kanban_cards;
 CREATE POLICY "Users can view cards via board org" ON public.kanban_cards FOR SELECT TO authenticated
   USING (EXISTS (SELECT 1 FROM public.kanban_boards b WHERE b.id = kanban_cards.board_id AND b.org_id = get_my_org_id()));
+DROP POLICY IF EXISTS "Users can create cards via board org" ON public.kanban_cards;
+DROP POLICY IF EXISTS "Users can create cards via board org" ON public.kanban_cards;
+DROP POLICY IF EXISTS "Users can create cards via board org" ON public.kanban_cards;
+DROP POLICY IF EXISTS "Users can create cards via board org" ON public.kanban_cards;
 CREATE POLICY "Users can create cards via board org" ON public.kanban_cards FOR INSERT TO authenticated
   WITH CHECK (EXISTS (SELECT 1 FROM public.kanban_boards b WHERE b.id = kanban_cards.board_id AND b.org_id = get_my_org_id()));
+DROP POLICY IF EXISTS "Users can update cards via board org" ON public.kanban_cards;
+DROP POLICY IF EXISTS "Users can update cards via board org" ON public.kanban_cards;
+DROP POLICY IF EXISTS "Users can update cards via board org" ON public.kanban_cards;
+DROP POLICY IF EXISTS "Users can update cards via board org" ON public.kanban_cards;
 CREATE POLICY "Users can update cards via board org" ON public.kanban_cards FOR UPDATE TO authenticated
   USING (EXISTS (SELECT 1 FROM public.kanban_boards b WHERE b.id = kanban_cards.board_id AND b.org_id = get_my_org_id()));
+DROP POLICY IF EXISTS "Users can delete cards via board org" ON public.kanban_cards;
+DROP POLICY IF EXISTS "Users can delete cards via board org" ON public.kanban_cards;
+DROP POLICY IF EXISTS "Users can delete cards via board org" ON public.kanban_cards;
+DROP POLICY IF EXISTS "Users can delete cards via board org" ON public.kanban_cards;
 CREATE POLICY "Users can delete cards via board org" ON public.kanban_cards FOR DELETE TO authenticated
   USING (EXISTS (SELECT 1 FROM public.kanban_boards b WHERE b.id = kanban_cards.board_id AND b.org_id = get_my_org_id()));
+DROP TRIGGER IF EXISTS update_kanban_cards_updated_at ON public.kanban_cards;
+DROP TRIGGER IF EXISTS update_kanban_cards_updated_at ON public.kanban_cards;
+DROP TRIGGER IF EXISTS update_kanban_cards_updated_at ON public.kanban_cards;
+DROP TRIGGER IF EXISTS update_kanban_cards_updated_at ON public.kanban_cards;
 CREATE TRIGGER update_kanban_cards_updated_at BEFORE UPDATE ON public.kanban_cards FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
-CREATE TABLE public.hotels_bank (
+CREATE TABLE IF NOT EXISTS public.hotels_bank (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   org_id uuid NOT NULL REFERENCES public.organizations(id) ON DELETE CASCADE,
   name text NOT NULL,
@@ -97,13 +173,33 @@ CREATE TABLE public.hotels_bank (
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 ALTER TABLE public.hotels_bank ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Users can view hotels in own org" ON public.hotels_bank;
+DROP POLICY IF EXISTS "Users can view hotels in own org" ON public.hotels_bank;
+DROP POLICY IF EXISTS "Users can view hotels in own org" ON public.hotels_bank;
+DROP POLICY IF EXISTS "Users can view hotels in own org" ON public.hotels_bank;
 CREATE POLICY "Users can view hotels in own org" ON public.hotels_bank FOR SELECT TO authenticated USING (org_id = get_my_org_id());
+DROP POLICY IF EXISTS "Users can create hotels in own org" ON public.hotels_bank;
+DROP POLICY IF EXISTS "Users can create hotels in own org" ON public.hotels_bank;
+DROP POLICY IF EXISTS "Users can create hotels in own org" ON public.hotels_bank;
+DROP POLICY IF EXISTS "Users can create hotels in own org" ON public.hotels_bank;
 CREATE POLICY "Users can create hotels in own org" ON public.hotels_bank FOR INSERT TO authenticated WITH CHECK (org_id = get_my_org_id());
+DROP POLICY IF EXISTS "Users can update hotels in own org" ON public.hotels_bank;
+DROP POLICY IF EXISTS "Users can update hotels in own org" ON public.hotels_bank;
+DROP POLICY IF EXISTS "Users can update hotels in own org" ON public.hotels_bank;
+DROP POLICY IF EXISTS "Users can update hotels in own org" ON public.hotels_bank;
 CREATE POLICY "Users can update hotels in own org" ON public.hotels_bank FOR UPDATE TO authenticated USING (org_id = get_my_org_id()) WITH CHECK (org_id = get_my_org_id());
+DROP POLICY IF EXISTS "Users can delete hotels in own org" ON public.hotels_bank;
+DROP POLICY IF EXISTS "Users can delete hotels in own org" ON public.hotels_bank;
+DROP POLICY IF EXISTS "Users can delete hotels in own org" ON public.hotels_bank;
+DROP POLICY IF EXISTS "Users can delete hotels in own org" ON public.hotels_bank;
 CREATE POLICY "Users can delete hotels in own org" ON public.hotels_bank FOR DELETE TO authenticated USING (org_id = get_my_org_id());
+DROP TRIGGER IF EXISTS update_hotels_bank_updated_at ON public.hotels_bank;
+DROP TRIGGER IF EXISTS update_hotels_bank_updated_at ON public.hotels_bank;
+DROP TRIGGER IF EXISTS update_hotels_bank_updated_at ON public.hotels_bank;
+DROP TRIGGER IF EXISTS update_hotels_bank_updated_at ON public.hotels_bank;
 CREATE TRIGGER update_hotels_bank_updated_at BEFORE UPDATE ON public.hotels_bank FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
-CREATE TABLE public.tickets (
+CREATE TABLE IF NOT EXISTS public.tickets (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   org_id uuid NOT NULL REFERENCES public.organizations(id) ON DELETE CASCADE,
   subject text NOT NULL,
@@ -116,13 +212,33 @@ CREATE TABLE public.tickets (
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 ALTER TABLE public.tickets ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Users can view tickets in own org" ON public.tickets;
+DROP POLICY IF EXISTS "Users can view tickets in own org" ON public.tickets;
+DROP POLICY IF EXISTS "Users can view tickets in own org" ON public.tickets;
+DROP POLICY IF EXISTS "Users can view tickets in own org" ON public.tickets;
 CREATE POLICY "Users can view tickets in own org" ON public.tickets FOR SELECT TO authenticated USING (org_id = get_my_org_id());
+DROP POLICY IF EXISTS "Users can create tickets in own org" ON public.tickets;
+DROP POLICY IF EXISTS "Users can create tickets in own org" ON public.tickets;
+DROP POLICY IF EXISTS "Users can create tickets in own org" ON public.tickets;
+DROP POLICY IF EXISTS "Users can create tickets in own org" ON public.tickets;
 CREATE POLICY "Users can create tickets in own org" ON public.tickets FOR INSERT TO authenticated WITH CHECK (org_id = get_my_org_id());
+DROP POLICY IF EXISTS "Users can update tickets in own org" ON public.tickets;
+DROP POLICY IF EXISTS "Users can update tickets in own org" ON public.tickets;
+DROP POLICY IF EXISTS "Users can update tickets in own org" ON public.tickets;
+DROP POLICY IF EXISTS "Users can update tickets in own org" ON public.tickets;
 CREATE POLICY "Users can update tickets in own org" ON public.tickets FOR UPDATE TO authenticated USING (org_id = get_my_org_id()) WITH CHECK (org_id = get_my_org_id());
+DROP POLICY IF EXISTS "Users can delete tickets in own org" ON public.tickets;
+DROP POLICY IF EXISTS "Users can delete tickets in own org" ON public.tickets;
+DROP POLICY IF EXISTS "Users can delete tickets in own org" ON public.tickets;
+DROP POLICY IF EXISTS "Users can delete tickets in own org" ON public.tickets;
 CREATE POLICY "Users can delete tickets in own org" ON public.tickets FOR DELETE TO authenticated USING (org_id = get_my_org_id());
+DROP TRIGGER IF EXISTS update_tickets_updated_at ON public.tickets;
+DROP TRIGGER IF EXISTS update_tickets_updated_at ON public.tickets;
+DROP TRIGGER IF EXISTS update_tickets_updated_at ON public.tickets;
+DROP TRIGGER IF EXISTS update_tickets_updated_at ON public.tickets;
 CREATE TRIGGER update_tickets_updated_at BEFORE UPDATE ON public.tickets FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
-CREATE TABLE public.ticket_messages (
+CREATE TABLE IF NOT EXISTS public.ticket_messages (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   ticket_id uuid NOT NULL REFERENCES public.tickets(id) ON DELETE CASCADE,
   sender_id uuid,
@@ -131,14 +247,26 @@ CREATE TABLE public.ticket_messages (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 ALTER TABLE public.ticket_messages ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Users can view messages via ticket org" ON public.ticket_messages;
+DROP POLICY IF EXISTS "Users can view messages via ticket org" ON public.ticket_messages;
+DROP POLICY IF EXISTS "Users can view messages via ticket org" ON public.ticket_messages;
+DROP POLICY IF EXISTS "Users can view messages via ticket org" ON public.ticket_messages;
 CREATE POLICY "Users can view messages via ticket org" ON public.ticket_messages FOR SELECT TO authenticated
   USING (EXISTS (SELECT 1 FROM public.tickets t WHERE t.id = ticket_messages.ticket_id AND t.org_id = get_my_org_id()));
+DROP POLICY IF EXISTS "Users can create messages via ticket org" ON public.ticket_messages;
+DROP POLICY IF EXISTS "Users can create messages via ticket org" ON public.ticket_messages;
+DROP POLICY IF EXISTS "Users can create messages via ticket org" ON public.ticket_messages;
+DROP POLICY IF EXISTS "Users can create messages via ticket org" ON public.ticket_messages;
 CREATE POLICY "Users can create messages via ticket org" ON public.ticket_messages FOR INSERT TO authenticated
   WITH CHECK (EXISTS (SELECT 1 FROM public.tickets t WHERE t.id = ticket_messages.ticket_id AND t.org_id = get_my_org_id()));
+DROP POLICY IF EXISTS "Users can delete messages via ticket org" ON public.ticket_messages;
+DROP POLICY IF EXISTS "Users can delete messages via ticket org" ON public.ticket_messages;
+DROP POLICY IF EXISTS "Users can delete messages via ticket org" ON public.ticket_messages;
+DROP POLICY IF EXISTS "Users can delete messages via ticket org" ON public.ticket_messages;
 CREATE POLICY "Users can delete messages via ticket org" ON public.ticket_messages FOR DELETE TO authenticated
   USING (EXISTS (SELECT 1 FROM public.tickets t WHERE t.id = ticket_messages.ticket_id AND t.org_id = get_my_org_id()));
 
-CREATE TABLE public.checklists (
+CREATE TABLE IF NOT EXISTS public.checklists (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   org_id uuid NOT NULL REFERENCES public.organizations(id) ON DELETE CASCADE,
   trip_id uuid REFERENCES public.trips(id) ON DELETE CASCADE,
@@ -148,13 +276,33 @@ CREATE TABLE public.checklists (
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 ALTER TABLE public.checklists ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Users can view checklists in own org" ON public.checklists;
+DROP POLICY IF EXISTS "Users can view checklists in own org" ON public.checklists;
+DROP POLICY IF EXISTS "Users can view checklists in own org" ON public.checklists;
+DROP POLICY IF EXISTS "Users can view checklists in own org" ON public.checklists;
 CREATE POLICY "Users can view checklists in own org" ON public.checklists FOR SELECT TO authenticated USING (org_id = get_my_org_id());
+DROP POLICY IF EXISTS "Users can create checklists in own org" ON public.checklists;
+DROP POLICY IF EXISTS "Users can create checklists in own org" ON public.checklists;
+DROP POLICY IF EXISTS "Users can create checklists in own org" ON public.checklists;
+DROP POLICY IF EXISTS "Users can create checklists in own org" ON public.checklists;
 CREATE POLICY "Users can create checklists in own org" ON public.checklists FOR INSERT TO authenticated WITH CHECK (org_id = get_my_org_id());
+DROP POLICY IF EXISTS "Users can update checklists in own org" ON public.checklists;
+DROP POLICY IF EXISTS "Users can update checklists in own org" ON public.checklists;
+DROP POLICY IF EXISTS "Users can update checklists in own org" ON public.checklists;
+DROP POLICY IF EXISTS "Users can update checklists in own org" ON public.checklists;
 CREATE POLICY "Users can update checklists in own org" ON public.checklists FOR UPDATE TO authenticated USING (org_id = get_my_org_id()) WITH CHECK (org_id = get_my_org_id());
+DROP POLICY IF EXISTS "Users can delete checklists in own org" ON public.checklists;
+DROP POLICY IF EXISTS "Users can delete checklists in own org" ON public.checklists;
+DROP POLICY IF EXISTS "Users can delete checklists in own org" ON public.checklists;
+DROP POLICY IF EXISTS "Users can delete checklists in own org" ON public.checklists;
 CREATE POLICY "Users can delete checklists in own org" ON public.checklists FOR DELETE TO authenticated USING (org_id = get_my_org_id());
+DROP TRIGGER IF EXISTS update_checklists_updated_at ON public.checklists;
+DROP TRIGGER IF EXISTS update_checklists_updated_at ON public.checklists;
+DROP TRIGGER IF EXISTS update_checklists_updated_at ON public.checklists;
+DROP TRIGGER IF EXISTS update_checklists_updated_at ON public.checklists;
 CREATE TRIGGER update_checklists_updated_at BEFORE UPDATE ON public.checklists FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
-CREATE TABLE public.checklist_items (
+CREATE TABLE IF NOT EXISTS public.checklist_items (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   checklist_id uuid NOT NULL REFERENCES public.checklists(id) ON DELETE CASCADE,
   title text NOT NULL,
@@ -165,16 +313,32 @@ CREATE TABLE public.checklist_items (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 ALTER TABLE public.checklist_items ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Users can view items via checklist org" ON public.checklist_items;
+DROP POLICY IF EXISTS "Users can view items via checklist org" ON public.checklist_items;
+DROP POLICY IF EXISTS "Users can view items via checklist org" ON public.checklist_items;
+DROP POLICY IF EXISTS "Users can view items via checklist org" ON public.checklist_items;
 CREATE POLICY "Users can view items via checklist org" ON public.checklist_items FOR SELECT TO authenticated
   USING (EXISTS (SELECT 1 FROM public.checklists c WHERE c.id = checklist_items.checklist_id AND c.org_id = get_my_org_id()));
+DROP POLICY IF EXISTS "Users can create items via checklist org" ON public.checklist_items;
+DROP POLICY IF EXISTS "Users can create items via checklist org" ON public.checklist_items;
+DROP POLICY IF EXISTS "Users can create items via checklist org" ON public.checklist_items;
+DROP POLICY IF EXISTS "Users can create items via checklist org" ON public.checklist_items;
 CREATE POLICY "Users can create items via checklist org" ON public.checklist_items FOR INSERT TO authenticated
   WITH CHECK (EXISTS (SELECT 1 FROM public.checklists c WHERE c.id = checklist_items.checklist_id AND c.org_id = get_my_org_id()));
+DROP POLICY IF EXISTS "Users can update items via checklist org" ON public.checklist_items;
+DROP POLICY IF EXISTS "Users can update items via checklist org" ON public.checklist_items;
+DROP POLICY IF EXISTS "Users can update items via checklist org" ON public.checklist_items;
+DROP POLICY IF EXISTS "Users can update items via checklist org" ON public.checklist_items;
 CREATE POLICY "Users can update items via checklist org" ON public.checklist_items FOR UPDATE TO authenticated
   USING (EXISTS (SELECT 1 FROM public.checklists c WHERE c.id = checklist_items.checklist_id AND c.org_id = get_my_org_id()));
+DROP POLICY IF EXISTS "Users can delete items via checklist org" ON public.checklist_items;
+DROP POLICY IF EXISTS "Users can delete items via checklist org" ON public.checklist_items;
+DROP POLICY IF EXISTS "Users can delete items via checklist org" ON public.checklist_items;
+DROP POLICY IF EXISTS "Users can delete items via checklist org" ON public.checklist_items;
 CREATE POLICY "Users can delete items via checklist org" ON public.checklist_items FOR DELETE TO authenticated
   USING (EXISTS (SELECT 1 FROM public.checklists c WHERE c.id = checklist_items.checklist_id AND c.org_id = get_my_org_id()));
 
-CREATE TABLE public.notifications (
+CREATE TABLE IF NOT EXISTS public.notifications (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id uuid NOT NULL,
   org_id uuid NOT NULL REFERENCES public.organizations(id) ON DELETE CASCADE,
@@ -186,10 +350,24 @@ CREATE TABLE public.notifications (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Users can view own notifications" ON public.notifications;
+DROP POLICY IF EXISTS "Users can view own notifications" ON public.notifications;
+DROP POLICY IF EXISTS "Users can view own notifications" ON public.notifications;
+DROP POLICY IF EXISTS "Users can view own notifications" ON public.notifications;
 CREATE POLICY "Users can view own notifications" ON public.notifications FOR SELECT TO authenticated USING (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Users can update own notifications" ON public.notifications;
+DROP POLICY IF EXISTS "Users can update own notifications" ON public.notifications;
+DROP POLICY IF EXISTS "Users can update own notifications" ON public.notifications;
+DROP POLICY IF EXISTS "Users can update own notifications" ON public.notifications;
 CREATE POLICY "Users can update own notifications" ON public.notifications FOR UPDATE TO authenticated USING (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Users can delete own notifications" ON public.notifications;
+DROP POLICY IF EXISTS "Users can delete own notifications" ON public.notifications;
+DROP POLICY IF EXISTS "Users can delete own notifications" ON public.notifications;
+DROP POLICY IF EXISTS "Users can delete own notifications" ON public.notifications;
 CREATE POLICY "Users can delete own notifications" ON public.notifications FOR DELETE TO authenticated USING (auth.uid() = user_id);
 
+DROP FUNCTION IF EXISTS public.ensure_default_kanban_boards CASCADE;
+DROP FUNCTION IF EXISTS public.ensure_default_kanban_boards CASCADE;
 CREATE OR REPLACE FUNCTION public.ensure_default_kanban_boards(_org_id uuid)
 RETURNS void
 LANGUAGE plpgsql
@@ -212,6 +390,8 @@ BEGIN
 END;
 $$;
 
+DROP FUNCTION IF EXISTS public.get_public_checklist CASCADE;
+DROP FUNCTION IF EXISTS public.get_public_checklist CASCADE;
 CREATE OR REPLACE FUNCTION public.get_public_checklist(_token uuid)
 RETURNS TABLE(
   checklist_id uuid,
@@ -244,6 +424,8 @@ BEGIN
 END;
 $$;
 
+DROP FUNCTION IF EXISTS public.toggle_public_checklist_item CASCADE;
+DROP FUNCTION IF EXISTS public.toggle_public_checklist_item CASCADE;
 CREATE OR REPLACE FUNCTION public.toggle_public_checklist_item(_item_id uuid, _token uuid)
 RETURNS boolean
 LANGUAGE plpgsql

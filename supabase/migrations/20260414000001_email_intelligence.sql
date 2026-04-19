@@ -15,8 +15,11 @@ $$ LANGUAGE plpgsql;
 
 -- Trigger to maintain ticket_code creation
 DROP TRIGGER IF EXISTS trg_generate_ticket_code ON public.tickets;
-CREATE TRIGGER trg_generate_ticket_code
-BEFORE INSERT ON public.tickets
+DROP TRIGGER IF EXISTS trg_generate_ticket_code ON public.tickets;
+DROP TRIGGER IF EXISTS trg_generate_ticket_code ON public.tickets;
+DROP TRIGGER IF EXISTS trg_generate_ticket_code ON public.tickets;
+DROP TRIGGER IF EXISTS trg_generate_ticket_code ON public.tickets;
+CREATE TRIGGER trg_generate_ticket_code BEFORE INSERT ON public.tickets
 FOR EACH ROW
 EXECUTE FUNCTION generate_ticket_code();
 
@@ -67,20 +70,29 @@ ALTER TABLE public.email_messages ENABLE ROW LEVEL SECURITY;
 DO $$ 
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Users can view emails of their organization') THEN
-        CREATE POLICY "Users can view emails of their organization" 
-        ON public.email_messages FOR SELECT 
+        DROP POLICY IF EXISTS "Users can view emails of their organization" ON public.email_messages;
+DROP POLICY IF EXISTS "Users can view emails of their organization" ON public.email_messages;
+DROP POLICY IF EXISTS "Users can view emails of their organization" ON public.email_messages;
+DROP POLICY IF EXISTS "Users can view emails of their organization" ON public.email_messages;
+CREATE POLICY "Users can view emails of their organization" ON public.email_messages FOR SELECT 
         USING (org_id IN (SELECT org_id FROM profiles WHERE user_id = auth.uid()));
     END IF;
 
     IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Users can insert emails to their organization') THEN
-        CREATE POLICY "Users can insert emails to their organization" 
-        ON public.email_messages FOR INSERT 
+        DROP POLICY IF EXISTS "Users can insert emails to their organization" ON public.email_messages;
+DROP POLICY IF EXISTS "Users can insert emails to their organization" ON public.email_messages;
+DROP POLICY IF EXISTS "Users can insert emails to their organization" ON public.email_messages;
+DROP POLICY IF EXISTS "Users can insert emails to their organization" ON public.email_messages;
+CREATE POLICY "Users can insert emails to their organization" ON public.email_messages FOR INSERT 
         WITH CHECK (org_id IN (SELECT org_id FROM profiles WHERE user_id = auth.uid()));
     END IF;
 
     IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Users can update emails of their organization') THEN
-        CREATE POLICY "Users can update emails of their organization" 
-        ON public.email_messages FOR UPDATE 
+        DROP POLICY IF EXISTS "Users can update emails of their organization" ON public.email_messages;
+DROP POLICY IF EXISTS "Users can update emails of their organization" ON public.email_messages;
+DROP POLICY IF EXISTS "Users can update emails of their organization" ON public.email_messages;
+DROP POLICY IF EXISTS "Users can update emails of their organization" ON public.email_messages;
+CREATE POLICY "Users can update emails of their organization" ON public.email_messages FOR UPDATE 
         USING (org_id IN (SELECT org_id FROM profiles WHERE user_id = auth.uid()));
     END IF;
 END $$;
@@ -117,17 +129,6 @@ FROM public.email_messages
 WHERE client_id IS NOT NULL
 UNION ALL
 SELECT 
-  client_id, 
-  'whatsapp' as type, 
-  id as entity_id, 
-  ai_summary as summary, 
-  started_at as interaction_date, 
-  agent_id::text as agent_name,
-  org_id
-FROM public.wa_conversation_logs
-WHERE client_id IS NOT NULL
-UNION ALL
-SELECT 
   primary_client_id as client_id, 
   'trip' as type, 
   id as entity_id, 
@@ -147,3 +148,4 @@ SELECT
   org_id
 FROM public.quotations
 WHERE client_id IS NOT NULL;
+

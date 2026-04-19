@@ -9,6 +9,10 @@ CREATE TABLE IF NOT EXISTS public.contract_templates (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 ALTER TABLE public.contract_templates ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "org members can manage contract_templates" ON public.contract_templates;
+DROP POLICY IF EXISTS "org members can manage contract_templates" ON public.contract_templates;
+DROP POLICY IF EXISTS "org members can manage contract_templates" ON public.contract_templates;
+DROP POLICY IF EXISTS "org members can manage contract_templates" ON public.contract_templates;
 CREATE POLICY "org members can manage contract_templates" ON public.contract_templates
   FOR ALL USING (org_id = public.get_my_org_id()) WITH CHECK (org_id = public.get_my_org_id());
 
@@ -24,6 +28,10 @@ CREATE TABLE IF NOT EXISTS public.communication_rules (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 ALTER TABLE public.communication_rules ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "org members can manage communication_rules" ON public.communication_rules;
+DROP POLICY IF EXISTS "org members can manage communication_rules" ON public.communication_rules;
+DROP POLICY IF EXISTS "org members can manage communication_rules" ON public.communication_rules;
+DROP POLICY IF EXISTS "org members can manage communication_rules" ON public.communication_rules;
 CREATE POLICY "org members can manage communication_rules" ON public.communication_rules
   FOR ALL USING (org_id = public.get_my_org_id()) WITH CHECK (org_id = public.get_my_org_id());
 
@@ -42,6 +50,10 @@ CREATE TABLE IF NOT EXISTS public.financial_suppliers (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 ALTER TABLE public.financial_suppliers ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "org members can manage financial_suppliers" ON public.financial_suppliers;
+DROP POLICY IF EXISTS "org members can manage financial_suppliers" ON public.financial_suppliers;
+DROP POLICY IF EXISTS "org members can manage financial_suppliers" ON public.financial_suppliers;
+DROP POLICY IF EXISTS "org members can manage financial_suppliers" ON public.financial_suppliers;
 CREATE POLICY "org members can manage financial_suppliers" ON public.financial_suppliers
   FOR ALL USING (org_id = public.get_my_org_id()) WITH CHECK (org_id = public.get_my_org_id());
 
@@ -66,6 +78,10 @@ CREATE TABLE IF NOT EXISTS public.financial_transactions (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 ALTER TABLE public.financial_transactions ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "org members can manage financial_transactions" ON public.financial_transactions;
+DROP POLICY IF EXISTS "org members can manage financial_transactions" ON public.financial_transactions;
+DROP POLICY IF EXISTS "org members can manage financial_transactions" ON public.financial_transactions;
+DROP POLICY IF EXISTS "org members can manage financial_transactions" ON public.financial_transactions;
 CREATE POLICY "org members can manage financial_transactions" ON public.financial_transactions
   FOR ALL USING (org_id = public.get_my_org_id()) WITH CHECK (org_id = public.get_my_org_id());
 
@@ -82,6 +98,8 @@ ALTER TABLE public.kanban_boards
   ADD COLUMN IF NOT EXISTS board_type TEXT DEFAULT 'custom';
 
 -- 7. Timestamps triggers
+DROP FUNCTION IF EXISTS public.update_updated_at_column CASCADE;
+DROP FUNCTION IF EXISTS public.update_updated_at_column CASCADE;
 CREATE OR REPLACE FUNCTION public.update_updated_at_column()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -90,11 +108,27 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SET search_path = public;
 
+DROP TRIGGER IF EXISTS update_contract_templates_updated_at ON public.contract_templates;
+DROP TRIGGER IF EXISTS update_contract_templates_updated_at ON public.contract_templates;
+DROP TRIGGER IF EXISTS update_contract_templates_updated_at ON public.contract_templates;
+DROP TRIGGER IF EXISTS update_contract_templates_updated_at ON public.contract_templates;
 CREATE TRIGGER update_contract_templates_updated_at BEFORE UPDATE ON public.contract_templates
   FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+DROP TRIGGER IF EXISTS update_communication_rules_updated_at ON public.communication_rules;
+DROP TRIGGER IF EXISTS update_communication_rules_updated_at ON public.communication_rules;
+DROP TRIGGER IF EXISTS update_communication_rules_updated_at ON public.communication_rules;
+DROP TRIGGER IF EXISTS update_communication_rules_updated_at ON public.communication_rules;
 CREATE TRIGGER update_communication_rules_updated_at BEFORE UPDATE ON public.communication_rules
   FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+DROP TRIGGER IF EXISTS update_financial_suppliers_updated_at ON public.financial_suppliers;
+DROP TRIGGER IF EXISTS update_financial_suppliers_updated_at ON public.financial_suppliers;
+DROP TRIGGER IF EXISTS update_financial_suppliers_updated_at ON public.financial_suppliers;
+DROP TRIGGER IF EXISTS update_financial_suppliers_updated_at ON public.financial_suppliers;
 CREATE TRIGGER update_financial_suppliers_updated_at BEFORE UPDATE ON public.financial_suppliers
   FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+DROP TRIGGER IF EXISTS update_financial_transactions_updated_at ON public.financial_transactions;
+DROP TRIGGER IF EXISTS update_financial_transactions_updated_at ON public.financial_transactions;
+DROP TRIGGER IF EXISTS update_financial_transactions_updated_at ON public.financial_transactions;
+DROP TRIGGER IF EXISTS update_financial_transactions_updated_at ON public.financial_transactions;
 CREATE TRIGGER update_financial_transactions_updated_at BEFORE UPDATE ON public.financial_transactions
   FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();

@@ -19,13 +19,19 @@ CREATE INDEX IF NOT EXISTS idx_proactive_alerts_org_done
   ON public.proactive_alerts(org_id, done, created_at DESC);
 
 DROP TRIGGER IF EXISTS update_proactive_alerts_updated_at ON public.proactive_alerts;
-CREATE TRIGGER update_proactive_alerts_updated_at
-  BEFORE UPDATE ON public.proactive_alerts
+DROP TRIGGER IF EXISTS update_proactive_alerts_updated_at ON public.proactive_alerts;
+DROP TRIGGER IF EXISTS update_proactive_alerts_updated_at ON public.proactive_alerts;
+DROP TRIGGER IF EXISTS update_proactive_alerts_updated_at ON public.proactive_alerts;
+DROP TRIGGER IF EXISTS update_proactive_alerts_updated_at ON public.proactive_alerts;
+CREATE TRIGGER update_proactive_alerts_updated_at BEFORE UPDATE ON public.proactive_alerts
   FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
 DROP POLICY IF EXISTS "org members can manage proactive_alerts" ON public.proactive_alerts;
-CREATE POLICY "org members can manage proactive_alerts"
-  ON public.proactive_alerts
+DROP POLICY IF EXISTS "org members can manage proactive_alerts" ON public.proactive_alerts;
+DROP POLICY IF EXISTS "org members can manage proactive_alerts" ON public.proactive_alerts;
+DROP POLICY IF EXISTS "org members can manage proactive_alerts" ON public.proactive_alerts;
+DROP POLICY IF EXISTS "org members can manage proactive_alerts" ON public.proactive_alerts;
+CREATE POLICY "org members can manage proactive_alerts" ON public.proactive_alerts
   FOR ALL
   USING (org_id = public.get_my_org_id())
   WITH CHECK (org_id = public.get_my_org_id());
@@ -54,13 +60,19 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_memory_contexts_org_phone
   ON public.memory_contexts(org_id, client_phone_key);
 
 DROP TRIGGER IF EXISTS update_memory_contexts_updated_at ON public.memory_contexts;
-CREATE TRIGGER update_memory_contexts_updated_at
-  BEFORE UPDATE ON public.memory_contexts
+DROP TRIGGER IF EXISTS update_memory_contexts_updated_at ON public.memory_contexts;
+DROP TRIGGER IF EXISTS update_memory_contexts_updated_at ON public.memory_contexts;
+DROP TRIGGER IF EXISTS update_memory_contexts_updated_at ON public.memory_contexts;
+DROP TRIGGER IF EXISTS update_memory_contexts_updated_at ON public.memory_contexts;
+CREATE TRIGGER update_memory_contexts_updated_at BEFORE UPDATE ON public.memory_contexts
   FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
 DROP POLICY IF EXISTS "org members can manage memory_contexts" ON public.memory_contexts;
-CREATE POLICY "org members can manage memory_contexts"
-  ON public.memory_contexts
+DROP POLICY IF EXISTS "org members can manage memory_contexts" ON public.memory_contexts;
+DROP POLICY IF EXISTS "org members can manage memory_contexts" ON public.memory_contexts;
+DROP POLICY IF EXISTS "org members can manage memory_contexts" ON public.memory_contexts;
+DROP POLICY IF EXISTS "org members can manage memory_contexts" ON public.memory_contexts;
+CREATE POLICY "org members can manage memory_contexts" ON public.memory_contexts
   FOR ALL
   USING (org_id = public.get_my_org_id())
   WITH CHECK (org_id = public.get_my_org_id());

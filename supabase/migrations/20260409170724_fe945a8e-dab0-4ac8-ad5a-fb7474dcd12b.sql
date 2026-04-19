@@ -3,7 +3,7 @@
 CREATE TYPE public.app_role AS ENUM ('super_admin', 'org_admin', 'agent', 'support', 'client');
 
 -- Organizations table
-CREATE TABLE public.organizations (
+CREATE TABLE IF NOT EXISTS public.organizations (
   id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
   name TEXT NOT NULL,
   slug TEXT NOT NULL UNIQUE,
@@ -19,7 +19,7 @@ CREATE TABLE public.organizations (
 ALTER TABLE public.organizations ENABLE ROW LEVEL SECURITY;
 
 -- Profiles table
-CREATE TABLE public.profiles (
+CREATE TABLE IF NOT EXISTS public.profiles (
   id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id UUID NOT NULL UNIQUE REFERENCES auth.users(id) ON DELETE CASCADE,
   org_id UUID REFERENCES public.organizations(id) ON DELETE SET NULL,
@@ -34,7 +34,7 @@ CREATE TABLE public.profiles (
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
 -- User roles table (separate for security)
-CREATE TABLE public.user_roles (
+CREATE TABLE IF NOT EXISTS public.user_roles (
   id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   role app_role NOT NULL,
@@ -44,6 +44,8 @@ CREATE TABLE public.user_roles (
 ALTER TABLE public.user_roles ENABLE ROW LEVEL SECURITY;
 
 -- Function: update_updated_at_column
+DROP FUNCTION IF EXISTS public.update_updated_at_column CASCADE;
+DROP FUNCTION IF EXISTS public.update_updated_at_column CASCADE;
 CREATE OR REPLACE FUNCTION public.update_updated_at_column()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -53,15 +55,23 @@ END;
 $$ LANGUAGE plpgsql SET search_path = public;
 
 -- Triggers for updated_at
-CREATE TRIGGER update_organizations_updated_at
-  BEFORE UPDATE ON public.organizations
+DROP TRIGGER IF EXISTS update_organizations_updated_at ON public.organizations;
+DROP TRIGGER IF EXISTS update_organizations_updated_at ON public.organizations;
+DROP TRIGGER IF EXISTS update_organizations_updated_at ON public.organizations;
+DROP TRIGGER IF EXISTS update_organizations_updated_at ON public.organizations;
+CREATE TRIGGER update_organizations_updated_at BEFORE UPDATE ON public.organizations
   FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
-CREATE TRIGGER update_profiles_updated_at
-  BEFORE UPDATE ON public.profiles
+DROP TRIGGER IF EXISTS update_profiles_updated_at ON public.profiles;
+DROP TRIGGER IF EXISTS update_profiles_updated_at ON public.profiles;
+DROP TRIGGER IF EXISTS update_profiles_updated_at ON public.profiles;
+DROP TRIGGER IF EXISTS update_profiles_updated_at ON public.profiles;
+CREATE TRIGGER update_profiles_updated_at BEFORE UPDATE ON public.profiles
   FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
 -- Function: get_my_org_id (for RLS multi-tenant isolation)
+DROP FUNCTION IF EXISTS public.get_my_org_id CASCADE;
+DROP FUNCTION IF EXISTS public.get_my_org_id CASCADE;
 CREATE OR REPLACE FUNCTION public.get_my_org_id()
 RETURNS UUID
 LANGUAGE sql
@@ -73,6 +83,8 @@ AS $$
 $$;
 
 -- Function: has_role (security definer to avoid RLS recursion)
+DROP FUNCTION IF EXISTS public.has_role CASCADE;
+DROP FUNCTION IF EXISTS public.has_role CASCADE;
 CREATE OR REPLACE FUNCTION public.has_role(_user_id UUID, _role app_role)
 RETURNS BOOLEAN
 LANGUAGE sql
@@ -87,6 +99,8 @@ AS $$
 $$;
 
 -- Trigger: auto-create profile on signup
+DROP FUNCTION IF EXISTS public.handle_new_user CASCADE;
+DROP FUNCTION IF EXISTS public.handle_new_user CASCADE;
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -102,38 +116,60 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
-CREATE TRIGGER on_auth_user_created
-  AFTER INSERT ON auth.users
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
 -- RLS Policies: profiles
-CREATE POLICY "Users can view own profile"
-  ON public.profiles FOR SELECT
+DROP POLICY IF EXISTS "Users can view own profile" ON public.profiles;
+DROP POLICY IF EXISTS "Users can view own profile" ON public.profiles;
+DROP POLICY IF EXISTS "Users can view own profile" ON public.profiles;
+DROP POLICY IF EXISTS "Users can view own profile" ON public.profiles;
+CREATE POLICY "Users can view own profile" ON public.profiles FOR SELECT
   USING (auth.uid() = user_id);
 
-CREATE POLICY "Users can update own profile"
-  ON public.profiles FOR UPDATE
+DROP POLICY IF EXISTS "Users can update own profile" ON public.profiles;
+DROP POLICY IF EXISTS "Users can update own profile" ON public.profiles;
+DROP POLICY IF EXISTS "Users can update own profile" ON public.profiles;
+DROP POLICY IF EXISTS "Users can update own profile" ON public.profiles;
+CREATE POLICY "Users can update own profile" ON public.profiles FOR UPDATE
   USING (auth.uid() = user_id);
 
-CREATE POLICY "Users can insert own profile"
-  ON public.profiles FOR INSERT
+DROP POLICY IF EXISTS "Users can insert own profile" ON public.profiles;
+DROP POLICY IF EXISTS "Users can insert own profile" ON public.profiles;
+DROP POLICY IF EXISTS "Users can insert own profile" ON public.profiles;
+DROP POLICY IF EXISTS "Users can insert own profile" ON public.profiles;
+CREATE POLICY "Users can insert own profile" ON public.profiles FOR INSERT
   WITH CHECK (auth.uid() = user_id);
 
 -- RLS Policies: organizations
-CREATE POLICY "Users can view own org"
-  ON public.organizations FOR SELECT
+DROP POLICY IF EXISTS "Users can view own org" ON public.organizations;
+DROP POLICY IF EXISTS "Users can view own org" ON public.organizations;
+DROP POLICY IF EXISTS "Users can view own org" ON public.organizations;
+DROP POLICY IF EXISTS "Users can view own org" ON public.organizations;
+CREATE POLICY "Users can view own org" ON public.organizations FOR SELECT
   USING (id = public.get_my_org_id());
 
-CREATE POLICY "Org admins can update own org"
-  ON public.organizations FOR UPDATE
+DROP POLICY IF EXISTS "Org admins can update own org" ON public.organizations;
+DROP POLICY IF EXISTS "Org admins can update own org" ON public.organizations;
+DROP POLICY IF EXISTS "Org admins can update own org" ON public.organizations;
+DROP POLICY IF EXISTS "Org admins can update own org" ON public.organizations;
+CREATE POLICY "Org admins can update own org" ON public.organizations FOR UPDATE
   USING (id = public.get_my_org_id() AND public.has_role(auth.uid(), 'org_admin'));
 
-CREATE POLICY "Authenticated users can create orgs"
-  ON public.organizations FOR INSERT
+DROP POLICY IF EXISTS "Authenticated users can create orgs" ON public.organizations;
+DROP POLICY IF EXISTS "Authenticated users can create orgs" ON public.organizations;
+DROP POLICY IF EXISTS "Authenticated users can create orgs" ON public.organizations;
+DROP POLICY IF EXISTS "Authenticated users can create orgs" ON public.organizations;
+CREATE POLICY "Authenticated users can create orgs" ON public.organizations FOR INSERT
   TO authenticated
   WITH CHECK (true);
 
 -- RLS Policies: user_roles
-CREATE POLICY "Users can view own roles"
-  ON public.user_roles FOR SELECT
+DROP POLICY IF EXISTS "Users can view own roles" ON public.user_roles;
+DROP POLICY IF EXISTS "Users can view own roles" ON public.user_roles;
+DROP POLICY IF EXISTS "Users can view own roles" ON public.user_roles;
+DROP POLICY IF EXISTS "Users can view own roles" ON public.user_roles;
+CREATE POLICY "Users can view own roles" ON public.user_roles FOR SELECT
   USING (auth.uid() = user_id);

@@ -298,6 +298,10 @@ CREATE TABLE IF NOT EXISTS public.map_distances (
 ALTER TABLE public.quotations ENABLE ROW LEVEL SECURITY;
 -- Basic anon access bypassing full JWT requirements if token matches. 
 -- In pure postgREST standard, we read query params config, or we allow SELECT for anon and filter by JWT or Token
+DROP POLICY IF EXISTS "Anon quotes valid token" ON public.quotations;
+DROP POLICY IF EXISTS "Anon quotes valid token" ON public.quotations;
+DROP POLICY IF EXISTS "Anon quotes valid token" ON public.quotations;
+DROP POLICY IF EXISTS "Anon quotes valid token" ON public.quotations;
 CREATE POLICY "Anon quotes valid token" ON public.quotations 
 FOR SELECT TO anon 
 USING (true); -- Real validation will happen via application layer or RPC, but table-level is open-read for ANON.

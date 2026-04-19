@@ -22,12 +22,13 @@ ON CONFLICT (id) DO NOTHING;
 
 -- 4. Políticas de RLS para o bucket media
 -- Permite leitura pública e upload por usuários autenticados.
-INSERT INTO storage.policies (name, bucket_id, definition, action)
-VALUES 
-  ('Acesso Público Media', 'media', '(bucket_id = ''media'')', 'SELECT')
-ON CONFLICT DO NOTHING;
+DROP POLICY IF EXISTS "Acesso Público Media" ON storage.objects;
+DROP POLICY IF EXISTS "Acesso Público Media" ON storage.objects;
+CREATE POLICY "Acesso Público Media" ON storage.objects FOR SELECT
+  USING (bucket_id = 'media');
 
-INSERT INTO storage.policies (name, bucket_id, definition, action)
-VALUES 
-  ('Upload Autenticado Media', 'media', '(bucket_id = ''media'' AND auth.role() = ''authenticated'')', 'INSERT')
-ON CONFLICT DO NOTHING;
+DROP POLICY IF EXISTS "Upload Autenticado Media" ON storage.objects;
+DROP POLICY IF EXISTS "Upload Autenticado Media" ON storage.objects;
+CREATE POLICY "Upload Autenticado Media" ON storage.objects FOR INSERT
+  TO authenticated
+  WITH CHECK (bucket_id = 'media');

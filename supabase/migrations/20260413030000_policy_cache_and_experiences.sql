@@ -31,8 +31,11 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_policy_cache_operadora_tipo_ativa
 CREATE INDEX IF NOT EXISTS idx_policy_cache_org ON public.policy_cache(org_id);
 
 ALTER TABLE public.policy_cache ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Users can manage policy cache in own org"
-  ON public.policy_cache FOR ALL TO authenticated
+DROP POLICY IF EXISTS "Users can manage policy cache in own org" ON public.policy_cache;
+DROP POLICY IF EXISTS "Users can manage policy cache in own org" ON public.policy_cache;
+DROP POLICY IF EXISTS "Users can manage policy cache in own org" ON public.policy_cache;
+DROP POLICY IF EXISTS "Users can manage policy cache in own org" ON public.policy_cache;
+CREATE POLICY "Users can manage policy cache in own org" ON public.policy_cache FOR ALL TO authenticated
   USING (org_id = get_my_org_id())
   WITH CHECK (org_id = get_my_org_id());
 
@@ -71,14 +74,20 @@ CREATE INDEX IF NOT EXISTS idx_experiences_org ON public.experiences(org_id, is_
 CREATE INDEX IF NOT EXISTS idx_experiences_tipo ON public.experiences(tipo);
 
 ALTER TABLE public.experiences ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Users can manage experiences in own org"
-  ON public.experiences FOR ALL TO authenticated
+DROP POLICY IF EXISTS "Users can manage experiences in own org" ON public.experiences;
+DROP POLICY IF EXISTS "Users can manage experiences in own org" ON public.experiences;
+DROP POLICY IF EXISTS "Users can manage experiences in own org" ON public.experiences;
+DROP POLICY IF EXISTS "Users can manage experiences in own org" ON public.experiences;
+CREATE POLICY "Users can manage experiences in own org" ON public.experiences FOR ALL TO authenticated
   USING (org_id = get_my_org_id())
   WITH CHECK (org_id = get_my_org_id());
 
 DROP TRIGGER IF EXISTS update_experiences_updated_at ON public.experiences;
-CREATE TRIGGER update_experiences_updated_at
-  BEFORE UPDATE ON public.experiences
+DROP TRIGGER IF EXISTS update_experiences_updated_at ON public.experiences;
+DROP TRIGGER IF EXISTS update_experiences_updated_at ON public.experiences;
+DROP TRIGGER IF EXISTS update_experiences_updated_at ON public.experiences;
+DROP TRIGGER IF EXISTS update_experiences_updated_at ON public.experiences;
+CREATE TRIGGER update_experiences_updated_at BEFORE UPDATE ON public.experiences
   FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
 -- Vinculação de experiências com cotações
@@ -102,7 +111,10 @@ CREATE TABLE IF NOT EXISTS public.quote_experiences (
 
 CREATE INDEX IF NOT EXISTS idx_quote_experiences_quote ON public.quote_experiences(quote_id);
 ALTER TABLE public.quote_experiences ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Users can manage quote experiences in own org"
-  ON public.quote_experiences FOR ALL TO authenticated
+DROP POLICY IF EXISTS "Users can manage quote experiences in own org" ON public.quote_experiences;
+DROP POLICY IF EXISTS "Users can manage quote experiences in own org" ON public.quote_experiences;
+DROP POLICY IF EXISTS "Users can manage quote experiences in own org" ON public.quote_experiences;
+DROP POLICY IF EXISTS "Users can manage quote experiences in own org" ON public.quote_experiences;
+CREATE POLICY "Users can manage quote experiences in own org" ON public.quote_experiences FOR ALL TO authenticated
   USING (EXISTS (SELECT 1 FROM public.quotations q WHERE q.id = quote_id AND q.org_id = get_my_org_id()))
   WITH CHECK (EXISTS (SELECT 1 FROM public.quotations q WHERE q.id = quote_id AND q.org_id = get_my_org_id()));

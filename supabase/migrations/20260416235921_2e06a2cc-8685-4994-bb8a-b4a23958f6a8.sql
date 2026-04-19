@@ -4,7 +4,7 @@
 -- =====================================================
 
 -- 1. bus_layouts (independente)
-CREATE TABLE public.bus_layouts (
+CREATE TABLE IF NOT EXISTS public.bus_layouts (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   org_id UUID NOT NULL,
   name TEXT NOT NULL,
@@ -19,11 +19,15 @@ CREATE TABLE public.bus_layouts (
 );
 
 ALTER TABLE public.bus_layouts ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "org members manage bus_layouts" ON public.bus_layouts;
+DROP POLICY IF EXISTS "org members manage bus_layouts" ON public.bus_layouts;
+DROP POLICY IF EXISTS "org members manage bus_layouts" ON public.bus_layouts;
+DROP POLICY IF EXISTS "org members manage bus_layouts" ON public.bus_layouts;
 CREATE POLICY "org members manage bus_layouts" ON public.bus_layouts
   FOR ALL USING (org_id = get_my_org_id()) WITH CHECK (org_id = get_my_org_id());
 
 -- 2. group_trips
-CREATE TABLE public.group_trips (
+CREATE TABLE IF NOT EXISTS public.group_trips (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   org_id UUID NOT NULL,
   created_by UUID,
@@ -77,17 +81,25 @@ CREATE TABLE public.group_trips (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE INDEX idx_group_trips_org ON public.group_trips(org_id);
-CREATE INDEX idx_group_trips_public ON public.group_trips(slug) WHERE is_public = true;
+CREATE INDEX IF NOT EXISTS idx_group_trips_org ON public.group_trips(org_id);
+CREATE INDEX IF NOT EXISTS idx_group_trips_public ON public.group_trips(slug) WHERE is_public = true;
 
 ALTER TABLE public.group_trips ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "org members manage group_trips" ON public.group_trips;
+DROP POLICY IF EXISTS "org members manage group_trips" ON public.group_trips;
+DROP POLICY IF EXISTS "org members manage group_trips" ON public.group_trips;
+DROP POLICY IF EXISTS "org members manage group_trips" ON public.group_trips;
 CREATE POLICY "org members manage group_trips" ON public.group_trips
   FOR ALL USING (org_id = get_my_org_id()) WITH CHECK (org_id = get_my_org_id());
+DROP POLICY IF EXISTS "public read published group_trips" ON public.group_trips;
+DROP POLICY IF EXISTS "public read published group_trips" ON public.group_trips;
+DROP POLICY IF EXISTS "public read published group_trips" ON public.group_trips;
+DROP POLICY IF EXISTS "public read published group_trips" ON public.group_trips;
 CREATE POLICY "public read published group_trips" ON public.group_trips
   FOR SELECT TO anon, authenticated USING (is_public = true AND status = 'published');
 
 -- 3. group_trip_days
-CREATE TABLE public.group_trip_days (
+CREATE TABLE IF NOT EXISTS public.group_trip_days (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   group_trip_id UUID NOT NULL REFERENCES public.group_trips(id) ON DELETE CASCADE,
   day_number INTEGER NOT NULL DEFAULT 1,
@@ -100,22 +112,30 @@ CREATE TABLE public.group_trip_days (
   UNIQUE(group_trip_id, day_number)
 );
 
-CREATE INDEX idx_group_trip_days_trip ON public.group_trip_days(group_trip_id);
+CREATE INDEX IF NOT EXISTS idx_group_trip_days_trip ON public.group_trip_days(group_trip_id);
 
 ALTER TABLE public.group_trip_days ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "org manages days via parent" ON public.group_trip_days;
+DROP POLICY IF EXISTS "org manages days via parent" ON public.group_trip_days;
+DROP POLICY IF EXISTS "org manages days via parent" ON public.group_trip_days;
+DROP POLICY IF EXISTS "org manages days via parent" ON public.group_trip_days;
 CREATE POLICY "org manages days via parent" ON public.group_trip_days
   FOR ALL USING (
     EXISTS (SELECT 1 FROM public.group_trips gt WHERE gt.id = group_trip_id AND gt.org_id = get_my_org_id())
   ) WITH CHECK (
     EXISTS (SELECT 1 FROM public.group_trips gt WHERE gt.id = group_trip_id AND gt.org_id = get_my_org_id())
   );
+DROP POLICY IF EXISTS "public read days of published trips" ON public.group_trip_days;
+DROP POLICY IF EXISTS "public read days of published trips" ON public.group_trip_days;
+DROP POLICY IF EXISTS "public read days of published trips" ON public.group_trip_days;
+DROP POLICY IF EXISTS "public read days of published trips" ON public.group_trip_days;
 CREATE POLICY "public read days of published trips" ON public.group_trip_days
   FOR SELECT TO anon, authenticated USING (
     EXISTS (SELECT 1 FROM public.group_trips gt WHERE gt.id = group_trip_id AND gt.is_public = true AND gt.status = 'published')
   );
 
 -- 4. group_bookings
-CREATE TABLE public.group_bookings (
+CREATE TABLE IF NOT EXISTS public.group_bookings (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   group_trip_id UUID NOT NULL REFERENCES public.group_trips(id) ON DELETE RESTRICT,
   org_id UUID NOT NULL,
@@ -148,15 +168,19 @@ CREATE TABLE public.group_bookings (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE INDEX idx_group_bookings_trip ON public.group_bookings(group_trip_id);
-CREATE INDEX idx_group_bookings_org ON public.group_bookings(org_id);
+CREATE INDEX IF NOT EXISTS idx_group_bookings_trip ON public.group_bookings(group_trip_id);
+CREATE INDEX IF NOT EXISTS idx_group_bookings_org ON public.group_bookings(org_id);
 
 ALTER TABLE public.group_bookings ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "org members manage group_bookings" ON public.group_bookings;
+DROP POLICY IF EXISTS "org members manage group_bookings" ON public.group_bookings;
+DROP POLICY IF EXISTS "org members manage group_bookings" ON public.group_bookings;
+DROP POLICY IF EXISTS "org members manage group_bookings" ON public.group_bookings;
 CREATE POLICY "org members manage group_bookings" ON public.group_bookings
   FOR ALL USING (org_id = get_my_org_id()) WITH CHECK (org_id = get_my_org_id());
 
 -- 5. booking_installments
-CREATE TABLE public.booking_installments (
+CREATE TABLE IF NOT EXISTS public.booking_installments (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   booking_id UUID NOT NULL REFERENCES public.group_bookings(id) ON DELETE CASCADE,
   installment_number INTEGER NOT NULL,
@@ -171,9 +195,13 @@ CREATE TABLE public.booking_installments (
   UNIQUE(booking_id, installment_number)
 );
 
-CREATE INDEX idx_booking_installments_booking ON public.booking_installments(booking_id);
+CREATE INDEX IF NOT EXISTS idx_booking_installments_booking ON public.booking_installments(booking_id);
 
 ALTER TABLE public.booking_installments ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "org manages installments via booking" ON public.booking_installments;
+DROP POLICY IF EXISTS "org manages installments via booking" ON public.booking_installments;
+DROP POLICY IF EXISTS "org manages installments via booking" ON public.booking_installments;
+DROP POLICY IF EXISTS "org manages installments via booking" ON public.booking_installments;
 CREATE POLICY "org manages installments via booking" ON public.booking_installments
   FOR ALL USING (
     EXISTS (SELECT 1 FROM public.group_bookings b WHERE b.id = booking_id AND b.org_id = get_my_org_id())
@@ -182,7 +210,7 @@ CREATE POLICY "org manages installments via booking" ON public.booking_installme
   );
 
 -- 6. bus_seat_assignments
-CREATE TABLE public.bus_seat_assignments (
+CREATE TABLE IF NOT EXISTS public.bus_seat_assignments (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   group_trip_id UUID NOT NULL REFERENCES public.group_trips(id) ON DELETE CASCADE,
   seat_label TEXT NOT NULL,
@@ -193,22 +221,30 @@ CREATE TABLE public.bus_seat_assignments (
   UNIQUE(group_trip_id, seat_label)
 );
 
-CREATE INDEX idx_bus_seats_trip ON public.bus_seat_assignments(group_trip_id);
+CREATE INDEX IF NOT EXISTS idx_bus_seats_trip ON public.bus_seat_assignments(group_trip_id);
 
 ALTER TABLE public.bus_seat_assignments ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "org manages seats via trip" ON public.bus_seat_assignments;
+DROP POLICY IF EXISTS "org manages seats via trip" ON public.bus_seat_assignments;
+DROP POLICY IF EXISTS "org manages seats via trip" ON public.bus_seat_assignments;
+DROP POLICY IF EXISTS "org manages seats via trip" ON public.bus_seat_assignments;
 CREATE POLICY "org manages seats via trip" ON public.bus_seat_assignments
   FOR ALL USING (
     EXISTS (SELECT 1 FROM public.group_trips gt WHERE gt.id = group_trip_id AND gt.org_id = get_my_org_id())
   ) WITH CHECK (
     EXISTS (SELECT 1 FROM public.group_trips gt WHERE gt.id = group_trip_id AND gt.org_id = get_my_org_id())
   );
+DROP POLICY IF EXISTS "public read seats of published trips" ON public.bus_seat_assignments;
+DROP POLICY IF EXISTS "public read seats of published trips" ON public.bus_seat_assignments;
+DROP POLICY IF EXISTS "public read seats of published trips" ON public.bus_seat_assignments;
+DROP POLICY IF EXISTS "public read seats of published trips" ON public.bus_seat_assignments;
 CREATE POLICY "public read seats of published trips" ON public.bus_seat_assignments
   FOR SELECT TO anon, authenticated USING (
     EXISTS (SELECT 1 FROM public.group_trips gt WHERE gt.id = group_trip_id AND gt.is_public = true AND gt.status = 'published')
   );
 
 -- 7. contract_signatures
-CREATE TABLE public.contract_signatures (
+CREATE TABLE IF NOT EXISTS public.contract_signatures (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   booking_id UUID NOT NULL REFERENCES public.group_bookings(id) ON DELETE CASCADE,
   org_id UUID NOT NULL,
@@ -231,22 +267,40 @@ CREATE TABLE public.contract_signatures (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE INDEX idx_contract_signatures_booking ON public.contract_signatures(booking_id);
+CREATE INDEX IF NOT EXISTS idx_contract_signatures_booking ON public.contract_signatures(booking_id);
 
 ALTER TABLE public.contract_signatures ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "org reads contract_signatures" ON public.contract_signatures;
+DROP POLICY IF EXISTS "org reads contract_signatures" ON public.contract_signatures;
+DROP POLICY IF EXISTS "org reads contract_signatures" ON public.contract_signatures;
+DROP POLICY IF EXISTS "org reads contract_signatures" ON public.contract_signatures;
 CREATE POLICY "org reads contract_signatures" ON public.contract_signatures
   FOR SELECT USING (org_id = get_my_org_id());
 -- INSERT acontece via edge function (service-role); sem policy de write para usuário comum
 
 -- 8. Triggers updated_at
+DROP TRIGGER IF EXISTS trg_bus_layouts_updated ON public.bus_layouts;
+DROP TRIGGER IF EXISTS trg_bus_layouts_updated ON public.bus_layouts;
+DROP TRIGGER IF EXISTS trg_bus_layouts_updated ON public.bus_layouts;
+DROP TRIGGER IF EXISTS trg_bus_layouts_updated ON public.bus_layouts;
 CREATE TRIGGER trg_bus_layouts_updated BEFORE UPDATE ON public.bus_layouts
   FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+DROP TRIGGER IF EXISTS trg_group_trips_updated ON public.group_trips;
+DROP TRIGGER IF EXISTS trg_group_trips_updated ON public.group_trips;
+DROP TRIGGER IF EXISTS trg_group_trips_updated ON public.group_trips;
+DROP TRIGGER IF EXISTS trg_group_trips_updated ON public.group_trips;
 CREATE TRIGGER trg_group_trips_updated BEFORE UPDATE ON public.group_trips
   FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+DROP TRIGGER IF EXISTS trg_group_bookings_updated ON public.group_bookings;
+DROP TRIGGER IF EXISTS trg_group_bookings_updated ON public.group_bookings;
+DROP TRIGGER IF EXISTS trg_group_bookings_updated ON public.group_bookings;
+DROP TRIGGER IF EXISTS trg_group_bookings_updated ON public.group_bookings;
 CREATE TRIGGER trg_group_bookings_updated BEFORE UPDATE ON public.group_bookings
   FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
 -- 9. Função pública para ler pacote por slug (e contar view)
+DROP FUNCTION IF EXISTS public.get_public_group_trip CASCADE;
+DROP FUNCTION IF EXISTS public.get_public_group_trip CASCADE;
 CREATE OR REPLACE FUNCTION public.get_public_group_trip(_slug TEXT)
 RETURNS TABLE (
   id UUID, title TEXT, subtitle TEXT, slug TEXT,
@@ -281,6 +335,8 @@ END;
 $$;
 
 -- 10. Função para gerar parcelas automaticamente
+DROP FUNCTION IF EXISTS public.generate_booking_installments CASCADE;
+DROP FUNCTION IF EXISTS public.generate_booking_installments CASCADE;
 CREATE OR REPLACE FUNCTION public.generate_booking_installments(_booking_id UUID)
 RETURNS void
 LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
@@ -340,22 +396,42 @@ VALUES ('booking-signatures', 'booking-signatures', false)
 ON CONFLICT (id) DO NOTHING;
 
 -- Storage policies para group-trip-media (público leitura, org write)
+DROP POLICY IF EXISTS "group_trip_media public read" ON storage.objects;
+DROP POLICY IF EXISTS "group_trip_media public read" ON storage.objects;
+DROP POLICY IF EXISTS "group_trip_media public read" ON storage.objects;
+DROP POLICY IF EXISTS "group_trip_media public read" ON storage.objects;
 CREATE POLICY "group_trip_media public read" ON storage.objects
   FOR SELECT USING (bucket_id = 'group-trip-media');
 
+DROP POLICY IF EXISTS "group_trip_media auth upload" ON storage.objects;
+DROP POLICY IF EXISTS "group_trip_media auth upload" ON storage.objects;
+DROP POLICY IF EXISTS "group_trip_media auth upload" ON storage.objects;
+DROP POLICY IF EXISTS "group_trip_media auth upload" ON storage.objects;
 CREATE POLICY "group_trip_media auth upload" ON storage.objects
   FOR INSERT TO authenticated
   WITH CHECK (bucket_id = 'group-trip-media');
 
+DROP POLICY IF EXISTS "group_trip_media auth update" ON storage.objects;
+DROP POLICY IF EXISTS "group_trip_media auth update" ON storage.objects;
+DROP POLICY IF EXISTS "group_trip_media auth update" ON storage.objects;
+DROP POLICY IF EXISTS "group_trip_media auth update" ON storage.objects;
 CREATE POLICY "group_trip_media auth update" ON storage.objects
   FOR UPDATE TO authenticated
   USING (bucket_id = 'group-trip-media');
 
+DROP POLICY IF EXISTS "group_trip_media auth delete" ON storage.objects;
+DROP POLICY IF EXISTS "group_trip_media auth delete" ON storage.objects;
+DROP POLICY IF EXISTS "group_trip_media auth delete" ON storage.objects;
+DROP POLICY IF EXISTS "group_trip_media auth delete" ON storage.objects;
 CREATE POLICY "group_trip_media auth delete" ON storage.objects
   FOR DELETE TO authenticated
   USING (bucket_id = 'group-trip-media');
 
 -- booking-signatures: somente serviços (insert via edge), org lê
+DROP POLICY IF EXISTS "booking_signatures org read" ON storage.objects;
+DROP POLICY IF EXISTS "booking_signatures org read" ON storage.objects;
+DROP POLICY IF EXISTS "booking_signatures org read" ON storage.objects;
+DROP POLICY IF EXISTS "booking_signatures org read" ON storage.objects;
 CREATE POLICY "booking_signatures org read" ON storage.objects
   FOR SELECT TO authenticated
   USING (bucket_id = 'booking-signatures');

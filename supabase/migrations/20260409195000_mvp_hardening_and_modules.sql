@@ -5,6 +5,8 @@ DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 DROP TRIGGER IF EXISTS trg_promote_first_user ON auth.users;
 DROP TRIGGER IF EXISTS on_first_user_promote ON auth.users;
 
+DROP FUNCTION IF EXISTS public.handle_new_user CASCADE;
+DROP FUNCTION IF EXISTS public.handle_new_user CASCADE;
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER
 LANGUAGE plpgsql
@@ -33,6 +35,8 @@ BEGIN
 END;
 $$;
 
+DROP FUNCTION IF EXISTS public.promote_first_user CASCADE;
+DROP FUNCTION IF EXISTS public.promote_first_user CASCADE;
 CREATE OR REPLACE FUNCTION public.promote_first_user()
 RETURNS TRIGGER
 LANGUAGE plpgsql
@@ -58,13 +62,15 @@ BEGIN
 END;
 $$;
 
-CREATE TRIGGER trg_auth_user_profile
-  AFTER INSERT ON auth.users
+DROP TRIGGER IF EXISTS trg_auth_user_profile ON auth.users;
+DROP TRIGGER IF EXISTS trg_auth_user_profile ON auth.users;
+CREATE TRIGGER trg_auth_user_profile AFTER INSERT ON auth.users
   FOR EACH ROW
   EXECUTE FUNCTION public.handle_new_user();
 
-CREATE TRIGGER trg_auth_user_first_user
-  AFTER INSERT ON auth.users
+DROP TRIGGER IF EXISTS trg_auth_user_first_user ON auth.users;
+DROP TRIGGER IF EXISTS trg_auth_user_first_user ON auth.users;
+CREATE TRIGGER trg_auth_user_first_user AFTER INSERT ON auth.users
   FOR EACH ROW
   EXECUTE FUNCTION public.promote_first_user();
 
@@ -141,19 +147,30 @@ CREATE TABLE IF NOT EXISTS public.notifications (
 
 ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Users can view own notifications"
-  ON public.notifications FOR SELECT TO authenticated
+DROP POLICY IF EXISTS "Users can view own notifications" ON public.notifications;
+DROP POLICY IF EXISTS "Users can view own notifications" ON public.notifications;
+DROP POLICY IF EXISTS "Users can view own notifications" ON public.notifications;
+DROP POLICY IF EXISTS "Users can view own notifications" ON public.notifications;
+CREATE POLICY "Users can view own notifications" ON public.notifications FOR SELECT TO authenticated
   USING (user_id = auth.uid());
 
-CREATE POLICY "Users can update own notifications"
-  ON public.notifications FOR UPDATE TO authenticated
+DROP POLICY IF EXISTS "Users can update own notifications" ON public.notifications;
+DROP POLICY IF EXISTS "Users can update own notifications" ON public.notifications;
+DROP POLICY IF EXISTS "Users can update own notifications" ON public.notifications;
+DROP POLICY IF EXISTS "Users can update own notifications" ON public.notifications;
+CREATE POLICY "Users can update own notifications" ON public.notifications FOR UPDATE TO authenticated
   USING (user_id = auth.uid())
   WITH CHECK (user_id = auth.uid());
 
-CREATE POLICY "Service role can insert notifications"
-  ON public.notifications FOR INSERT TO authenticated
+DROP POLICY IF EXISTS "Service role can insert notifications" ON public.notifications;
+DROP POLICY IF EXISTS "Service role can insert notifications" ON public.notifications;
+DROP POLICY IF EXISTS "Service role can insert notifications" ON public.notifications;
+DROP POLICY IF EXISTS "Service role can insert notifications" ON public.notifications;
+CREATE POLICY "Service role can insert notifications" ON public.notifications FOR INSERT TO authenticated
   WITH CHECK (user_id = auth.uid() OR has_role(auth.uid(), 'super_admin'));
 
+DROP FUNCTION IF EXISTS public.create_notification CASCADE;
+DROP FUNCTION IF EXISTS public.create_notification CASCADE;
 CREATE OR REPLACE FUNCTION public.create_notification(
   _org_id UUID,
   _user_id UUID,
@@ -224,18 +241,33 @@ CREATE INDEX IF NOT EXISTS idx_trips_status ON public.trips(status);
 CREATE INDEX IF NOT EXISTS idx_trips_departure_date ON public.trips(departure_date);
 
 DROP TRIGGER IF EXISTS update_trips_updated_at ON public.trips;
-CREATE TRIGGER update_trips_updated_at
-  BEFORE UPDATE ON public.trips
+DROP TRIGGER IF EXISTS update_trips_updated_at ON public.trips;
+DROP TRIGGER IF EXISTS update_trips_updated_at ON public.trips;
+DROP TRIGGER IF EXISTS update_trips_updated_at ON public.trips;
+DROP TRIGGER IF EXISTS update_trips_updated_at ON public.trips;
+CREATE TRIGGER update_trips_updated_at BEFORE UPDATE ON public.trips
   FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
-CREATE POLICY "Users can view trips in own org"
-  ON public.trips FOR SELECT TO authenticated USING (org_id = get_my_org_id());
-CREATE POLICY "Users can create trips in own org"
-  ON public.trips FOR INSERT TO authenticated WITH CHECK (org_id = get_my_org_id());
-CREATE POLICY "Users can update trips in own org"
-  ON public.trips FOR UPDATE TO authenticated USING (org_id = get_my_org_id()) WITH CHECK (org_id = get_my_org_id());
-CREATE POLICY "Users can delete trips in own org"
-  ON public.trips FOR DELETE TO authenticated USING (org_id = get_my_org_id());
+DROP POLICY IF EXISTS "Users can view trips in own org" ON public.trips;
+DROP POLICY IF EXISTS "Users can view trips in own org" ON public.trips;
+DROP POLICY IF EXISTS "Users can view trips in own org" ON public.trips;
+DROP POLICY IF EXISTS "Users can view trips in own org" ON public.trips;
+CREATE POLICY "Users can view trips in own org" ON public.trips FOR SELECT TO authenticated USING (org_id = get_my_org_id());
+DROP POLICY IF EXISTS "Users can create trips in own org" ON public.trips;
+DROP POLICY IF EXISTS "Users can create trips in own org" ON public.trips;
+DROP POLICY IF EXISTS "Users can create trips in own org" ON public.trips;
+DROP POLICY IF EXISTS "Users can create trips in own org" ON public.trips;
+CREATE POLICY "Users can create trips in own org" ON public.trips FOR INSERT TO authenticated WITH CHECK (org_id = get_my_org_id());
+DROP POLICY IF EXISTS "Users can update trips in own org" ON public.trips;
+DROP POLICY IF EXISTS "Users can update trips in own org" ON public.trips;
+DROP POLICY IF EXISTS "Users can update trips in own org" ON public.trips;
+DROP POLICY IF EXISTS "Users can update trips in own org" ON public.trips;
+CREATE POLICY "Users can update trips in own org" ON public.trips FOR UPDATE TO authenticated USING (org_id = get_my_org_id()) WITH CHECK (org_id = get_my_org_id());
+DROP POLICY IF EXISTS "Users can delete trips in own org" ON public.trips;
+DROP POLICY IF EXISTS "Users can delete trips in own org" ON public.trips;
+DROP POLICY IF EXISTS "Users can delete trips in own org" ON public.trips;
+DROP POLICY IF EXISTS "Users can delete trips in own org" ON public.trips;
+CREATE POLICY "Users can delete trips in own org" ON public.trips FOR DELETE TO authenticated USING (org_id = get_my_org_id());
 
 CREATE TABLE IF NOT EXISTS public.trip_flights (
   id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -269,18 +301,33 @@ CREATE TABLE IF NOT EXISTS public.trip_flights (
 ALTER TABLE public.trip_flights ENABLE ROW LEVEL SECURITY;
 CREATE INDEX IF NOT EXISTS idx_trip_flights_trip ON public.trip_flights(trip_id);
 DROP TRIGGER IF EXISTS update_trip_flights_updated_at ON public.trip_flights;
-CREATE TRIGGER update_trip_flights_updated_at
-  BEFORE UPDATE ON public.trip_flights
+DROP TRIGGER IF EXISTS update_trip_flights_updated_at ON public.trip_flights;
+DROP TRIGGER IF EXISTS update_trip_flights_updated_at ON public.trip_flights;
+DROP TRIGGER IF EXISTS update_trip_flights_updated_at ON public.trip_flights;
+DROP TRIGGER IF EXISTS update_trip_flights_updated_at ON public.trip_flights;
+CREATE TRIGGER update_trip_flights_updated_at BEFORE UPDATE ON public.trip_flights
   FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
-CREATE POLICY "Users can view trip flights in own org"
-  ON public.trip_flights FOR SELECT TO authenticated USING (org_id = get_my_org_id());
-CREATE POLICY "Users can create trip flights in own org"
-  ON public.trip_flights FOR INSERT TO authenticated WITH CHECK (org_id = get_my_org_id());
-CREATE POLICY "Users can update trip flights in own org"
-  ON public.trip_flights FOR UPDATE TO authenticated USING (org_id = get_my_org_id()) WITH CHECK (org_id = get_my_org_id());
-CREATE POLICY "Users can delete trip flights in own org"
-  ON public.trip_flights FOR DELETE TO authenticated USING (org_id = get_my_org_id());
+DROP POLICY IF EXISTS "Users can view trip flights in own org" ON public.trip_flights;
+DROP POLICY IF EXISTS "Users can view trip flights in own org" ON public.trip_flights;
+DROP POLICY IF EXISTS "Users can view trip flights in own org" ON public.trip_flights;
+DROP POLICY IF EXISTS "Users can view trip flights in own org" ON public.trip_flights;
+CREATE POLICY "Users can view trip flights in own org" ON public.trip_flights FOR SELECT TO authenticated USING (org_id = get_my_org_id());
+DROP POLICY IF EXISTS "Users can create trip flights in own org" ON public.trip_flights;
+DROP POLICY IF EXISTS "Users can create trip flights in own org" ON public.trip_flights;
+DROP POLICY IF EXISTS "Users can create trip flights in own org" ON public.trip_flights;
+DROP POLICY IF EXISTS "Users can create trip flights in own org" ON public.trip_flights;
+CREATE POLICY "Users can create trip flights in own org" ON public.trip_flights FOR INSERT TO authenticated WITH CHECK (org_id = get_my_org_id());
+DROP POLICY IF EXISTS "Users can update trip flights in own org" ON public.trip_flights;
+DROP POLICY IF EXISTS "Users can update trip flights in own org" ON public.trip_flights;
+DROP POLICY IF EXISTS "Users can update trip flights in own org" ON public.trip_flights;
+DROP POLICY IF EXISTS "Users can update trip flights in own org" ON public.trip_flights;
+CREATE POLICY "Users can update trip flights in own org" ON public.trip_flights FOR UPDATE TO authenticated USING (org_id = get_my_org_id()) WITH CHECK (org_id = get_my_org_id());
+DROP POLICY IF EXISTS "Users can delete trip flights in own org" ON public.trip_flights;
+DROP POLICY IF EXISTS "Users can delete trip flights in own org" ON public.trip_flights;
+DROP POLICY IF EXISTS "Users can delete trip flights in own org" ON public.trip_flights;
+DROP POLICY IF EXISTS "Users can delete trip flights in own org" ON public.trip_flights;
+CREATE POLICY "Users can delete trip flights in own org" ON public.trip_flights FOR DELETE TO authenticated USING (org_id = get_my_org_id());
 
 CREATE TABLE IF NOT EXISTS public.trip_travelers (
   id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -298,18 +345,30 @@ CREATE TABLE IF NOT EXISTS public.trip_travelers (
 );
 
 ALTER TABLE public.trip_travelers ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Users can view trip travelers in own org"
-  ON public.trip_travelers FOR SELECT TO authenticated
+DROP POLICY IF EXISTS "Users can view trip travelers in own org" ON public.trip_travelers;
+DROP POLICY IF EXISTS "Users can view trip travelers in own org" ON public.trip_travelers;
+DROP POLICY IF EXISTS "Users can view trip travelers in own org" ON public.trip_travelers;
+DROP POLICY IF EXISTS "Users can view trip travelers in own org" ON public.trip_travelers;
+CREATE POLICY "Users can view trip travelers in own org" ON public.trip_travelers FOR SELECT TO authenticated
   USING (EXISTS (SELECT 1 FROM public.trips t WHERE t.id = trip_id AND t.org_id = get_my_org_id()));
-CREATE POLICY "Users can create trip travelers in own org"
-  ON public.trip_travelers FOR INSERT TO authenticated
+DROP POLICY IF EXISTS "Users can create trip travelers in own org" ON public.trip_travelers;
+DROP POLICY IF EXISTS "Users can create trip travelers in own org" ON public.trip_travelers;
+DROP POLICY IF EXISTS "Users can create trip travelers in own org" ON public.trip_travelers;
+DROP POLICY IF EXISTS "Users can create trip travelers in own org" ON public.trip_travelers;
+CREATE POLICY "Users can create trip travelers in own org" ON public.trip_travelers FOR INSERT TO authenticated
   WITH CHECK (EXISTS (SELECT 1 FROM public.trips t WHERE t.id = trip_id AND t.org_id = get_my_org_id()));
-CREATE POLICY "Users can update trip travelers in own org"
-  ON public.trip_travelers FOR UPDATE TO authenticated
+DROP POLICY IF EXISTS "Users can update trip travelers in own org" ON public.trip_travelers;
+DROP POLICY IF EXISTS "Users can update trip travelers in own org" ON public.trip_travelers;
+DROP POLICY IF EXISTS "Users can update trip travelers in own org" ON public.trip_travelers;
+DROP POLICY IF EXISTS "Users can update trip travelers in own org" ON public.trip_travelers;
+CREATE POLICY "Users can update trip travelers in own org" ON public.trip_travelers FOR UPDATE TO authenticated
   USING (EXISTS (SELECT 1 FROM public.trips t WHERE t.id = trip_id AND t.org_id = get_my_org_id()))
   WITH CHECK (EXISTS (SELECT 1 FROM public.trips t WHERE t.id = trip_id AND t.org_id = get_my_org_id()));
-CREATE POLICY "Users can delete trip travelers in own org"
-  ON public.trip_travelers FOR DELETE TO authenticated
+DROP POLICY IF EXISTS "Users can delete trip travelers in own org" ON public.trip_travelers;
+DROP POLICY IF EXISTS "Users can delete trip travelers in own org" ON public.trip_travelers;
+DROP POLICY IF EXISTS "Users can delete trip travelers in own org" ON public.trip_travelers;
+DROP POLICY IF EXISTS "Users can delete trip travelers in own org" ON public.trip_travelers;
+CREATE POLICY "Users can delete trip travelers in own org" ON public.trip_travelers FOR DELETE TO authenticated
   USING (EXISTS (SELECT 1 FROM public.trips t WHERE t.id = trip_id AND t.org_id = get_my_org_id()));
 
 CREATE TABLE IF NOT EXISTS public.trip_documents (
@@ -327,14 +386,26 @@ CREATE TABLE IF NOT EXISTS public.trip_documents (
 );
 
 ALTER TABLE public.trip_documents ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Users can view trip documents in own org"
-  ON public.trip_documents FOR SELECT TO authenticated USING (org_id = get_my_org_id());
-CREATE POLICY "Users can create trip documents in own org"
-  ON public.trip_documents FOR INSERT TO authenticated WITH CHECK (org_id = get_my_org_id());
-CREATE POLICY "Users can update trip documents in own org"
-  ON public.trip_documents FOR UPDATE TO authenticated USING (org_id = get_my_org_id()) WITH CHECK (org_id = get_my_org_id());
-CREATE POLICY "Users can delete trip documents in own org"
-  ON public.trip_documents FOR DELETE TO authenticated USING (org_id = get_my_org_id());
+DROP POLICY IF EXISTS "Users can view trip documents in own org" ON public.trip_documents;
+DROP POLICY IF EXISTS "Users can view trip documents in own org" ON public.trip_documents;
+DROP POLICY IF EXISTS "Users can view trip documents in own org" ON public.trip_documents;
+DROP POLICY IF EXISTS "Users can view trip documents in own org" ON public.trip_documents;
+CREATE POLICY "Users can view trip documents in own org" ON public.trip_documents FOR SELECT TO authenticated USING (org_id = get_my_org_id());
+DROP POLICY IF EXISTS "Users can create trip documents in own org" ON public.trip_documents;
+DROP POLICY IF EXISTS "Users can create trip documents in own org" ON public.trip_documents;
+DROP POLICY IF EXISTS "Users can create trip documents in own org" ON public.trip_documents;
+DROP POLICY IF EXISTS "Users can create trip documents in own org" ON public.trip_documents;
+CREATE POLICY "Users can create trip documents in own org" ON public.trip_documents FOR INSERT TO authenticated WITH CHECK (org_id = get_my_org_id());
+DROP POLICY IF EXISTS "Users can update trip documents in own org" ON public.trip_documents;
+DROP POLICY IF EXISTS "Users can update trip documents in own org" ON public.trip_documents;
+DROP POLICY IF EXISTS "Users can update trip documents in own org" ON public.trip_documents;
+DROP POLICY IF EXISTS "Users can update trip documents in own org" ON public.trip_documents;
+CREATE POLICY "Users can update trip documents in own org" ON public.trip_documents FOR UPDATE TO authenticated USING (org_id = get_my_org_id()) WITH CHECK (org_id = get_my_org_id());
+DROP POLICY IF EXISTS "Users can delete trip documents in own org" ON public.trip_documents;
+DROP POLICY IF EXISTS "Users can delete trip documents in own org" ON public.trip_documents;
+DROP POLICY IF EXISTS "Users can delete trip documents in own org" ON public.trip_documents;
+DROP POLICY IF EXISTS "Users can delete trip documents in own org" ON public.trip_documents;
+CREATE POLICY "Users can delete trip documents in own org" ON public.trip_documents FOR DELETE TO authenticated USING (org_id = get_my_org_id());
 
 DO $$
 BEGIN
@@ -365,18 +436,33 @@ CREATE TABLE IF NOT EXISTS public.kanban_boards (
 
 ALTER TABLE public.kanban_boards ENABLE ROW LEVEL SECURITY;
 DROP TRIGGER IF EXISTS update_kanban_boards_updated_at ON public.kanban_boards;
-CREATE TRIGGER update_kanban_boards_updated_at
-  BEFORE UPDATE ON public.kanban_boards
+DROP TRIGGER IF EXISTS update_kanban_boards_updated_at ON public.kanban_boards;
+DROP TRIGGER IF EXISTS update_kanban_boards_updated_at ON public.kanban_boards;
+DROP TRIGGER IF EXISTS update_kanban_boards_updated_at ON public.kanban_boards;
+DROP TRIGGER IF EXISTS update_kanban_boards_updated_at ON public.kanban_boards;
+CREATE TRIGGER update_kanban_boards_updated_at BEFORE UPDATE ON public.kanban_boards
   FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
-CREATE POLICY "Users can view kanban boards in own org"
-  ON public.kanban_boards FOR SELECT TO authenticated USING (org_id = get_my_org_id());
-CREATE POLICY "Users can create kanban boards in own org"
-  ON public.kanban_boards FOR INSERT TO authenticated WITH CHECK (org_id = get_my_org_id());
-CREATE POLICY "Users can update kanban boards in own org"
-  ON public.kanban_boards FOR UPDATE TO authenticated USING (org_id = get_my_org_id()) WITH CHECK (org_id = get_my_org_id());
-CREATE POLICY "Users can delete kanban boards in own org"
-  ON public.kanban_boards FOR DELETE TO authenticated USING (org_id = get_my_org_id());
+DROP POLICY IF EXISTS "Users can view kanban boards in own org" ON public.kanban_boards;
+DROP POLICY IF EXISTS "Users can view kanban boards in own org" ON public.kanban_boards;
+DROP POLICY IF EXISTS "Users can view kanban boards in own org" ON public.kanban_boards;
+DROP POLICY IF EXISTS "Users can view kanban boards in own org" ON public.kanban_boards;
+CREATE POLICY "Users can view kanban boards in own org" ON public.kanban_boards FOR SELECT TO authenticated USING (org_id = get_my_org_id());
+DROP POLICY IF EXISTS "Users can create kanban boards in own org" ON public.kanban_boards;
+DROP POLICY IF EXISTS "Users can create kanban boards in own org" ON public.kanban_boards;
+DROP POLICY IF EXISTS "Users can create kanban boards in own org" ON public.kanban_boards;
+DROP POLICY IF EXISTS "Users can create kanban boards in own org" ON public.kanban_boards;
+CREATE POLICY "Users can create kanban boards in own org" ON public.kanban_boards FOR INSERT TO authenticated WITH CHECK (org_id = get_my_org_id());
+DROP POLICY IF EXISTS "Users can update kanban boards in own org" ON public.kanban_boards;
+DROP POLICY IF EXISTS "Users can update kanban boards in own org" ON public.kanban_boards;
+DROP POLICY IF EXISTS "Users can update kanban boards in own org" ON public.kanban_boards;
+DROP POLICY IF EXISTS "Users can update kanban boards in own org" ON public.kanban_boards;
+CREATE POLICY "Users can update kanban boards in own org" ON public.kanban_boards FOR UPDATE TO authenticated USING (org_id = get_my_org_id()) WITH CHECK (org_id = get_my_org_id());
+DROP POLICY IF EXISTS "Users can delete kanban boards in own org" ON public.kanban_boards;
+DROP POLICY IF EXISTS "Users can delete kanban boards in own org" ON public.kanban_boards;
+DROP POLICY IF EXISTS "Users can delete kanban boards in own org" ON public.kanban_boards;
+DROP POLICY IF EXISTS "Users can delete kanban boards in own org" ON public.kanban_boards;
+CREATE POLICY "Users can delete kanban boards in own org" ON public.kanban_boards FOR DELETE TO authenticated USING (org_id = get_my_org_id());
 
 CREATE TABLE IF NOT EXISTS public.kanban_columns (
   id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -392,18 +478,33 @@ CREATE TABLE IF NOT EXISTS public.kanban_columns (
 
 ALTER TABLE public.kanban_columns ENABLE ROW LEVEL SECURITY;
 DROP TRIGGER IF EXISTS update_kanban_columns_updated_at ON public.kanban_columns;
-CREATE TRIGGER update_kanban_columns_updated_at
-  BEFORE UPDATE ON public.kanban_columns
+DROP TRIGGER IF EXISTS update_kanban_columns_updated_at ON public.kanban_columns;
+DROP TRIGGER IF EXISTS update_kanban_columns_updated_at ON public.kanban_columns;
+DROP TRIGGER IF EXISTS update_kanban_columns_updated_at ON public.kanban_columns;
+DROP TRIGGER IF EXISTS update_kanban_columns_updated_at ON public.kanban_columns;
+CREATE TRIGGER update_kanban_columns_updated_at BEFORE UPDATE ON public.kanban_columns
   FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
-CREATE POLICY "Users can view kanban columns in own org"
-  ON public.kanban_columns FOR SELECT TO authenticated USING (org_id = get_my_org_id());
-CREATE POLICY "Users can create kanban columns in own org"
-  ON public.kanban_columns FOR INSERT TO authenticated WITH CHECK (org_id = get_my_org_id());
-CREATE POLICY "Users can update kanban columns in own org"
-  ON public.kanban_columns FOR UPDATE TO authenticated USING (org_id = get_my_org_id()) WITH CHECK (org_id = get_my_org_id());
-CREATE POLICY "Users can delete kanban columns in own org"
-  ON public.kanban_columns FOR DELETE TO authenticated USING (org_id = get_my_org_id());
+DROP POLICY IF EXISTS "Users can view kanban columns in own org" ON public.kanban_columns;
+DROP POLICY IF EXISTS "Users can view kanban columns in own org" ON public.kanban_columns;
+DROP POLICY IF EXISTS "Users can view kanban columns in own org" ON public.kanban_columns;
+DROP POLICY IF EXISTS "Users can view kanban columns in own org" ON public.kanban_columns;
+CREATE POLICY "Users can view kanban columns in own org" ON public.kanban_columns FOR SELECT TO authenticated USING (org_id = get_my_org_id());
+DROP POLICY IF EXISTS "Users can create kanban columns in own org" ON public.kanban_columns;
+DROP POLICY IF EXISTS "Users can create kanban columns in own org" ON public.kanban_columns;
+DROP POLICY IF EXISTS "Users can create kanban columns in own org" ON public.kanban_columns;
+DROP POLICY IF EXISTS "Users can create kanban columns in own org" ON public.kanban_columns;
+CREATE POLICY "Users can create kanban columns in own org" ON public.kanban_columns FOR INSERT TO authenticated WITH CHECK (org_id = get_my_org_id());
+DROP POLICY IF EXISTS "Users can update kanban columns in own org" ON public.kanban_columns;
+DROP POLICY IF EXISTS "Users can update kanban columns in own org" ON public.kanban_columns;
+DROP POLICY IF EXISTS "Users can update kanban columns in own org" ON public.kanban_columns;
+DROP POLICY IF EXISTS "Users can update kanban columns in own org" ON public.kanban_columns;
+CREATE POLICY "Users can update kanban columns in own org" ON public.kanban_columns FOR UPDATE TO authenticated USING (org_id = get_my_org_id()) WITH CHECK (org_id = get_my_org_id());
+DROP POLICY IF EXISTS "Users can delete kanban columns in own org" ON public.kanban_columns;
+DROP POLICY IF EXISTS "Users can delete kanban columns in own org" ON public.kanban_columns;
+DROP POLICY IF EXISTS "Users can delete kanban columns in own org" ON public.kanban_columns;
+DROP POLICY IF EXISTS "Users can delete kanban columns in own org" ON public.kanban_columns;
+CREATE POLICY "Users can delete kanban columns in own org" ON public.kanban_columns FOR DELETE TO authenticated USING (org_id = get_my_org_id());
 
 CREATE TABLE IF NOT EXISTS public.kanban_cards (
   id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -425,18 +526,33 @@ CREATE TABLE IF NOT EXISTS public.kanban_cards (
 
 ALTER TABLE public.kanban_cards ENABLE ROW LEVEL SECURITY;
 DROP TRIGGER IF EXISTS update_kanban_cards_updated_at ON public.kanban_cards;
-CREATE TRIGGER update_kanban_cards_updated_at
-  BEFORE UPDATE ON public.kanban_cards
+DROP TRIGGER IF EXISTS update_kanban_cards_updated_at ON public.kanban_cards;
+DROP TRIGGER IF EXISTS update_kanban_cards_updated_at ON public.kanban_cards;
+DROP TRIGGER IF EXISTS update_kanban_cards_updated_at ON public.kanban_cards;
+DROP TRIGGER IF EXISTS update_kanban_cards_updated_at ON public.kanban_cards;
+CREATE TRIGGER update_kanban_cards_updated_at BEFORE UPDATE ON public.kanban_cards
   FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
-CREATE POLICY "Users can view kanban cards in own org"
-  ON public.kanban_cards FOR SELECT TO authenticated USING (org_id = get_my_org_id());
-CREATE POLICY "Users can create kanban cards in own org"
-  ON public.kanban_cards FOR INSERT TO authenticated WITH CHECK (org_id = get_my_org_id());
-CREATE POLICY "Users can update kanban cards in own org"
-  ON public.kanban_cards FOR UPDATE TO authenticated USING (org_id = get_my_org_id()) WITH CHECK (org_id = get_my_org_id());
-CREATE POLICY "Users can delete kanban cards in own org"
-  ON public.kanban_cards FOR DELETE TO authenticated USING (org_id = get_my_org_id());
+DROP POLICY IF EXISTS "Users can view kanban cards in own org" ON public.kanban_cards;
+DROP POLICY IF EXISTS "Users can view kanban cards in own org" ON public.kanban_cards;
+DROP POLICY IF EXISTS "Users can view kanban cards in own org" ON public.kanban_cards;
+DROP POLICY IF EXISTS "Users can view kanban cards in own org" ON public.kanban_cards;
+CREATE POLICY "Users can view kanban cards in own org" ON public.kanban_cards FOR SELECT TO authenticated USING (org_id = get_my_org_id());
+DROP POLICY IF EXISTS "Users can create kanban cards in own org" ON public.kanban_cards;
+DROP POLICY IF EXISTS "Users can create kanban cards in own org" ON public.kanban_cards;
+DROP POLICY IF EXISTS "Users can create kanban cards in own org" ON public.kanban_cards;
+DROP POLICY IF EXISTS "Users can create kanban cards in own org" ON public.kanban_cards;
+CREATE POLICY "Users can create kanban cards in own org" ON public.kanban_cards FOR INSERT TO authenticated WITH CHECK (org_id = get_my_org_id());
+DROP POLICY IF EXISTS "Users can update kanban cards in own org" ON public.kanban_cards;
+DROP POLICY IF EXISTS "Users can update kanban cards in own org" ON public.kanban_cards;
+DROP POLICY IF EXISTS "Users can update kanban cards in own org" ON public.kanban_cards;
+DROP POLICY IF EXISTS "Users can update kanban cards in own org" ON public.kanban_cards;
+CREATE POLICY "Users can update kanban cards in own org" ON public.kanban_cards FOR UPDATE TO authenticated USING (org_id = get_my_org_id()) WITH CHECK (org_id = get_my_org_id());
+DROP POLICY IF EXISTS "Users can delete kanban cards in own org" ON public.kanban_cards;
+DROP POLICY IF EXISTS "Users can delete kanban cards in own org" ON public.kanban_cards;
+DROP POLICY IF EXISTS "Users can delete kanban cards in own org" ON public.kanban_cards;
+DROP POLICY IF EXISTS "Users can delete kanban cards in own org" ON public.kanban_cards;
+CREATE POLICY "Users can delete kanban cards in own org" ON public.kanban_cards FOR DELETE TO authenticated USING (org_id = get_my_org_id());
 
 -- 6. Hotels
 CREATE TABLE IF NOT EXISTS public.hotels_bank (
@@ -464,18 +580,33 @@ CREATE TABLE IF NOT EXISTS public.hotels_bank (
 
 ALTER TABLE public.hotels_bank ENABLE ROW LEVEL SECURITY;
 DROP TRIGGER IF EXISTS update_hotels_bank_updated_at ON public.hotels_bank;
-CREATE TRIGGER update_hotels_bank_updated_at
-  BEFORE UPDATE ON public.hotels_bank
+DROP TRIGGER IF EXISTS update_hotels_bank_updated_at ON public.hotels_bank;
+DROP TRIGGER IF EXISTS update_hotels_bank_updated_at ON public.hotels_bank;
+DROP TRIGGER IF EXISTS update_hotels_bank_updated_at ON public.hotels_bank;
+DROP TRIGGER IF EXISTS update_hotels_bank_updated_at ON public.hotels_bank;
+CREATE TRIGGER update_hotels_bank_updated_at BEFORE UPDATE ON public.hotels_bank
   FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
-CREATE POLICY "Users can view hotels in own org"
-  ON public.hotels_bank FOR SELECT TO authenticated USING (org_id = get_my_org_id());
-CREATE POLICY "Users can create hotels in own org"
-  ON public.hotels_bank FOR INSERT TO authenticated WITH CHECK (org_id = get_my_org_id());
-CREATE POLICY "Users can update hotels in own org"
-  ON public.hotels_bank FOR UPDATE TO authenticated USING (org_id = get_my_org_id()) WITH CHECK (org_id = get_my_org_id());
-CREATE POLICY "Users can delete hotels in own org"
-  ON public.hotels_bank FOR DELETE TO authenticated USING (org_id = get_my_org_id());
+DROP POLICY IF EXISTS "Users can view hotels in own org" ON public.hotels_bank;
+DROP POLICY IF EXISTS "Users can view hotels in own org" ON public.hotels_bank;
+DROP POLICY IF EXISTS "Users can view hotels in own org" ON public.hotels_bank;
+DROP POLICY IF EXISTS "Users can view hotels in own org" ON public.hotels_bank;
+CREATE POLICY "Users can view hotels in own org" ON public.hotels_bank FOR SELECT TO authenticated USING (org_id = get_my_org_id());
+DROP POLICY IF EXISTS "Users can create hotels in own org" ON public.hotels_bank;
+DROP POLICY IF EXISTS "Users can create hotels in own org" ON public.hotels_bank;
+DROP POLICY IF EXISTS "Users can create hotels in own org" ON public.hotels_bank;
+DROP POLICY IF EXISTS "Users can create hotels in own org" ON public.hotels_bank;
+CREATE POLICY "Users can create hotels in own org" ON public.hotels_bank FOR INSERT TO authenticated WITH CHECK (org_id = get_my_org_id());
+DROP POLICY IF EXISTS "Users can update hotels in own org" ON public.hotels_bank;
+DROP POLICY IF EXISTS "Users can update hotels in own org" ON public.hotels_bank;
+DROP POLICY IF EXISTS "Users can update hotels in own org" ON public.hotels_bank;
+DROP POLICY IF EXISTS "Users can update hotels in own org" ON public.hotels_bank;
+CREATE POLICY "Users can update hotels in own org" ON public.hotels_bank FOR UPDATE TO authenticated USING (org_id = get_my_org_id()) WITH CHECK (org_id = get_my_org_id());
+DROP POLICY IF EXISTS "Users can delete hotels in own org" ON public.hotels_bank;
+DROP POLICY IF EXISTS "Users can delete hotels in own org" ON public.hotels_bank;
+DROP POLICY IF EXISTS "Users can delete hotels in own org" ON public.hotels_bank;
+DROP POLICY IF EXISTS "Users can delete hotels in own org" ON public.hotels_bank;
+CREATE POLICY "Users can delete hotels in own org" ON public.hotels_bank FOR DELETE TO authenticated USING (org_id = get_my_org_id());
 
 -- 7. Storage buckets
 INSERT INTO storage.buckets (id, name, public)
@@ -489,56 +620,94 @@ ON CONFLICT (id) DO NOTHING;
 DROP POLICY IF EXISTS "Users can view client photos" ON storage.objects;
 DROP POLICY IF EXISTS "Users can upload client photos" ON storage.objects;
 DROP POLICY IF EXISTS "Users can delete client photos" ON storage.objects;
-CREATE POLICY "Users can view client photos"
-  ON storage.objects FOR SELECT TO authenticated
+DROP POLICY IF EXISTS "Users can view client photos" ON storage.objects;
+DROP POLICY IF EXISTS "Users can view client photos" ON storage.objects;
+DROP POLICY IF EXISTS "Users can view client photos" ON storage.objects;
+DROP POLICY IF EXISTS "Users can view client photos" ON storage.objects;
+CREATE POLICY "Users can view client photos" ON storage.objects FOR SELECT TO authenticated
   USING (bucket_id = 'client-photos');
-CREATE POLICY "Users can upload client photos"
-  ON storage.objects FOR INSERT TO authenticated
+DROP POLICY IF EXISTS "Users can upload client photos" ON storage.objects;
+DROP POLICY IF EXISTS "Users can upload client photos" ON storage.objects;
+DROP POLICY IF EXISTS "Users can upload client photos" ON storage.objects;
+DROP POLICY IF EXISTS "Users can upload client photos" ON storage.objects;
+CREATE POLICY "Users can upload client photos" ON storage.objects FOR INSERT TO authenticated
   WITH CHECK (bucket_id = 'client-photos');
-CREATE POLICY "Users can delete client photos"
-  ON storage.objects FOR DELETE TO authenticated
+DROP POLICY IF EXISTS "Users can delete client photos" ON storage.objects;
+DROP POLICY IF EXISTS "Users can delete client photos" ON storage.objects;
+DROP POLICY IF EXISTS "Users can delete client photos" ON storage.objects;
+DROP POLICY IF EXISTS "Users can delete client photos" ON storage.objects;
+CREATE POLICY "Users can delete client photos" ON storage.objects FOR DELETE TO authenticated
   USING (bucket_id = 'client-photos');
 
 DROP POLICY IF EXISTS "Users can view trip documents bucket" ON storage.objects;
 DROP POLICY IF EXISTS "Users can upload trip documents bucket" ON storage.objects;
 DROP POLICY IF EXISTS "Users can delete trip documents bucket" ON storage.objects;
-CREATE POLICY "Users can view trip documents bucket"
-  ON storage.objects FOR SELECT TO authenticated
+DROP POLICY IF EXISTS "Users can view trip documents bucket" ON storage.objects;
+DROP POLICY IF EXISTS "Users can view trip documents bucket" ON storage.objects;
+DROP POLICY IF EXISTS "Users can view trip documents bucket" ON storage.objects;
+DROP POLICY IF EXISTS "Users can view trip documents bucket" ON storage.objects;
+CREATE POLICY "Users can view trip documents bucket" ON storage.objects FOR SELECT TO authenticated
   USING (bucket_id = 'trip-documents');
-CREATE POLICY "Users can upload trip documents bucket"
-  ON storage.objects FOR INSERT TO authenticated
+DROP POLICY IF EXISTS "Users can upload trip documents bucket" ON storage.objects;
+DROP POLICY IF EXISTS "Users can upload trip documents bucket" ON storage.objects;
+DROP POLICY IF EXISTS "Users can upload trip documents bucket" ON storage.objects;
+DROP POLICY IF EXISTS "Users can upload trip documents bucket" ON storage.objects;
+CREATE POLICY "Users can upload trip documents bucket" ON storage.objects FOR INSERT TO authenticated
   WITH CHECK (bucket_id = 'trip-documents');
-CREATE POLICY "Users can delete trip documents bucket"
-  ON storage.objects FOR DELETE TO authenticated
+DROP POLICY IF EXISTS "Users can delete trip documents bucket" ON storage.objects;
+DROP POLICY IF EXISTS "Users can delete trip documents bucket" ON storage.objects;
+DROP POLICY IF EXISTS "Users can delete trip documents bucket" ON storage.objects;
+DROP POLICY IF EXISTS "Users can delete trip documents bucket" ON storage.objects;
+CREATE POLICY "Users can delete trip documents bucket" ON storage.objects FOR DELETE TO authenticated
   USING (bucket_id = 'trip-documents');
 
 DROP POLICY IF EXISTS "Users can view boarding passes bucket" ON storage.objects;
 DROP POLICY IF EXISTS "Users can upload boarding passes bucket" ON storage.objects;
 DROP POLICY IF EXISTS "Users can delete boarding passes bucket" ON storage.objects;
-CREATE POLICY "Users can view boarding passes bucket"
-  ON storage.objects FOR SELECT TO authenticated
+DROP POLICY IF EXISTS "Users can view boarding passes bucket" ON storage.objects;
+DROP POLICY IF EXISTS "Users can view boarding passes bucket" ON storage.objects;
+DROP POLICY IF EXISTS "Users can view boarding passes bucket" ON storage.objects;
+DROP POLICY IF EXISTS "Users can view boarding passes bucket" ON storage.objects;
+CREATE POLICY "Users can view boarding passes bucket" ON storage.objects FOR SELECT TO authenticated
   USING (bucket_id = 'boarding-passes');
-CREATE POLICY "Users can upload boarding passes bucket"
-  ON storage.objects FOR INSERT TO authenticated
+DROP POLICY IF EXISTS "Users can upload boarding passes bucket" ON storage.objects;
+DROP POLICY IF EXISTS "Users can upload boarding passes bucket" ON storage.objects;
+DROP POLICY IF EXISTS "Users can upload boarding passes bucket" ON storage.objects;
+DROP POLICY IF EXISTS "Users can upload boarding passes bucket" ON storage.objects;
+CREATE POLICY "Users can upload boarding passes bucket" ON storage.objects FOR INSERT TO authenticated
   WITH CHECK (bucket_id = 'boarding-passes');
-CREATE POLICY "Users can delete boarding passes bucket"
-  ON storage.objects FOR DELETE TO authenticated
+DROP POLICY IF EXISTS "Users can delete boarding passes bucket" ON storage.objects;
+DROP POLICY IF EXISTS "Users can delete boarding passes bucket" ON storage.objects;
+DROP POLICY IF EXISTS "Users can delete boarding passes bucket" ON storage.objects;
+DROP POLICY IF EXISTS "Users can delete boarding passes bucket" ON storage.objects;
+CREATE POLICY "Users can delete boarding passes bucket" ON storage.objects FOR DELETE TO authenticated
   USING (bucket_id = 'boarding-passes');
 
 DROP POLICY IF EXISTS "Users can view hotel photos" ON storage.objects;
 DROP POLICY IF EXISTS "Users can upload hotel photos" ON storage.objects;
 DROP POLICY IF EXISTS "Users can delete hotel photos" ON storage.objects;
-CREATE POLICY "Users can view hotel photos"
-  ON storage.objects FOR SELECT TO authenticated
+DROP POLICY IF EXISTS "Users can view hotel photos" ON storage.objects;
+DROP POLICY IF EXISTS "Users can view hotel photos" ON storage.objects;
+DROP POLICY IF EXISTS "Users can view hotel photos" ON storage.objects;
+DROP POLICY IF EXISTS "Users can view hotel photos" ON storage.objects;
+CREATE POLICY "Users can view hotel photos" ON storage.objects FOR SELECT TO authenticated
   USING (bucket_id = 'hotel-photos');
-CREATE POLICY "Users can upload hotel photos"
-  ON storage.objects FOR INSERT TO authenticated
+DROP POLICY IF EXISTS "Users can upload hotel photos" ON storage.objects;
+DROP POLICY IF EXISTS "Users can upload hotel photos" ON storage.objects;
+DROP POLICY IF EXISTS "Users can upload hotel photos" ON storage.objects;
+DROP POLICY IF EXISTS "Users can upload hotel photos" ON storage.objects;
+CREATE POLICY "Users can upload hotel photos" ON storage.objects FOR INSERT TO authenticated
   WITH CHECK (bucket_id = 'hotel-photos');
-CREATE POLICY "Users can delete hotel photos"
-  ON storage.objects FOR DELETE TO authenticated
+DROP POLICY IF EXISTS "Users can delete hotel photos" ON storage.objects;
+DROP POLICY IF EXISTS "Users can delete hotel photos" ON storage.objects;
+DROP POLICY IF EXISTS "Users can delete hotel photos" ON storage.objects;
+DROP POLICY IF EXISTS "Users can delete hotel photos" ON storage.objects;
+CREATE POLICY "Users can delete hotel photos" ON storage.objects FOR DELETE TO authenticated
   USING (bucket_id = 'hotel-photos');
 
 -- 8. Triggers for notifications
+DROP FUNCTION IF EXISTS public.notify_quotation_viewed CASCADE;
+DROP FUNCTION IF EXISTS public.notify_quotation_viewed CASCADE;
 CREATE OR REPLACE FUNCTION public.notify_quotation_viewed()
 RETURNS TRIGGER
 LANGUAGE plpgsql
@@ -564,11 +733,14 @@ END;
 $$;
 
 DROP TRIGGER IF EXISTS trg_notify_quotation_viewed ON public.quotations;
-CREATE TRIGGER trg_notify_quotation_viewed
-  AFTER UPDATE ON public.quotations
+DROP TRIGGER IF EXISTS trg_notify_quotation_viewed ON public.quotations;
+DROP TRIGGER IF EXISTS trg_notify_quotation_viewed ON public.quotations;
+CREATE TRIGGER trg_notify_quotation_viewed AFTER UPDATE ON public.quotations
   FOR EACH ROW
   EXECUTE FUNCTION public.notify_quotation_viewed();
 
+DROP FUNCTION IF EXISTS public.notify_traveler_form_completed CASCADE;
+DROP FUNCTION IF EXISTS public.notify_traveler_form_completed CASCADE;
 CREATE OR REPLACE FUNCTION public.notify_traveler_form_completed()
 RETURNS TRIGGER
 LANGUAGE plpgsql
@@ -602,11 +774,14 @@ END;
 $$;
 
 DROP TRIGGER IF EXISTS trg_notify_traveler_form_completed ON public.travelers;
-CREATE TRIGGER trg_notify_traveler_form_completed
-  AFTER UPDATE ON public.travelers
+DROP TRIGGER IF EXISTS trg_notify_traveler_form_completed ON public.travelers;
+DROP TRIGGER IF EXISTS trg_notify_traveler_form_completed ON public.travelers;
+CREATE TRIGGER trg_notify_traveler_form_completed AFTER UPDATE ON public.travelers
   FOR EACH ROW
   EXECUTE FUNCTION public.notify_traveler_form_completed();
 
+DROP FUNCTION IF EXISTS public.notify_onboarding_completed CASCADE;
+DROP FUNCTION IF EXISTS public.notify_onboarding_completed CASCADE;
 CREATE OR REPLACE FUNCTION public.notify_onboarding_completed()
 RETURNS TRIGGER
 LANGUAGE plpgsql
@@ -631,12 +806,15 @@ END;
 $$;
 
 DROP TRIGGER IF EXISTS trg_notify_onboarding_completed ON public.profiles;
-CREATE TRIGGER trg_notify_onboarding_completed
-  AFTER UPDATE ON public.profiles
+DROP TRIGGER IF EXISTS trg_notify_onboarding_completed ON public.profiles;
+DROP TRIGGER IF EXISTS trg_notify_onboarding_completed ON public.profiles;
+CREATE TRIGGER trg_notify_onboarding_completed AFTER UPDATE ON public.profiles
   FOR EACH ROW
   EXECUTE FUNCTION public.notify_onboarding_completed();
 
 -- 9. Seed helper for default kanban boards/columns
+DROP FUNCTION IF EXISTS public.ensure_default_kanban_boards CASCADE;
+DROP FUNCTION IF EXISTS public.ensure_default_kanban_boards CASCADE;
 CREATE OR REPLACE FUNCTION public.ensure_default_kanban_boards(_org_id UUID)
 RETURNS VOID
 LANGUAGE plpgsql

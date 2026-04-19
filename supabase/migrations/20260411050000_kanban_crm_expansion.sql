@@ -20,13 +20,15 @@ CREATE INDEX IF NOT EXISTS idx_kanban_notes_card_id ON kanban_notes(card_id);
 CREATE INDEX IF NOT EXISTS idx_kanban_notes_org_id  ON kanban_notes(org_id);
 
 ALTER TABLE kanban_notes ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Membros da org gerenciam kanban_notes" ON kanban_notes;
+DROP POLICY IF EXISTS "Membros da org gerenciam kanban_notes" ON kanban_notes;
 CREATE POLICY "Membros da org gerenciam kanban_notes" ON kanban_notes FOR ALL
   TO authenticated
   USING (org_id = get_my_org_id())
   WITH CHECK (org_id = get_my_org_id());
 
-CREATE TRIGGER trg_updated_at_kanban_notes
-BEFORE UPDATE ON kanban_notes
+DROP TRIGGER IF EXISTS trg_updated_at_kanban_notes ON kanban_notes;
+CREATE TRIGGER trg_updated_at_kanban_notes BEFORE UPDATE ON kanban_notes
 FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- ─────────────────────────────────────────────
@@ -54,12 +56,16 @@ CREATE INDEX IF NOT EXISTS idx_kanban_checklists_card_id     ON kanban_checklist
 CREATE INDEX IF NOT EXISTS idx_kanban_checklist_items_list    ON kanban_checklist_items(checklist_id);
 
 ALTER TABLE kanban_checklists ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Membros da org gerenciam kanban_checklists" ON kanban_checklists;
+DROP POLICY IF EXISTS "Membros da org gerenciam kanban_checklists" ON kanban_checklists;
 CREATE POLICY "Membros da org gerenciam kanban_checklists" ON kanban_checklists FOR ALL
   TO authenticated
   USING (org_id = get_my_org_id())
   WITH CHECK (org_id = get_my_org_id());
 
 ALTER TABLE kanban_checklist_items ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Membros da org gerenciam kanban_checklist_items" ON kanban_checklist_items;
+DROP POLICY IF EXISTS "Membros da org gerenciam kanban_checklist_items" ON kanban_checklist_items;
 CREATE POLICY "Membros da org gerenciam kanban_checklist_items" ON kanban_checklist_items FOR ALL
   TO authenticated
   USING (
@@ -96,12 +102,16 @@ CREATE INDEX IF NOT EXISTS idx_kanban_card_tags_card   ON kanban_card_tags(card_
 CREATE INDEX IF NOT EXISTS idx_kanban_card_tags_tag    ON kanban_card_tags(tag_id);
 
 ALTER TABLE kanban_tags ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Membros da org gerenciam kanban_tags" ON kanban_tags;
+DROP POLICY IF EXISTS "Membros da org gerenciam kanban_tags" ON kanban_tags;
 CREATE POLICY "Membros da org gerenciam kanban_tags" ON kanban_tags FOR ALL
   TO authenticated
   USING (org_id = get_my_org_id())
   WITH CHECK (org_id = get_my_org_id());
 
 ALTER TABLE kanban_card_tags ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Membros da org gerenciam kanban_card_tags" ON kanban_card_tags;
+DROP POLICY IF EXISTS "Membros da org gerenciam kanban_card_tags" ON kanban_card_tags;
 CREATE POLICY "Membros da org gerenciam kanban_card_tags" ON kanban_card_tags FOR ALL
   TO authenticated
   USING (
@@ -137,8 +147,8 @@ BEGIN
     SELECT 1 FROM pg_trigger
     WHERE tgname = 'trg_updated_at_kanban_cards'
   ) THEN
-    CREATE TRIGGER trg_updated_at_kanban_cards
-    BEFORE UPDATE ON kanban_cards
+    DROP TRIGGER IF EXISTS trg_updated_at_kanban_cards ON kanban_cards;
+CREATE TRIGGER trg_updated_at_kanban_cards BEFORE UPDATE ON kanban_cards
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
   END IF;
 END;

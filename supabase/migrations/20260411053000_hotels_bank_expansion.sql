@@ -16,8 +16,8 @@ BEGIN
     SELECT 1 FROM pg_trigger
     WHERE tgname = 'trg_updated_at_hotels_bank'
   ) THEN
-    CREATE TRIGGER trg_updated_at_hotels_bank
-    BEFORE UPDATE ON hotels_bank
+    DROP TRIGGER IF EXISTS trg_updated_at_hotels_bank ON hotels_bank;
+CREATE TRIGGER trg_updated_at_hotels_bank BEFORE UPDATE ON hotels_bank
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
   END IF;
 END;

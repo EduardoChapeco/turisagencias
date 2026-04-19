@@ -1,4 +1,6 @@
 -- Atualizar função para semear todos os 3 boards padrão (sales, departures, tasks)
+DROP FUNCTION IF EXISTS public.ensure_default_kanban_boards CASCADE;
+DROP FUNCTION IF EXISTS public.ensure_default_kanban_boards CASCADE;
 CREATE OR REPLACE FUNCTION public.ensure_default_kanban_boards(_org_id uuid)
  RETURNS void
  LANGUAGE plpgsql
@@ -71,6 +73,8 @@ BEGIN
 END $$;
 
 -- Trigger: ao criar uma nova org, semear automaticamente os boards
+DROP FUNCTION IF EXISTS public.seed_kanban_for_new_org CASCADE;
+DROP FUNCTION IF EXISTS public.seed_kanban_for_new_org CASCADE;
 CREATE OR REPLACE FUNCTION public.seed_kanban_for_new_org()
  RETURNS trigger
  LANGUAGE plpgsql
@@ -84,7 +88,8 @@ END;
 $function$;
 
 DROP TRIGGER IF EXISTS trg_seed_kanban_for_new_org ON public.organizations;
-CREATE TRIGGER trg_seed_kanban_for_new_org
-  AFTER INSERT ON public.organizations
+DROP TRIGGER IF EXISTS trg_seed_kanban_for_new_org ON public.organizations;
+DROP TRIGGER IF EXISTS trg_seed_kanban_for_new_org ON public.organizations;
+CREATE TRIGGER trg_seed_kanban_for_new_org AFTER INSERT ON public.organizations
   FOR EACH ROW
   EXECUTE FUNCTION public.seed_kanban_for_new_org();

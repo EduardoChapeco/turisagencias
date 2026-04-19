@@ -16,6 +16,10 @@ CREATE TABLE IF NOT EXISTS public.kanban_tags (
   UNIQUE(org_id, name)
 );
 ALTER TABLE public.kanban_tags ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "kanban_tags_org" ON public.kanban_tags;
+DROP POLICY IF EXISTS "kanban_tags_org" ON public.kanban_tags;
+DROP POLICY IF EXISTS "kanban_tags_org" ON public.kanban_tags;
+DROP POLICY IF EXISTS "kanban_tags_org" ON public.kanban_tags;
 CREATE POLICY "kanban_tags_org" ON public.kanban_tags FOR ALL TO authenticated
   USING (org_id = public.get_my_org_id())
   WITH CHECK (org_id = public.get_my_org_id());
@@ -31,9 +35,17 @@ CREATE TABLE IF NOT EXISTS public.kanban_notes (
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 ALTER TABLE public.kanban_notes ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "kanban_notes_org" ON public.kanban_notes;
+DROP POLICY IF EXISTS "kanban_notes_org" ON public.kanban_notes;
+DROP POLICY IF EXISTS "kanban_notes_org" ON public.kanban_notes;
+DROP POLICY IF EXISTS "kanban_notes_org" ON public.kanban_notes;
 CREATE POLICY "kanban_notes_org" ON public.kanban_notes FOR ALL TO authenticated
   USING (org_id = public.get_my_org_id())
   WITH CHECK (org_id = public.get_my_org_id());
+DROP TRIGGER IF EXISTS set_kanban_notes_updated_at ON public.kanban_notes;
+DROP TRIGGER IF EXISTS set_kanban_notes_updated_at ON public.kanban_notes;
+DROP TRIGGER IF EXISTS set_kanban_notes_updated_at ON public.kanban_notes;
+DROP TRIGGER IF EXISTS set_kanban_notes_updated_at ON public.kanban_notes;
 CREATE TRIGGER set_kanban_notes_updated_at BEFORE UPDATE ON public.kanban_notes
   FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
@@ -46,6 +58,10 @@ CREATE TABLE IF NOT EXISTS public.kanban_checklists (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 ALTER TABLE public.kanban_checklists ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "kanban_checklists_org" ON public.kanban_checklists;
+DROP POLICY IF EXISTS "kanban_checklists_org" ON public.kanban_checklists;
+DROP POLICY IF EXISTS "kanban_checklists_org" ON public.kanban_checklists;
+DROP POLICY IF EXISTS "kanban_checklists_org" ON public.kanban_checklists;
 CREATE POLICY "kanban_checklists_org" ON public.kanban_checklists FOR ALL TO authenticated
   USING (org_id = public.get_my_org_id())
   WITH CHECK (org_id = public.get_my_org_id());
@@ -61,6 +77,10 @@ CREATE TABLE IF NOT EXISTS public.kanban_checklist_items (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 ALTER TABLE public.kanban_checklist_items ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "kanban_checklist_items_via_checklist" ON public.kanban_checklist_items;
+DROP POLICY IF EXISTS "kanban_checklist_items_via_checklist" ON public.kanban_checklist_items;
+DROP POLICY IF EXISTS "kanban_checklist_items_via_checklist" ON public.kanban_checklist_items;
+DROP POLICY IF EXISTS "kanban_checklist_items_via_checklist" ON public.kanban_checklist_items;
 CREATE POLICY "kanban_checklist_items_via_checklist" ON public.kanban_checklist_items FOR ALL TO authenticated
   USING (
     EXISTS (

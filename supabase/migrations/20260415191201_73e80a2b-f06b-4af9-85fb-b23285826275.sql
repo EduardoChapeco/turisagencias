@@ -37,11 +37,15 @@ CREATE TABLE IF NOT EXISTS public.itineraries (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 ALTER TABLE public.itineraries ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "org members manage itineraries" ON public.itineraries;
+DROP POLICY IF EXISTS "org members manage itineraries" ON public.itineraries;
+DROP POLICY IF EXISTS "org members manage itineraries" ON public.itineraries;
+DROP POLICY IF EXISTS "org members manage itineraries" ON public.itineraries;
 CREATE POLICY "org members manage itineraries" ON public.itineraries
   FOR ALL USING (org_id = public.get_my_org_id()) WITH CHECK (org_id = public.get_my_org_id());
 
-CREATE INDEX idx_itineraries_org ON public.itineraries(org_id);
-CREATE UNIQUE INDEX idx_itineraries_token ON public.itineraries(public_token);
+CREATE INDEX IF NOT EXISTS idx_itineraries_org ON public.itineraries(org_id);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_itineraries_token ON public.itineraries(public_token);
 
 -- 2. itinerary_stops
 CREATE TABLE IF NOT EXISTS public.itinerary_stops (
@@ -73,6 +77,10 @@ CREATE TABLE IF NOT EXISTS public.itinerary_stops (
 ALTER TABLE public.itinerary_stops ENABLE ROW LEVEL SECURITY;
 
 -- Stops accessible if user can access the parent itinerary
+DROP POLICY IF EXISTS "org members manage itinerary_stops" ON public.itinerary_stops;
+DROP POLICY IF EXISTS "org members manage itinerary_stops" ON public.itinerary_stops;
+DROP POLICY IF EXISTS "org members manage itinerary_stops" ON public.itinerary_stops;
+DROP POLICY IF EXISTS "org members manage itinerary_stops" ON public.itinerary_stops;
 CREATE POLICY "org members manage itinerary_stops" ON public.itinerary_stops
   FOR ALL USING (
     EXISTS (SELECT 1 FROM public.itineraries i WHERE i.id = itinerary_id AND i.org_id = public.get_my_org_id())
@@ -80,8 +88,12 @@ CREATE POLICY "org members manage itinerary_stops" ON public.itinerary_stops
     EXISTS (SELECT 1 FROM public.itineraries i WHERE i.id = itinerary_id AND i.org_id = public.get_my_org_id())
   );
 
-CREATE INDEX idx_stops_itinerary ON public.itinerary_stops(itinerary_id);
+CREATE INDEX IF NOT EXISTS idx_stops_itinerary ON public.itinerary_stops(itinerary_id);
 
 -- Triggers
+DROP TRIGGER IF EXISTS update_itineraries_updated_at ON public.itineraries;
+DROP TRIGGER IF EXISTS update_itineraries_updated_at ON public.itineraries;
+DROP TRIGGER IF EXISTS update_itineraries_updated_at ON public.itineraries;
+DROP TRIGGER IF EXISTS update_itineraries_updated_at ON public.itineraries;
 CREATE TRIGGER update_itineraries_updated_at BEFORE UPDATE ON public.itineraries
   FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();

@@ -98,7 +98,7 @@ export function IntegrationsTab() {
           <CardContent className="space-y-4">
             <div className="bg-zinc-950 p-4 rounded-2xl">
               <code className="text-[11px] font-mono select-all break-all text-vj-green block">
-                https://xhdoupxnpjbzkzuhucpp.supabase.co/functions/v1/email-webhook-ingest
+                https://mdulkbvdedfgwzesgeuh.supabase.co/functions/v1/email-webhook-ingest
               </code>
             </div>
             <div className="grid grid-cols-3 gap-3 text-center">

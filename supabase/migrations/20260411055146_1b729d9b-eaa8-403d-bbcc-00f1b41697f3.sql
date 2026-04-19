@@ -19,13 +19,25 @@ CREATE TABLE IF NOT EXISTS public.traveler_info_pages (
 );
 ALTER TABLE public.traveler_info_pages ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "traveler_info_pages_org" ON public.traveler_info_pages;
+DROP POLICY IF EXISTS "traveler_info_pages_org" ON public.traveler_info_pages;
+DROP POLICY IF EXISTS "traveler_info_pages_org" ON public.traveler_info_pages;
+DROP POLICY IF EXISTS "traveler_info_pages_org" ON public.traveler_info_pages;
 CREATE POLICY "traveler_info_pages_org" ON public.traveler_info_pages FOR ALL TO authenticated
   USING (org_id = public.get_my_org_id())
   WITH CHECK (org_id = public.get_my_org_id());
 
 -- Allow public read for published pages
+DROP POLICY IF EXISTS "traveler_info_pages_public_read" ON public.traveler_info_pages;
+DROP POLICY IF EXISTS "traveler_info_pages_public_read" ON public.traveler_info_pages;
+DROP POLICY IF EXISTS "traveler_info_pages_public_read" ON public.traveler_info_pages;
+DROP POLICY IF EXISTS "traveler_info_pages_public_read" ON public.traveler_info_pages;
 CREATE POLICY "traveler_info_pages_public_read" ON public.traveler_info_pages FOR SELECT TO anon
   USING (is_published = true);
 
+DROP TRIGGER IF EXISTS set_traveler_info_pages_updated_at ON public.traveler_info_pages;
+DROP TRIGGER IF EXISTS set_traveler_info_pages_updated_at ON public.traveler_info_pages;
+DROP TRIGGER IF EXISTS set_traveler_info_pages_updated_at ON public.traveler_info_pages;
+DROP TRIGGER IF EXISTS set_traveler_info_pages_updated_at ON public.traveler_info_pages;
 CREATE TRIGGER set_traveler_info_pages_updated_at BEFORE UPDATE ON public.traveler_info_pages
   FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();

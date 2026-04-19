@@ -1,5 +1,7 @@
 -- Migration: confirm_public_quotation_rpc
 
+DROP FUNCTION IF EXISTS public.confirm_public_quotation CASCADE;
+DROP FUNCTION IF EXISTS public.confirm_public_quotation CASCADE;
 CREATE OR REPLACE FUNCTION public.confirm_public_quotation(
   p_token text,
   p_traveler_name text,

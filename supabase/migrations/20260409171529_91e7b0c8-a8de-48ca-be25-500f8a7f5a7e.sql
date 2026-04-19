@@ -1,5 +1,7 @@
 
 -- Function to assign org_admin role (called from onboarding, SECURITY DEFINER to bypass RLS)
+DROP FUNCTION IF EXISTS public.assign_org_admin_role CASCADE;
+DROP FUNCTION IF EXISTS public.assign_org_admin_role CASCADE;
 CREATE OR REPLACE FUNCTION public.assign_org_admin_role(_user_id UUID)
 RETURNS VOID
 LANGUAGE plpgsql
@@ -15,6 +17,8 @@ $$;
 
 -- First-user super_admin: one-time trigger
 -- When a new user is created, if they are the FIRST user ever, promote to super_admin
+DROP FUNCTION IF EXISTS public.promote_first_user CASCADE;
+DROP FUNCTION IF EXISTS public.promote_first_user CASCADE;
 CREATE OR REPLACE FUNCTION public.promote_first_user()
 RETURNS TRIGGER AS $$
 DECLARE
@@ -35,17 +39,24 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
-CREATE TRIGGER trg_promote_first_user
-  AFTER INSERT ON auth.users
+DROP TRIGGER IF EXISTS trg_promote_first_user ON auth.users;
+DROP TRIGGER IF EXISTS trg_promote_first_user ON auth.users;
+CREATE TRIGGER trg_promote_first_user AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.promote_first_user();
 
 -- Ensure updated_at triggers exist (recreate if missing)
 DROP TRIGGER IF EXISTS update_organizations_updated_at ON public.organizations;
-CREATE TRIGGER update_organizations_updated_at
-  BEFORE UPDATE ON public.organizations
+DROP TRIGGER IF EXISTS update_organizations_updated_at ON public.organizations;
+DROP TRIGGER IF EXISTS update_organizations_updated_at ON public.organizations;
+DROP TRIGGER IF EXISTS update_organizations_updated_at ON public.organizations;
+DROP TRIGGER IF EXISTS update_organizations_updated_at ON public.organizations;
+CREATE TRIGGER update_organizations_updated_at BEFORE UPDATE ON public.organizations
   FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
 DROP TRIGGER IF EXISTS update_profiles_updated_at ON public.profiles;
-CREATE TRIGGER update_profiles_updated_at
-  BEFORE UPDATE ON public.profiles
+DROP TRIGGER IF EXISTS update_profiles_updated_at ON public.profiles;
+DROP TRIGGER IF EXISTS update_profiles_updated_at ON public.profiles;
+DROP TRIGGER IF EXISTS update_profiles_updated_at ON public.profiles;
+DROP TRIGGER IF EXISTS update_profiles_updated_at ON public.profiles;
+CREATE TRIGGER update_profiles_updated_at BEFORE UPDATE ON public.profiles
   FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();

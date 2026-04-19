@@ -106,6 +106,8 @@ CREATE INDEX IF NOT EXISTS idx_hotel_reviews_org_id   ON hotel_reviews(org_id);
 
 ALTER TABLE hotel_reviews ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Membros gerenciam hotel_reviews" ON hotel_reviews;
+DROP POLICY IF EXISTS "Membros gerenciam hotel_reviews" ON hotel_reviews;
 CREATE POLICY "Membros gerenciam hotel_reviews" ON hotel_reviews FOR ALL
   TO authenticated
   USING  (org_id = get_my_org_id())

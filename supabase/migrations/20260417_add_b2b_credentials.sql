@@ -13,13 +13,7 @@ CREATE TABLE IF NOT EXISTS public.b2b_credentials (
 
 ALTER TABLE public.b2b_credentials ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Users can manage their org B2B credentials" 
-ON public.b2b_credentials 
-FOR ALL USING (
-  EXISTS (
-    SELECT 1 FROM public.user_roles ur 
-    WHERE ur.org_id = b2b_credentials.org_id 
-    AND ur.user_id = auth.uid()
-    AND ur.role IN ('admin', 'manager')
-  )
-);
+DROP POLICY IF EXISTS "Users can manage their org B2B credentials" ON public.b2b_credentials;
+CREATE POLICY "Users can manage their org B2B credentials" ON public.b2b_credentials 
+FOR ALL USING (org_id = get_my_org_id());
+

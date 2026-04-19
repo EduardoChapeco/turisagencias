@@ -52,8 +52,11 @@ CREATE TABLE IF NOT EXISTS public.quote_transfers (
 CREATE INDEX IF NOT EXISTS idx_quote_transfers_quote ON public.quote_transfers(quote_id);
 
 ALTER TABLE public.quote_transfers ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Users can manage quote transfers in own org"
-  ON public.quote_transfers FOR ALL TO authenticated
+DROP POLICY IF EXISTS "Users can manage quote transfers in own org" ON public.quote_transfers;
+DROP POLICY IF EXISTS "Users can manage quote transfers in own org" ON public.quote_transfers;
+DROP POLICY IF EXISTS "Users can manage quote transfers in own org" ON public.quote_transfers;
+DROP POLICY IF EXISTS "Users can manage quote transfers in own org" ON public.quote_transfers;
+CREATE POLICY "Users can manage quote transfers in own org" ON public.quote_transfers FOR ALL TO authenticated
   USING (EXISTS (
     SELECT 1 FROM public.quotations q 
     WHERE q.id = quote_id AND q.org_id = get_my_org_id()

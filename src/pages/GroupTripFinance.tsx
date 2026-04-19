@@ -19,6 +19,8 @@ import {
 } from '@/hooks/useGroupTripFinance';
 import { useGroupTrip, useGroupTrips, useTransferBooking } from '@/hooks/useGroupTrips';
 import { useReviewPaymentProof, useBookingPaymentProofs } from '@/hooks/useBookingPaymentProofs';
+import { BookingMessagesPanel } from '@/components/group-trips/BookingMessagesPanel';
+import { BookingCreditsPanel } from '@/components/group-trips/BookingCreditsPanel';
 import { cn } from '@/lib/utils';
 
 // ── Formatadores ─────────────────────────────────────────────────────────────
@@ -277,6 +279,7 @@ function InstallmentRow({ inst, tripId }: {
 // ── Booking Row ───────────────────────────────────────────────────────────────
 function BookingRow({ booking, tripId }: { booking: any; tripId: string }) {
   const [expanded, setExpanded] = useState(false);
+  const [activeTab, setActiveTab] = useState<'installments' | 'messages' | 'credits'>('installments');
   const [proofDialog, setProofDialog] = useState<{ bookingId: string; installmentId: string | null } | null>(null);
   const [transferDialog, setTransferDialog] = useState(false);
 
@@ -329,28 +332,68 @@ function BookingRow({ booking, tripId }: { booking: any; tripId: string }) {
           )}
         </button>
 
-        {/* Installments */}
+        {/* Expanded content */}
         {expanded && (
           <div className="border-t border-zinc-50 bg-zinc-50/50">
-            {booking.installments.length === 0 ? (
-              <p className="text-xs text-zinc-400 text-center py-4">Sem parcelas geradas</p>
-            ) : (
-              booking.installments
-                .sort((a: any, b: any) => a.installment_number - b.installment_number)
-                .map((inst: any) => (
-                  <InstallmentRow key={inst.id} inst={inst} tripId={tripId} />
-                ))
-            )}
-            <div className="px-4 py-2 flex justify-end gap-2">
-              <Button variant="outline" size="sm" className="h-7 text-xs gap-1 text-blue-600 hover:bg-blue-50 border-blue-100"
-                onClick={() => setTransferDialog(true)}>
-                <ArrowRightLeft size={12} /> Mudar pacote
-              </Button>
-              <Button variant="outline" size="sm" className="h-7 text-xs gap-1"
-                onClick={() => setProofDialog({ bookingId: booking.id, installmentId: null })}>
-                <Eye size={12} /> Ver comprovantes
-              </Button>
+            {/* Tabs */}
+            <div className="flex gap-0 border-b border-zinc-100">
+              {(['installments', 'messages', 'credits'] as const).map(tab => {
+                const labels = { installments: '💳 Parcelas', messages: '💬 Chat', credits: '🎁 Créditos' };
+                return (
+                  <button
+                    key={tab}
+                    onClick={() => setActiveTab(tab)}
+                    className={cn(
+                      'flex-1 text-[11px] font-bold py-2 transition-colors',
+                      activeTab === tab
+                        ? 'border-b-2 border-blue-500 text-blue-600 bg-white'
+                        : 'text-zinc-400 hover:text-zinc-600',
+                    )}
+                  >
+                    {labels[tab]}
+                  </button>
+                );
+              })}
             </div>
+
+            {/* Installments tab */}
+            {activeTab === 'installments' && (
+              <div>
+                {booking.installments.length === 0 ? (
+                  <p className="text-xs text-zinc-400 text-center py-4">Sem parcelas geradas</p>
+                ) : (
+                  booking.installments
+                    .sort((a: any, b: any) => a.installment_number - b.installment_number)
+                    .map((inst: any) => (
+                      <InstallmentRow key={inst.id} inst={inst} tripId={tripId} />
+                    ))
+                )}
+                <div className="px-4 py-2 flex justify-end gap-2">
+                  <Button variant="outline" size="sm" className="h-7 text-xs gap-1 text-blue-600 hover:bg-blue-50 border-blue-100"
+                    onClick={() => setTransferDialog(true)}>
+                    <ArrowRightLeft size={12} /> Mudar pacote
+                  </Button>
+                  <Button variant="outline" size="sm" className="h-7 text-xs gap-1"
+                    onClick={() => setProofDialog({ bookingId: booking.id, installmentId: null })}>
+                    <Eye size={12} /> Ver comprovantes
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Messages tab */}
+            {activeTab === 'messages' && (
+              <div className="p-2">
+                <BookingMessagesPanel bookingId={booking.id} leadName={booking.lead_name} />
+              </div>
+            )}
+
+            {/* Credits tab */}
+            {activeTab === 'credits' && (
+              <div className="p-4">
+                <BookingCreditsPanel bookingId={booking.id} currency={booking.currency ?? 'BRL'} />
+              </div>
+            )}
           </div>
         )}
       </div>

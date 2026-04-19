@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Settings as SettingsIcon, Trash2, Users, Key, Brain, Database, Columns, Mail, Activity, Bus } from 'lucide-react';
+import { Settings as SettingsIcon, Trash2, Users, Key, KeyRound, Brain, Database, Columns, Mail, Activity, Bus } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
@@ -20,6 +20,7 @@ import { KanbanTab } from './settings/KanbanTab';
 import { AiLogsTab } from './settings/AiLogsTab';
 import { IntegrationsTab } from './settings/IntegrationsTab';
 import { BusLayoutTab } from './settings/BusLayoutTab';
+import { B2BTab } from './settings/B2BTab';
 
 export default function Settings() {
   const { data: keys, isLoading } = useAiKeys();
@@ -61,6 +62,7 @@ export default function Settings() {
               { id: 'kanban',       label: 'Board',      icon: Columns },
               { id: 'integrations', label: 'Webhooks',   icon: Mail },
               { id: 'bus',          label: 'Ônibus',     icon: Bus },
+              { id: 'b2b',          label: 'Portais B2B', icon: KeyRound },
               { id: 'logs',         label: 'Logs IA',    icon: Activity },
             ].map(t => (
               <TabsTrigger 
@@ -78,6 +80,7 @@ export default function Settings() {
           <TabsContent value="kanban" className="animate-in fade-in slide-in-from-bottom-4 duration-500"><KanbanTab /></TabsContent>
           <TabsContent value="integrations" className="animate-in fade-in slide-in-from-bottom-4 duration-500"><IntegrationsTab /></TabsContent>
           <TabsContent value="bus" className="animate-in fade-in slide-in-from-bottom-4 duration-500"><BusLayoutTab /></TabsContent>
+          <TabsContent value="b2b" className="animate-in fade-in slide-in-from-bottom-4 duration-500"><B2BTab /></TabsContent>
           <TabsContent value="logs" className="animate-in fade-in slide-in-from-bottom-4 duration-500"><AiLogsTab /></TabsContent>
           
           <TabsContent value="aikeys" className="animate-in fade-in slide-in-from-bottom-4 duration-500">

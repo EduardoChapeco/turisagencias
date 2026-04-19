@@ -9,6 +9,7 @@ export interface RadarMarker {
   name: string;
   pax: number;
   color: string;
+  isTravelingNow?: boolean;
 }
 
 interface Props {
@@ -70,9 +71,9 @@ export function GlobalRadarMapWidget({ markers, interactive = true }: Props) {
       if (interactive) {
         marker.bindPopup(`
           <div class="px-2 py-0.5 min-w-[150px] font-sans">
-             <p class="text-[9px] uppercase font-bold text-slate-400 tracking-widest mb-1 shadow-sm">📍 Viajante Identificado</p>
+             <p class="text-[9px] uppercase font-bold text-slate-400 tracking-widest mb-1 shadow-sm">${mk.isTravelingNow ? '📍 Em Trânsito Hoje' : '✈️ Planejamento / Futuro'}</p>
              <p class="text-[14px] font-black leading-tight text-slate-800">${mk.name}</p>
-             <p class="text-[11px] font-semibold text-slate-500 mt-1">${mk.pax} Pax em trânsito</p>
+             <p class="text-[11px] font-semibold text-slate-500 mt-1">${mk.pax} ${mk.isTravelingNow ? 'Pax hospedados/em rota' : 'Pax previstos'}</p>
           </div>
         `, { 
           className: 'custom-radar-popup border-0',

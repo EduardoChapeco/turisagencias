@@ -935,6 +935,69 @@ export type Database = {
           },
         ]
       }
+      client_identities: {
+        Row: {
+          client_id: string
+          created_at: string
+          external_id: string | null
+          id: string
+          identity_type: string
+          is_primary: boolean
+          label: string | null
+          metadata: Json
+          normalized_value: string | null
+          org_id: string
+          provider: string
+          raw_value: string | null
+          updated_at: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          external_id?: string | null
+          id?: string
+          identity_type?: string
+          is_primary?: boolean
+          label?: string | null
+          metadata?: Json
+          normalized_value?: string | null
+          org_id: string
+          provider: string
+          raw_value?: string | null
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          external_id?: string | null
+          id?: string
+          identity_type?: string
+          is_primary?: boolean
+          label?: string | null
+          metadata?: Json
+          normalized_value?: string | null
+          org_id?: string
+          provider?: string
+          raw_value?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_identities_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_identities_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clients: {
         Row: {
           address: string | null
@@ -1557,6 +1620,85 @@ export type Database = {
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      external_entities: {
+        Row: {
+          client_id: string | null
+          created_at: string
+          entity_type: string
+          external_id: string | null
+          external_key: string
+          id: string
+          last_seen_at: string
+          metadata: Json
+          occurred_at: string | null
+          org_id: string
+          payload: Json
+          provider: string
+          status: string
+          title: string | null
+          trip_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          client_id?: string | null
+          created_at?: string
+          entity_type?: string
+          external_id?: string | null
+          external_key: string
+          id?: string
+          last_seen_at?: string
+          metadata?: Json
+          occurred_at?: string | null
+          org_id: string
+          payload?: Json
+          provider: string
+          status?: string
+          title?: string | null
+          trip_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string | null
+          created_at?: string
+          entity_type?: string
+          external_id?: string | null
+          external_key?: string
+          id?: string
+          last_seen_at?: string
+          metadata?: Json
+          occurred_at?: string | null
+          org_id?: string
+          payload?: Json
+          provider?: string
+          status?: string
+          title?: string | null
+          trip_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "external_entities_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "external_entities_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "external_entities_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
             referencedColumns: ["id"]
           },
         ]
@@ -3308,6 +3450,112 @@ export type Database = {
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      operator_snapshots: {
+        Row: {
+          captured_at: string
+          client_id: string | null
+          created_at: string
+          external_entity_id: string | null
+          fingerprint: string
+          id: string
+          ingested_by_profile_id: string | null
+          ingested_by_user_id: string | null
+          locator: string | null
+          org_id: string
+          page_title: string | null
+          page_url: string | null
+          payload: Json
+          provider: string
+          snapshot_type: string
+          trip_id: string | null
+          updated_at: string
+          wa_session_id: string | null
+        }
+        Insert: {
+          captured_at?: string
+          client_id?: string | null
+          created_at?: string
+          external_entity_id?: string | null
+          fingerprint: string
+          id?: string
+          ingested_by_profile_id?: string | null
+          ingested_by_user_id?: string | null
+          locator?: string | null
+          org_id: string
+          page_title?: string | null
+          page_url?: string | null
+          payload?: Json
+          provider: string
+          snapshot_type?: string
+          trip_id?: string | null
+          updated_at?: string
+          wa_session_id?: string | null
+        }
+        Update: {
+          captured_at?: string
+          client_id?: string | null
+          created_at?: string
+          external_entity_id?: string | null
+          fingerprint?: string
+          id?: string
+          ingested_by_profile_id?: string | null
+          ingested_by_user_id?: string | null
+          locator?: string | null
+          org_id?: string
+          page_title?: string | null
+          page_url?: string | null
+          payload?: Json
+          provider?: string
+          snapshot_type?: string
+          trip_id?: string | null
+          updated_at?: string
+          wa_session_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "operator_snapshots_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "operator_snapshots_external_entity_id_fkey"
+            columns: ["external_entity_id"]
+            isOneToOne: false
+            referencedRelation: "external_entities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "operator_snapshots_ingested_by_profile_id_fkey"
+            columns: ["ingested_by_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "operator_snapshots_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "operator_snapshots_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "operator_snapshots_wa_session_id_fkey"
+            columns: ["wa_session_id"]
+            isOneToOne: false
+            referencedRelation: "wa_session_metrics"
             referencedColumns: ["id"]
           },
         ]
@@ -5187,6 +5435,173 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      wa_conversation_logs: {
+        Row: {
+          client_id: string | null
+          contact_phone: string | null
+          contact_phone_key: string | null
+          created_at: string
+          direction: string
+          id: string
+          message_hash: string
+          message_text: string
+          message_time: string | null
+          message_time_label: string | null
+          metadata: Json
+          org_id: string
+          session_key: string
+          wa_session_id: string | null
+        }
+        Insert: {
+          client_id?: string | null
+          contact_phone?: string | null
+          contact_phone_key?: string | null
+          created_at?: string
+          direction?: string
+          id?: string
+          message_hash: string
+          message_text: string
+          message_time?: string | null
+          message_time_label?: string | null
+          metadata?: Json
+          org_id: string
+          session_key: string
+          wa_session_id?: string | null
+        }
+        Update: {
+          client_id?: string | null
+          contact_phone?: string | null
+          contact_phone_key?: string | null
+          created_at?: string
+          direction?: string
+          id?: string
+          message_hash?: string
+          message_text?: string
+          message_time?: string | null
+          message_time_label?: string | null
+          metadata?: Json
+          org_id?: string
+          session_key?: string
+          wa_session_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wa_conversation_logs_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wa_conversation_logs_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wa_conversation_logs_wa_session_id_fkey"
+            columns: ["wa_session_id"]
+            isOneToOne: false
+            referencedRelation: "wa_session_metrics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wa_session_metrics: {
+        Row: {
+          chat_id: string | null
+          client_id: string | null
+          contact_name: string | null
+          contact_phone: string | null
+          contact_phone_key: string | null
+          created_at: string
+          extension_id: string
+          id: string
+          last_incoming_at: string | null
+          last_message_at: string | null
+          last_outgoing_at: string | null
+          last_seen_at: string
+          message_count: number
+          metadata: Json
+          org_id: string
+          page_title: string | null
+          profile_id: string | null
+          session_key: string
+          tab_url: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          chat_id?: string | null
+          client_id?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          contact_phone_key?: string | null
+          created_at?: string
+          extension_id: string
+          id?: string
+          last_incoming_at?: string | null
+          last_message_at?: string | null
+          last_outgoing_at?: string | null
+          last_seen_at?: string
+          message_count?: number
+          metadata?: Json
+          org_id: string
+          page_title?: string | null
+          profile_id?: string | null
+          session_key: string
+          tab_url?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          chat_id?: string | null
+          client_id?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          contact_phone_key?: string | null
+          created_at?: string
+          extension_id?: string
+          id?: string
+          last_incoming_at?: string | null
+          last_message_at?: string | null
+          last_outgoing_at?: string | null
+          last_seen_at?: string
+          message_count?: number
+          metadata?: Json
+          org_id?: string
+          page_title?: string | null
+          profile_id?: string | null
+          session_key?: string
+          tab_url?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wa_session_metrics_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wa_session_metrics_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wa_session_metrics_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       weather_data: {
         Row: {

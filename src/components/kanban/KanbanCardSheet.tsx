@@ -11,6 +11,7 @@ import {
   User,
   X,
   Plane,
+  MessageCircle,
 } from 'lucide-react';
 import { SheetPage } from '@/components/ui/SheetPage';
 import { Button } from '@/components/ui/button';
@@ -21,7 +22,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { StatusBadge, mapStatusToVariant } from '@/components/ui/StatusBadge';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ClientSearchSelect } from '@/components/ui/ClientSearchSelect';
-import { useTrips } from '@/hooks/useTrips';
+import { useGroupTrips } from '@/hooks/useGroupTrips';
 import {
   useUpdateKanbanCard,
   useDeleteKanbanCard,
@@ -557,7 +558,7 @@ function NotasSection({ cardId }: { cardId: string }) {
    ───────────────────────────────────────────── */
 function VinculosSection({ card }: { card: KanbanCard }) {
   const updateCard = useUpdateKanbanCard();
-  const { data: trips } = useTrips();
+  const { data: trips } = useGroupTrips();
   const [clientId, setClientId] = useState(card.client_id ?? '');
   const [tripId, setTripId] = useState(card.trip_id ?? '');
 
@@ -624,6 +625,8 @@ function VinculosSection({ card }: { card: KanbanCard }) {
   );
 }
 
+import { WaChatPanel } from '@/components/kanban/WaChatPanel';
+
 /* ─────────────────────────────────────────────
    COMPONENTE PRINCIPAL
    ───────────────────────────────────────────── */
@@ -632,6 +635,7 @@ const SECTIONS = [
   { id: 'checklist', label: 'Checklist', icon: CheckSquare },
   { id: 'notas', label: 'Notas', icon: FileText },
   { id: 'vinculos', label: 'Vínculos', icon: Link2 },
+  { id: 'whatsapp', label: 'WhatsApp', icon: MessageCircle },
 ];
 
 export function KanbanCardSheet({ card, isOpen, onClose, onDeleted }: Props) {
@@ -679,6 +683,7 @@ export function KanbanCardSheet({ card, isOpen, onClose, onDeleted }: Props) {
           {activeSection === 'checklist' && <ChecklistSection cardId={card.id} />}
           {activeSection === 'notas' && <NotasSection cardId={card.id} />}
           {activeSection === 'vinculos' && <VinculosSection card={card} />}
+          {activeSection === 'whatsapp' && <WaChatPanel clientId={card.client_id} phone={card.whatsapp} />}
         </>
       )}
     </SheetPage>

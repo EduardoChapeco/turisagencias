@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { ClientSearchSelect } from '@/components/ui/ClientSearchSelect';
-import { useTrips } from '@/hooks/useTrips';
+import { useGroupTrips } from '@/hooks/useGroupTrips';
 import { useUpdateKanbanCard, useDeleteKanbanCard } from '@/hooks/useKanbanBoards';
 import { Save, Trash2, Calendar, LayoutList, CheckSquare } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -21,7 +21,7 @@ interface Props {
 export function TaskCardSheet({ card, isOpen, onClose, onDeleted }: Props) {
   const updateCard = useUpdateKanbanCard();
   const deleteCard = useDeleteKanbanCard();
-  const { data: trips } = useTrips();
+  const { data: trips } = useGroupTrips();
 
   const metadata = (card as any)?.metadata || {};
   const [form, setForm] = useState({

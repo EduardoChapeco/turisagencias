@@ -21,7 +21,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ClientSearchSelect } from '@/components/ui/ClientSearchSelect';
-import { useTrips } from '@/hooks/useTrips';
+import { useGroupTrips } from '@/hooks/useGroupTrips';
 import {
   useUpdateKanbanCard,
   useDeleteKanbanCard,
@@ -338,7 +338,7 @@ function NotasSection({ cardId }: { cardId: string }) {
 /* ── Seção: Vínculos ── */
 function VinculosSection({ card }: { card: DepartureCardData }) {
   const updateCard = useUpdateKanbanCard();
-  const { data: trips } = useTrips();
+  const { data: trips } = useGroupTrips();
   const [clientId, setClientId] = useState(card.client_id ?? '');
   const [tripId, setTripId] = useState(card.trip_id ?? '');
 

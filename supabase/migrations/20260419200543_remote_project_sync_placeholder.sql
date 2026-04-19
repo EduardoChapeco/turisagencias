@@ -1,0 +1,6 @@
+-- Placeholder local para alinhar o historico de migrations com o projeto remoto
+-- mdulkbvdedfgwzesgeuh.
+--
+-- A versao 20260419200543 ja existe aplicada no banco remoto, mas o SQL
+-- original nao estava presente neste workspace. Este arquivo evita quebra do
+-- `supabase db push` enquanto o diff canonico nao e recuperado/exportado.

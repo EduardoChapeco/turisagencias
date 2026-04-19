@@ -160,9 +160,6 @@ const App = () => (
               <Route path="/quotations" element={<ProtectedWithOrg><Quotations /></ProtectedWithOrg>} />
               <Route path="/quotations/:id" element={<ProtectedWithOrg><QuotationDetail /></ProtectedWithOrg>} />
 
-              <Route path="/trips" element={<ProtectedWithOrg><Trips /></ProtectedWithOrg>} />
-              <Route path="/trips/:id" element={<ProtectedWithOrg><TripsRole><TripDetail /></TripsRole></ProtectedWithOrg>} />
-
               <Route path="/itineraries" element={<ProtectedWithOrg><Itineraries /></ProtectedWithOrg>} />
               <Route path="/itineraries/:id/builder" element={<ProtectedWithOrg><ItineraryBuilder /></ProtectedWithOrg>} />
               <Route path="/roteiro/:token" element={<PublicItinerary />} />

@@ -68,7 +68,6 @@ const navGroups: NavGroup[] = [
     items: [
       { title: 'Tarefas do Dia',     url: '/kanban/tasks',     icon: KanbanSquare },
       { title: 'Embarques',          url: '/kanban/departures',icon: Anchor },
-      { title: 'Minhas Viagens',     url: '/trips',            icon: Plane },
       { title: 'Construtor Roteiros',url: '/itineraries',      icon: Map },
     ],
   },

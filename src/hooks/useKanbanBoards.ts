@@ -191,10 +191,10 @@ export function useUpdateKanbanCard() {
       client_id?: string | null;
       quotation_id?: string | null;
       trip_id?: string | null;
-      ticket_id?: string | null;
       task_type?: string | null;
       linked_card_ids?: string[];
       assigned_to?: string | null;
+      metadata?: Record<string, any> | null;
     }) => {
       const { data, error } = await supabase
         .from('kanban_cards')

@@ -9,10 +9,12 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { QuotationBuilderSheet } from '@/components/QuotationBuilderSheet';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { useRadarNews } from '@/hooks/useAiRadar';
 import { Skeleton } from '@/components/ui/skeleton';
+import { GlobalRadarMapWidget, RadarMarker } from '@/components/GlobalRadarMapWidget';
+import { geocodeCity } from '@/utils/geocoder';
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -46,6 +48,38 @@ export default function Dashboard() {
     },
     enabled: !!organization?.id
   });
+
+  const [radarMarkers, setRadarMarkers] = useState<RadarMarker[]>([]);
+
+  useEffect(() => {
+    if (!opsStats?.traveling) return;
+    let isActive = true;
+
+    const buildMarkers = async () => {
+      const markers: RadarMarker[] = [];
+      const colors = ['#10b981', '#3b82f6', '#f43f5e', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4'];
+      
+      for (let i = 0; i < opsStats.traveling.length; i++) {
+        const t = opsStats.traveling[i];
+        const res = await geocodeCity(t.destination_city || t.title, t.destination_country);
+        if (res && res.lat !== 0) {
+          markers.push({
+            id: t.id,
+            lat: res.lat,
+            lng: res.lng,
+            name: t.destination_city || t.title || 'Passageiro',
+            pax: t.pax_count || 1,
+            color: colors[i % colors.length]
+          });
+        }
+      }
+      if (isActive) setRadarMarkers(markers);
+    };
+
+    buildMarkers();
+
+    return () => { isActive = false; };
+  }, [opsStats?.traveling]);
 
   // Map real news to fit the existing UI, taking top 4 most critical
   const aiNews = (realNews || []).slice(0, 4).map(n => ({
@@ -124,42 +158,23 @@ export default function Dashboard() {
           </div>
 
           {/* Interactive World Map Block */}
-          <div className="col-span-1 md:col-span-2 lg:col-span-4 bg-zinc-950 rounded-[32px] overflow-hidden relative min-h-[350px] group flex flex-col justify-between">
-            {/* Absolute Map Background Graphic (Simulated for Demo) */}
-            <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 50% 50%, #ffffff 1px, transparent 1px)', backgroundSize: '20px 20px' }}></div>
-            <div className="absolute -inset-10 opacity-30 bg-center bg-no-repeat bg-contain" style={{ backgroundImage: "url('https://upload.wikimedia.org/wikipedia/commons/8/80/World_map_-_low_resolution.svg')", filter: 'invert(1) grayscale(100%)' }}></div>
+          <div className="col-span-1 md:col-span-2 lg:col-span-4 bg-zinc-950 rounded-[32px] overflow-hidden relative min-h-[350px] group flex flex-col justify-between p-1">
+            <div className="absolute inset-0 z-0">
+               <GlobalRadarMapWidget markers={radarMarkers} interactive={false} />
+            </div>
             
-            {/* Map Pins */}
-            {opsStats?.traveling?.slice(0, 5).map((trip, idx) => {
-                const randomTop = 20 + (idx * 25) % 60 + '%';
-                const randomLeft = 20 + (idx * 35) % 60 + '%';
-                return (
-                  <div key={trip.id} className="absolute group/pin cursor-pointer transform -translate-x-1/2 -translate-y-1/2 hover:z-50 transition-all" style={{ top: randomTop, left: randomLeft }}>
-                      <div className="relative">
-                         <span className="animate-ping absolute -inset-1 rounded-full bg-vj-green opacity-75"></span>
-                         <div className="relative bg-vj-green w-3 h-3 rounded-full border-2 border-zinc-950"></div>
-                         {/* Tooltip */}
-                         <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max bg-white/90 backdrop-blur pb-1 px-3 py-2 rounded-xl text-zinc-950 opacity-0 group-hover/pin:opacity-100 transition-opacity">
-                             <p className="text-[10px] font-bold uppercase">{trip.destination_city || trip.title}</p>
-                             <p className="text-xs font-medium">{trip.pax_count || 1} passageiros</p>
-                         </div>
-                      </div>
-                  </div>
-                );
-            })}
-
-            <div className="relative z-10 p-6 flex justify-between items-start">
+            <div className="relative z-10 p-5 flex justify-between items-start pointer-events-none">
                <div>
-                  <h3 className="text-white font-bold tracking-widest text-sm uppercase flex items-center gap-2">
+                  <h3 className="text-white font-bold tracking-widest text-sm uppercase flex items-center gap-2 drop-shadow-md">
                       <Globe2 className="w-4 h-4 text-green-400" /> Radares de Passageiros
                   </h3>
-                  <p className="text-zinc-400 text-xs mt-1">{opsStats?.paxTraveling || 0} pax no exterior hoje</p>
+                  <p className="text-zinc-200 text-xs mt-1 drop-shadow-md">{opsStats?.paxTraveling || 0} pax no exterior hoje</p>
                </div>
-               <div className="flex gap-2">
-                 <Button size="sm" variant="outline" className="bg-transparent border-zinc-800 text-zinc-300 hover:text-white hover:bg-zinc-800 h-8" onClick={() => navigate('/trips')}>Ver Lista</Button>
+               <div className="flex gap-2 pointer-events-auto">
+                 <Button size="sm" variant="outline" className="bg-zinc-950/50 backdrop-blur-md border-zinc-700 text-white hover:bg-zinc-800 h-8" onClick={() => navigate('/radar-global')}>Tela Cheia 🌍</Button>
                </div>
             </div>
-            <div className="relative z-10 p-6">
+            <div className="relative z-10 p-5 pointer-events-auto">
                 <div className="flex items-center gap-3">
                    <div className="bg-zinc-800/50 backdrop-blur-md rounded-full px-4 py-2 border border-zinc-700/50 max-w-sm flex items-center gap-2 w-full">
                        <Search className="w-4 h-4 text-zinc-400" />

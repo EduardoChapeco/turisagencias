@@ -39,15 +39,16 @@ Deno.serve(async (req) => {
         supabase_anon_key: SUPABASE_ANON_KEY,
         sync_url: `${SUPABASE_URL}/functions/v1/extension-sync`,
         quotation_url: `${SUPABASE_URL}/functions/v1/ext-process-quotation`,
+        ai_chat_url: `${SUPABASE_URL}/functions/v1/ai-chat-agent`,
         extension_session_required: true,
       },
       extension_session: extensionSession,
       ai: aiConfig
         ? {
             provider: aiConfig.provider,
-            api_key: aiConfig.apiKey,
             api_base: aiConfig.apiBase,
             model: aiConfig.model,
+            mode: 'platform_agent',
           }
         : null,
       capabilities: {

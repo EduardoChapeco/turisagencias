@@ -50,7 +50,7 @@ serve(async (req) => {
         // departure_date == in7DaysStr
         const { data: trips } = await supabase
           .from("trips")
-          .select("id, title, destination_city, departure_date, client_id, clients(name, email, whatsapp)")
+          .select("id, title, destination_city, departure_date, primary_client_id, clients:primary_client_id(name, email, phone)")
           .eq("org_id", orgId)
           .eq("departure_date", in7DaysStr)
           .neq("status", "cancelled");
@@ -59,9 +59,9 @@ serve(async (req) => {
         // check_out/return_date == minus2DaysStr
         const { data: trips } = await supabase
           .from("trips")
-          .select("id, title, destination_city, end_date, client_id, clients(name, email, whatsapp)")
+          .select("id, title, destination_city, return_date, primary_client_id, clients:primary_client_id(name, email, phone)")
           .eq("org_id", orgId)
-          .eq("end_date", minus2DaysStr)
+          .eq("return_date", minus2DaysStr)
           .neq("status", "cancelled");
         matchingTrips = trips || [];
       } else if (rule.event_type === "trip_created") {

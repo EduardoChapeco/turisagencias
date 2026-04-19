@@ -45,10 +45,10 @@ export function useCreateHotel() {
 
   return useMutation({
     mutationFn: async (payload: HotelFormValues) => {
-      const { gallery_urls: _g, sections: _s, video_url: _v, ...dbPayload } = payload;
+      const { gallery_urls, ...dbPayload } = payload;
       const { data, error } = await supabase
         .from('hotels_bank')
-        .insert({ ...dbPayload, org_id: organization!.id })
+        .insert({ ...dbPayload, photos: gallery_urls || [], org_id: organization!.id })
         .select()
         .single();
       if (error) throw error;
@@ -70,11 +70,12 @@ export function useUpdateHotel() {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async ({ id, ...payload }: any) => {
+    mutationFn: async ({ id, gallery_urls, ...dbPayload }: any) => {
       if (!organization?.id) throw new Error('Organização não encontrada');
+      const payloadToUpdate = gallery_urls !== undefined ? { ...dbPayload, photos: gallery_urls } : dbPayload;
       const { data, error } = await supabase
         .from('hotels_bank')
-        .update(payload)
+        .update(payloadToUpdate)
         .eq('id', id)
         .eq('org_id', organization.id)
         .select()

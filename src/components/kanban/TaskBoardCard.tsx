@@ -61,8 +61,8 @@ export function TaskBoardCard({ card, onClick }: { card: TaskCardData; onClick: 
       style={style}
       onClick={onClick}
       className={cn(
-        'group relative bg-white border border-vj-border rounded-xl p-3  hover: hover:border-vj-green/40 transition-all cursor-pointer select-none',
-        isDragging && 'opacity-40'
+        'kanban-card group relative',
+        isDragging && 'kanban-card-dragging'
       )}
     >
       <button
@@ -70,9 +70,10 @@ export function TaskBoardCard({ card, onClick }: { card: TaskCardData; onClick: 
         {...attributes}
         {...listeners}
         onClick={(e) => e.stopPropagation()}
-        className="absolute left-1.5 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-40 hover:!opacity-70 touch-none cursor-grab active:cursor-grabbing transition-opacity"
+        className="absolute left-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 hover:scale-110 hover:bg-black/5 p-1 rounded-md touch-none cursor-grab active:cursor-grabbing transition-all"
+        aria-label="Arrastar tarefa"
       >
-        <GripVertical size={14} className="text-vj-txt3" />
+        <GripVertical size={16} className="text-zinc-400" />
       </button>
 
       <div className="pl-4 space-y-2.5">
@@ -120,10 +121,10 @@ export function TaskBoardCard({ card, onClick }: { card: TaskCardData; onClick: 
 
 export function TaskCardOverlay({ card }: { card: TaskCardData }) {
   return (
-    <div className="bg-white border border-vj-green/40 rounded-xl p-3  rotate-1 opacity-95 w-[260px]">
-      <div className="pl-4">
-        <p className="font-semibold text-sm text-vj-txt">{card.title}</p>
-        <p className="text-xs text-vj-txt3 mt-0.5">{card.clients?.name}</p>
+    <div className="kanban-card rotate-1 opacity-95 w-[260px] border-vj-green/40 shadow-xl">
+      <div className="pl-6">
+        <p className="font-bold text-[15px] text-zinc-800">{card.title}</p>
+        <p className="text-xs font-medium text-zinc-500 mt-0.5">{card.clients?.name}</p>
       </div>
     </div>
   );

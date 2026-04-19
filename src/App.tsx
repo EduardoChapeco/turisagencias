@@ -53,13 +53,16 @@ const PortalLogin = lazy(() => import('./pages/PortalLogin'));
 const PortalHome = lazy(() => import('./pages/PortalHome'));
 const PortalTripDetail = lazy(() => import('./pages/PortalTripDetail'));
 const PortalAiPhotos = lazy(() => import('./pages/PortalAiPhotos'));
+
 const Suppliers = lazy(() => import('./pages/finance/Suppliers'));
 const Transactions = lazy(() => import('./pages/finance/Transactions'));
 const PendingCancellations = lazy(() => import('./pages/finance/PendingCancellations'));
 const ContractTemplates = lazy(() => import('./pages/legal/ContractTemplates'));
 const Automations = lazy(() => import('./pages/automations/Automations'));
 const Team = lazy(() => import('./pages/admin/Team'));
+
 const RadarPortal = lazy(() => import('./pages/RadarPortal'));
+const GlobalRadarMap = lazy(() => import('./pages/GlobalRadarMap'));
 
 const PublicTravelerForm = lazy(() => import('./pages/PublicTravelerForm'));
 const PublicQuotation = lazy(() => import('./pages/PublicQuotation'));
@@ -77,12 +80,12 @@ const Destinations     = lazy(() => import('./pages/Destinations'));
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 2 * 60 * 1000,     // 2 min — dados ficam frescos por 2 min
-      gcTime: 30 * 60 * 1000,       // Cache mantido por 30min sem uso
+      staleTime: 2 * 60 * 1000,
+      gcTime: 30 * 60 * 1000,
       retry: 1,
-      refetchOnWindowFocus: true,    // Re-busca ao voltar para a aba (CRM multi-agente)
-      refetchOnReconnect: true,      // Re-busca ao reconectar internet
-      refetchOnMount: 'always',      // Sempre verifica dados frescos ao navegar
+      refetchOnWindowFocus: true,
+      refetchOnReconnect: true,
+      refetchOnMount: 'always',
     },
   },
 });
@@ -149,6 +152,7 @@ const App = () => (
 
               <Route path="/" element={<ProtectedWithOrg><Dashboard /></ProtectedWithOrg>} />
               <Route path="/radar" element={<ProtectedWithOrg><RadarPortal /></ProtectedWithOrg>} />
+              <Route path="/radar-global" element={<ProtectedWithOrg><GlobalRadarMap /></ProtectedWithOrg>} />
 
               <Route path="/clients" element={<ProtectedWithOrg><Clients /></ProtectedWithOrg>} />
               <Route path="/clients/:id" element={<ProtectedWithOrg><ClientDetail /></ProtectedWithOrg>} />
@@ -168,6 +172,7 @@ const App = () => (
               <Route path="/kanban/tasks" element={<ProtectedWithOrg><TripsRole><TasksKanban /></TripsRole></ProtectedWithOrg>} />
               <Route path="/ai-chat" element={<ProtectedWithOrg><TripsRole><AIChat /></TripsRole></ProtectedWithOrg>} />
               <Route path="/settings" element={<ProtectedWithOrg><TripsRole><Settings /></TripsRole></ProtectedWithOrg>} />
+              
               {/* ERP v3 Financeiro & Jurídico */}
               <Route path="/finance/suppliers" element={<ProtectedRoute><Suppliers /></ProtectedRoute>} />
               <Route path="/finance/transactions" element={<ProtectedRoute><Transactions /></ProtectedRoute>} />

@@ -79,11 +79,7 @@ function SortableCard({
     isDragging,
   } = useSortable({ id: card.id, data: { type: 'Card', card } });
 
-  const style: React.CSSProperties = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.4 : 1,
-  };
+  const isHighValue = (card.estimated_value || 0) > 5000;
 
   return (
     <div
@@ -95,53 +91,67 @@ function SortableCard({
         isDragging && 'kanban-card-dragging',
       )}
     >
+      {/* Dynamic Animated Status Indicator */}
+      <div className="absolute top-4 right-4 flex items-center justify-center">
+        {isHighValue ? (
+          <span className="relative flex h-2.5 w-2.5">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-vj-green opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-vj-green shadow-[0_0_8px_rgba(26,122,74,0.8)]"></span>
+          </span>
+        ) : (
+          <span className="h-2 w-2 rounded-full bg-zinc-200"></span>
+        )}
+      </div>
+
       {/* Drag handle */}
       <button
         ref={setActivatorNodeRef}
         {...attributes}
         {...listeners}
         onClick={(e) => e.stopPropagation()}
-        className="absolute left-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-40 hover:!opacity-70 touch-none cursor-grab active:cursor-grabbing transition-opacity"
+        className="absolute left-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 hover:scale-110 hover:bg-black/5 p-1 rounded-md touch-none cursor-grab active:cursor-grabbing transition-all"
         aria-label="Arrastar card"
       >
-        <GripVertical size={14} className="text-vj-txt3" />
+        <GripVertical size={16} className="text-zinc-400" />
       </button>
 
-      <div className="pl-4 space-y-2">
-        {/* Tags */}
+      <div className="pl-6 space-y-3">
+        {/* Tags com estilo Forge (pills) */}
         {card.tags && card.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1">
+          <div className="flex flex-wrap gap-1.5">
             {card.tags.slice(0, 3).map((t) => (
               <span
                 key={t}
-                className="px-1.5 py-0.5 rounded-full text-xs font-medium bg-vj-green/10 text-vj-green border border-vj-green/20"
+                className="px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase bg-vj-primary/10 text-vj-primary border border-vj-primary/20 backdrop-blur-sm"
               >
                 {t}
               </span>
             ))}
             {card.tags.length > 3 && (
-              <span className="text-xs text-vj-txt3">+{card.tags.length - 3}</span>
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-zinc-100 text-zinc-500 border border-zinc-200">+{card.tags.length - 3}</span>
             )}
           </div>
         )}
 
-        {/* Título */}
-        <p className="font-medium text-sm text-vj-txt leading-snug">{card.title}</p>
-
-        {/* Subtítulo */}
-        {(card.clients?.name || card.quotations?.destination) && (
-          <p className="text-xs text-vj-txt3 truncate">
-            {card.clients?.name ?? card.quotations?.destination}
-          </p>
-        )}
+        {/* Título & Subtítulo */}
+        <div>
+          <p className="font-bold text-[15px] text-zinc-800 leading-snug group-hover:text-vj-primary transition-colors">{card.title}</p>
+          {(card.clients?.name || card.quotations?.destination) && (
+            <p className="text-xs font-medium text-zinc-500 truncate mt-0.5">
+              {card.clients?.name ?? card.quotations?.destination}
+            </p>
+          )}
+        </div>
 
         {/* Footer */}
         {card.estimated_value && (
-          <p className="text-xs font-semibold text-vj-green">
-            {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
-              card.estimated_value,
-            )}
-          </p>
+          <div className="pt-2 mt-2 border-t border-zinc-100 flex items-center justify-between">
+            <p className={cn("text-[13px] font-extrabold tracking-tight", isHighValue ? "text-vj-green" : "text-zinc-600")}>
+              {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(
+                card.estimated_value,
+              )}
+            </p>
+          </div>
         )}
       </div>
     </div>
@@ -223,13 +233,13 @@ function KanbanColumn({
 
   return (
     <div className="kanban-column">
-      {/* Header */}
+      {/* Header com Glow Column */}
       <div className="kanban-column-header">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5">
           {column.color && (
             <span
-              className="h-2 w-2 rounded-full shrink-0"
-              style={{ backgroundColor: column.color }}
+              className="h-2.5 w-2.5 rounded-full shrink-0 shadow-sm"
+              style={{ backgroundColor: column.color, boxShadow: `0 0 10px ${column.color}80` }}
             />
           )}
           <span className="kanban-column-title">{column.name}</span>

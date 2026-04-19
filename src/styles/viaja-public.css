@@ -599,7 +599,15 @@
   border: 1px solid var(--vj-border);
   border-radius: var(--vj-r-lg);
   overflow: hidden;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+}
+
+.vj-flight-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px rgba(0,0,0,0.06);
+  border-color: var(--vj-border2);
 }
 
 .vj-flight-header {
@@ -721,12 +729,20 @@
 .vj-itin-scroll::-webkit-scrollbar-thumb { background: var(--vj-border2); border-radius: 3px; }
 
 .vj-itin-card {
-  min-width: 220px;
+  min-width: 240px;
   background: var(--vj-white);
   border: 1px solid var(--vj-border);
   border-radius: var(--vj-r-lg);
-  padding: 16px;
+  padding: 18px;
   flex-shrink: 0;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+}
+
+.vj-itin-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px rgba(0,0,0,0.06);
+  border-color: var(--vj-border2);
 }
 
 .vj-ic-day {
@@ -786,16 +802,21 @@
 .vj-hotel-scroll::-webkit-scrollbar-thumb { background: var(--vj-border2); border-radius: 3px; }
 
 .vj-hotel-card {
-  min-width: 260px;
+  min-width: 280px;
   background: var(--vj-white);
   border: 1px solid var(--vj-border);
   border-radius: var(--vj-r-lg);
   overflow: hidden;
   flex-shrink: 0;
-  transition: border-color .15s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.02);
 }
 
-.vj-hotel-card:hover { border-color: var(--vj-border2); }
+.vj-hotel-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px rgba(0,0,0,0.06);
+  border-color: var(--vj-border2);
+}
 
 .vj-hotel-img {
   height: 150px;
@@ -990,10 +1011,18 @@
   background: var(--vj-white);
   border: 1px solid var(--vj-border);
   border-radius: var(--vj-r-lg);
-  padding: 16px;
+  padding: 18px;
   display: flex;
-  gap: 12px;
+  gap: 14px;
   align-items: flex-start;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+}
+
+.vj-inc-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px rgba(0,0,0,0.06);
+  border-color: var(--vj-border2);
 }
 
 .vj-inc-icon {

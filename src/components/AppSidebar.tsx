@@ -22,6 +22,7 @@ import {
   Bot,
   UserPlus,
   XCircle,
+  CalendarDays,
 } from 'lucide-react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -48,6 +49,7 @@ const navGroups: NavGroup[] = [
     title: 'Início da Jornada',
     items: [
       { title: 'Início',             url: '/',             icon: LayoutDashboard },
+      { title: 'Radar Global de Pax',url: '/radar-global', icon: Globe2 },
       { title: 'Portal de Notícias', url: '/radar',        icon: Newspaper },
       { title: 'Tickets & Chamados', url: '/tickets',      icon: LifeBuoy },
     ],

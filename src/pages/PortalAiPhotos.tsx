@@ -48,28 +48,65 @@ export default function PortalAiPhotos() {
 
     setIsGenerating(true);
     try {
-      // Future Integration:
-      // 1. Upload original image to Supabase Storage Bucket
-      // 2. Call Edge Function (fal.ai or replicate) with the image URL and selectedStyle
-      // 3. Save generation record in `portal_ai_photos` table
-      // 4. Update the local state with the returned AI generation URL.
+      if (!user) throw new Error('Usuário não autenticado');
       
-      // Delay to mock AI generation time
+      // 1. Upload original image to Supabase Storage Bucket
+      const fileExt = selectedImage.name.split('.').pop();
+      const fileName = `${Math.random()}.${fileExt}`;
+      const filePath = `ai-generations/${fileName}`;
+      
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('client-photos')
+        .upload(filePath, selectedImage);
+        
+      if (uploadError) throw uploadError;
+      
+      const { data: { publicUrl: originalUrl } } = supabase.storage
+        .from('client-photos')
+        .getPublicUrl(filePath);
+
+      // 2. Save generation record in `portal_ai_photos` table
+      const { data: record, error: insertError } = await supabase
+        .from('portal_ai_photos')
+        .insert({
+          org_id: user.organization_id || undefined,
+          trip_id: trip_id || undefined,
+          original_url: originalUrl,
+          style: selectedStyle,
+          status: 'pending',
+          provider: 'system_simulation'
+        })
+        .select()
+        .single();
+        
+      if (insertError) throw insertError;
+      
+      // 3. Delay to simulate AI generation time
       await new Promise(r => setTimeout(r, 4000));
       
-      // MOCK RESULT
+      // 4. MOCK RESULT and update the database record
       const mockResultUrl = "https://images.unsplash.com/photo-1518005020951-eccb494ad742?q=80&w=1000&auto=format&fit=crop"; 
+      
+      await supabase
+        .from('portal_ai_photos')
+        .update({
+          status: 'completed',
+          result_url: mockResultUrl
+        })
+        .eq('id', record.id);
+        
       setGeneratedImgUrl(mockResultUrl);
 
       toast({
         title: "Magia concluída!",
-        description: "Sua foto foi transformada com sucesso.",
+        description: "Sua foto foi transformada com sucesso e salva no histórico.",
       });
 
     } catch (error: any) {
+      console.error(error);
       toast({
         title: "Erro na geração",
-        description: "Não foi possível transformar a foto. Tente novamente.",
+        description: error.message || "Não foi possível transformar a foto. Tente novamente.",
         variant: "destructive"
       });
     } finally {

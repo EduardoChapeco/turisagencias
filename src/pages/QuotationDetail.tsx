@@ -5,7 +5,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { AppLayout } from '@/components/AppLayout';
 import { useQuotation, useUpdateQuotation } from '@/hooks/useQuotations';
 import { useQuotationScenarios, useScoreQuotation } from '@/hooks/useQuotationScenarios';
-import { useCreateTrip } from '@/hooks/useTrips';
+import { useCreateGroupTrip } from '@/hooks/useGroupTrips';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -191,7 +191,7 @@ export default function QuotationDetail() {
   const navigate = useNavigate();
   const { data: quotation, isLoading } = useQuotation(id);
   const updateQuotation = useUpdateQuotation();
-  const createTrip = useCreateTrip();
+  const createGroupTrip = useCreateGroupTrip();
   const { toast } = useToast();
 
   const { data: scenarios, isLoading: scenariosLoading } = useQuotationScenarios(id);
@@ -243,23 +243,19 @@ export default function QuotationDetail() {
   const handleConvertToTrip = async () => {
     if (!quotation) return;
     try {
-      const trip = await createTrip.mutateAsync({
-        title: `${quotation.destination || quotation.hotel_name || 'Viagem'} — ${quotation.clients?.name ?? 'Cliente'}`,
+      const groupTrip = await createGroupTrip.mutateAsync({
+        title: `${quotation.destination || quotation.hotel_name || 'Pacote'} — ${(quotation as any).clients?.name ?? 'Grupo'}`,
         destination: quotation.destination ?? '',
-        primary_client_id: quotation.client_id ?? null,
-        departure_date: quotation.check_in ?? null,
-        return_date: quotation.check_out ?? null,
+        departure_date: quotation.check_in ?? quotation.departure_date ?? null,
+        return_date: quotation.check_out ?? quotation.return_date ?? null,
         num_nights: quotation.num_nights ?? null,
-        hotel_name: quotation.hotel_name ?? null,
-        meal_plan: quotation.meal_plan ?? null,
-        room_type: quotation.room_type ?? null,
-        total_value: quotation.total_value ?? null,
-        status: 'confirmed',
-        quotation_id: quotation.id,
+        price_per_pax: quotation.total_value ?? 0,
+        status: 'draft',
+        description_md: quotation.notes_internal ?? null,
       } as Record<string, any>);
-      if (trip?.id) {
-        toast({ title: 'Viagem criada!', description: 'Redirecionando para o workspace da viagem...' });
-        navigate(`/trips/${trip.id}`);
+      if (groupTrip?.id) {
+        toast({ title: 'Pacote de grupo criado! 🎉', description: 'Redirecionando para o módulo de excursões...' });
+        navigate(`/group-trips/${groupTrip.id}`);
       }
     } catch (e: any) {
       toast({ title: 'Erro ao converter', description: e.message, variant: 'destructive' });
@@ -371,12 +367,12 @@ export default function QuotationDetail() {
             <Button
               size="sm"
               onClick={handleConvertToTrip}
-              disabled={createTrip.isPending}
+              disabled={createGroupTrip.isPending}
               className="rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:opacity-90 "
             >
-              {createTrip.isPending
-                ? <><Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> Criando Viagem...</>
-                : <><PlaneTakeoff className="mr-1.5 h-3.5 w-3.5" /> Converter em Viagem ✦</>
+              {createGroupTrip.isPending
+                ? <><Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> Criando Pacote...</>
+                : <><PlaneTakeoff className="mr-1.5 h-3.5 w-3.5" /> Converter em Pacote de Grupo ✦</>
               }
             </Button>
           )}

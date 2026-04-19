@@ -24,9 +24,6 @@ const ClientDetail = lazy(() => import('./pages/ClientDetail'));
 const Quotations = lazy(() => import('./pages/Quotations'));
 const QuotationDetail = lazy(() => import('./pages/QuotationDetail'));
 
-const Trips = lazy(() => import('./pages/Trips'));
-const TripDetail = lazy(() => import('./pages/TripDetail'));
-
 const Itineraries = lazy(() => import('./pages/Itineraries'));
 const ItineraryBuilder = lazy(() => import('./pages/ItineraryBuilder'));
 const PublicItinerary = lazy(() => import('./pages/PublicItinerary'));

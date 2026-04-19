@@ -100,12 +100,18 @@ export function AppSidebar() {
   const collapsed = state === 'collapsed';
   const navigate = useNavigate();
   const location = useLocation();
-  const { organization, profile } = useAuthStore();
+  const { organization, profile, roles } = useAuthStore();
   const { data: notifications } = useNotifications();
   const markRead = useMarkNotificationAsRead();
   const [showNotif, setShowNotif] = useState(false);
 
   const unreadCount = (notifications ?? []).filter((n) => !n.read_at).length;
+
+  const isAdmin = roles.includes('super_admin') || roles.includes('org_admin');
+  const filteredGroups = navGroups.filter(g => {
+    if (g.title === 'Gestão & Backoffice') return isAdmin;
+    return true;
+  });
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -127,7 +133,7 @@ export function AppSidebar() {
         </div>
 
         <div className="flex-1 overflow-y-auto scrollbar-none py-2 pb-24">
-          {navGroups.map((group) => (
+          {filteredGroups.map((group) => (
             <SidebarGroup key={group.title} className="mb-2">
               <SidebarGroupLabel className="text-[10px] uppercase font-bold text-vj-txt3 tracking-wider px-4 mb-2">
                 {!collapsed && group.title}

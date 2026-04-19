@@ -23,14 +23,29 @@ export default function Dashboard() {
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Bom dia' : hour < 18 ? 'Boa tarde' : 'Boa noite';
 
-  // Mocked Map Points (Simulating travelers around the world)
-  const travelersMap = [
-    { id: 1, loc: 'Paris, FR', top: '30%', left: '48%', pax: 4 },
-    { id: 2, loc: 'Nova York, EUA', top: '35%', left: '26%', pax: 2 },
-    { id: 3, loc: 'Santiago, CL', top: '75%', left: '28%', pax: 6 },
-    { id: 4, loc: 'Tóquio, JP', top: '38%', left: '85%', pax: 1 },
-    { id: 5, loc: 'Rio de Janeiro, BR', top: '65%', left: '34%', pax: 12 },
-  ];
+  const { data: opsStats } = useQuery({
+    queryKey: ['dashboard_ops_stats', organization?.id],
+    queryFn: async () => {
+      const { data: trips } = await supabase.from('trips').select('id, title, destination_city, destination_country, pax_count, status, departure_date').eq('org_id', organization!.id);
+      const { data: qts } = await supabase.from('quotations').select('id, status').eq('org_id', organization!.id);
+
+      const todayStr = new Date().toISOString().split('T')[0];
+      const todayDepartures = (trips || []).filter(t => t.departure_date === todayStr).length;
+      
+      const traveling = (trips || []).filter(t => t.status === 'traveling');
+      const paxTraveling = traveling.reduce((acc, t) => acc + (t.pax_count || 1), 0);
+
+      const activeQuotations = (qts || []).filter(q => q.status === 'sent' || q.status === 'viewed').length;
+
+      return {
+        todayDepartures,
+        activeQuotations,
+        traveling,
+        paxTraveling
+      };
+    },
+    enabled: !!organization?.id
+  });
 
   // Map real news to fit the existing UI, taking top 4 most critical
   const aiNews = (realNews || []).slice(0, 4).map(n => ({
@@ -56,7 +71,7 @@ export default function Dashboard() {
             </h1>
             <p className="text-muted-foreground text-sm mt-2 flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-              Operações normais. 12 passageiros em voo neste momento.
+              Operações normais. {opsStats?.paxTraveling || 0} passageiros em viagem no momento.
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -74,34 +89,34 @@ export default function Dashboard() {
           
           {/* Quick Ops Panel */}
           <div className="col-span-1 md:col-span-2 lg:col-span-2 grid grid-rows-3 gap-4">
-            <div className="bg-white border text-vj-txt border-vj-border rounded-[24px] p-5 flex items-center justify-between hover:shadow-lg transition-shadow cursor-pointer">
+            <div className="bg-white border text-vj-txt border-vj-border rounded-[24px] p-5 flex items-center justify-between hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/kanban/departures')}>
                <div className="flex items-center gap-4">
                   <div className="bg-amber-100 text-amber-600 p-3 rounded-2xl"><PlaneTakeoff size={24} /></div>
                   <div>
-                     <p className="text-2xl font-bold">14</p>
+                     <p className="text-2xl font-bold">{opsStats?.todayDepartures || 0}</p>
                      <p className="text-xs uppercase tracking-wider text-vj-txt3 font-semibold">Embarques Hoje</p>
                   </div>
                </div>
                <ArrowRight className="text-vj-txt3" />
             </div>
 
-            <div className="bg-white border text-vj-txt border-vj-border rounded-[24px] p-5 flex items-center justify-between hover:shadow-lg transition-shadow cursor-pointer">
+            <div className="bg-white border text-vj-txt border-vj-border rounded-[24px] p-5 flex items-center justify-between hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/quotations')}>
                <div className="flex items-center gap-4">
-                  <div className="bg-blue-100 text-blue-600 p-3 rounded-2xl"><CheckCircle2 size={24} /></div>
+                  <div className="bg-blue-100 text-blue-600 p-3 rounded-2xl"><FileText size={24} /></div>
                   <div>
-                     <p className="text-2xl font-bold">28</p>
-                     <p className="text-xs uppercase tracking-wider text-vj-txt3 font-semibold flex items-center gap-1">Check-ins Liberados <span className="bg-vj-red text-white text-[9px] px-1.5 py-0.5 rounded-full ml-1">5 pendentes</span></p>
+                     <p className="text-2xl font-bold">{opsStats?.activeQuotations || 0}</p>
+                     <p className="text-xs uppercase tracking-wider text-vj-txt3 font-semibold flex items-center gap-1">Cotações Abertas</p>
                   </div>
                </div>
                <ArrowRight className="text-vj-txt3" />
             </div>
 
-            <div className="bg-white border text-vj-txt border-vj-border rounded-[24px] p-5 flex items-center justify-between hover:shadow-lg transition-shadow cursor-pointer">
+            <div className="bg-white border text-vj-txt border-vj-border rounded-[24px] p-5 flex items-center justify-between hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/trips')}>
                <div className="flex items-center gap-4">
-                  <div className="bg-green-100 text-green-600 p-3 rounded-2xl"><Ticket size={24} /></div>
+                  <div className="bg-green-100 text-green-600 p-3 rounded-2xl"><Globe2 size={24} /></div>
                   <div>
-                     <p className="text-2xl font-bold">42</p>
-                     <p className="text-xs uppercase tracking-wider text-vj-txt3 font-semibold flex items-center gap-1">Vouchers Prontos <span className="bg-vj-green/20 text-vj-green text-[9px] px-1.5 py-0.5 rounded-full ml-1">Para Envio</span></p>
+                     <p className="text-2xl font-bold">{opsStats?.traveling?.length || 0}</p>
+                     <p className="text-xs uppercase tracking-wider text-vj-txt3 font-semibold flex items-center gap-1">Viagens em Curso <span className="bg-vj-green/20 text-vj-green text-[9px] px-1.5 py-0.5 rounded-full ml-1">{opsStats?.paxTraveling || 0} pax</span></p>
                   </div>
                </div>
                <ArrowRight className="text-vj-txt3" />
@@ -115,29 +130,33 @@ export default function Dashboard() {
             <div className="absolute -inset-10 opacity-30 bg-center bg-no-repeat bg-contain" style={{ backgroundImage: "url('https://upload.wikimedia.org/wikipedia/commons/8/80/World_map_-_low_resolution.svg')", filter: 'invert(1) grayscale(100%)' }}></div>
             
             {/* Map Pins */}
-            {travelersMap.map((pt) => (
-                <div key={pt.id} className="absolute group/pin cursor-pointer transform -translate-x-1/2 -translate-y-1/2 hover:z-50 transition-all" style={{ top: pt.top, left: pt.left }}>
-                    <div className="relative">
-                       <span className="animate-ping absolute -inset-1 rounded-full bg-vj-green opacity-75"></span>
-                       <div className="relative bg-vj-green w-3 h-3 rounded-full border-2 border-zinc-950"></div>
-                       {/* Tooltip */}
-                       <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max bg-white/90 backdrop-blur pb-1 px-3 py-2 rounded-xl text-zinc-950 opacity-0 group-hover/pin:opacity-100 transition-opacity">
-                           <p className="text-[10px] font-bold uppercase">{pt.loc}</p>
-                           <p className="text-xs font-medium">{pt.pax} passageiros</p>
-                       </div>
-                    </div>
-                </div>
-            ))}
+            {opsStats?.traveling?.slice(0, 5).map((trip, idx) => {
+                const randomTop = 20 + (idx * 25) % 60 + '%';
+                const randomLeft = 20 + (idx * 35) % 60 + '%';
+                return (
+                  <div key={trip.id} className="absolute group/pin cursor-pointer transform -translate-x-1/2 -translate-y-1/2 hover:z-50 transition-all" style={{ top: randomTop, left: randomLeft }}>
+                      <div className="relative">
+                         <span className="animate-ping absolute -inset-1 rounded-full bg-vj-green opacity-75"></span>
+                         <div className="relative bg-vj-green w-3 h-3 rounded-full border-2 border-zinc-950"></div>
+                         {/* Tooltip */}
+                         <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max bg-white/90 backdrop-blur pb-1 px-3 py-2 rounded-xl text-zinc-950 opacity-0 group-hover/pin:opacity-100 transition-opacity">
+                             <p className="text-[10px] font-bold uppercase">{trip.destination_city || trip.title}</p>
+                             <p className="text-xs font-medium">{trip.pax_count || 1} passageiros</p>
+                         </div>
+                      </div>
+                  </div>
+                );
+            })}
 
             <div className="relative z-10 p-6 flex justify-between items-start">
                <div>
                   <h3 className="text-white font-bold tracking-widest text-sm uppercase flex items-center gap-2">
                       <Globe2 className="w-4 h-4 text-green-400" /> Radares de Passageiros
                   </h3>
-                  <p className="text-zinc-400 text-xs mt-1">25 pax no exterior hoje</p>
+                  <p className="text-zinc-400 text-xs mt-1">{opsStats?.paxTraveling || 0} pax no exterior hoje</p>
                </div>
                <div className="flex gap-2">
-                 <Button size="sm" variant="outline" className="bg-transparent border-zinc-800 text-zinc-300 hover:text-white hover:bg-zinc-800 h-8">Ver Lista</Button>
+                 <Button size="sm" variant="outline" className="bg-transparent border-zinc-800 text-zinc-300 hover:text-white hover:bg-zinc-800 h-8" onClick={() => navigate('/trips')}>Ver Lista</Button>
                </div>
             </div>
             <div className="relative z-10 p-6">

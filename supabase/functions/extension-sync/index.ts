@@ -11,6 +11,7 @@ import {
   platformTaskPriority,
   platformTicketPriority,
   normalizePhone,
+  upsertClientIdentity,
 } from '../_shared/extension.ts';
 
 type AnyRecord = Record<string, any>;
@@ -137,6 +138,618 @@ function taskMetadata(item: AnyRecord, extensionId: string, kind: 'task' | 'dema
   };
 }
 
+function stableHash(value: unknown) {
+  let hash = 2166136261;
+  const text = String(value ?? '');
+
+  for (let index = 0; index < text.length; index += 1) {
+    hash ^= text.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+
+  return (hash >>> 0).toString(16).padStart(8, '0');
+}
+
+function sanitizeKeySegment(value: unknown) {
+  return String(value || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 60);
+}
+
+function normalizeProviderKey(value: unknown) {
+  return sanitizeKeySegment(value).replace(/-/g, '_') || 'generic';
+}
+
+function normalizeWhatsappDirection(value: unknown) {
+  return String(value || '').toLowerCase() === 'out' ? 'out' : 'in';
+}
+
+function maxIsoTimestamp(...values: Array<unknown>) {
+  const timestamps = values
+    .map((value) => {
+      const raw = String(value || '').trim();
+      if (!raw) return null;
+      const date = new Date(raw);
+      return Number.isNaN(date.getTime()) ? null : date.toISOString();
+    })
+    .filter(Boolean) as string[];
+
+  return timestamps.sort().at(-1) || null;
+}
+
+function parseWhatsappTimestamp(value: unknown) {
+  const raw = String(value || '').trim();
+  if (!raw) return null;
+
+  const iso = raw.match(/(\d{4})-(\d{2})-(\d{2})[T\s](\d{1,2}):(\d{2})/);
+  if (iso) {
+    return new Date(Date.UTC(Number(iso[1]), Number(iso[2]) - 1, Number(iso[3]), Number(iso[4]), Number(iso[5]))).toISOString();
+  }
+
+  const brDateTime = raw.match(/(\d{1,2})\/(\d{1,2})\/(\d{2,4}).*?(\d{1,2}):(\d{2})/);
+  if (brDateTime) {
+    let year = Number(brDateTime[3]);
+    if (year < 100) year += 2000;
+    return new Date(Date.UTC(year, Number(brDateTime[2]) - 1, Number(brDateTime[1]), Number(brDateTime[4]), Number(brDateTime[5]))).toISOString();
+  }
+
+  const timeThenDate = raw.match(/(\d{1,2}):(\d{2}).*?(\d{1,2})\/(\d{1,2})\/(\d{2,4})/);
+  if (timeThenDate) {
+    let year = Number(timeThenDate[5]);
+    if (year < 100) year += 2000;
+    return new Date(Date.UTC(year, Number(timeThenDate[4]) - 1, Number(timeThenDate[3]), Number(timeThenDate[1]), Number(timeThenDate[2]))).toISOString();
+  }
+
+  const parsed = new Date(raw);
+  if (!Number.isNaN(parsed.getTime())) {
+    return parsed.toISOString();
+  }
+
+  return null;
+}
+
+function buildWhatsappSessionKey(
+  context: Awaited<ReturnType<typeof resolveExtensionContext>>,
+  extensionId: string,
+  session: AnyRecord,
+) {
+  const phoneKey = normalizePhone(firstText(session.phone, session.contact_phone, session.contact?.phone));
+  const chatKey = sanitizeKeySegment(firstText(session.chat_id, session.contact?.chat_id));
+  const nameKey = sanitizeKeySegment(firstText(session.name, session.contact_name, session.contact?.name));
+  const suffix = phoneKey || chatKey || nameKey || 'unknown';
+  return `wa:${context.profileId}:${extensionId}:${suffix}`;
+}
+
+async function findClientById(
+  context: Awaited<ReturnType<typeof resolveExtensionContext>>,
+  clientId: string | null | undefined,
+) {
+  if (!isUuid(clientId)) return null;
+
+  const { data, error } = await context.supabase
+    .from('clients')
+    .select('id, org_id, name, email, phone, tags, notes, preferences, created_at, updated_at')
+    .eq('org_id', context.orgId)
+    .eq('id', clientId)
+    .maybeSingle();
+
+  if (error) throw new Error(error.message);
+  return data || null;
+}
+
+async function hydrateClientForExtensionPanel(
+  context: Awaited<ReturnType<typeof resolveExtensionContext>>,
+  taskBoard: Awaited<ReturnType<typeof ensureTaskBoard>>,
+  clientRow: AnyRecord | null,
+) {
+  if (!clientRow?.id) return null;
+
+  return await hydrateExtensionClient(
+    context.supabase,
+    context.orgId,
+    clientRow,
+    context.agentName,
+    taskBoard.boardId,
+    taskBoard.doneColumnId,
+  );
+}
+
+async function resolveClientFromContact(
+  context: Awaited<ReturnType<typeof resolveExtensionContext>>,
+  input: AnyRecord,
+  options: { createIfMissing?: boolean; extensionId?: string } = {},
+) {
+  const phone = firstText(input.phone, input.contact?.phone);
+  const name = firstText(input.name, input.contact?.name);
+  const phoneKey = normalizePhone(phone);
+
+  let client = await findClientById(context, firstText(input.client_id, input.clientId));
+  if (!client && phoneKey) {
+    client = await findClientByPhone(context.supabase, context.orgId, phone);
+  }
+
+  if (!client && options.createIfMissing && phoneKey) {
+    client = await upsertClientBase(context, {
+      name: firstText(name, phone, 'Cliente WhatsApp'),
+      phone,
+      email: firstText(input.email, input.contact?.email) || null,
+      tags: Array.isArray(input.tags) ? input.tags : [],
+    });
+  }
+
+  if (client?.id && phoneKey) {
+    await upsertClientIdentity(context.supabase, {
+      orgId: context.orgId,
+      clientId: client.id,
+      provider: 'whatsapp_phone',
+      identityType: 'phone',
+      label: name || client.name || null,
+      rawValue: phone,
+      normalizedValue: phoneKey,
+      isPrimary: true,
+      metadata: {
+        source: 'chrome_extension',
+        channel: 'whatsapp',
+        extension_id: options.extensionId || null,
+      },
+    });
+  }
+
+  return client;
+}
+
+async function upsertWhatsappSession(
+  context: Awaited<ReturnType<typeof resolveExtensionContext>>,
+  extensionId: string,
+  input: AnyRecord,
+) {
+  const session = typeof input === 'object' && input ? input : {};
+  const now = new Date().toISOString();
+  const phone = firstText(session.phone, session.contact_phone, session.contact?.phone);
+  const name = firstText(session.name, session.contact_name, session.contact?.name);
+  const phoneKey = normalizePhone(phone);
+  const sessionKey = firstText(session.session_key) || buildWhatsappSessionKey(context, extensionId, session);
+  const client = await resolveClientFromContact(context, {
+    client_id: firstText(session.client_id, session.clientId),
+    phone,
+    name,
+    contact: session.contact,
+  }, {
+    createIfMissing: false,
+    extensionId,
+  });
+
+  const { data: existing, error: existingError } = await context.supabase
+    .from('wa_session_metrics')
+    .select('id, metadata, message_count, last_incoming_at, last_outgoing_at, last_message_at')
+    .eq('org_id', context.orgId)
+    .eq('session_key', sessionKey)
+    .maybeSingle();
+
+  if (existingError) throw new Error(existingError.message);
+
+  const payload: AnyRecord = {
+    org_id: context.orgId,
+    client_id: client?.id || null,
+    user_id: context.userId,
+    profile_id: context.profileId,
+    extension_id: extensionId,
+    session_key: sessionKey,
+    contact_name: name || null,
+    contact_phone: phone || null,
+    contact_phone_key: phoneKey || null,
+    chat_id: firstText(session.chat_id, session.contact?.chat_id) || null,
+    tab_url: firstText(session.tab_url, session.page_url) || null,
+    page_title: firstText(session.page_title) || null,
+    last_seen_at: firstText(session.last_seen_at, now),
+    last_message_at: parseWhatsappTimestamp(firstText(session.last_message_at, session.message_time)) || existing?.last_message_at || null,
+    metadata: {
+      ...((existing?.metadata && typeof existing.metadata === 'object') ? existing.metadata : {}),
+      ...((session.metadata && typeof session.metadata === 'object') ? session.metadata : {}),
+      source: 'chrome_extension',
+      channel: 'whatsapp',
+    },
+  };
+
+  if (existing?.id) {
+    const { data, error } = await context.supabase
+      .from('wa_session_metrics')
+      .update(payload)
+      .eq('id', existing.id)
+      .select('id, session_key, client_id, metadata, message_count, last_incoming_at, last_outgoing_at, last_message_at')
+      .single();
+
+    if (error) throw new Error(error.message);
+    return { row: data, client };
+  }
+
+  const { data, error } = await context.supabase
+    .from('wa_session_metrics')
+    .insert(payload)
+    .select('id, session_key, client_id, metadata, message_count, last_incoming_at, last_outgoing_at, last_message_at')
+    .single();
+
+  if (error) throw new Error(error.message);
+  return { row: data, client };
+}
+
+function buildOperatorExternalKey(providerKey: string, snapshot: AnyRecord, scopeKey = '') {
+  const explicitKey = firstText(
+    snapshot.external_key,
+    snapshot.external_id,
+    snapshot.locator,
+    snapshot.pnr,
+    snapshot.booking_code,
+    snapshot.reservation_code,
+  );
+
+  if (explicitKey) {
+    return `${providerKey}:${String(explicitKey).trim().toUpperCase()}`;
+  }
+
+  return `${providerKey}:snap:${stableHash([
+    scopeKey,
+    firstText(snapshot.destination),
+    firstText(snapshot.hotel_name),
+    firstText(snapshot.check_in, snapshot.flight_date),
+    firstText(snapshot.check_out),
+    String(numberOrNull(snapshot.total_price) ?? ''),
+  ].join('|'))}`;
+}
+
+function buildOperatorSnapshotFingerprint(providerKey: string, snapshot: AnyRecord, contact: AnyRecord) {
+  return stableHash(JSON.stringify({
+    providerKey,
+    locator: firstText(snapshot.locator, snapshot.pnr, snapshot.booking_code),
+    destination: firstText(snapshot.destination),
+    hotel_name: firstText(snapshot.hotel_name),
+    check_in: firstText(snapshot.check_in, snapshot.flight_date),
+    check_out: firstText(snapshot.check_out),
+    total_price: numberOrNull(snapshot.total_price),
+    phone: normalizePhone(firstText(contact.phone)),
+  }));
+}
+
+async function upsertWhatsappMessages(
+  context: Awaited<ReturnType<typeof resolveExtensionContext>>,
+  taskBoard: Awaited<ReturnType<typeof ensureTaskBoard>>,
+  extensionId: string,
+  input: AnyRecord,
+) {
+  const sessionPayload = typeof input.session === 'object' && input.session ? input.session : {};
+  const mergedSessionPayload = {
+    ...sessionPayload,
+    phone: firstText(sessionPayload.phone, input.phone, input.contact?.phone),
+    name: firstText(sessionPayload.name, input.name, input.contact?.name),
+    client_id: firstText(sessionPayload.client_id, input.client_id, input.clientId),
+  };
+
+  const session = await upsertWhatsappSession(context, extensionId, mergedSessionPayload);
+  const now = new Date().toISOString();
+  const phone = firstText(mergedSessionPayload.phone);
+  const phoneKey = normalizePhone(phone);
+
+  const rows = uniqueBy(
+    (Array.isArray(input.messages) ? input.messages : [])
+      .map((item, index) => {
+        const message = typeof item === 'object' && item ? item as AnyRecord : {};
+        const text = firstText(message.text, message.message);
+        if (!text) return null;
+
+        const direction = normalizeWhatsappDirection(firstText(message.direction));
+        const parsedTime = parseWhatsappTimestamp(firstText(message.time, message.message_time, message.timestamp));
+        const createdAt = parsedTime || now;
+        const rawSignature = firstText(message.signature);
+        const messageHash = rawSignature || stableHash([
+          session.row.session_key,
+          direction,
+          firstText(message.time, message.message_time),
+          text,
+          index,
+        ].join('|'));
+
+        return {
+          org_id: context.orgId,
+          client_id: session.client?.id || session.row.client_id || null,
+          wa_session_id: session.row.id,
+          session_key: session.row.session_key,
+          contact_phone: phone || null,
+          contact_phone_key: phoneKey || null,
+          direction,
+          message_text: text,
+          message_hash: messageHash,
+          message_time_label: firstText(message.time, message.message_time) || null,
+          message_time: parsedTime,
+          metadata: {
+            signature: rawSignature || null,
+            source: 'chrome_extension',
+          },
+          created_at: createdAt,
+        };
+      })
+      .filter(Boolean) as AnyRecord[],
+    (row) => String(row.message_hash || ''),
+  );
+
+  if (rows.length) {
+    const { error } = await context.supabase
+      .from('wa_conversation_logs')
+      .upsert(rows as never[], { onConflict: 'org_id,session_key,message_hash' });
+
+    if (error) throw new Error(error.message);
+  }
+
+  const { count, error: countError } = await context.supabase
+    .from('wa_conversation_logs')
+    .select('id', { count: 'exact', head: true })
+    .eq('org_id', context.orgId)
+    .eq('session_key', session.row.session_key);
+
+  if (countError) throw new Error(countError.message);
+
+  const lastIncomingAt = maxIsoTimestamp(
+    session.row.last_incoming_at,
+    ...rows.filter((row) => row.direction === 'in').map((row) => row.message_time || row.created_at),
+  );
+
+  const lastOutgoingAt = maxIsoTimestamp(
+    session.row.last_outgoing_at,
+    ...rows.filter((row) => row.direction === 'out').map((row) => row.message_time || row.created_at),
+  );
+
+  const lastMessageAt = maxIsoTimestamp(
+    session.row.last_message_at,
+    ...rows.map((row) => row.message_time || row.created_at),
+  );
+
+  const { error: sessionUpdateError } = await context.supabase
+    .from('wa_session_metrics')
+    .update({
+      client_id: session.client?.id || session.row.client_id || null,
+      message_count: count ?? rows.length,
+      last_message_at: lastMessageAt,
+      last_incoming_at: lastIncomingAt,
+      last_outgoing_at: lastOutgoingAt,
+      last_seen_at: now,
+      metadata: {
+        ...((session.row.metadata && typeof session.row.metadata === 'object') ? session.row.metadata : {}),
+        last_batch_size: rows.length,
+      },
+    })
+    .eq('id', session.row.id);
+
+  if (sessionUpdateError) throw new Error(sessionUpdateError.message);
+
+  const client = await hydrateClientForExtensionPanel(context, taskBoard, session.client);
+  return {
+    ok: true,
+    count: rows.length,
+    session_id: session.row.id,
+    session_key: session.row.session_key,
+    client,
+  };
+}
+
+async function findTripByExternalKey(
+  context: Awaited<ReturnType<typeof resolveExtensionContext>>,
+  externalKey: string,
+) {
+  if (!externalKey) return null;
+
+  const { data, error } = await context.supabase
+    .from('trips')
+    .select('id, meta')
+    .eq('org_id', context.orgId)
+    .contains('meta', { external_entity_key: externalKey })
+    .maybeSingle();
+
+  if (error) throw new Error(error.message);
+  return data || null;
+}
+
+async function ingestOperatorSnapshot(
+  context: Awaited<ReturnType<typeof resolveExtensionContext>>,
+  taskBoard: Awaited<ReturnType<typeof ensureTaskBoard>>,
+  extensionId: string,
+  input: AnyRecord,
+) {
+  const snapshot = typeof input.snapshot === 'object' && input.snapshot
+    ? input.snapshot as AnyRecord
+    : (typeof input.data === 'object' && input.data ? input.data as AnyRecord : {});
+
+  const providerName = firstText(input.provider, snapshot.operator_name, snapshot.provider, 'Operadora');
+  const providerKey = normalizeProviderKey(providerName);
+  const contact = typeof input.contact === 'object' && input.contact ? input.contact as AnyRecord : {};
+  const client = await resolveClientFromContact(context, {
+    client_id: firstText(input.client_id, input.clientId),
+    phone: firstText(input.phone, contact.phone),
+    name: firstText(input.name, contact.name),
+    contact,
+  }, {
+    createIfMissing: true,
+    extensionId,
+  });
+
+  if (!client?.id) {
+    throw new Error('Nao foi possivel resolver o cliente para vincular os dados da operadora.');
+  }
+
+  const session = await upsertWhatsappSession(context, extensionId, {
+    phone: firstText(contact.phone, client.phone),
+    name: firstText(contact.name, client.name),
+    client_id: client.id,
+    tab_url: firstText(input.tab_url),
+    page_title: firstText(input.page_title),
+    metadata: {
+      source_context: 'operator_snapshot',
+    },
+  });
+
+  const externalKey = buildOperatorExternalKey(providerKey, snapshot, client.id);
+  const entityType = sanitizeKeySegment(firstText(snapshot.entity_type, snapshot.page_type, 'reservation')) || 'reservation';
+
+  const { data: existingEntity, error: existingEntityError } = await context.supabase
+    .from('external_entities')
+    .select('id, trip_id, metadata')
+    .eq('org_id', context.orgId)
+    .eq('provider', providerKey)
+    .eq('entity_type', entityType)
+    .eq('external_key', externalKey)
+    .maybeSingle();
+
+  if (existingEntityError) throw new Error(existingEntityError.message);
+
+  let existingTrip = await findTripByExternalKey(context, externalKey);
+  if (!existingTrip && existingEntity?.trip_id) {
+    const { data, error } = await context.supabase
+      .from('trips')
+      .select('id, meta')
+      .eq('org_id', context.orgId)
+      .eq('id', existingEntity.trip_id)
+      .maybeSingle();
+
+    if (error) throw new Error(error.message);
+    existingTrip = data || null;
+  }
+
+  const departureDate = parseDateInput(snapshot.flight_date || snapshot.departure_date || snapshot.check_in || snapshot.checkin);
+  const returnDate = parseDateInput(snapshot.return_date || snapshot.check_out || snapshot.checkout);
+  const destination = firstText(snapshot.destination, snapshot.hotel_name, snapshot.title, 'Viagem');
+  const tripPayload: AnyRecord = {
+    org_id: context.orgId,
+    primary_client_id: client.id,
+    title: firstText(snapshot.title, destination, 'Viagem importada'),
+    destination_city: destination || null,
+    departure_date: departureDate,
+    return_date: returnDate,
+    hotel_name: firstText(snapshot.hotel_name) || null,
+    hotel_regime: firstText(snapshot.meal_plan, snapshot.regime) || null,
+    total_price: numberOrNull(snapshot.total_price),
+    operator_name: providerName,
+    status: normalizeTripStatus(snapshot.status || 'confirmed'),
+    meta: {
+      ...((existingTrip?.meta && typeof existingTrip.meta === 'object') ? existingTrip.meta : {}),
+      extension_source: 'chrome_extension',
+      extension_id: extensionId,
+      external_entity_key: externalKey,
+      provider_key: providerKey,
+      locator: firstText(snapshot.locator, snapshot.pnr) || null,
+      hotel_name: firstText(snapshot.hotel_name) || null,
+      destination: destination || null,
+      snapshot_type: firstText(snapshot.page_type) || null,
+      source_context: 'operator_snapshot',
+    },
+  };
+
+  let tripId = existingTrip?.id || null;
+  if (tripId) {
+    const { error } = await context.supabase.from('trips').update(tripPayload).eq('id', tripId);
+    if (error) throw new Error(error.message);
+  } else {
+    const { data, error } = await context.supabase
+      .from('trips')
+      .insert(tripPayload)
+      .select('id')
+      .single();
+
+    if (error) throw new Error(error.message);
+    tripId = data.id;
+  }
+
+  const entityPayload: AnyRecord = {
+    org_id: context.orgId,
+    client_id: client.id,
+    trip_id: tripId,
+    provider: providerKey,
+    entity_type: entityType,
+    external_id: firstText(snapshot.external_id, snapshot.locator, snapshot.pnr) || null,
+    external_key: externalKey,
+    title: firstText(snapshot.title, destination, providerName),
+    status: firstText(snapshot.status, 'active'),
+    occurred_at: parseWhatsappTimestamp(firstText(snapshot.scraped_at)) || new Date().toISOString(),
+    last_seen_at: new Date().toISOString(),
+    payload: snapshot,
+    metadata: {
+      ...((existingEntity?.metadata && typeof existingEntity.metadata === 'object') ? existingEntity.metadata : {}),
+      source: 'chrome_extension',
+      extension_id: extensionId,
+      wa_session_id: session.row.id,
+    },
+  };
+
+  let externalEntityId = existingEntity?.id || null;
+  if (externalEntityId) {
+    const { error } = await context.supabase.from('external_entities').update(entityPayload).eq('id', externalEntityId);
+    if (error) throw new Error(error.message);
+  } else {
+    const { data, error } = await context.supabase
+      .from('external_entities')
+      .insert(entityPayload)
+      .select('id')
+      .single();
+
+    if (error) throw new Error(error.message);
+    externalEntityId = data.id;
+  }
+
+  const fingerprint = firstText(input.fingerprint) || buildOperatorSnapshotFingerprint(providerKey, snapshot, contact);
+  const { data: existingSnapshot, error: existingSnapshotError } = await context.supabase
+    .from('operator_snapshots')
+    .select('id')
+    .eq('org_id', context.orgId)
+    .eq('fingerprint', fingerprint)
+    .maybeSingle();
+
+  if (existingSnapshotError) throw new Error(existingSnapshotError.message);
+
+  const snapshotPayload: AnyRecord = {
+    org_id: context.orgId,
+    client_id: client.id,
+    trip_id: tripId,
+    external_entity_id: externalEntityId,
+    wa_session_id: session.row.id,
+    provider: providerKey,
+    snapshot_type: firstText(snapshot.page_type, 'booking'),
+    locator: firstText(snapshot.locator, snapshot.pnr) || null,
+    page_url: firstText(input.page_url, snapshot.page_url) || null,
+    page_title: firstText(input.page_title, snapshot.page_title) || null,
+    fingerprint,
+    payload: snapshot,
+    captured_at: firstText(snapshot.scraped_at) || new Date().toISOString(),
+    ingested_by_user_id: context.userId,
+    ingested_by_profile_id: context.profileId,
+  };
+
+  let snapshotId = existingSnapshot?.id || null;
+  if (snapshotId) {
+    const { error } = await context.supabase.from('operator_snapshots').update(snapshotPayload).eq('id', snapshotId);
+    if (error) throw new Error(error.message);
+  } else {
+    const { data, error } = await context.supabase
+      .from('operator_snapshots')
+      .insert(snapshotPayload)
+      .select('id')
+      .single();
+
+    if (error) throw new Error(error.message);
+    snapshotId = data.id;
+  }
+
+  const hydratedClient = await hydrateClientForExtensionPanel(context, taskBoard, client);
+  return {
+    ok: true,
+    client: hydratedClient,
+    trip_id: tripId,
+    external_entity_id: externalEntityId,
+    snapshot_id: snapshotId,
+    session_id: session.row.id,
+  };
+}
+
 async function findExistingClient(context: Awaited<ReturnType<typeof resolveExtensionContext>>, snapshot: AnyRecord) {
   if (isUuid(snapshot.id)) {
     const { data } = await context.supabase
@@ -193,6 +806,23 @@ async function upsertClientBase(context: Awaited<ReturnType<typeof resolveExtens
       .single();
 
     if (error) throw new Error(error.message);
+    const phoneKey = normalizePhone(data.phone);
+    if (phoneKey) {
+      await upsertClientIdentity(context.supabase, {
+        orgId: context.orgId,
+        clientId: data.id,
+        provider: 'whatsapp_phone',
+        identityType: 'phone',
+        label: data.name || null,
+        rawValue: data.phone,
+        normalizedValue: phoneKey,
+        isPrimary: true,
+        metadata: {
+          source: 'chrome_extension',
+          channel: 'crm_snapshot',
+        },
+      });
+    }
     return data;
   }
 
@@ -203,6 +833,23 @@ async function upsertClientBase(context: Awaited<ReturnType<typeof resolveExtens
     .single();
 
   if (error) throw new Error(error.message);
+  const phoneKey = normalizePhone(data.phone);
+  if (phoneKey) {
+    await upsertClientIdentity(context.supabase, {
+      orgId: context.orgId,
+      clientId: data.id,
+      provider: 'whatsapp_phone',
+      identityType: 'phone',
+      label: data.name || null,
+      rawValue: data.phone,
+      normalizedValue: phoneKey,
+      isPrimary: true,
+      metadata: {
+        source: 'chrome_extension',
+        channel: 'crm_snapshot',
+      },
+    });
+  }
   return data;
 }
 
@@ -802,7 +1449,7 @@ Deno.serve(async (req) => {
 
   try {
     const context = await resolveExtensionContext(req);
-    await verifyExtensionRequestSession(req, context);
+    const extensionSession = await verifyExtensionRequestSession(req, context);
     const taskBoard = await ensureTaskBoard(context.supabase, context.orgId);
 
     const body = await req.json().catch(() => ({}));
@@ -826,13 +1473,16 @@ Deno.serve(async (req) => {
           travelers: true,
           documents: true,
           financial: true,
-          tasks: true,
-          demands: true,
-          emails: true,
-          proactiveAlerts: true,
-          quotationProcessing: true,
-        },
-      });
+        tasks: true,
+        demands: true,
+        emails: true,
+        proactiveAlerts: true,
+        quotationProcessing: true,
+        whatsappSync: true,
+        operatorSnapshots: true,
+        externalEntities: true,
+      },
+    });
     }
 
     if (action === 'lookup_client_by_phone') {
@@ -894,6 +1544,25 @@ Deno.serve(async (req) => {
 
     if (action === 'upsert_memory_context') {
       return jsonResponse(await upsertMemoryContext(context, firstText(data.phone), data.context || {}));
+    }
+
+    if (action === 'upsert_whatsapp_session') {
+      const session = await upsertWhatsappSession(context, extensionSession.extension_id, data.session || data);
+      const client = await hydrateClientForExtensionPanel(context, taskBoard, session.client);
+      return jsonResponse({
+        ok: true,
+        session_id: session.row.id,
+        session_key: session.row.session_key,
+        client,
+      });
+    }
+
+    if (action === 'append_whatsapp_messages') {
+      return jsonResponse(await upsertWhatsappMessages(context, taskBoard, extensionSession.extension_id, data));
+    }
+
+    if (action === 'ingest_operator_snapshot') {
+      return jsonResponse(await ingestOperatorSnapshot(context, taskBoard, extensionSession.extension_id, data));
     }
 
     if (action === 'list_active_trips') {

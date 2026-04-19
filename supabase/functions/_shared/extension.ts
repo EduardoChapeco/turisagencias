@@ -517,6 +517,56 @@ export async function getExtensionAiConfig(
   };
 }
 
+async function loadClientSummary(
+  supabase: ReturnType<typeof createClient>,
+  orgId: string,
+  clientId: string | null | undefined,
+) {
+  if (!clientId) return null;
+
+  const { data, error } = await supabase
+    .from('clients')
+    .select('id, org_id, name, email, phone, tags, notes, preferences, created_at, updated_at')
+    .eq('org_id', orgId)
+    .eq('id', clientId)
+    .maybeSingle();
+
+  if (error) throw new Error(error.message);
+  return data || null;
+}
+
+async function findClientByIdentity(
+  supabase: ReturnType<typeof createClient>,
+  orgId: string,
+  provider: string,
+  candidates: string[],
+) {
+  const seen = new Set<string>();
+
+  for (const candidate of candidates) {
+    const normalized = String(candidate || '').trim();
+    if (!normalized || seen.has(normalized)) continue;
+    seen.add(normalized);
+
+    const { data, error } = await supabase
+      .from('client_identities')
+      .select('client_id')
+      .eq('org_id', orgId)
+      .eq('provider', provider)
+      .eq('normalized_value', normalized)
+      .limit(1)
+      .maybeSingle();
+
+    if (error) throw new Error(error.message);
+    if (!data?.client_id) continue;
+
+    const client = await loadClientSummary(supabase, orgId, data.client_id);
+    if (client) return client;
+  }
+
+  return null;
+}
+
 export async function findClientByPhone(
   supabase: ReturnType<typeof createClient>,
   orgId: string,
@@ -540,7 +590,103 @@ export async function findClientByPhone(
     if (match) return match;
   }
 
+  for (const provider of ['whatsapp_phone', 'phone', 'contact_phone']) {
+    const identityMatch = await findClientByIdentity(supabase, orgId, provider, patterns);
+    if (identityMatch) return identityMatch;
+  }
+
   return null;
+}
+
+export async function upsertClientIdentity(
+  supabase: ReturnType<typeof createClient>,
+  params: {
+    orgId: string;
+    clientId: string;
+    provider: string;
+    identityType?: string | null;
+    label?: string | null;
+    rawValue?: string | null;
+    normalizedValue?: string | null;
+    externalId?: string | null;
+    isPrimary?: boolean;
+    metadata?: Record<string, any> | null;
+  },
+) {
+  const provider = String(params.provider || '').trim();
+  const clientId = String(params.clientId || '').trim();
+  const orgId = String(params.orgId || '').trim();
+  const normalizedValue = String(params.normalizedValue || '').trim() || null;
+  const externalId = String(params.externalId || '').trim() || null;
+
+  if (!provider || !clientId || !orgId || (!normalizedValue && !externalId)) {
+    return null;
+  }
+
+  let existing = null;
+
+  if (normalizedValue) {
+    const { data, error } = await supabase
+      .from('client_identities')
+      .select('id, metadata')
+      .eq('org_id', orgId)
+      .eq('provider', provider)
+      .eq('normalized_value', normalizedValue)
+      .maybeSingle();
+
+    if (error) throw new Error(error.message);
+    existing = data || existing;
+  }
+
+  if (!existing && externalId) {
+    const { data, error } = await supabase
+      .from('client_identities')
+      .select('id, metadata')
+      .eq('org_id', orgId)
+      .eq('provider', provider)
+      .eq('external_id', externalId)
+      .maybeSingle();
+
+    if (error) throw new Error(error.message);
+    existing = data || null;
+  }
+
+  const payload = {
+    org_id: orgId,
+    client_id: clientId,
+    provider,
+    identity_type: String(params.identityType || 'external'),
+    label: params.label || null,
+    raw_value: params.rawValue || null,
+    normalized_value: normalizedValue,
+    external_id: externalId,
+    is_primary: Boolean(params.isPrimary),
+    metadata: {
+      ...((existing?.metadata && typeof existing.metadata === 'object') ? existing.metadata : {}),
+      ...((params.metadata && typeof params.metadata === 'object') ? params.metadata : {}),
+    },
+  };
+
+  if (existing?.id) {
+    const { data, error } = await supabase
+      .from('client_identities')
+      .update(payload)
+      .eq('id', existing.id)
+      .select('id, client_id, provider, normalized_value, external_id')
+      .single();
+
+    if (error) throw new Error(error.message);
+    return data;
+  }
+
+  const { data, error } = await supabase
+    .from('client_identities')
+    .insert(payload)
+    .select('id, client_id, provider, normalized_value, external_id')
+    .single();
+
+  if (error) throw new Error(error.message);
+  return data;
 }
 
 export async function searchClients(

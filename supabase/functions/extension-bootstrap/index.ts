@@ -67,6 +67,9 @@ Deno.serve(async (req) => {
         quotationProcessing: true,
         emailLinking: true,
         proactiveAlerts: true,
+        whatsappSync: true,
+        operatorSnapshots: true,
+        externalEntities: true,
       },
     });
   } catch (error) {

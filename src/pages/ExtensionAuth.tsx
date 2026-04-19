@@ -55,8 +55,10 @@ function buildExtensionPayload(data: Record<string, any> | null | undefined, use
       supabase_anon_key: backend.supabase_anon_key || data?.supabase_anon_key || null,
       sync_url: backend.sync_url || data?.sync_url || null,
       quotation_url: backend.quotation_url || data?.quotation_url || null,
+      ai_chat_url: backend.ai_chat_url || data?.ai_chat_url || null,
       extension_session_required: Boolean(backend.extension_session_required ?? true),
     },
+    capabilities: data?.capabilities || {},
     raw: {
       source,
       issued_at: new Date().toISOString(),

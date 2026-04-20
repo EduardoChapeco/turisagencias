@@ -103,19 +103,19 @@ export default function Dashboard() {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-2">
           <div>
             <h1 className="font-heading text-4xl font-extrabold tracking-tight">
-              {greeting}, <span className="highlight-text">{profile?.first_name || 'Agente'}</span>
+              {greeting}, <span className="highlight-text">{profile?.first_name || 'Gestor'}</span>
             </h1>
             <p className="text-muted-foreground text-sm mt-2 flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-              Operações normais. {opsStats?.paxTraveling || 0} passageiros em viagem no momento.
+              Operações em tempo real. {opsStats?.paxTraveling || 0} viajantes espalhados pelo mundo hoje.
             </p>
           </div>
           <div className="flex items-center gap-3">
             <Button variant="outline" className="premium-button border-vj-border bg-white" onClick={() => navigate('/group-trips/new')}>
-              <Plane className="h-4 w-4 mr-2 text-vj-green" /> Nova Viagem
+              <Plane className="h-4 w-4 mr-2 text-vj-green" /> Emitir Voucher
             </Button>
             <Button className="premium-button" onClick={() => setQuotationBuilderOpen(true)}>
-              <FileText className="h-4 w-4 mr-2" /> Nova Cotação
+              <FileText className="h-4 w-4 mr-2" /> Iniciar Cotação
             </Button>
           </div>
         </div>
@@ -129,8 +129,8 @@ export default function Dashboard() {
                <div className="flex items-center gap-4">
                   <div className="bg-amber-100 text-amber-600 p-3 rounded-2xl"><PlaneTakeoff size={24} /></div>
                   <div>
-                     <p className="text-2xl font-bold">{opsStats?.todayDepartures || 0}</p>
-                     <p className="text-xs uppercase tracking-wider text-vj-txt3 font-semibold">Embarques Hoje</p>
+                     <p className="text-3xl font-extrabold">{opsStats?.todayDepartures || 0}</p>
+                     <p className="text-xs uppercase tracking-wider text-vj-txt3 font-bold mt-1">Check-ins Liberados Hoje</p>
                   </div>
                </div>
                <ArrowRight className="text-vj-txt3" />
@@ -140,8 +140,8 @@ export default function Dashboard() {
                <div className="flex items-center gap-4">
                   <div className="bg-blue-100 text-blue-600 p-3 rounded-2xl"><FileText size={24} /></div>
                   <div>
-                     <p className="text-2xl font-bold">{opsStats?.activeQuotations || 0}</p>
-                     <p className="text-xs uppercase tracking-wider text-vj-txt3 font-semibold flex items-center gap-1">Cotações Abertas</p>
+                     <p className="text-3xl font-extrabold">{opsStats?.activeQuotations || 0}</p>
+                     <p className="text-xs uppercase tracking-wider text-vj-txt3 font-bold mt-1">Cotações em Andamento</p>
                   </div>
                </div>
                <ArrowRight className="text-vj-txt3" />
@@ -149,10 +149,10 @@ export default function Dashboard() {
 
             <div className="bg-white border text-vj-txt border-vj-border rounded-[24px] p-5 flex items-center justify-between hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/group-trips')}>
                <div className="flex items-center gap-4">
-                  <div className="bg-green-100 text-green-600 p-3 rounded-2xl"><Globe2 size={24} /></div>
+                  <div className="bg-green-100 text-green-600 p-3 rounded-2xl"><CheckCircle2 size={24} /></div>
                   <div>
-                     <p className="text-2xl font-bold">{opsStats?.traveling?.length || 0}</p>
-                     <p className="text-xs uppercase tracking-wider text-vj-txt3 font-semibold flex items-center gap-1">Viagens em Curso <span className="bg-vj-green/20 text-vj-green text-[9px] px-1.5 py-0.5 rounded-full ml-1">{opsStats?.paxTraveling || 0} pax</span></p>
+                     <p className="text-3xl font-extrabold">{opsStats?.traveling?.length || 0}</p>
+                     <p className="text-xs uppercase tracking-wider text-vj-txt3 font-bold mt-1 flex items-center gap-1">Vouchers Emitidos (Em viagem)</p>
                   </div>
                </div>
                <ArrowRight className="text-vj-txt3" />
@@ -160,88 +160,98 @@ export default function Dashboard() {
           </div>
 
           {/* Interactive World Map Block */}
-          <div className="col-span-1 md:col-span-2 lg:col-span-4 bg-zinc-950 rounded-[32px] overflow-hidden relative min-h-[350px] group flex flex-col justify-between p-1">
+          <div className="col-span-1 md:col-span-2 lg:col-span-4 bg-zinc-950 rounded-[32px] overflow-hidden relative min-h-[350px] group flex flex-col justify-between p-1 shadow-inner">
             <div className="absolute inset-0 z-0">
                <GlobalRadarMapWidget markers={radarMarkers} interactive={false} />
             </div>
             
             <div className="relative z-10 p-5 flex justify-between items-start pointer-events-none">
-               <div>
+               <div className="bg-zinc-950/40 backdrop-blur-md p-4 rounded-2xl border border-zinc-800/50">
                   <h3 className="text-white font-bold tracking-widest text-sm uppercase flex items-center gap-2 drop-shadow-md">
-                      <Globe2 className="w-4 h-4 text-green-400" /> Radares de Passageiros
+                      <Plane className="w-5 h-5 text-green-400" /> Malha de Passageiros
                   </h3>
-                  <p className="text-zinc-200 text-xs mt-1 drop-shadow-md">{opsStats?.paxTraveling || 0} pax no exterior hoje</p>
+                  <p className="text-zinc-200 text-xs mt-1 drop-shadow-md">{opsStats?.paxTraveling || 0} viajantes posicionados globalmente.</p>
                </div>
                <div className="flex gap-2 pointer-events-auto">
-                 <Button size="sm" variant="outline" className="bg-zinc-950/50 backdrop-blur-md border-zinc-700 text-white hover:bg-zinc-800 h-8" onClick={() => navigate('/radar-global')}>Tela Cheia 🌍</Button>
+                 <Button size="sm" variant="outline" className="bg-zinc-950/50 backdrop-blur-md border-zinc-700 text-white hover:bg-zinc-800 h-8" onClick={() => navigate('/radar-global')}>Expandir Mapa 🌍</Button>
                </div>
             </div>
             <div className="relative z-10 p-5 pointer-events-auto">
                 <div className="flex items-center gap-3">
-                   <div className="bg-zinc-800/50 backdrop-blur-md rounded-full px-4 py-2 border border-zinc-700/50 max-w-sm flex items-center gap-2 w-full">
-                       <Search className="w-4 h-4 text-zinc-400" />
-                       <Input placeholder="Buscar voo ou passageiro..." className="bg-transparent border-none text-white focus-visible:ring-0 placeholder:text-zinc-500 h-6 p-0 text-sm" />
+                   <div className="bg-zinc-800/80 backdrop-blur-md rounded-2xl px-4 py-2.5 border border-zinc-700/50 max-w-sm flex items-center gap-2 w-full hover:bg-zinc-800 transition-colors">
+                       <Search className="w-5 h-5 text-zinc-400" />
+                       <Input placeholder="Buscar por cliente, localizador ou voo..." className="bg-transparent border-none text-white focus-visible:ring-0 placeholder:text-zinc-400 h-6 p-0 text-sm font-medium" />
                    </div>
                 </div>
             </div>
           </div>
         </div>
 
-        {/* BENTO GRID: AI Curated News Feed */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-           {/* Header / Sidebar for News */}
-           <div className="bg-white border border-vj-border rounded-[32px] p-6 lg:row-span-2">
-              <div className="flex items-center gap-2 mb-2">
-                  <div className="bg-vj-green/10 text-vj-green p-2 rounded-xl"><Newspaper className="w-5 h-5" /></div>
-                  <h3 className="font-bold text-lg text-vj-txt">Portal de Notícias</h3>
+        {/* BENTO GRID: Blog & Daily Context */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 mt-8">
+           {/* Header / Sidebar for Content Hub */}
+           <div className="bg-gradient-to-br from-zinc-50 to-white border border-vj-border rounded-[32px] p-8 lg:row-span-2 shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow">
+              <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform duration-700 pointer-events-none">
+                 <Newspaper className="w-32 h-32 text-vj-green" />
               </div>
-              <p className="text-sm text-vj-txt3 mb-6">Atualizações estratégicas e comunicados importantes do setor de turismo B2B.</p>
+              <div className="relative z-10">
+                <div className="flex items-center gap-3 mb-3">
+                    <div className="bg-vj-green text-white p-2.5 rounded-xl shadow-lg shadow-vj-green/20"><Globe2 className="w-5 h-5" /></div>
+                    <h3 className="font-extrabold tracking-tight text-xl text-vj-txt">Daily Digest</h3>
+                </div>
+                <p className="text-sm font-medium text-vj-txt3 mb-8 leading-relaxed">
+                  Conteúdos curados por IA, atualizações e alertas do mercado de turismo B2B e Lazer para pautar o seu dia.
+                </p>
 
-              <div className="space-y-4">
-                 <div>
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-vj-txt3 mb-2">Filtros Ativos</p>
-                    <div className="flex flex-wrap gap-2">
-                       <span className="bg-zinc-100 text-vj-txt text-xs px-3 py-1 rounded-full font-medium">Turismo de Lazer</span>
-                       <span className="bg-zinc-100 text-vj-txt text-xs px-3 py-1 rounded-full font-medium">Companhias Aéreas</span>
-                       <span className="bg-zinc-100 text-vj-txt text-xs px-3 py-1 rounded-full font-medium">Vistos</span>
-                    </div>
-                 </div>
-                 <Button variant="outline" className="w-full justify-between group h-12 rounded-xl border-vj-border hover:bg-zinc-50">
-                     <span>Acessar Portal Completo</span>
-                     <ArrowRight className="w-4 h-4 text-vj-txt3 group-hover:translate-x-1 transition-transform" />
-                 </Button>
+                <div className="space-y-6">
+                   <div>
+                      <p className="text-[11px] font-bold uppercase tracking-wider text-vj-txt3 mb-3">Acompanhamento Específico</p>
+                      <div className="flex flex-wrap gap-2">
+                         <span className="bg-white border border-zinc-200 text-vj-txt text-xs px-3.5 py-1.5 rounded-full font-semibold shadow-sm cursor-pointer hover:border-vj-green transition-colors">Mercado Aéreo</span>
+                         <span className="bg-white border border-zinc-200 text-vj-txt text-xs px-3.5 py-1.5 rounded-full font-semibold shadow-sm cursor-pointer hover:border-vj-green transition-colors">Destinos Nacionais</span>
+                         <span className="bg-white border border-zinc-200 text-vj-txt text-xs px-3.5 py-1.5 rounded-full font-semibold shadow-sm cursor-pointer hover:border-vj-green transition-colors">Regulação</span>
+                      </div>
+                   </div>
+                   
+                   <div className="pt-4 border-t border-zinc-100">
+                     <p className="text-[11px] font-bold uppercase tracking-wider text-vj-txt3 mb-3">Materiais Úteis</p>
+                     <div className="bg-white border border-dashed border-zinc-300 p-4 rounded-xl text-center cursor-pointer hover:bg-zinc-50 transition-colors">
+                        <Book className="w-5 h-5 text-vj-txt3 mx-auto mb-2" />
+                        <span className="text-xs font-semibold text-vj-txt line-clamp-1">Guia: Melhores práticas Comerciais</span>
+                     </div>
+                   </div>
+                </div>
               </div>
            </div>
 
-           {/* News Cards */}
+           {/* Curated Blog Articles */}
            {isNewsLoading ? (
-             [1,2,3,4].map(i => <Skeleton key={i} className="h-48 rounded-[32px]" />)
+             [1,2,3,4].map(i => <Skeleton key={i} className="h-[260px] rounded-[32px]" />)
            ) : aiNews.length === 0 ? (
-             <div className="col-span-full xl:col-span-3 text-center py-10 italic text-vj-txt3 text-sm">
-                Portal aguardando novas informações corporativas.
+             <div className="col-span-full lg:col-span-3 text-center py-20 bg-zinc-50/50 rounded-[32px] border border-dashed border-zinc-200 flex flex-col items-center justify-center">
+                <Newspaper className="w-8 h-8 text-zinc-300 mb-3" />
+                <p className="text-sm font-semibold text-vj-txt3">Nenhum informe setorial consolidado até o momento.</p>
              </div>
            ) : aiNews.map((news) => (
-               <div key={news.id} onClick={() => navigate('/radar')} className={`p-6 rounded-[32px] border flex flex-col justify-between cursor-pointer transition-transform hover:-translate-y-1 ${news.alert ? 'bg-red-50 border-red-200' : 'bg-white border-vj-border'}`}>
+               <div key={news.id} onClick={() => navigate('/radar')} className={`p-6 rounded-[32px] border flex flex-col justify-between cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ${news.alert ? 'bg-gradient-to-b from-red-50 to-white border-red-200' : 'bg-white border-vj-border'}`}>
                   <div>
                       <div className="flex items-center justify-between mb-4">
                          <div className="flex items-center gap-2">
-                             <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded-lg ${news.alert ? 'bg-red-100 text-red-600' : 'bg-zinc-100 text-zinc-600'}`}>{news.tag}</span>
-                             <span className="text-xs text-vj-txt3">{news.source}</span>
+                             <span className={`text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-lg ${news.alert ? 'bg-red-500 text-white' : 'bg-zinc-100 text-vj-txt'}`}>{news.tag}</span>
                          </div>
-                         {news.verified && (
-                             <div className="flex flex-col items-end">
-                                <span className="text-[9px] font-bold text-vj-green uppercase">Validado - AI</span>
-                                <span className="text-[10px] text-vj-txt3">{news.rating}% relevância</span>
-                             </div>
-                         )}
+                         <div className="flex items-center gap-1.5 text-xs font-medium text-vj-txt3 bg-zinc-50 px-2.5 py-1 rounded-full border border-zinc-100">
+                             <span className="w-1.5 h-1.5 rounded-full bg-vj-green animate-pulse" />
+                             {news.source}
+                         </div>
                       </div>
-                      <h4 className={`font-bold leading-snug line-clamp-3 ${news.alert ? 'text-red-950 text-base' : 'text-vj-txt text-sm'}`}>
+                      <h4 className={`font-bold leading-tight ${news.alert ? 'text-red-950 text-xl' : 'text-vj-txt text-lg'} line-clamp-3 mb-3`}>
                           {news.title}
                       </h4>
                   </div>
-                  <div className="mt-4 pt-4 border-t border-black/5 flex items-center justify-between">
-                      <span className="text-[10px] font-semibold text-vj-txt3">{news.date}</span>
-                      <Button variant="ghost" size="sm" className="h-8 px-2 text-vj-green hover:bg-vj-green/10 -mr-2">Detalhes</Button>
+                  
+                  <div className="mt-4 pt-4 border-t border-zinc-100 flex items-center justify-between">
+                      <span className="text-[10px] font-bold text-vj-txt3 tracking-wider uppercase">{news.date}</span>
+                      <Button variant="ghost" size="sm" className="h-8 px-3 text-sm font-semibold hover:bg-zinc-100">Ler na íntegra</Button>
                   </div>
                </div>
            ))}

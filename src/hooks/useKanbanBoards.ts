@@ -106,9 +106,11 @@ export function useKanbanBoard(slug: string) {
                 { name: 'Perdido',          color: '#EF4444', position: 5 },
               ];
 
-        await supabase
+        const { error: colsInsertErr } = await supabase
           .from('kanban_columns')
           .insert(defaultColumns.map((c) => ({ ...c, board_id: board!.id, org_id: organization.id })));
+        
+        if (colsInsertErr) throw colsInsertErr;
       }
 
       // Step 4: Fetch columns + cards

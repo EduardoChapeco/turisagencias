@@ -40,7 +40,7 @@ export function IntegrationsTab() {
         {/* Cofre B2B */}
         <Card className="premium-card overflow-hidden">
           <div className="p-1.5 bg-zinc-950 text-white font-mono text-[10px] text-center uppercase tracking-widest flex items-center justify-center gap-2">
-            <Shield className="w-3 h-3 text-vj-green" /> Cofre de Credenciais RPA
+            <Shield className="w-3 h-3 text-vj-green" /> Módulo de Automações Seguras
           </div>
           <CardHeader>
             <CardTitle className="text-lg">Portais B2B (Orinter/Flytour)</CardTitle>
@@ -68,7 +68,7 @@ export function IntegrationsTab() {
               <Input type="password" placeholder="••••••••••••••••" value={b2bPass} onChange={e => setB2bPass(e.target.value)} className="h-12 rounded-2xl border-zinc-100 bg-zinc-50" />
             </div>
             <Button className="w-full premium-button h-12" onClick={handleSaveB2b} disabled={!b2bUser || !b2bPass || saveB2b.isPending}>
-              {saveB2b.isPending ? 'Salvando no Cofre...' : 'Salvar Credencial Segura'}
+              {saveB2b.isPending ? 'Armazenando...' : 'Salvar Credencial Segura'}
             </Button>
             {/* Lista de Credenciais Salvas */}
             {!credsLoading && creds && creds.length > 0 && (

@@ -56,8 +56,11 @@ export function useCreateClient() {
       passport_url?: string; portal_access_enabled?: boolean; preferences?: any;
       passport_number?: string; passport_expiry?: string;
     }) => {
-      const { documents, passport_url, preferences, address, city, state, zip_code, country, ...restData } = data;
+      const { documents, passport_url, preferences, ...restData } = data;
       const insertData: Record<string, unknown> = { ...restData, org_id: organization!.id, created_by: user!.id };
+      
+      // Address columns are FLAT on `clients` table — write directly
+      // (address, city, state, zip_code, country are individual text columns)
       
       const newPreferences = { ...(preferences || {}) };
       if (documents && documents.length > 0) newPreferences.documents = documents;
@@ -65,10 +68,6 @@ export function useCreateClient() {
       
       if (Object.keys(newPreferences).length > 0) {
         insertData.preferences = newPreferences;
-      }
-
-      if (address || city || state || zip_code || country) {
-        insertData.address = { street: address || null, city: city || null, state: state || null, zip_code: zip_code || null, country: country || null };
       }
 
       const { data: client, error } = await supabase
@@ -101,26 +100,16 @@ export function useUpdateClient() {
       passport_number: string; passport_expiry: string;
       cover_url: string; passport_url: string; preferences: any;
     }>) => {
-      const { documents, passport_url, preferences, address, city, state, zip_code, country, ...restData } = data;
+      const { documents, passport_url, preferences, ...restData } = data;
+      // Address columns are FLAT on `clients` table — spread them directly (address, city, state, zip_code, country)
       const updateData: Record<string, unknown> = { ...restData };
 
       if (documents !== undefined || passport_url !== undefined) {
         updateData.preferences = { ...(preferences || {}) };
-        if (documents !== undefined) updateData.preferences.documents = documents;
-        if (passport_url !== undefined) updateData.preferences.passport_url = passport_url;
+        if (documents !== undefined) (updateData.preferences as any).documents = documents;
+        if (passport_url !== undefined) (updateData.preferences as any).passport_url = passport_url;
       } else if (preferences !== undefined) {
         updateData.preferences = preferences;
-      }
-
-      if (address !== undefined || city !== undefined || state !== undefined || zip_code !== undefined || country !== undefined) {
-        // Fetch existing address to preserve unmodified JSONB keys if needed, but since form overrides all:
-        updateData.address = { 
-          street: address !== undefined ? address : null, 
-          city: city !== undefined ? city : null, 
-          state: state !== undefined ? state : null, 
-          zip_code: zip_code !== undefined ? zip_code : null, 
-          country: country !== undefined ? country : null 
-        };
       }
 
       const { data: client, error } = await supabase

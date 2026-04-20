@@ -12,7 +12,7 @@ export type TaskCardData = {
   description: string | null;
   client_id: string | null;
   quotation_id: string | null;
-  trip_id: string | null;
+  group_trip_id: string | null;
   ticket_id: string | null;
   task_type: string | null;
   linked_card_ids: string[] | null;
@@ -24,7 +24,7 @@ export type TaskCardData = {
   tags: string[] | null;
   clients?: { name: string; phone: string | null } | null;
   quotations?: { destination: string | null } | null;
-  trips?: { title: string | null } | null;
+  group_trips?: { title: string | null } | null;
 };
 
 const TASK_ICONS: Record<string, React.ReactNode> = {
@@ -53,7 +53,7 @@ export function TaskBoardCard({ card, onClick }: { card: TaskCardData; onClick: 
   };
 
   const isOverdue = card.due_date && new Date(card.due_date) < new Date();
-  const hasLinks = (card.linked_card_ids?.length ?? 0) > 0 || card.ticket_id || card.quotation_id || card.trip_id;
+  const hasLinks = (card.linked_card_ids?.length ?? 0) > 0 || card.ticket_id || card.quotation_id || card.group_trip_id;
 
   return (
     <div

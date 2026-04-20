@@ -338,9 +338,9 @@ function NotasSection({ cardId }: { cardId: string }) {
 /* ── Seção: Vínculos ── */
 function VinculosSection({ card }: { card: DepartureCardData }) {
   const updateCard = useUpdateKanbanCard();
-  const { data: trips } = useGroupTrips();
+  const { data: groupTrips } = useGroupTrips();
   const [clientId, setClientId] = useState(card.client_id ?? '');
-  const [tripId, setTripId] = useState(card.trip_id ?? '');
+  const [groupTripId, setGroupTripId] = useState(card.group_trip_id ?? '');
 
   return (
     <div className="space-y-5">
@@ -351,11 +351,11 @@ function VinculosSection({ card }: { card: DepartureCardData }) {
       <div className="space-y-2">
         <Label className="text-xs font-semibold text-vj-txt3 uppercase tracking-wide">Vincular Viagem</Label>
         <Select 
-          value={tripId} 
+          value={groupTripId} 
           onValueChange={async (value) => { 
             const newId = value === '_empty' ? '' : value;
-            setTripId(newId); 
-            await updateCard.mutateAsync({ id: card.id, trip_id: newId || null }); 
+            setGroupTripId(newId); 
+            await updateCard.mutateAsync({ id: card.id, group_trip_id: newId || null }); 
           }}
         >
           <SelectTrigger className="w-full bg-white h-10 border-vj-border rounded-md text-sm">
@@ -363,7 +363,7 @@ function VinculosSection({ card }: { card: DepartureCardData }) {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="_empty">Nenhuma viagem</SelectItem>
-            {trips?.map((t) => (
+            {groupTrips?.map((t) => (
               <SelectItem key={t.id} value={t.id}>{t.title || t.destination || `Viagem ${t.id.slice(0, 8)}`}</SelectItem>
             ))}
           </SelectContent>

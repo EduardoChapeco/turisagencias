@@ -24,9 +24,10 @@ export function usePortalTrips(slug: string | undefined) {
       if (!organization) return [];
 
       const { data, error } = await supabase
-        .from('trips')
-        .select('*, trip_documents(*), trip_flights(*)')
+        .from('group_trips')
+        .select('*')
         .eq('org_id', organization.id)
+        .eq('is_public', true)
         .order('departure_date', { ascending: true });
 
       if (error) throw error;
@@ -46,8 +47,8 @@ export function usePortalTrip(slug: string | undefined, tripId: string | undefin
       if (!organization) throw new Error('Organização não encontrada');
 
       const { data, error } = await supabase
-        .from('trips')
-        .select('*, trip_documents(*), trip_flights(*), trip_travelers(*, travelers(full_name))')
+        .from('group_trips')
+        .select('*, group_trip_days(*)')
         .eq('org_id', organization.id)
         .eq('id', tripId!)
         .maybeSingle();
@@ -55,28 +56,10 @@ export function usePortalTrip(slug: string | undefined, tripId: string | undefin
       if (error) throw error;
       if (!data) throw new Error('Viagem não encontrada');
 
-      // If the trip has an itinerary_id, fetch its stops
-      let itineraryStops: any[] = [];
-      let itineraryData: any = null;
-      if (data.itinerary_id) {
-        const [itin, stops] = await Promise.all([
-          supabase
-            .from('itineraries')
-            .select('*')
-            .eq('id', data.itinerary_id)
-            .maybeSingle(),
-          supabase
-            .from('itinerary_stops')
-            .select('*')
-            .eq('itinerary_id', data.itinerary_id)
-            .order('day_number', { ascending: true })
-            .order('position', { ascending: true })
-        ]);
-        itineraryData = itin.data;
-        itineraryStops = stops.data ?? [];
-      }
+      // The new structure maps itinerary directly in `group_trip_days`
+      const itineraryStops = (data.group_trip_days || []).sort((a: any, b: any) => a.day_number - b.day_number);
 
-      return { organization, trip: data, itinerary: itineraryData, itineraryStops };
+      return { organization, trip: data, itineraryStops };
     },
     enabled: !!slug && !!tripId,
   });

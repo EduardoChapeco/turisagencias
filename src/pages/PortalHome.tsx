@@ -90,7 +90,7 @@ export default function PortalHome() {
                 <CardContent className="pt-4 space-y-3 relative z-10">
                   <div className="flex items-center gap-3 text-sm font-medium text-foreground">
                      <div className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center"><MapPin className="h-4 w-4 text-accent" /></div>
-                     <span className="truncate">{[trip.destination_city, trip.destination_country].filter(Boolean).join(', ') || 'Destino a definir'}</span>
+                     <span className="truncate">{trip.destination || 'Destino a definir'}</span>
                   </div>
                   <div className="flex items-center gap-3 text-sm text-muted-foreground">
                      <div className="w-8 h-8 rounded-full bg-vj-green/10 flex items-center justify-center"><Calendar className="h-4 w-4 text-vj-green" /></div>
@@ -98,7 +98,7 @@ export default function PortalHome() {
                   </div>
                   <div className="flex items-center gap-3 text-sm text-muted-foreground">
                      <div className="w-8 h-8 rounded-full bg-blue-500/10 flex items-center justify-center"><FileText className="h-4 w-4 text-blue-500" /></div>
-                     <span>{trip.trip_documents?.filter((d:any) => d.is_visible_to_client).length || 0} documento(s) compartilhado(s)</span>
+                     <span>{trip.current_pax || 0} passageiro(s) confirmado(s)</span>
                   </div>
                 </CardContent>
               </Card>

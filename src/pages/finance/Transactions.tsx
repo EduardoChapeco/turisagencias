@@ -32,7 +32,8 @@ export default function Transactions() {
     if (!formData.amount || !formData.due_date) return;
     await createTransaction.mutateAsync({
       org_id: profile!.org_id!,
-      trip_id: null,
+      trip_id: null,        // legacy field, kept null
+      group_trip_id: null,  // canonical field
       client_id: null,
       supplier_id: null,
       ...formData,
@@ -138,7 +139,7 @@ export default function Transactions() {
                          {t.type === 'receivable' ? t.clients?.name || '-' : t.suppliers?.name || t.description || '-'}
                       </td>
                       <td className="px-4 py-3 text-muted-foreground truncate max-w-[200px]">
-                         {t.trips?.title || '-'}
+                         {t.group_trips?.title || '-'}
                       </td>
                       <td className="px-4 py-3">
                          {new Date(t.due_date).toLocaleDateString('pt-BR')}

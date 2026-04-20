@@ -21,7 +21,7 @@ interface Props {
 export function TaskCardSheet({ card, isOpen, onClose, onDeleted }: Props) {
   const updateCard = useUpdateKanbanCard();
   const deleteCard = useDeleteKanbanCard();
-  const { data: trips } = useGroupTrips();
+  const { data: groupTrips } = useGroupTrips();
 
   const metadata = (card as any)?.metadata || {};
   const [form, setForm] = useState({
@@ -31,7 +31,7 @@ export function TaskCardSheet({ card, isOpen, onClose, onDeleted }: Props) {
     priority: card?.priority || metadata.priority || 'Normal',
     due_date: card?.due_date || metadata.due_date || '',
     client_id: card?.client_id || '',
-    trip_id: card?.trip_id || '',
+    group_trip_id: card?.group_trip_id || '',
   });
 
   // Keep form in sync when a different card opens
@@ -45,7 +45,7 @@ export function TaskCardSheet({ card, isOpen, onClose, onDeleted }: Props) {
         priority: card.priority || meta.priority || 'Normal',
         due_date: card.due_date || meta.due_date || '',
         client_id: card.client_id || '',
-        trip_id: card.trip_id || '',
+        group_trip_id: card.group_trip_id || '',
       });
     }
   }, [card]);
@@ -58,7 +58,7 @@ export function TaskCardSheet({ card, isOpen, onClose, onDeleted }: Props) {
       title: form.title,
       description: form.description,
       client_id: form.client_id || null,
-      trip_id: form.trip_id || null,
+      group_trip_id: form.group_trip_id || null,
       metadata: { task_type: form.task_type, priority: form.priority, due_date: form.due_date || null },
     } as Record<string, any>);
     onClose();
@@ -132,13 +132,13 @@ export function TaskCardSheet({ card, isOpen, onClose, onDeleted }: Props) {
             </div>
             <div>
               <Label className="text-xs font-semibold text-vj-txt3 mb-1.5 block">Viagem</Label>
-              <Select value={form.trip_id} onValueChange={(value) => setForm({ ...form, trip_id: value === '_empty' ? '' : value })}>
+              <Select value={form.group_trip_id} onValueChange={(value) => setForm({ ...form, group_trip_id: value === '_empty' ? '' : value })}>
                 <SelectTrigger className="w-full bg-white h-10 border-vj-border rounded-md text-sm">
                   <SelectValue placeholder="Selecione a viagem..." />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="_empty">Selecione a viagem...</SelectItem>
-                  {trips?.map((t) => (
+                  {groupTrips?.map((t) => (
                     <SelectItem key={t.id} value={t.id}>{t.title}</SelectItem>
                   ))}
                 </SelectContent>

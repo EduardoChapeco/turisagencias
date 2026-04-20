@@ -28,14 +28,14 @@ export default function Dashboard() {
   const { data: opsStats } = useQuery({
     queryKey: ['dashboard_ops_stats', organization?.id],
     queryFn: async () => {
-      const { data: trips } = await supabase.from('trips').select('id, title, destination_city, destination_country, pax_count, status, departure_date').eq('org_id', organization!.id);
+      const { data: groupTrips } = await supabase.from('group_trips').select('id, title, destination, current_pax, status, departure_date').eq('org_id', organization!.id);
       const { data: qts } = await supabase.from('quotations').select('id, status').eq('org_id', organization!.id);
 
       const todayStr = new Date().toISOString().split('T')[0];
-      const todayDepartures = (trips || []).filter(t => t.departure_date === todayStr).length;
+      const todayDepartures = (groupTrips || []).filter(t => t.departure_date === todayStr).length;
       
-      const traveling = (trips || []).filter(t => t.status === 'traveling');
-      const paxTraveling = traveling.reduce((acc, t) => acc + (t.pax_count || 1), 0);
+      const traveling = (groupTrips || []).filter(t => t.status === 'traveling');
+      const paxTraveling = traveling.reduce((acc, t) => acc + (t.current_pax || 1), 0);
 
       const activeQuotations = (qts || []).filter(q => q.status === 'sent' || q.status === 'viewed').length;
 
@@ -61,14 +61,16 @@ export default function Dashboard() {
       
       for (let i = 0; i < opsStats.traveling.length; i++) {
         const t = opsStats.traveling[i];
-        const res = await geocodeCity(t.destination_city || t.title, t.destination_country);
+        // Split destination to separate city and country approx if needed (e.g. "Paris, France")
+        const destParts = t.destination ? t.destination.split(',') : [];
+        const res = await geocodeCity(destParts[0] || t.title, destParts[1]?.trim() || t.destination);
         if (res && res.lat !== 0) {
           markers.push({
             id: t.id,
             lat: res.lat,
             lng: res.lng,
-            name: t.destination_city || t.title || 'Passageiro',
-            pax: t.pax_count || 1,
+            name: t.destination || t.title || 'Passageiro',
+            pax: t.current_pax || 1,
             color: colors[i % colors.length]
           });
         }
@@ -109,7 +111,7 @@ export default function Dashboard() {
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <Button variant="outline" className="premium-button border-vj-border bg-white" onClick={() => navigate('/trips/new')}>
+            <Button variant="outline" className="premium-button border-vj-border bg-white" onClick={() => navigate('/group-trips/new')}>
               <Plane className="h-4 w-4 mr-2 text-vj-green" /> Nova Viagem
             </Button>
             <Button className="premium-button" onClick={() => setQuotationBuilderOpen(true)}>
@@ -145,7 +147,7 @@ export default function Dashboard() {
                <ArrowRight className="text-vj-txt3" />
             </div>
 
-            <div className="bg-white border text-vj-txt border-vj-border rounded-[24px] p-5 flex items-center justify-between hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/trips')}>
+            <div className="bg-white border text-vj-txt border-vj-border rounded-[24px] p-5 flex items-center justify-between hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/group-trips')}>
                <div className="flex items-center gap-4">
                   <div className="bg-green-100 text-green-600 p-3 rounded-2xl"><Globe2 size={24} /></div>
                   <div>

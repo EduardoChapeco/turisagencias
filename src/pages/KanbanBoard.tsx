@@ -47,10 +47,10 @@ type KanbanCardData = {
   tags: string[] | null;
   client_id: string | null;
   quotation_id: string | null;
-  trip_id: string | null;
+  group_trip_id: string | null;
   clients?: { name: string; phone: string | null } | null;
   quotations?: { destination: string | null } | null;
-  trips?: { title: string | null } | null;
+  group_trips?: { title: string | null } | null;
 };
 
 type KanbanColumnData = {

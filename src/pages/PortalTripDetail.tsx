@@ -97,7 +97,7 @@ export default function PortalTripDetail() {
             <h1 className="font-heading text-4xl md:text-6xl font-bold text-white tracking-tight">{trip.title}</h1>
             <p className="text-white/90 mt-2 flex items-center gap-2 text-lg md:text-xl font-medium">
               <MapPin className="h-5 w-5 text-white/70" />
-              {[trip.destination_city, trip.destination_country].filter(Boolean).join(', ') || 'Destino a definir'}
+              {trip.destination || 'Destino a definir'}
             </p>
           </div>
         </div>
@@ -122,13 +122,13 @@ export default function PortalTripDetail() {
           <div className="space-y-1 text-center border-r border-vj-border">
             <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Passageiros</p>
             <p className="font-heading font-bold text-lg md:text-xl flex items-center justify-center gap-2">
-              <Users className="h-5 w-5 text-vj-green" /> {trip.trip_travelers?.length || 0}
+              <Users className="h-5 w-5 text-vj-green" /> {trip.current_pax || 0}
             </p>
           </div>
           <div className="space-y-1 text-center">
-            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Hospedagem</p>
-            <p className="font-heading font-bold text-sm md:text-base truncate px-2 text-vj-green" title={trip.hotel_name || 'A definir'}>
-              {trip.hotel_name || 'A definir'}
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Transporte</p>
+            <p className="font-heading font-bold text-sm md:text-base truncate px-2 text-vj-green capitalize" title={trip.transport_type || 'A definir'}>
+              {trip.transport_type || 'A definir'}
             </p>
           </div>
         </div>
@@ -156,40 +156,22 @@ export default function PortalTripDetail() {
                   </h2>
                   <div className="relative border-l-2 border-vj-green/20 pl-6 ml-3 space-y-6">
 
-                    {/* Flights */}
-                    {!trip.trip_flights?.length ? (
-                      <p className="text-sm text-muted-foreground italic">Voos ainda não foram incluídos neste roteiro.</p>
-                    ) : (
-                      trip.trip_flights?.map((flight: any) => (
-                        <div key={flight.id} className="relative">
-                          <div className="absolute -left-[35px] w-8 h-8 bg-blue-100 dark:bg-blue-900/30 border-2 border-vj-green/20 rounded-full flex items-center justify-center z-10 ">
-                            <Plane className="h-4 w-4 text-vj-green" />
+                    {/* Transport */}
+                    <div className="relative">
+                      <div className="absolute -left-[35px] w-8 h-8 bg-blue-100 dark:bg-blue-900/30 border-2 border-vj-green/20 rounded-full flex items-center justify-center z-10 ">
+                        <Plane className="h-4 w-4 text-vj-green" />
+                      </div>
+                      <Card className="border border-vj-border  rounded-2xl overflow-hidden bg-white/50 dark:bg-zinc-900/50">
+                        <CardContent className="p-5 flex flex-col md:flex-row justify-between md:items-center gap-4">
+                          <div>
+                            <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Modalidade Prevista</p>
+                            <p className="font-medium text-lg text-foreground capitalize">{trip.transport_type || 'A Definir'}</p>
                           </div>
-                          <Card className="border border-vj-border  rounded-2xl overflow-hidden bg-white/50 dark:bg-zinc-900/50 hover: transition-shadow">
-                            <CardHeader className="bg-vj-green/10 py-4 pb-3 border-b border-vj-border flex flex-row items-center justify-between">
-                              <CardTitle className="text-sm font-semibold text-vj-green uppercase tracking-wider">{flight.airline_name || 'Aéreo'}</CardTitle>
-                              <Badge variant="outline" className="font-mono bg-background">{flight.flight_number || 'TBA'}</Badge>
-                            </CardHeader>
-                            <CardContent className="p-5 flex flex-col md:flex-row justify-between md:items-center gap-4">
-                              <div>
-                                <p className="text-xs text-muted-foreground uppercase mb-1">Trajeto</p>
-                                <p className="font-medium text-lg">{[flight.origin_city, flight.destination_city].filter(Boolean).join(' → ')}</p>
-                              </div>
-                              <div className="text-left md:text-right">
-                                <p className="text-xs text-muted-foreground uppercase mb-1">Horário Previsto</p>
-                                <p className="font-semibold text-accent">
-                                  {flight.departure_datetime
-                                    ? new Date(flight.departure_datetime).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })
-                                    : 'Horário a definir'}
-                                </p>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        </div>
-                      ))
-                    )}
+                        </CardContent>
+                      </Card>
+                    </div>
 
-                    {/* Hotel */}
+                    {/* Accommodation (Fallback) */}
                     <div className="relative">
                       <div className="absolute -left-[35px] w-8 h-8 bg-emerald-100 dark:bg-emerald-900/30 border-2 border-emerald-500 rounded-full flex items-center justify-center z-10 ">
                         <Hotel className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
@@ -198,8 +180,7 @@ export default function PortalTripDetail() {
                         <CardContent className="p-5 flex flex-col md:flex-row justify-between md:items-center gap-4">
                           <div>
                             <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Hospedagem Confirmada</p>
-                            <p className="font-medium text-lg text-foreground">{trip.hotel_name || 'Pendente'}</p>
-                            {trip.hotel_regime && <p className="text-sm text-emerald-600 dark:text-emerald-400 mt-1 font-medium">{trip.hotel_regime}</p>}
+                            <p className="font-medium text-lg text-foreground">A definir pela agência</p>
                           </div>
                         </CardContent>
                       </Card>
@@ -212,7 +193,7 @@ export default function PortalTripDetail() {
               <div className="space-y-6">
 
                 {/* AI Agent 3: Cross-sell Widget */}
-                {trip.destination_city && (
+                {trip.destination && (
                   <Card className="rounded-[2rem] border-transparent _0_40px_-10px_rgba(139,92,246,0.3)] bg-gradient-to-br from-violet-500 to-indigo-600 backdrop-blur-xl relative overflow-hidden group">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 blur-2xl rounded-full -mr-10 -mt-10 pointer-events-none transition-transform group-hover:scale-150 duration-700" />
                     <CardHeader className="relative z-10 pb-2">
@@ -220,7 +201,7 @@ export default function PortalTripDetail() {
                         <Sparkles className="h-5 w-5 text-amber-300" /> Dicas Exclusivas
                       </CardTitle>
                       <CardDescription className="text-white/80">
-                        Aproveite <strong>{trip.destination_city}</strong> ao máximo!
+                        Aproveite <strong>{trip.destination}</strong> ao máximo!
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="relative z-10">
@@ -241,22 +222,11 @@ export default function PortalTripDetail() {
 
                 <Card className="rounded-[2rem] border-vj-border  bg-white/60 dark:bg-zinc-900/60 backdrop-blur-xl">
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2"><Users className="h-5 w-5 text-accent" /> Viajantes</CardTitle>
-                    <CardDescription>Passageiros desta reserva</CardDescription>
+                    <CardTitle className="flex items-center gap-2"><Users className="h-5 w-5 text-accent" /> Viajantes ({trip.current_pax || 0})</CardTitle>
+                    <CardDescription>Passageiros alocados a este grupo</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    {!trip.trip_travelers?.length && <p className="text-sm text-muted-foreground">Ninguém vinculado ainda.</p>}
-                    {trip.trip_travelers?.map((traveler: any) => (
-                      <div key={traveler.id} className="flex items-center gap-3 bg-muted/40 p-3 rounded-2xl border border-vj-border">
-                        <div className="w-10 h-10 rounded-full bg-vj-green/10 flex items-center justify-center font-bold text-vj-green shrink-0">
-                          {traveler.travelers?.full_name?.charAt(0) || 'V'}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-sm truncate">{traveler.travelers?.full_name || 'Viajante'}</p>
-                          <p className="text-xs text-muted-foreground font-mono text-accent">{traveler.ticket_number || 'Sem e-ticket'}</p>
-                        </div>
-                      </div>
-                    ))}
+                    <p className="text-sm text-muted-foreground">Listagem de usuários sob privacidade B2C. Consulte seu painel para tickets.</p>
                   </CardContent>
                 </Card>
 
@@ -265,27 +235,7 @@ export default function PortalTripDetail() {
                     <CardTitle className="flex items-center gap-2"><FileText className="h-5 w-5 text-vj-green" /> Documentação</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3">
-                    {!trip.trip_documents?.length && <p className="text-sm text-muted-foreground">Nenhum documento anexado pela agência.</p>}
-                    {trip.trip_documents?.map((doc: any) => (
-                      <a
-                        key={doc.id}
-                        href={doc.file_url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="flex items-center justify-between bg-background p-4 rounded-2xl  border border-vj-border hover:border-vj-green/20 hover: transition-all group"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="p-2 bg-vj-green/10 rounded-xl text-vj-green group-hover:scale-110 transition-transform">
-                            <FileText className="h-5 w-5" />
-                          </div>
-                          <div>
-                            <p className="font-semibold text-sm line-clamp-1">{doc.title}</p>
-                            <p className="text-xs text-muted-foreground uppercase font-medium">{doc.doc_type}</p>
-                          </div>
-                        </div>
-                        <Download className="h-4 w-4 text-muted-foreground group-hover:text-vj-green transition-colors" />
-                      </a>
-                    ))}
+                    <p className="text-sm text-muted-foreground">Nenhum documento global anexado pela agência.</p>
                   </CardContent>
                 </Card>
               </div>

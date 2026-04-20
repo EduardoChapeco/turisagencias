@@ -53,10 +53,10 @@ interface KanbanCard {
   tags: string[] | null;
   client_id: string | null;
   quotation_id: string | null;
-  trip_id: string | null;
+  group_trip_id: string | null;
   clients?: { name: string; phone: string | null } | null;
   quotations?: { destination: string | null } | null;
-  trips?: { title: string | null } | null;
+  group_trips?: { title: string | null } | null;
 }
 
 interface Props {
@@ -558,9 +558,9 @@ function NotasSection({ cardId }: { cardId: string }) {
    ───────────────────────────────────────────── */
 function VinculosSection({ card }: { card: KanbanCard }) {
   const updateCard = useUpdateKanbanCard();
-  const { data: trips } = useGroupTrips();
+  const { data: groupTrips } = useGroupTrips();
   const [clientId, setClientId] = useState(card.client_id ?? '');
-  const [tripId, setTripId] = useState(card.trip_id ?? '');
+  const [groupTripId, setGroupTripId] = useState(card.group_trip_id ?? '');
 
   const handleLinkClient = async (id: string) => {
     setClientId(id);
@@ -568,8 +568,8 @@ function VinculosSection({ card }: { card: KanbanCard }) {
   };
 
   const handleLinkTrip = async (id: string) => {
-    setTripId(id);
-    await updateCard.mutateAsync({ id: card.id, trip_id: id || null });
+    setGroupTripId(id);
+    await updateCard.mutateAsync({ id: card.id, group_trip_id: id || null });
   };
 
   return (
@@ -586,7 +586,7 @@ function VinculosSection({ card }: { card: KanbanCard }) {
       <div className="space-y-2">
         <Label className="text-xs font-semibold text-vj-txt3 uppercase tracking-wide">Vincular Viagem</Label>
         <Select 
-          value={tripId} 
+          value={groupTripId} 
           onValueChange={(value) => handleLinkTrip(value === '_empty' ? '' : value)}
         >
           <SelectTrigger className="w-full bg-white h-10 border-vj-border rounded-md text-sm">
@@ -594,7 +594,7 @@ function VinculosSection({ card }: { card: KanbanCard }) {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="_empty">Nenhuma viagem</SelectItem>
-            {trips?.map(t => (
+            {groupTrips?.map(t => (
               <SelectItem key={t.id} value={t.id}>{t.title || t.destination || `Viagem ${t.id.slice(0, 8)}`}</SelectItem>
             ))}
           </SelectContent>

@@ -91,7 +91,8 @@ export const useDeleteSupplier = () => {
 export type Transaction = {
   id: string;
   org_id: string;
-  trip_id: string | null;
+  trip_id: string | null;        // legacy FK — still in DB, kept for backward compat
+  group_trip_id: string | null;  // canonical FK
   client_id: string | null;
   supplier_id: string | null;
   type: string;
@@ -108,10 +109,10 @@ export type Transaction = {
   updated_at: string;
   suppliers?: { name: string } | null;
   clients?: { name: string } | null;
-  trips?: { title: string } | null;
+  group_trips?: { title: string } | null;
 };
 
-export const useTransactions = (orgId: string | undefined, filters?: { type?: 'receivable' | 'payable'; trip_id?: string }) => {
+export const useTransactions = (orgId: string | undefined, filters?: { type?: 'receivable' | 'payable'; group_trip_id?: string }) => {
   return useQuery({
     queryKey: ['financial_transactions', orgId, filters],
     queryFn: async () => {
@@ -122,13 +123,13 @@ export const useTransactions = (orgId: string | undefined, filters?: { type?: 'r
           *,
           suppliers:supplier_id(name),
           clients:client_id(name),
-          trips:trip_id(title)
+          group_trips:group_trip_id(title)
         `)
         .eq('org_id', orgId)
         .order('due_date', { ascending: true });
 
       if (filters?.type) query = query.eq('type', filters.type);
-      if (filters?.trip_id) query = query.eq('trip_id', filters.trip_id);
+      if (filters?.group_trip_id) query = query.eq('group_trip_id', filters.group_trip_id);
 
       const { data, error } = await query;
       if (error) throw error;
@@ -141,7 +142,7 @@ export const useTransactions = (orgId: string | undefined, filters?: { type?: 'r
 export const useCreateTransaction = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (payload: Omit<Transaction, 'id' | 'org_id' | 'suppliers' | 'clients' | 'trips' | 'created_at' | 'updated_at'> & { org_id: string }) => {
+    mutationFn: async (payload: Omit<Transaction, 'id' | 'org_id' | 'suppliers' | 'clients' | 'group_trips' | 'created_at' | 'updated_at'> & { org_id: string }) => {
       const { data, error } = await supabase.from('financial_transactions').insert(payload).select().single();
       if (error) throw error;
       return data;
@@ -158,7 +159,7 @@ export const useUpdateTransaction = () => {
   return useMutation({
     mutationFn: async ({ id, ...payload }: Partial<Transaction> & { id: string }) => {
       // Strip join-enriched fields before DB update
-      const { clients: _c, suppliers: _s, trips: _t, ...dbPayload } = payload;
+      const { clients: _c, suppliers: _s, group_trips: _gt, ...dbPayload } = payload;
       const { data, error } = await supabase.from('financial_transactions').update(dbPayload).eq('id', id).select().single();
       if (error) throw error;
       return data;

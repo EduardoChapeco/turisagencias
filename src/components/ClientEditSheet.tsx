@@ -66,11 +66,12 @@ export function ClientEditSheet({ id, open, onClose, onSuccess }: ClientEditShee
 
       setForm({
         ...existingClient,
-        address: (existingClient.address as Record<string, any>)?.street || '',
-        city: (existingClient.address as Record<string, any>)?.city || '',
-        state: (existingClient.address as Record<string, any>)?.state || '',
-        zip_code: (existingClient.address as Record<string, any>)?.zip_code || '',
-        country: (existingClient.address as Record<string, any>)?.country || 'Brasil',
+        // clients.address/city/state/zip_code/country are FLAT text columns — read directly
+        address: (existingClient.address as string) || '',
+        city: (existingClient.city as string) || '',
+        state: (existingClient.state as string) || '',
+        zip_code: (existingClient.zip_code as string) || '',
+        country: (existingClient.country as string) || 'Brasil',
         preferred_destinations: prefs.destinations || '',
         preferred_airlines: prefs.airlines || '',
         seat_preference: prefs.seat || '',

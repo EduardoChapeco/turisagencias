@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import {
   FileText, Plane, PlaneTakeoff, CalendarHeart,
-  Globe2, Newspaper, ArrowRight, DollarSign, Users2, CheckCircle2, Ticket, MapPin, Search
+  Globe2, Newspaper, ArrowRight, DollarSign, Users2, CheckCircle2, Ticket, MapPin, Search, Book
 } from 'lucide-react';
 import { AppLayout } from '@/components/AppLayout';
 import { useAuthStore } from '@/stores/authStore';

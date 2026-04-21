@@ -111,7 +111,7 @@ export default function Tickets() {
                 <CardContent className="flex flex-wrap gap-4 text-xs text-muted-foreground pt-0">
                   <span className="uppercase font-bold tracking-wider">Tipo: {ticket.type}</span>
                   <span>Cliente: <strong>{ticket.clients?.name || 'Não informado'}</strong></span>
-                  <span>Viagem: <strong>{ticket.trips?.title || 'Não vinculada'}</strong></span>
+                  <span>Viagem: <strong>{ticket.group_trips?.title || 'Não vinculada'}</strong></span>
                   <span className="ml-auto text-[10px]">
                     {new Date(ticket.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
                   </span>

@@ -251,7 +251,7 @@ function DadosSection({ card }: { card: KanbanCard }) {
       </div>
 
       {/* Vínculos */}
-      {(card.clients || card.quotations || card.trips) && (
+      {(card.clients || card.quotations || card.group_trips) && (
         <div className="pt-2 border-t border-vj-border space-y-2">
           <p className="text-xs font-semibold text-vj-txt3 uppercase tracking-wide">Vínculos</p>
           {card.clients && (
@@ -266,10 +266,10 @@ function DadosSection({ card }: { card: KanbanCard }) {
               <span>Cotação: <strong>{card.quotations.destination}</strong></span>
             </div>
           )}
-          {card.trips?.title && (
+          {card.group_trips?.title && (
             <div className="flex items-center gap-2 text-sm text-vj-txt">
               <Link2 size={13} className="text-vj-txt3 shrink-0" />
-              <span>Viagem: <strong>{card.trips.title}</strong></span>
+              <span>Viagem: <strong>{card.group_trips.title}</strong></span>
             </div>
           )}
         </div>
@@ -615,10 +615,10 @@ function VinculosSection({ card }: { card: KanbanCard }) {
           <p className="font-medium text-vj-txt">{card.quotations.destination}</p>
         </div>
       )}
-      {card.trips?.title && (
+      {card.group_trips?.title && (
         <div className="surface-muted rounded-cb-md p-4">
           <p className="text-xs font-semibold text-vj-txt3 uppercase tracking-wide mb-2">Viagem</p>
-          <p className="font-medium text-vj-txt">{card.trips.title}</p>
+          <p className="font-medium text-vj-txt">{card.group_trips.title}</p>
         </div>
       )}
     </div>

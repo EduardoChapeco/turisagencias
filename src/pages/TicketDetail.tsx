@@ -58,7 +58,7 @@ export default function TicketDetail() {
             </CardTitle>
           </CardHeader>
           <CardContent className="grid gap-3 text-sm text-muted-foreground md:grid-cols-3">
-            <p>Viagem: {ticket.trips?.title || 'Não vinculada'}</p>
+            <p>Viagem: {ticket.group_trips?.title || 'Não vinculada'}</p>
             <p>Cliente: {ticket.clients?.name || 'Não informado'}</p>
             <p>Criado em: {new Date(ticket.created_at).toLocaleString('pt-BR')}</p>
           </CardContent>

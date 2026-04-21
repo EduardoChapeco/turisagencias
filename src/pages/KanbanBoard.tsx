@@ -47,7 +47,8 @@ type KanbanCardData = {
   tags: string[] | null;
   client_id: string | null;
   quotation_id: string | null;
-  group_trip_id: string | null;
+  assigned_to: string | null;
+  meta: any;
   clients?: { name: string; phone: string | null } | null;
   quotations?: { destination: string | null } | null;
   group_trips?: { title: string | null } | null;
@@ -302,7 +303,7 @@ export default function KanbanBoard() {
   const [selectedCard, setSelectedCard] = useState<KanbanCardData | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const { user } = useAuthStore();
-  const [viewMode, setViewMode] = useState<'me' | 'all'>('me');
+  const [viewMode, setViewMode] = useState<'me' | 'all'>('all');
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -351,10 +352,23 @@ export default function KanbanBoard() {
     setSheetOpen(true);
   };
 
-  if (isLoading || !data) {
+  if (isLoading) {
     return (
       <AppLayout>
         <PageSkeleton />
+      </AppLayout>
+    );
+  }
+
+  if (!data) {
+    return (
+      <AppLayout>
+        <EmptyState
+          icon={KanbanSquare}
+          title="Erro ao carregar quadro"
+          description="Não foi possível carregar os dados deste quadro. Verifique sua conexão ou permissões."
+          action={<Button onClick={() => window.location.reload()}>Recarregar página</Button>}
+        />
       </AppLayout>
     );
   }

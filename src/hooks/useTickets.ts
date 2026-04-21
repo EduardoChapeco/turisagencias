@@ -11,10 +11,10 @@ export function useTickets(tripId?: string) {
     queryFn: async () => {
       let query = supabase
         .from('tickets')
-        .select('*, clients(name), trips(title)')
+        .select('*, clients(name), group_trips(title)')
         .order('created_at', { ascending: false });
 
-      if (tripId) query = query.eq('trip_id', tripId);
+      if (tripId) query = query.eq('group_trip_id', tripId);
 
       const { data, error } = await query;
       if (error) throw error;
@@ -30,7 +30,7 @@ export function useTicket(id: string | undefined) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('tickets')
-        .select('*, clients(name), trips(title), ticket_messages(*), email_messages(*)')
+        .select('*, clients(name), group_trips(title), ticket_messages(*), email_messages(*)')
         .eq('id', id!)
         .maybeSingle();
       if (error) throw error;
@@ -63,7 +63,7 @@ export function useCreateTicket() {
           description: payload.description,
           type: payload.type ?? 'general',
           priority: payload.priority ?? 'medium',
-          trip_id: payload.trip_id ?? null,
+          group_trip_id: payload.trip_id ?? null,
           client_id: payload.client_id ?? null,
           org_id: organization!.id,
           created_by: user?.id ?? null,

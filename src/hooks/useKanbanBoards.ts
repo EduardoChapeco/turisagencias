@@ -118,13 +118,19 @@ export function useKanbanBoard(slug: string) {
         supabase.from('kanban_columns').select('*').eq('board_id', board.id).order('position'),
         supabase
           .from('kanban_cards')
-          .select('id, board_id, column_id, title, description, client_id, quotation_id, group_trip_id, position, metadata, assigned_to, whatsapp, email, tags, estimated_value, created_at, updated_at, clients(name, phone), quotations(destination), group_trips(title)')
+          .select('id, board_id, column_id, title, description, client_id, quotation_id, group_trip_id, position, meta, assigned_to, whatsapp, email, tags, estimated_value, created_at, updated_at, clients(name, phone), quotations(destination), group_trips(title)')
           .eq('board_id', board.id)
           .order('position'),
       ]);
 
-      if (columnsError) throw columnsError;
-      if (cardsError) throw cardsError;
+      if (columnsError) {
+        console.error('[useKanbanBoard] Columns Error:', columnsError);
+        throw columnsError;
+      }
+      if (cardsError) {
+        console.error('[useKanbanBoard] Cards Error:', cardsError);
+        throw cardsError;
+      }
 
       return { board, columns: columns ?? [], cards: cards ?? [] };
     },

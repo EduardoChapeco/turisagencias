@@ -74,7 +74,7 @@ interface Props {
   columns?: KanbanColumnData[];
 }
 
-import { useTeam } from '@/hooks/useTeam';
+import { useTeamMembers } from '@/hooks/useTeam';
 import { AlignLeft, CheckSquare, FileText, Link2, Pencil, Plus, Send, Trash2, User, X, Plane, MessageCircle, MoreVertical, LayoutKanban, HardHat } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
@@ -85,7 +85,8 @@ function DadosSection({ card, columns }: { card: KanbanCard, columns?: KanbanCol
   const updateCard = useUpdateKanbanCard();
   const { data: allTags } = useKanbanTags();
   const createTag = useCreateKanbanTag();
-  const { data: team } = useTeam();
+  const { organization } = useAuthStore();
+  const { data: team } = useTeamMembers(organization?.id);
 
   const [form, setForm] = useState({
     title: card.title,
@@ -171,7 +172,7 @@ function DadosSection({ card, columns }: { card: KanbanCard, columns?: KanbanCol
               <SelectItem value="none" className="text-zinc-400 italic">Sem atribuição</SelectItem>
               {team?.map((member) => (
                 <SelectItem key={member.id} value={member.user_id}>
-                  {member.first_name} {member.last_name}
+                  {member.full_name || member.email}
                 </SelectItem>
               ))}
             </SelectContent>

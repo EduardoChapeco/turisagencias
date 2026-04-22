@@ -12,7 +12,10 @@ import {
   X,
   Plane,
   MessageCircle,
+  MoreVertical,
+  KanbanSquare,
 } from 'lucide-react';
+import { useTeamMembers } from '@/hooks/useTeam';
 import { SheetPage } from '@/components/ui/SheetPage';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -74,8 +77,6 @@ interface Props {
   columns?: KanbanColumnData[];
 }
 
-import { useTeamMembers } from '@/hooks/useTeam';
-import { AlignLeft, CheckSquare, FileText, Link2, Pencil, Plus, Send, Trash2, User, X, Plane, MessageCircle, MoreVertical, LayoutKanban, HardHat } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
 /* ─────────────────────────────────────────────
@@ -145,7 +146,7 @@ function DadosSection({ card, columns }: { card: KanbanCard, columns?: KanbanCol
       {/* Dynamic Header Actions */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-3 p-4 bg-zinc-50/50 rounded-xl border border-zinc-100">
         <div className="flex-1 space-y-1.5">
-          <Label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5"><LayoutKanban size={12}/> Etapa no Funil</Label>
+          <Label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5"><KanbanSquare size={12}/> Etapa no Funil</Label>
           <Select value={form.column_id} onValueChange={(v) => update('column_id', v)}>
             <SelectTrigger className="w-full h-10 bg-white border-zinc-200 rounded-xl font-bold">
               <SelectValue />
@@ -163,7 +164,7 @@ function DadosSection({ card, columns }: { card: KanbanCard, columns?: KanbanCol
           </Select>
         </div>
         <div className="flex-1 space-y-1.5">
-          <Label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5"><HardHat size={12}/> Responsável</Label>
+          <Label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5"><User size={12}/> Responsável</Label>
           <Select value={form.assigned_to} onValueChange={(v) => update('assigned_to', v)}>
             <SelectTrigger className="w-full h-10 bg-white border-zinc-200 rounded-xl font-medium">
               <SelectValue placeholder="Sem atribuição" />

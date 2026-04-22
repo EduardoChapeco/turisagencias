@@ -83,12 +83,11 @@ const navGroups: NavGroup[] = [
   {
     title: 'Gestão & Backoffice',
     items: [
-      { title: 'Movimentações',      url: '/finance/transactions', icon: Book },
+      { title: 'Financeiro',         url: '/finance/transactions', icon: Book },
       { title: 'Fornecedores',       url: '/finance/suppliers',    icon: Building2 },
-      { title: 'Estornos e Reembolsos',url: '/finance/cancellations',icon: XCircle },
       { title: 'Agentes e Equipe',   url: '/team',                 icon: Users },
       { title: 'Contratos e Termos', url: '/legal/contracts',      icon: FileSignature },
-      { title: 'Robôs de IA',        url: '/automations',          icon: Bot },
+      { title: 'IA Squads',          url: '/automations',          icon: Bot },
       { title: 'Cérebro da Agência', url: '/ai-chat',              icon: Sparkles },
       { title: 'Painel de Controle', url: '/settings',             icon: SettingsIcon },
     ],

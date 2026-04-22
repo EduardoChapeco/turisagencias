@@ -43,7 +43,7 @@ export function AiInsightsWidget() {
   if (!isVisible || insights.length === 0) return null;
 
   return (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 shadow-xl mb-6 relative overflow-hidden group">
+    <div className="bg-zinc-900 border border-zinc-800 rounded-[2rem] p-6 mb-6 relative overflow-hidden group shadow-none">
       <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
         <Sparkles size={100} className="text-white" />
       </div>

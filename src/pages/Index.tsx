@@ -128,7 +128,7 @@ export default function Dashboard() {
           
           {/* Quick Ops Panel */}
           <div className="col-span-1 md:col-span-2 lg:col-span-2 grid grid-rows-3 gap-4">
-            <div className="bg-white border text-vj-txt border-vj-border rounded-xl p-5 flex items-center justify-between cursor-pointer" onClick={() => navigate('/kanban/departures')}>
+            <div className="bg-white border text-vj-txt border-vj-border rounded-[2rem] p-6 flex items-center justify-between cursor-pointer shadow-none hover:bg-zinc-50 transition-all" onClick={() => navigate('/kanban/departures')}>
                <div className="flex items-center gap-4">
                   <div className="bg-amber-100 text-amber-600 p-3 rounded-xl"><PlaneTakeoff size={24} /></div>
                   <div>
@@ -139,7 +139,7 @@ export default function Dashboard() {
                <ArrowRight className="text-vj-txt3" />
             </div>
 
-            <div className="bg-white border text-vj-txt border-vj-border rounded-xl p-5 flex items-center justify-between cursor-pointer" onClick={() => navigate('/quotations')}>
+            <div className="bg-white border text-vj-txt border-vj-border rounded-[2rem] p-6 flex items-center justify-between cursor-pointer shadow-none hover:bg-zinc-50 transition-all" onClick={() => navigate('/quotations')}>
                <div className="flex items-center gap-4">
                   <div className="bg-blue-100 text-blue-600 p-3 rounded-xl"><FileText size={24} /></div>
                   <div>
@@ -150,7 +150,7 @@ export default function Dashboard() {
                <ArrowRight className="text-vj-txt3" />
             </div>
 
-            <div className="bg-white border text-vj-txt border-vj-border rounded-xl p-5 flex items-center justify-between cursor-pointer" onClick={() => navigate('/group-trips')}>
+            <div className="bg-white border text-vj-txt border-vj-border rounded-[2rem] p-6 flex items-center justify-between cursor-pointer shadow-none hover:bg-zinc-50 transition-all" onClick={() => navigate('/group-trips')}>
                <div className="flex items-center gap-4">
                   <div className="bg-green-100 text-green-600 p-3 rounded-xl"><CheckCircle2 size={24} /></div>
                   <div>
@@ -163,7 +163,7 @@ export default function Dashboard() {
           </div>
 
           {/* Interactive World Map Block */}
-          <div className="col-span-1 md:col-span-2 lg:col-span-4 bg-zinc-950 rounded-xl overflow-hidden relative min-h-[350px] group flex flex-col justify-between p-1">
+          <div className="col-span-1 md:col-span-2 lg:col-span-4 bg-zinc-950 rounded-[2rem] overflow-hidden relative min-h-[400px] group flex flex-col justify-between p-1">
             <div className="absolute inset-0 z-0">
                <GlobalRadarMapWidget markers={radarMarkers} interactive={false} />
             </div>
@@ -193,7 +193,7 @@ export default function Dashboard() {
         {/* BENTO GRID: Blog & Daily Context */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 mt-8">
            {/* Header / Sidebar for Content Hub */}
-           <div className="bg-white border border-vj-border rounded-xl p-8 lg:row-span-2 relative overflow-hidden group">
+           <div className="bg-white border border-vj-border rounded-[2rem] p-8 lg:row-span-2 relative overflow-hidden group shadow-none">
               <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform duration-700 pointer-events-none">
                  <Newspaper className="w-32 h-32 text-vj-green" />
               </div>
@@ -236,7 +236,7 @@ export default function Dashboard() {
                 <p className="text-sm font-semibold text-vj-txt3">Nenhum informe setorial consolidado até o momento.</p>
              </div>
            ) : aiNews.map((news) => (
-               <div key={news.id} onClick={() => navigate('/radar')} className={`p-6 rounded-xl border flex flex-col justify-between cursor-pointer transition-all duration-300 hover:-translate-y-1 ${news.alert ? 'bg-red-50 border-red-200' : 'bg-white border-vj-border'}`}>
+               <div key={news.id} onClick={() => navigate('/radar')} className={`p-6 rounded-[2rem] border flex flex-col justify-between cursor-pointer transition-all duration-300 hover:-translate-y-1 shadow-none ${news.alert ? 'bg-red-50 border-red-200' : 'bg-white border-vj-border'}`}>
                   <div>
                       <div className="flex items-center justify-between mb-4">
                          <div className="flex items-center gap-2">

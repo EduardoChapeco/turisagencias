@@ -52,10 +52,10 @@ export default function Tickets() {
       <div className="flex flex-col h-full gap-6">
         
         {/* Header Section */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-xl border border-zinc-200/60">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-[2rem] border border-zinc-200/60 shadow-none">
           <div>
             <h1 className="font-heading text-2xl font-bold flex items-center gap-2">
-              <LifeBuoy className="text-blue-500" /> Central de Atendimento
+              <LifeBuoy className="text-vj-green" /> Central de Atendimento
             </h1>
             <p className="text-sm text-muted-foreground mt-1">
               Acompanhamento de protocolos, emails e suporte aos viajantes.
@@ -63,7 +63,7 @@ export default function Tickets() {
           </div>
           <Button
             onClick={() => setOpen(true)}
-            className="rounded-xl px-6 h-11 bg-blue-600 hover:bg-blue-700 shadow-none transition-colors"
+            className="rounded-full px-6 h-11 bg-vj-green hover:bg-vj-green/90 shadow-none transition-all active:scale-95"
           >
             <Plus size={18} className="mr-2" /> Nova Solicitação
           </Button>
@@ -97,7 +97,7 @@ export default function Tickets() {
                 <div
                   key={ticket.id}
                   onClick={() => navigate(`/tickets/${ticket.id}`)}
-                  className="group bg-white border border-zinc-200/80 rounded-xl p-5 hover:border-blue-400/50 hover:bg-blue-50/10 transition-all cursor-pointer flex flex-col"
+                  className="group bg-white border border-zinc-200/80 rounded-[2rem] p-6 hover:border-vj-green/50 hover:bg-vj-green/[0.02] transition-all cursor-pointer flex flex-col shadow-none"
                 >
                   <div className="flex items-start justify-between gap-3 mb-3">
                     <div className="flex-1 min-w-0">
@@ -227,7 +227,7 @@ export default function Tickets() {
               <Button
                 onClick={handleCreate}
                 disabled={!form.title.trim() || createTicket.isPending}
-                className="rounded-xl h-11 px-8 bg-blue-600 hover:bg-blue-700 shadow-none"
+                className="rounded-full h-11 px-8 bg-vj-green hover:bg-vj-green/90 shadow-none"
               >
                 {createTicket.isPending ? 'Criando...' : 'Abrir Protocolo'}
               </Button>

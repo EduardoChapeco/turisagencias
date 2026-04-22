@@ -6,6 +6,7 @@ import { AppLayout } from '@/components/AppLayout';
 import { useQuotation, useUpdateQuotation } from '@/hooks/useQuotations';
 import { useQuotationScenarios, useScoreQuotation } from '@/hooks/useQuotationScenarios';
 import { useCreateGroupTrip } from '@/hooks/useGroupTrips';
+import { useSendQuotation } from '@/hooks/useSendQuotation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';

@@ -91,7 +91,6 @@ export function useTickets(filters?: {
         .select(`
           *,
           clients(id, name, email, phone),
-          trips(destination),
           group_trips(title)
         `)
         .eq('org_id', organization!.id)
@@ -127,7 +126,6 @@ export function useTicket(id: string | undefined) {
         .select(`
           *,
           clients(id, name, email, phone),
-          trips(destination),
           group_trips(title),
           ticket_messages(*),
           ticket_events(*),

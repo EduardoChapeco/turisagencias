@@ -149,6 +149,7 @@ export function useKanbanBoard(slug: string) {
 
 export function useCreateKanbanCard() {
   const queryClient = useQueryClient();
+  const { organization } = useAuthStore();
   const { toast } = useToast();
 
   return useMutation({
@@ -171,7 +172,7 @@ export function useCreateKanbanCard() {
     }) => {
       const { data, error } = await supabase
         .from('kanban_cards')
-        .insert({ ...payload })
+        .insert({ ...payload, org_id: organization?.id })
         .select()
         .single();
       if (error) throw error;

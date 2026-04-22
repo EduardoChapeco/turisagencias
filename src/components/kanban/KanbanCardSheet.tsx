@@ -305,8 +305,9 @@ function DadosSection({ card, columns }: { card: KanbanCard, columns?: KanbanCol
           </div>
         )}
       </div>
+    </div>
 
-      {/* Vínculos */}
+    {/* Vínculos */}
       {(card.clients || card.quotations || card.group_trips) && (
         <div className="pt-2 border-t border-vj-border space-y-2">
           <p className="text-xs font-semibold text-vj-txt3 uppercase tracking-wide">Vínculos</p>

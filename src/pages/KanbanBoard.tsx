@@ -13,6 +13,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { KanbanSquare, X, Eye, Users } from 'lucide-react';
+import { AiInsightsWidget } from '@/components/AiInsightsWidget';
 
 import {
   DndContext,
@@ -47,10 +48,13 @@ type KanbanCardData = {
   tags: string[] | null;
   client_id: string | null;
   quotation_id: string | null;
+  trip_id: string | null;
+  group_trip_id: string | null;
   assigned_to: string | null;
   meta: any;
   clients?: { name: string; phone: string | null } | null;
   quotations?: { destination: string | null } | null;
+  trips?: { destination: string | null } | null;
   group_trips?: { title: string | null } | null;
 };
 
@@ -79,6 +83,11 @@ function SortableCard({
     transition,
     isDragging,
   } = useSortable({ id: card.id, data: { type: 'Card', card } });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
 
   const isHighValue = (card.estimated_value || 0) > 5000;
 
@@ -137,9 +146,9 @@ function SortableCard({
         {/* Título & Subtítulo */}
         <div>
           <p className="font-bold text-[15px] text-zinc-800 leading-snug group-hover:text-vj-primary transition-colors">{card.title}</p>
-          {(card.clients?.name || card.quotations?.destination) && (
+          {(card.clients?.name || card.quotations?.destination || card.group_trips?.title) && (
             <p className="text-xs font-medium text-zinc-500 truncate mt-0.5">
-              {card.clients?.name ?? card.quotations?.destination}
+              {card.clients?.name ?? card.quotations?.destination ?? card.group_trips?.title}
             </p>
           )}
         </div>
@@ -162,7 +171,7 @@ function SortableCard({
 /* ── CardOverlay (DragOverlay visual) ── */
 function CardOverlay({ card }: { card: KanbanCardData }) {
   return (
-    <div className="kanban-card rotate-1 opacity-95 w-[256px]">
+    <div className="kanban-card rotate-1 opacity-95 w-[256px] rounded-xl border-vj-primary border-2">
       <p className="font-medium text-sm text-vj-txt">{card.title}</p>
       {card.clients?.name && (
         <p className="text-xs text-vj-txt3 mt-1">{card.clients.name}</p>
@@ -273,7 +282,7 @@ function KanbanColumn({
           <button
             type="button"
             onClick={() => setShowQuickAdd(true)}
-            className="flex items-center gap-1.5 w-full text-xs text-vj-txt3 hover:text-vj-txt transition-colors py-1.5 px-2 rounded-cb-md hover:bg-vj-bg"
+            className="flex items-center gap-1.5 w-full text-xs text-vj-txt3 hover:text-vj-txt transition-colors py-1.5 px-2 rounded-xl hover:bg-vj-bg"
           >
             <Plus size={13} />
             Adicionar card
@@ -288,7 +297,7 @@ function KanbanColumn({
 export default function KanbanBoard() {
   const location = useLocation();
   const slug = location.pathname.includes('/departures') ? 'departures' : 'sales';
-  const title = slug === 'departures' ? 'Embarques' : 'CRM';
+  const title = slug === 'departures' ? 'Gestão de Embarque' : 'Funil de Vendas';
   const description =
     slug === 'departures'
       ? 'Acompanhe o status dos embarques em andamento.'
@@ -409,6 +418,8 @@ export default function KanbanBoard() {
           </div>
         </div>
 
+        <AiInsightsWidget />
+
         {!data?.columns?.length ? (
           <EmptyState
             icon={KanbanSquare}
@@ -454,6 +465,7 @@ export default function KanbanBoard() {
         isOpen={sheetOpen}
         onClose={() => setSheetOpen(false)}
         onDeleted={() => setSelectedCard(null)}
+        columns={data?.columns ?? []}
       />
     </AppLayout>
   );

@@ -5,6 +5,8 @@ from typing import List, Optional
 # Injetando dependências reais
 from agents.accommodation_resolver import GapResolverAgent
 from agents.market_simulation import simulate_market_acceptance
+from agents.kanban_strategist import KanbanStrategistAgent
+from agents.email_handler import EmailHandlerAgent
 
 # Aqui iniciaremos o servidor da Excelência Tur (AI Engine)
 app = FastAPI(
@@ -74,6 +76,24 @@ async def ingest_memory(text: str):
     Agente 7 - Ingere novas informações de histórico no Qdrant
     """
     return {"status": "success", "message": "Conversa vetorizada e adicionada ao Qdrant."}
+
+@app.get("/api/v1/kanban/audit")
+async def audit_kanban(org_id: str):
+    """
+    Aciona o Agente Estrategista para auditar o funil de vendas.
+    """
+    agent = KanbanStrategistAgent()
+    # Mock de busca de dados (em prod viria do Supabase)
+    report = agent.analyze_pipeline([]) 
+    return report
+
+@app.post("/api/v1/email/route")
+async def route_email(subject: str, body: str):
+    """
+    Aciona o MailBot para classificar e rotear emails recebidos.
+    """
+    agent = EmailHandlerAgent()
+    return agent.classify_email(subject, body)
 
 @app.get("/api/v1/rules")
 async def list_rules():

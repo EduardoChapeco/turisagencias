@@ -79,11 +79,11 @@ export default function ClientsPage() {
               >
                 {/* Header */}
                 <div className="flex items-start gap-4">
-                  <div className="h-14 w-14 shrink-0 rounded-[18px] bg-gradient-to-br from-vj-green/20 to-vj-green/5 border border-vj-green/20 overflow-hidden flex items-center justify-center ">
+                  <div className="h-14 w-14 shrink-0 rounded-xl bg-zinc-100 border border-zinc-200 overflow-hidden flex items-center justify-center ">
                     {client.photo_url ? (
                       <img src={client.photo_url} alt={client.name} className="h-full w-full object-cover" />
                     ) : (
-                      <span className="text-vj-green font-bold text-xl">{client.name[0]?.toUpperCase()}</span>
+                      <span className="text-zinc-400 font-bold text-xl">{client.name[0]?.toUpperCase()}</span>
                     )}
                   </div>
                   <div className="flex-1 min-w-0 pt-1">

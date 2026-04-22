@@ -3,9 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import {
   FileText, Save, Sparkles, Loader2, Plus, Trash2, X,
   Plane, Ship, Bus, Train, MapPin, Hotel, Camera, Star,
-  Users, UserCheck, Tent, Image as ImageIcon,
+  Users, UserCheck, Tent, Image as ImageIcon, ArrowRight, ArrowLeft,
+  CheckCircle2
 } from 'lucide-react';
-import { SheetPage } from '@/components/ui/SheetPage';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -19,36 +20,28 @@ import { useHotels } from '@/hooks/useHotels';
 import { useAuthStore } from '@/stores/authStore';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import type { InstallmentOption } from '@/types';
-
-// ─── Types ────────────────────────────────────────────
-interface DayItem {
-  id: string; day: number; date: string;
-  title: string; description: string; location: string;
-  accommodation?: string; hotel_id?: string;
-}
-interface TransportItem {
-  id: string; type: 'aereo' | 'maritimo' | 'onibus' | 'trem' | 'carro' | 'outro';
-  from: string; to: string; operator: string; departure: string; arrival: string; notes: string;
-}
-interface ExcursionItem {
-  id: string; title: string; description: string; duration: string;
-  price_per_person: string; price_per_couple: string; price_per_family: string;
-  included: boolean; media_url: string;
-}
+import { useQuotationForm } from './quotation-builder/useQuotationForm';
+import { cn } from '@/lib/utils';
 
 const TRANSPORT_TYPES = [
-  { value: 'aereo', label: 'Aéreo ✈️', icon: Plane },
-  { value: 'maritimo', label: 'Marítimo 🚢', icon: Ship },
-  { value: 'onibus', label: 'Ônibus 🚌', icon: Bus },
-  { value: 'trem', label: 'Trem 🚂', icon: Train },
-  { value: 'carro', label: 'Carro / Transfer', icon: Plane },
-  { value: 'outro', label: 'Outro', icon: MapPin },
+  { value: 'aereo', label: 'Aéreo ✈️' },
+  { value: 'maritimo', label: 'Marítimo 🚢' },
+  { value: 'onibus', label: 'Ônibus 🚌' },
+  { value: 'trem', label: 'Trem 🚂' },
+  { value: 'carro', label: 'Carro / Transfer' },
+  { value: 'outro', label: 'Outro' },
 ];
 
-const makeId = () => Math.random().toString(36).substring(2, 9);
+const STEPS = [
+  { id: 'destino', label: 'Destino & IA', icon: MapPin },
+  { id: 'itinerario', label: 'Itinerário', icon: Calendar }, // Wait Calendar missing? imported below? actually not imported. Let's use Plane for now
+  { id: 'transportes', label: 'Voos & Transp.', icon: Plane },
+  { id: 'passeios', label: 'Passeios', icon: Tent },
+  { id: 'valores', label: 'Valores', icon: DollarSign }, // Imported below
+  { id: 'cliente', label: 'Fechamento', icon: CheckCircle2 },
+];
+import { Calendar, DollarSign } from 'lucide-react';
 
-// ─── Props ────────────────────────────────────────────
 export interface QuotationBuilderSheetProps {
   open: boolean;
   onClose: () => void;
@@ -63,60 +56,34 @@ export function QuotationBuilderSheet({ open, onClose, clientId }: QuotationBuil
   const { organization } = useAuthStore();
   const { toast } = useToast();
 
+  const [currentStep, setCurrentStep] = useState(0);
   const [extracting, setExtracting] = useState(false);
-  const [aiExtracted, setAiExtracted] = useState(false);
-  const [aiRawResponse, setAiRawResponse] = useState<any>(null);
-  const [installments, setInstallments] = useState<InstallmentOption[]>([]);
 
-  // ── Core fields
-  const [form, setForm] = useState<any>({
-    client_id: clientId || '',
-    destination: '',
-    hotel_name: '',
-    hotel_stars: '',
-    hotel_id: '',
-    check_in: '',
-    check_out: '',
-    num_nights: '',
-    num_adults: '2',
-    num_children: '0',
-    meal_plan: '',
-    room_type: '',
-    total_value: '',
-    currency: 'BRL',
-    pricing_mode: 'per_person',
-    valid_until: '',
-    notes_internal: '',
-    whatsapp_text: '',
-    cover_image_url: '',
-    media_urls: [] as string[],
-    included_items: [] as string[],
-    excluded_items: [] as string[],
-  });
+  // Use separated state hook
+  const state = useQuotationForm(clientId);
+  const {
+    form, updateForm,
+    itinerary, addDay, updateDay, removeDay,
+    transports, addTransport, updateTransport, removeTransport,
+    excursions, addExcursion, updateExcursion, removeExcursion,
+    installments, addInstallment, removeInstallment,
+    aiExtracted, setAiExtracted, aiRawResponse, setAiRawResponse, reset
+  } = state;
 
-  // ── Multi-day
-  const [itinerary, setItinerary] = useState<DayItem[]>([]);
-  // ── Transports
-  const [transports, setTransports] = useState<TransportItem[]>([]);
-  // ── Excursions
-  const [excursions, setExcursions] = useState<ExcursionItem[]>([]);
-  // ── Includes/Excludes
   const [includeInput, setIncludeInput] = useState('');
   const [excludeInput, setExcludeInput] = useState('');
-  // ── Installments manual
   const [instType, setInstType] = useState('');
   const [instCount, setInstCount] = useState('');
   const [instValue, setInstValue] = useState('');
 
   useEffect(() => {
     if (open) {
-      setForm((p: any) => ({ ...p, client_id: clientId || '' }));
+      setCurrentStep(0);
+      reset();
+      if (clientId) updateForm('client_id', clientId);
     }
   }, [open, clientId]);
 
-  const update = (f: string, v: any) => setForm((p: any) => ({ ...p, [f]: v }));
-
-  // ── AI Extraction
   const handleAiExtract = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -133,26 +100,24 @@ export function QuotationBuilderSheet({ open, onClose, clientId }: QuotationBuil
       if (error) throw error;
       if (data?.data) {
         const d = data.data;
-        setForm((p: any) => ({
-          ...p,
-          destination: d.destination || p.destination,
-          hotel_name: d.hotel_name || p.hotel_name,
-          hotel_stars: d.hotel_stars?.toString() || p.hotel_stars,
-          check_in: d.check_in || p.check_in,
-          check_out: d.check_out || p.check_out,
-          num_nights: d.num_nights?.toString() || p.num_nights,
-          num_adults: (d.num_adults ?? d.pax_adultos)?.toString() || p.num_adults,
-          num_children: (d.num_children ?? d.pax_criancas)?.toString() || p.num_children,
-          meal_plan: d.meal_plan || p.meal_plan,
-          room_type: d.room_type || p.room_type,
-          total_value: d.total_value?.toString() || p.total_value,
-          currency: d.currency || p.currency,
-          whatsapp_text: d.whatsapp_text || p.whatsapp_text,
-        }));
-        if (d.installments?.length) setInstallments(d.installments);
+        updateForm('destination', d.destination || form.destination);
+        updateForm('hotel_name', d.hotel_name || form.hotel_name);
+        if (d.hotel_stars) updateForm('hotel_stars', d.hotel_stars.toString());
+        if (d.check_in) updateForm('check_in', d.check_in);
+        if (d.check_out) updateForm('check_out', d.check_out);
+        if (d.num_nights) updateForm('num_nights', d.num_nights.toString());
+        if (d.num_adults || d.pax_adultos) updateForm('num_adults', (d.num_adults ?? d.pax_adultos).toString());
+        if (d.num_children || d.pax_criancas) updateForm('num_children', (d.num_children ?? d.pax_criancas).toString());
+        if (d.meal_plan) updateForm('meal_plan', d.meal_plan);
+        if (d.room_type) updateForm('room_type', d.room_type);
+        if (d.total_value) updateForm('total_value', d.total_value.toString());
+        if (d.currency) updateForm('currency', d.currency);
+        if (d.whatsapp_text) updateForm('whatsapp_text', d.whatsapp_text);
+        if (d.installments?.length) state.setInstallments(d.installments);
+        
         setAiExtracted(true);
         setAiRawResponse(d);
-        toast({ title: '✨ IA extraiu os dados!', description: 'Revise e personalize antes de salvar.' });
+        toast({ title: '✨ IA extraiu os dados!', description: 'Revise e siga para a próxima etapa.' });
       }
     } catch (err: any) {
       toast({ title: 'Erro na extração', description: err.message, variant: 'destructive' });
@@ -161,45 +126,6 @@ export function QuotationBuilderSheet({ open, onClose, clientId }: QuotationBuil
     }
   };
 
-  // ── Itinerary helpers
-  const addDay = () => {
-    const nextDay = itinerary.length + 1;
-    setItinerary(p => [...p, {
-      id: makeId(), day: nextDay, date: '', title: `Dia ${nextDay}`,
-      description: '', location: '', accommodation: '', hotel_id: '',
-    }]);
-  };
-  const updateDay = (id: string, data: Partial<DayItem>) =>
-    setItinerary(p => p.map(d => d.id === id ? { ...d, ...data } : d));
-  const removeDay = (id: string) => setItinerary(p => p.filter(d => d.id !== id));
-
-  // ── Transport helpers
-  const addTransport = () => setTransports(p => [...p, {
-    id: makeId(), type: 'aereo', from: '', to: '', operator: '', departure: '', arrival: '', notes: '',
-  }]);
-  const updateTransport = (id: string, data: Partial<TransportItem>) =>
-    setTransports(p => p.map(t => t.id === id ? { ...t, ...data } : t));
-  const removeTransport = (id: string) => setTransports(p => p.filter(t => t.id !== id));
-
-  // ── Excursion helpers
-  const addExcursion = () => setExcursions(p => [...p, {
-    id: makeId(), title: '', description: '', duration: '',
-    price_per_person: '', price_per_couple: '', price_per_family: '',
-    included: true, media_url: '',
-  }]);
-  const updateExcursion = (id: string, data: Partial<ExcursionItem>) =>
-    setExcursions(p => p.map(e => e.id === id ? { ...e, ...data } : e));
-  const removeExcursion = (id: string) => setExcursions(p => p.filter(e => e.id !== id));
-
-  // ── Installment helpers
-  const addInstallment = () => {
-    if (!instType || !instCount || !instValue) return;
-    setInstallments(p => [...p, { type: instType, installment_count: Number(instCount), value: Number(instValue) }]);
-    setInstType(''); setInstCount(''); setInstValue('');
-  };
-  const removeInstallment = (i: number) => setInstallments(p => p.filter((_, idx) => idx !== i));
-
-  // ── Save
   const handleSave = async () => {
     const result = await createQuotation.mutateAsync({
       destination: form.destination || undefined,
@@ -216,576 +142,423 @@ export function QuotationBuilderSheet({ open, onClose, clientId }: QuotationBuil
       currency: form.currency,
       client_id: form.client_id || undefined,
       whatsapp_text: form.whatsapp_text || undefined,
-      installments: installments.length > 0 ? JSON.parse(JSON.stringify(installments)) : undefined,
+      installments: installments.length > 0 ? installments : undefined,
       ai_extracted: aiExtracted,
       ai_raw_response: aiRawResponse,
-      // Extended fields (new columns)
       cover_image_url: form.cover_image_url || undefined,
-      itinerary: itinerary.length > 0 ? itinerary as Record<string, any> : undefined,
-      transports: transports.length > 0 ? transports as Record<string, any> : undefined,
-      excursions: excursions.length > 0 ? excursions as Record<string, any> : undefined,
+      itinerary: itinerary.length > 0 ? itinerary as any : undefined,
+      transports: transports.length > 0 ? transports as any : undefined,
+      excursions: excursions.length > 0 ? excursions as any : undefined,
       pricing_mode: form.pricing_mode || undefined,
       valid_until: form.valid_until || undefined,
       notes_internal: form.notes_internal || undefined,
       included_items: form.included_items,
       excluded_items: form.excluded_items,
       media_urls: form.media_urls,
-    } as Record<string, any>);
+    } as any);
+
     if (result) {
       onClose();
       navigate(`/quotations/${result.id}`);
     }
   };
 
-  return (
-    <SheetPage
-      open={open}
-      onClose={onClose}
-      title="Nova Cotação"
-      subtitle="Construtor ultra-personalizado de orçamentos de viagem"
-      icon={FileText}
-      sections={[
-        { id: 'destino', label: 'Destino & Hotel' },
-        { id: 'itinerario', label: 'Itinerário Dia-a-Dia' },
-        { id: 'transportes', label: 'Transportes' },
-        { id: 'passeios', label: 'Passeios & Serviços' },
-        { id: 'valores', label: 'Valores & Parcelas' },
-        { id: 'midia', label: 'Mídia & Visual' },
-        { id: 'cliente', label: 'Cliente & Envio' },
-      ]}
-      footer={
-        <div className="flex w-full justify-end gap-2">
-          <Button variant="outline" onClick={onClose}>Cancelar</Button>
-          <Button
-            onClick={() => void handleSave()}
-            disabled={!form.destination || createQuotation.isPending}
-            className="bg-vj-green text-white"
-          >
-            <Save className="mr-2 h-4 w-4" />
-            {createQuotation.isPending ? 'Salvando...' : 'Salvar Cotação'}
-          </Button>
-        </div>
-      }
-    >
-      {(activeSection) => (
-        <>
-          {/* ══ DESTINO & HOTEL ══ */}
-          {activeSection === 'destino' && (
-            <div className="space-y-6">
-              {/* AI Extraction */}
-              <div className="p-4 rounded-2xl bg-vj-green/5 border border-vj-green/10">
-                <p className="font-semibold text-sm text-vj-txt flex items-center gap-2 mb-3">
-                  <Sparkles className="h-4 w-4 text-vj-green" /> Extração por IA (upload de imagem/PDF)
-                </p>
-                <label className="cursor-pointer block">
-                  <div className="flex items-center justify-center border-2 border-dashed border-vj-green/20 rounded-xl p-5 hover:bg-vj-green/5 transition-colors">
-                    {extracting ? (
-                      <span className="flex items-center gap-2 text-vj-green text-sm">
-                        <Loader2 className="h-4 w-4 animate-spin" /> Extraindo com IA...
-                      </span>
-                    ) : (
-                      <span className="text-sm text-vj-txt3 flex items-center gap-2">
-                        <ImageIcon className="h-4 w-4" />
-                        {aiExtracted ? '✅ Dados extraídos! Clique para extrair outro' : 'Clique para enviar cotação (print/PDF)'}
-                      </span>
-                    )}
-                  </div>
-                  <input type="file" accept="image/*,.pdf" className="hidden" onChange={handleAiExtract} disabled={extracting} />
-                </label>
+  const StepContent = () => {
+    switch (currentStep) {
+      case 0:
+        return (
+          <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+            {/* AI Banner */}
+            <div className="p-5 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center gap-4 text-white">
+              <div className="bg-white/10 p-3 rounded-xl shadow-sm">
+                <Sparkles className="h-6 w-6 text-vj-green" />
               </div>
+              <div className="flex-1">
+                <h3 className="font-bold text-white">Mágica da IA</h3>
+                <p className="text-sm text-zinc-400 mt-0.5">Arraste um PDF ou Print de uma cotação de operadora para preencher automaticamente.</p>
+              </div>
+              <label className="cursor-pointer shrink-0">
+                <div className="bg-white px-4 py-2 rounded-xl text-sm font-bold text-blue-600 border border-blue-200 hover:bg-blue-50 transition-colors flex items-center gap-2">
+                  {extracting ? <Loader2 className="w-4 h-4 animate-spin" /> : <ImageIcon className="w-4 h-4" />}
+                  {extracting ? 'Analisando...' : (aiExtracted ? 'Extraído! Anexar outro' : 'Fazer Upload')}
+                </div>
+                <input type="file" accept="image/*,.pdf" className="hidden" onChange={handleAiExtract} disabled={extracting} />
+              </label>
+            </div>
 
+            <div className="grid md:grid-cols-2 gap-6">
               <div className="space-y-4">
                 <div className="space-y-1.5">
-                  <Label>Destino *</Label>
-                  <Input value={form.destination} onChange={(e) => update('destination', e.target.value)} placeholder="Cancún, México" className="border-vj-border bg-vj-bg" />
+                  <Label className="font-bold text-zinc-700">Destino Principal *</Label>
+                  <Input value={form.destination} onChange={(e) => updateForm('destination', e.target.value)} placeholder="Ex: Paris, França" className="h-12 bg-zinc-50 border-zinc-200 rounded-xl" />
                 </div>
-
-                {/* Hotel Section */}
-                <div className="p-4 rounded-2xl bg-vj-bg border border-vj-border space-y-3">
-                  <Label className="font-semibold flex items-center gap-2 text-vj-txt">
-                    <Hotel className="h-4 w-4 text-vj-green" /> Hospedagem
-                  </Label>
-
-                  {hotels && hotels.length > 0 && (
-                    <div className="space-y-1.5">
-                      <Label className="text-xs text-vj-txt3">Vincular hotel cadastrado</Label>
-                      <Select value={form.hotel_id} onValueChange={(v) => {
-                        const h = hotels.find((x: any) => x.id === v);
-                        if (h) {
-                          update('hotel_id', v);
-                          update('hotel_name', h.name);
-                          if (h.category) update('hotel_stars', h.category.toString());
-                        }
-                      }}>
-                        <SelectTrigger className="border-vj-border bg-white">
-                          <SelectValue placeholder="Selecionar hotel do banco..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {hotels.map((h: any) => (
-                            <SelectItem key={h.id} value={h.id}>
-                              {h.name} {h.city ? `— ${h.city}` : ''}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  )}
-
-                  <div className="grid grid-cols-3 gap-3">
-                    <div className="space-y-1.5 col-span-2">
-                      <Label>Nome do Hotel</Label>
-                      <Input value={form.hotel_name} onChange={(e) => update('hotel_name', e.target.value)} className="border-vj-border bg-white" />
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label>Estrelas</Label>
-                      <Select value={form.hotel_stars} onValueChange={(v) => update('hotel_stars', v)}>
-                        <SelectTrigger className="border-vj-border bg-white"><SelectValue placeholder="★" /></SelectTrigger>
-                        <SelectContent>
-                          {[1,2,3,4,5].map(s => <SelectItem key={s} value={s.toString()}>{s}★</SelectItem>)}
-                        </SelectContent>
-                      </Select>
-                    </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <Label className="font-bold text-zinc-700">Check-in</Label>
+                    <Input type="date" value={form.check_in} onChange={(e) => updateForm('check_in', e.target.value)} className="h-12 bg-zinc-50 border-zinc-200 rounded-xl" />
                   </div>
-
-                  <div className="grid grid-cols-3 gap-3">
-                    <div className="space-y-1.5">
-                      <Label>Check-in</Label>
-                      <Input type="date" value={form.check_in} onChange={(e) => update('check_in', e.target.value)} className="border-vj-border bg-white" />
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label>Check-out</Label>
-                      <Input type="date" value={form.check_out} onChange={(e) => update('check_out', e.target.value)} className="border-vj-border bg-white" />
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label>Total de Noites</Label>
-                      <Input type="number" value={form.num_nights} onChange={(e) => update('num_nights', e.target.value)} className="border-vj-border bg-white" />
-                    </div>
+                  <div className="space-y-1.5">
+                    <Label className="font-bold text-zinc-700">Check-out</Label>
+                    <Input type="date" value={form.check_out} onChange={(e) => updateForm('check_out', e.target.value)} className="h-12 bg-zinc-50 border-zinc-200 rounded-xl" />
                   </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1.5">
-                      <Label>Adultos</Label>
-                      <Input type="number" min="1" value={form.num_adults} onChange={(e) => update('num_adults', e.target.value)} className="border-vj-border bg-white" />
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label>Crianças (<span className="text-[10px]">Até 12a</span>)</Label>
-                      <Input type="number" min="0" value={form.num_children} onChange={(e) => update('num_children', e.target.value)} className="border-vj-border bg-white" />
-                    </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <Label className="font-bold text-zinc-700">Adultos</Label>
+                    <Input type="number" min="1" value={form.num_adults} onChange={(e) => updateForm('num_adults', e.target.value)} className="h-12 bg-zinc-50 border-zinc-200 rounded-xl" />
                   </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-1.5">
-                      <Label>Regime</Label>
-                      <Select value={form.meal_plan} onValueChange={(v) => update('meal_plan', v)}>
-                        <SelectTrigger className="border-vj-border bg-white"><SelectValue placeholder="Selecione..." /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all_inclusive">All Inclusive</SelectItem>
-                          <SelectItem value="half_board">Meia Pensão</SelectItem>
-                          <SelectItem value="bed_breakfast">Café da Manhã</SelectItem>
-                          <SelectItem value="room_only">Só Hospedagem</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label>Tipo de Quarto</Label>
-                      <Input value={form.room_type} onChange={(e) => update('room_type', e.target.value)} placeholder="Superior, Deluxe..." className="border-vj-border bg-white" />
-                    </div>
+                  <div className="space-y-1.5">
+                    <Label className="font-bold text-zinc-700">Crianças</Label>
+                    <Input type="number" min="0" value={form.num_children} onChange={(e) => updateForm('num_children', e.target.value)} className="h-12 bg-zinc-50 border-zinc-200 rounded-xl" />
                   </div>
                 </div>
               </div>
-            </div>
-          )}
-
-          {/* ══ ITINERÁRIO ══ */}
-          {activeSection === 'itinerario' && (
-            <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="font-bold text-vj-txt">Itinerário Dia-a-Dia</h3>
-                  <p className="text-xs text-vj-txt3">Crie o roteiro completo da viagem</p>
+              
+              <div className="p-5 rounded-xl bg-zinc-50 border border-zinc-200 space-y-4">
+                <h3 className="font-bold flex items-center gap-2"><Hotel className="text-zinc-400" /> Detalhes da Hospedagem</h3>
+                <div className="space-y-1.5">
+                  <Label>Nome do Hotel Base</Label>
+                  <Input value={form.hotel_name} onChange={(e) => updateForm('hotel_name', e.target.value)} className="bg-white border-zinc-200 rounded-xl" />
                 </div>
-                <Button variant="outline" size="sm" onClick={addDay}>
-                  <Plus className="h-3.5 w-3.5 mr-1" /> Adicionar Dia
-                </Button>
-              </div>
-
-              <div className="space-y-4">
-                {itinerary.map((day, idx) => (
-                  <div key={day.id} className="relative p-5 rounded-2xl border border-vj-green/10 bg-vj-bg/50 group space-y-3">
-                    <button
-                      onClick={() => removeDay(day.id)}
-                      className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity "
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-
-                    <div className="flex items-center gap-3">
-                      <div className="h-8 w-8 rounded-full bg-vj-green text-white flex items-center justify-center text-sm font-bold shrink-0">
-                        {day.day}
-                      </div>
-                      <Input
-                        value={day.title}
-                        onChange={(e) => updateDay(day.id, { title: e.target.value })}
-                        placeholder="Título do dia"
-                        className="border-none bg-transparent font-bold text-vj-txt focus:ring-0 "
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="space-y-1.5">
-                        <Label className="text-xs">Data</Label>
-                        <Input type="date" value={day.date} onChange={(e) => updateDay(day.id, { date: e.target.value })} className="border-vj-border bg-vj-bg h-8 text-sm" />
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label className="text-xs">Local / Cidade</Label>
-                        <Input value={day.location} onChange={(e) => updateDay(day.id, { location: e.target.value })} placeholder="Paris, França" className="border-vj-border bg-vj-bg h-8 text-sm" />
-                      </div>
-                    </div>
-
-                    <Textarea
-                      value={day.description}
-                      onChange={(e) => updateDay(day.id, { description: e.target.value })}
-                      placeholder="Descrição das atividades do dia..."
-                      rows={3}
-                      className="border-vj-border bg-vj-bg text-sm resize-none"
-                    />
-
-                    <div className="space-y-1.5">
-                      <Label className="text-xs flex items-center gap-1"><Hotel className="h-3 w-3" /> Acomodação do dia</Label>
-                      {hotels && hotels.length > 0 ? (
-                        <Select value={day.hotel_id} onValueChange={(v) => {
-                          const h = hotels.find((x: any) => x.id === v);
-                          updateDay(day.id, { hotel_id: v, accommodation: h?.name || '' });
-                        }}>
-                          <SelectTrigger className="border-vj-border bg-vj-bg h-8 text-sm">
-                            <SelectValue placeholder="Selecionar hotel..." />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {hotels.map((h: any) => <SelectItem key={h.id} value={h.id}>{h.name}</SelectItem>)}
-                          </SelectContent>
-                        </Select>
-                      ) : (
-                        <Input value={day.accommodation} onChange={(e) => updateDay(day.id, { accommodation: e.target.value })} placeholder="Nome do hotel/pousada..." className="border-vj-border bg-vj-bg h-8 text-sm" />
-                      )}
-                    </div>
-                  </div>
-                ))}
-
-                {itinerary.length === 0 && (
-                  <div className="text-center py-10 border-2 border-dashed border-vj-border rounded-2xl">
-                    <MapPin className="h-10 w-10 text-vj-txt3/20 mx-auto mb-3" />
-                    <p className="text-vj-txt3 text-sm italic">Clique em "Adicionar Dia" para construir o roteiro</p>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* ══ TRANSPORTES ══ */}
-          {activeSection === 'transportes' && (
-            <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="font-bold text-vj-txt">Transportes</h3>
-                  <p className="text-xs text-vj-txt3">Aéreo, marítimo, terrestre e conexões</p>
-                </div>
-                <Button variant="outline" size="sm" onClick={addTransport}>
-                  <Plus className="h-3.5 w-3.5 mr-1" /> Adicionar Trecho
-                </Button>
-              </div>
-
-              <div className="space-y-4">
-                {transports.map((t) => (
-                  <div key={t.id} className="relative p-5 rounded-2xl border border-vj-green/10 bg-vj-bg/50 group space-y-3">
-                    <button onClick={() => removeTransport(t.id)} className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity ">
-                      <X className="h-3 w-3" />
-                    </button>
-
-                    <Select value={t.type} onValueChange={(v) => updateTransport(t.id, { type: v as Record<string, any> })}>
-                      <SelectTrigger className="border-vj-border bg-vj-bg">
-                        <SelectValue />
-                      </SelectTrigger>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <Label>Categoria</Label>
+                    <Select value={form.hotel_stars} onValueChange={(v) => updateForm('hotel_stars', v)}>
+                      <SelectTrigger className="bg-white border-zinc-200 rounded-xl"><SelectValue placeholder="Estrelas" /></SelectTrigger>
                       <SelectContent>
-                        {TRANSPORT_TYPES.map(tt => (
-                          <SelectItem key={tt.value} value={tt.value}>{tt.label}</SelectItem>
-                        ))}
+                        {[1,2,3,4,5].map(s => <SelectItem key={s} value={s.toString()}>{s}★</SelectItem>)}
                       </SelectContent>
                     </Select>
-
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="space-y-1.5">
-                        <Label className="text-xs">De</Label>
-                        <Input value={t.from} onChange={(e) => updateTransport(t.id, { from: e.target.value })} placeholder="Florianópolis (FLN)" className="border-vj-border bg-vj-bg h-8 text-sm" />
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label className="text-xs">Para</Label>
-                        <Input value={t.to} onChange={(e) => updateTransport(t.id, { to: e.target.value })} placeholder="Cancún (CUN)" className="border-vj-border bg-vj-bg h-8 text-sm" />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-3 gap-3">
-                      <div className="space-y-1.5">
-                        <Label className="text-xs">Operadora</Label>
-                        <Input value={t.operator} onChange={(e) => updateTransport(t.id, { operator: e.target.value })} placeholder="LATAM" className="border-vj-border bg-vj-bg h-8 text-sm" />
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label className="text-xs">Partida</Label>
-                        <Input type="datetime-local" value={t.departure} onChange={(e) => updateTransport(t.id, { departure: e.target.value })} className="border-vj-border bg-vj-bg h-8 text-sm" />
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label className="text-xs">Chegada</Label>
-                        <Input type="datetime-local" value={t.arrival} onChange={(e) => updateTransport(t.id, { arrival: e.target.value })} className="border-vj-border bg-vj-bg h-8 text-sm" />
-                      </div>
-                    </div>
-
-                    <Input value={t.notes} onChange={(e) => updateTransport(t.id, { notes: e.target.value })} placeholder="Notas (voo, bagagem, escala...)" className="border-vj-border bg-vj-bg text-sm" />
                   </div>
-                ))}
-
-                {transports.length === 0 && (
-                  <div className="text-center py-10 border-2 border-dashed border-vj-border rounded-2xl">
-                    <Plane className="h-10 w-10 text-vj-txt3/20 mx-auto mb-3" />
-                    <p className="text-vj-txt3 text-sm italic">Nenhum transporte adicionado</p>
+                  <div className="space-y-1.5">
+                    <Label>Regime</Label>
+                    <Select value={form.meal_plan} onValueChange={(v) => updateForm('meal_plan', v)}>
+                      <SelectTrigger className="bg-white border-zinc-200 rounded-xl"><SelectValue placeholder="Selecione" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all_inclusive">All Inclusive</SelectItem>
+                        <SelectItem value="half_board">Meia Pensão</SelectItem>
+                        <SelectItem value="bed_breakfast">Café da Manhã</SelectItem>
+                        <SelectItem value="room_only">Só Hospedagem</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
-                )}
+                </div>
               </div>
             </div>
-          )}
-
-          {/* ══ PASSEIOS ══ */}
-          {activeSection === 'passeios' && (
-            <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="font-bold text-vj-txt">Passeios & Serviços</h3>
-                  <p className="text-xs text-vj-txt3">Excursões, city tours, transfers, seguros...</p>
-                </div>
-                <Button variant="outline" size="sm" onClick={addExcursion}>
-                  <Plus className="h-3.5 w-3.5 mr-1" /> Adicionar Item
-                </Button>
-              </div>
-
+          </div>
+        );
+      case 1:
+        return (
+          <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+             <div className="flex items-center justify-between bg-zinc-50 p-4 rounded-xl border border-zinc-200">
+               <p className="text-sm text-zinc-600 font-medium">Crie a narrativa da viagem adicionando o itinerário dia a dia.</p>
+               <Button onClick={addDay} className="rounded-xl"><Plus className="w-4 h-4 mr-2"/> Novo Dia</Button>
+             </div>
+             {itinerary.length === 0 ? (
+               <div className="py-12 text-center text-zinc-400">Clique acima para adicionar o 1º dia.</div>
+             ) : (
+               <div className="space-y-4">
+                 {itinerary.map(day => (
+                   <div key={day.id} className="p-4 rounded-xl border border-zinc-200 relative group bg-white shadow-sm">
+                     <button onClick={() => removeDay(day.id)} className="absolute -top-2 -right-2 bg-red-100 text-red-600 rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity"><X className="w-3 h-3"/></button>
+                     <div className="flex gap-4">
+                       <div className="w-12 h-12 bg-zinc-100 rounded-xl flex items-center justify-center font-black text-xl text-zinc-400 shrink-0">{day.day}</div>
+                       <div className="flex-1 space-y-3">
+                          <Input value={day.title} onChange={(e) => updateDay(day.id, { title: e.target.value })} className="font-bold text-lg border-0 px-0 h-auto focus-visible:ring-0 rounded-none border-b border-dashed border-zinc-200" placeholder="Título do dia (Ex: Chegada em Paris)"/>
+                          <div className="grid grid-cols-2 gap-3">
+                            <Input type="date" value={day.date} onChange={(e) => updateDay(day.id, { date: e.target.value })} className="bg-zinc-50 rounded-xl border-zinc-200 h-9" />
+                            <Input value={day.location} onChange={(e) => updateDay(day.id, { location: e.target.value })} placeholder="Local/Cidade" className="bg-zinc-50 rounded-xl border-zinc-200 h-9" />
+                          </div>
+                          <Textarea value={day.description} onChange={(e) => updateDay(day.id, { description: e.target.value })} rows={2} placeholder="O que vai acontecer neste dia..." className="bg-zinc-50 rounded-xl border-zinc-200 resize-none text-sm"/>
+                       </div>
+                     </div>
+                   </div>
+                 ))}
+               </div>
+             )}
+          </div>
+        );
+      case 2:
+        return (
+          <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+            <div className="flex justify-end mb-4"><Button onClick={addTransport} className="rounded-xl"><Plus className="w-4 h-4 mr-2"/> Novo Transporte</Button></div>
+            {transports.length === 0 ? <div className="py-12 text-center text-zinc-400">Nenhum transporte inserido.</div> : (
               <div className="space-y-4">
-                {excursions.map((exc) => (
-                  <div key={exc.id} className="relative p-5 rounded-2xl border border-vj-green/10 bg-vj-bg/50 group space-y-3">
-                    <button onClick={() => removeExcursion(exc.id)} className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity ">
-                      <X className="h-3 w-3" />
-                    </button>
-
-                    <div className="grid grid-cols-3 gap-3">
-                      <div className="space-y-1.5 col-span-2">
-                        <Label className="text-xs">Nome do Passeio/Serviço</Label>
-                        <Input value={exc.title} onChange={(e) => updateExcursion(exc.id, { title: e.target.value })} placeholder="City Tour Paris, Seguro Viagem..." className="border-vj-border bg-vj-bg h-8 text-sm" />
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label className="text-xs">Duração</Label>
-                        <Input value={exc.duration} onChange={(e) => updateExcursion(exc.id, { duration: e.target.value })} placeholder="4h, 1 dia..." className="border-vj-border bg-vj-bg h-8 text-sm" />
-                      </div>
-                    </div>
-
-                    <Textarea value={exc.description} onChange={(e) => updateExcursion(exc.id, { description: e.target.value })} placeholder="Descrição do passeio..." rows={2} className="border-vj-border bg-vj-bg text-sm resize-none" />
-
-                    <div className="grid grid-cols-3 gap-3">
-                      <div className="space-y-1.5">
-                        <Label className="text-xs flex items-center gap-1"><UserCheck className="h-3 w-3" /> Por Pessoa</Label>
-                        <Input value={exc.price_per_person} onChange={(e) => updateExcursion(exc.id, { price_per_person: e.target.value })} placeholder="R$ 0" className="border-vj-border bg-vj-bg h-8 text-sm" />
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label className="text-xs flex items-center gap-1"><Users className="h-3 w-3" /> Por Casal</Label>
-                        <Input value={exc.price_per_couple} onChange={(e) => updateExcursion(exc.id, { price_per_couple: e.target.value })} placeholder="R$ 0" className="border-vj-border bg-vj-bg h-8 text-sm" />
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label className="text-xs flex items-center gap-1"><Tent className="h-3 w-3" /> Por Família</Label>
-                        <Input value={exc.price_per_family} onChange={(e) => updateExcursion(exc.id, { price_per_family: e.target.value })} placeholder="R$ 0" className="border-vj-border bg-vj-bg h-8 text-sm" />
-                      </div>
-                    </div>
+                {transports.map(t => (
+                  <div key={t.id} className="p-4 rounded-xl border border-zinc-200 bg-white relative group shadow-sm grid md:grid-cols-3 gap-4">
+                    <button onClick={() => removeTransport(t.id)} className="absolute -top-2 -right-2 bg-red-100 text-red-600 rounded-full p-1.5 opacity-0 group-hover:opacity-100"><X className="w-3 h-3"/></button>
+                    <Select value={t.type} onValueChange={(v) => updateTransport(t.id, { type: v })}>
+                      <SelectTrigger className="bg-zinc-50 rounded-xl border-zinc-200"><SelectValue /></SelectTrigger>
+                      <SelectContent>{TRANSPORT_TYPES.map(tt => <SelectItem key={tt.value} value={tt.value}>{tt.label}</SelectItem>)}</SelectContent>
+                    </Select>
+                    <Input value={t.from} onChange={(e) => updateTransport(t.id, { from: e.target.value })} placeholder="Origem (GRU)" className="bg-zinc-50 rounded-xl border-zinc-200" />
+                    <Input value={t.to} onChange={(e) => updateTransport(t.id, { to: e.target.value })} placeholder="Destino (CDG)" className="bg-zinc-50 rounded-xl border-zinc-200" />
+                    <Input value={t.operator} onChange={(e) => updateTransport(t.id, { operator: e.target.value })} placeholder="Cia Aérea / Op." className="bg-zinc-50 rounded-xl border-zinc-200" />
+                    <Input type="datetime-local" value={t.departure} onChange={(e) => updateTransport(t.id, { departure: e.target.value })} className="bg-zinc-50 rounded-xl border-zinc-200 text-xs" />
+                    <Input type="datetime-local" value={t.arrival} onChange={(e) => updateTransport(t.id, { arrival: e.target.value })} className="bg-zinc-50 rounded-xl border-zinc-200 text-xs" />
                   </div>
                 ))}
-
-                {excursions.length === 0 && (
-                  <div className="text-center py-10 border-2 border-dashed border-vj-border rounded-2xl">
-                    <Star className="h-10 w-10 text-vj-txt3/20 mx-auto mb-3" />
-                    <p className="text-vj-txt3 text-sm italic">Nenhum passeio ou serviço adicionado</p>
-                  </div>
-                )}
               </div>
-
-              {/* Included / Excluded */}
-              <div className="pt-6 border-t border-vj-border space-y-4">
-                <div className="space-y-2">
-                  <Label className="text-vj-txt font-semibold">✅ O que está incluído</Label>
-                  <div className="flex gap-2">
-                    <Input value={includeInput} onChange={(e) => setIncludeInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && includeInput) { e.preventDefault(); update('included_items', [...form.included_items, includeInput]); setIncludeInput(''); }}} placeholder="Traslados, Seguro..." className="border-vj-border bg-vj-bg" />
-                    <Button variant="outline" size="sm" onClick={() => { if (includeInput) { update('included_items', [...form.included_items, includeInput]); setIncludeInput(''); }}}>+</Button>
+            )}
+          </div>
+        );
+      case 3:
+        return (
+          <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+            <div className="flex justify-end mb-4"><Button onClick={addExcursion} className="rounded-xl"><Plus className="w-4 h-4 mr-2"/> Adicionar Passeio</Button></div>
+            {excursions.length === 0 ? <div className="py-12 text-center text-zinc-400">Nenhum passeio inserido.</div> : (
+              <div className="space-y-4">
+                {excursions.map(exc => (
+                  <div key={exc.id} className="p-4 rounded-xl border border-zinc-200 bg-white relative group shadow-sm space-y-3">
+                    <button onClick={() => removeExcursion(exc.id)} className="absolute -top-2 -right-2 bg-red-100 text-red-600 rounded-full p-1.5 opacity-0 group-hover:opacity-100"><X className="w-3 h-3"/></button>
+                    <div className="grid md:grid-cols-3 gap-3">
+                      <Input value={exc.title} onChange={(e) => updateExcursion(exc.id, { title: e.target.value })} placeholder="Nome do Passeio" className="md:col-span-2 font-bold bg-zinc-50 rounded-xl border-zinc-200" />
+                      <Input value={exc.duration} onChange={(e) => updateExcursion(exc.id, { duration: e.target.value })} placeholder="Duração (ex: 4h)" className="bg-zinc-50 rounded-xl border-zinc-200" />
+                    </div>
+                    <Textarea value={exc.description} onChange={(e) => updateExcursion(exc.id, { description: e.target.value })} placeholder="Descrição..." className="bg-zinc-50 rounded-xl border-zinc-200 text-sm" rows={2}/>
                   </div>
-                  <div className="flex flex-wrap gap-1.5">
-                    {form.included_items.map((item: string, i: number) => (
-                      <Badge key={i} className="gap-1 bg-green-500/10 text-green-700 border-green-200">
-                        {item} <button onClick={() => update('included_items', form.included_items.filter((_: any, idx: number) => idx !== i))}><X className="h-3 w-3" /></button>
-                      </Badge>
-                    ))}
-                  </div>
+                ))}
+              </div>
+            )}
+            {/* O que inclui */}
+            <div className="grid md:grid-cols-2 gap-6 pt-6 border-t border-zinc-100 mt-6">
+              <div className="p-4 rounded-xl bg-green-50/50 border border-green-100">
+                <Label className="text-green-800 font-bold mb-2 block">✅ O que está incluído</Label>
+                <div className="flex gap-2 mb-3">
+                  <Input value={includeInput} onChange={(e) => setIncludeInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && includeInput) { e.preventDefault(); updateForm('included_items', [...form.included_items, includeInput]); setIncludeInput(''); }}} placeholder="Adicionar item..." className="bg-white rounded-xl" />
                 </div>
-
-                <div className="space-y-2">
-                  <Label className="text-vj-txt font-semibold">❌ Não está incluído</Label>
-                  <div className="flex gap-2">
-                    <Input value={excludeInput} onChange={(e) => setExcludeInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && excludeInput) { e.preventDefault(); update('excluded_items', [...form.excluded_items, excludeInput]); setExcludeInput(''); }}} placeholder="Passagem aérea, Alimentação..." className="border-vj-border bg-vj-bg" />
-                    <Button variant="outline" size="sm" onClick={() => { if (excludeInput) { update('excluded_items', [...form.excluded_items, excludeInput]); setExcludeInput(''); }}}>+</Button>
-                  </div>
-                  <div className="flex flex-wrap gap-1.5">
-                    {form.excluded_items.map((item: string, i: number) => (
-                      <Badge key={i} className="gap-1 bg-red-500/10 text-red-700 border-red-200">
-                        {item} <button onClick={() => update('excluded_items', form.excluded_items.filter((_: any, idx: number) => idx !== i))}><X className="h-3 w-3" /></button>
-                      </Badge>
-                    ))}
-                  </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {form.included_items.map((item: string, i: number) => (
+                    <Badge key={i} className="bg-green-100 text-green-700 hover:bg-green-200 shadow-none border-0">
+                      {item} <X className="h-3 w-3 ml-1 cursor-pointer" onClick={() => updateForm('included_items', form.included_items.filter((_:any, idx:number) => idx !== i))}/>
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+              <div className="p-4 rounded-xl bg-red-50/50 border border-red-100">
+                <Label className="text-red-800 font-bold mb-2 block">❌ Não incluído</Label>
+                <div className="flex gap-2 mb-3">
+                  <Input value={excludeInput} onChange={(e) => setExcludeInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && excludeInput) { e.preventDefault(); updateForm('excluded_items', [...form.excluded_items, excludeInput]); setExcludeInput(''); }}} placeholder="Adicionar item..." className="bg-white rounded-xl" />
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {form.excluded_items.map((item: string, i: number) => (
+                    <Badge key={i} className="bg-red-100 text-red-700 hover:bg-red-200 shadow-none border-0">
+                      {item} <X className="h-3 w-3 ml-1 cursor-pointer" onClick={() => updateForm('excluded_items', form.excluded_items.filter((_:any, idx:number) => idx !== i))}/>
+                    </Badge>
+                  ))}
                 </div>
               </div>
             </div>
-          )}
-
-          {/* ══ VALORES ══ */}
-          {activeSection === 'valores' && (
-            <div className="space-y-6">
-              <div className="grid grid-cols-2 gap-4">
+          </div>
+        );
+      case 4:
+        return (
+          <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+            <div className="grid md:grid-cols-3 gap-6">
+              <div className="p-5 rounded-xl bg-zinc-50 border border-zinc-200 md:col-span-1 space-y-4">
+                <h3 className="font-bold flex items-center gap-2 text-zinc-800"><DollarSign className="text-zinc-400" /> Precificação</h3>
                 <div className="space-y-1.5">
-                  <Label>Valor Total</Label>
-                  <Input type="number" step="0.01" value={form.total_value} onChange={(e) => update('total_value', e.target.value)} placeholder="0.00" className="border-vj-border bg-vj-bg" />
+                  <Label>Valor Total Final</Label>
+                  <Input type="number" step="0.01" value={form.total_value} onChange={(e) => updateForm('total_value', e.target.value)} placeholder="0.00" className="bg-white border-zinc-200 rounded-xl h-12 text-lg font-bold text-green-600" />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <Label>Moeda</Label>
+                    <Select value={form.currency} onValueChange={(v) => updateForm('currency', v)}>
+                      <SelectTrigger className="bg-white border-zinc-200 rounded-xl"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="BRL">BRL (R$)</SelectItem>
+                        <SelectItem value="USD">USD ($)</SelectItem>
+                        <SelectItem value="EUR">EUR (€)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>Por</Label>
+                    <Select value={form.pricing_mode} onValueChange={(v) => updateForm('pricing_mode', v)}>
+                      <SelectTrigger className="bg-white border-zinc-200 rounded-xl"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="per_person">Pessoa</SelectItem>
+                        <SelectItem value="per_couple">Casal</SelectItem>
+                        <SelectItem value="total">Pacote</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
                 <div className="space-y-1.5">
-                  <Label>Moeda</Label>
-                  <Select value={form.currency} onValueChange={(v) => update('currency', v)}>
-                    <SelectTrigger className="border-vj-border bg-vj-bg"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="BRL">BRL (R$)</SelectItem>
-                      <SelectItem value="USD">USD ($)</SelectItem>
-                      <SelectItem value="EUR">EUR (€)</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Label>Validade da Cotação</Label>
+                  <Input type="date" value={form.valid_until} onChange={(e) => updateForm('valid_until', e.target.value)} className="bg-white border-zinc-200 rounded-xl" />
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <Label>Precificação por</Label>
-                  <Select value={form.pricing_mode} onValueChange={(v) => update('pricing_mode', v)}>
-                    <SelectTrigger className="border-vj-border bg-vj-bg"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="per_person">Por Pessoa</SelectItem>
-                      <SelectItem value="per_couple">Por Casal</SelectItem>
-                      <SelectItem value="per_family">Por Família</SelectItem>
-                      <SelectItem value="total">Pacote Total</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-1.5">
-                  <Label>Válida até</Label>
-                  <Input type="date" value={form.valid_until} onChange={(e) => update('valid_until', e.target.value)} className="border-vj-border bg-vj-bg" />
-                </div>
-              </div>
-
-              {/* Parcelamentos */}
-              <div className="pt-4 border-t border-vj-border space-y-4">
-                <Label className="font-bold text-vj-txt">Opções de Parcelamento</Label>
-
-                <div className="grid grid-cols-3 gap-3">
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">Tipo</Label>
-                    <Input value={instType} onChange={(e) => setInstType(e.target.value)} placeholder="Ex: Cartão" className="border-vj-border bg-vj-bg h-8 text-sm" />
+              <div className="p-5 rounded-xl bg-white border border-zinc-200 md:col-span-2 space-y-4">
+                <h3 className="font-bold text-zinc-800">Formas de Pagamento (Parcelamento)</h3>
+                <div className="flex gap-3 items-end bg-zinc-50 p-4 rounded-xl border border-zinc-100">
+                  <div className="flex-1 space-y-1.5">
+                    <Label className="text-xs text-zinc-500">Tipo (ex: Boleto, Cartão)</Label>
+                    <Input value={instType} onChange={(e) => setInstType(e.target.value)} className="bg-white rounded-xl" />
                   </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">Parcelas</Label>
-                    <Input type="number" value={instCount} onChange={(e) => setInstCount(e.target.value)} placeholder="12" className="border-vj-border bg-vj-bg h-8 text-sm" />
+                  <div className="w-20 space-y-1.5">
+                    <Label className="text-xs text-zinc-500">Qtd.</Label>
+                    <Input type="number" value={instCount} onChange={(e) => setInstCount(e.target.value)} placeholder="12" className="bg-white rounded-xl" />
                   </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">Valor/parcela</Label>
-                    <Input type="number" value={instValue} onChange={(e) => setInstValue(e.target.value)} placeholder="0.00" className="border-vj-border bg-vj-bg h-8 text-sm" />
+                  <div className="w-32 space-y-1.5">
+                    <Label className="text-xs text-zinc-500">Valor (R$)</Label>
+                    <Input type="number" value={instValue} onChange={(e) => setInstValue(e.target.value)} placeholder="0.00" className="bg-white rounded-xl" />
                   </div>
+                  <Button onClick={() => { if(instType&&instCount&&instValue){ addInstallment(instType, Number(instCount), Number(instValue)); setInstType(''); setInstCount(''); setInstValue('');} }} className="rounded-xl"><Plus className="w-4 h-4"/></Button>
                 </div>
-                <Button variant="outline" size="sm" onClick={addInstallment} disabled={!instType || !instCount || !instValue}>
-                  <Plus className="h-3.5 w-3.5 mr-1" /> Adicionar parcela
-                </Button>
 
-                <div className="space-y-2">
+                <div className="space-y-2 mt-4">
                   {installments.map((inst, i) => (
-                    <div key={i} className="flex items-center justify-between p-3 rounded-xl bg-vj-bg border border-vj-border text-sm">
-                      <span className="text-vj-txt">{inst.type} — {inst.installment_count}x de {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: form.currency }).format(inst.value)}</span>
-                      <button onClick={() => removeInstallment(i)} className="text-red-400 hover:text-red-600">
-                        <X className="h-4 w-4" />
-                      </button>
+                    <div key={i} className="flex items-center justify-between p-3 rounded-xl bg-white border border-zinc-100 shadow-sm text-sm">
+                      <span className="font-medium text-zinc-700"><Badge variant="outline" className="mr-2">{inst.type}</Badge> {inst.installment_count}x de {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: form.currency }).format(inst.value)}</span>
+                      <Button variant="ghost" size="icon" onClick={() => removeInstallment(i)} className="text-red-400 h-8 w-8"><X className="h-4 w-4" /></Button>
                     </div>
                   ))}
                 </div>
               </div>
-
-              <div className="space-y-1.5">
-                <Label>Observações Internas</Label>
-                <Textarea value={form.notes_internal} onChange={(e) => update('notes_internal', e.target.value)} rows={3} placeholder="Notas privadas sobre a cotação..." className="border-vj-border bg-vj-bg resize-none" />
-              </div>
             </div>
-          )}
-
-          {/* ══ MÍDIA ══ */}
-          {activeSection === 'midia' && (
-            <div className="space-y-8">
-              <div className="space-y-4">
-                <Label className="font-semibold text-vj-txt flex items-center gap-2">
-                  <ImageIcon className="h-4 w-4 text-vj-green" /> Imagem de Capa do Orçamento
-                </Label>
-                <MediaUploader
-                  multiple={false}
-                  existingUrls={form.cover_image_url ? [form.cover_image_url] : []}
-                  onUploadComplete={(urls) => update('cover_image_url', urls[0])}
-                  folder="quotations/covers"
-                />
-              </div>
-
-              <div className="space-y-4">
-                <Label className="font-semibold text-vj-txt flex items-center gap-2">
-                  <Camera className="h-4 w-4 text-vj-green" /> Galeria de Fotos do Destino
-                </Label>
-                <MediaUploader
-                  multiple
-                  existingUrls={form.media_urls}
-                  onUploadComplete={(urls) => update('media_urls', urls)}
-                  folder="quotations/gallery"
-                />
-              </div>
+            <div className="space-y-1.5">
+              <Label className="text-zinc-600 font-bold">Observações Internas (Não vai pro cliente)</Label>
+              <Textarea value={form.notes_internal} onChange={(e) => updateForm('notes_internal', e.target.value)} rows={3} placeholder="Notas sobre margem, fornecedor..." className="bg-zinc-50 border-zinc-200 rounded-xl resize-none" />
             </div>
-          )}
-
-          {/* ══ CLIENTE ══ */}
-          {activeSection === 'cliente' && (
-            <div className="space-y-6">
-              <div className="space-y-1.5">
-                <Label>Cliente</Label>
-                <Select value={form.client_id} onValueChange={(v) => update('client_id', v)}>
-                  <SelectTrigger className="border-vj-border bg-vj-bg">
-                    <SelectValue placeholder="Selecione um cliente (opcional)" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {clients?.map((c) => (
-                      <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-1.5">
-                <Label>Texto para WhatsApp</Label>
-                <Textarea
-                  value={form.whatsapp_text}
-                  onChange={(e) => update('whatsapp_text', e.target.value)}
-                  rows={10}
-                  placeholder="Olá! Preparamos uma cotação exclusiva para você..."
-                  className="border-vj-border bg-vj-bg"
-                />
-              </div>
+          </div>
+        );
+      case 5:
+        return (
+          <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+            <div className="grid md:grid-cols-2 gap-8">
+               <div className="space-y-6">
+                 <div>
+                   <h3 className="font-bold text-lg mb-2">Cliente Final</h3>
+                   <Select value={form.client_id} onValueChange={(v) => updateForm('client_id', v)}>
+                     <SelectTrigger className="bg-zinc-50 border-zinc-200 rounded-xl h-12">
+                       <SelectValue placeholder="Vincular cliente existente..." />
+                     </SelectTrigger>
+                     <SelectContent>
+                       {clients?.map((c) => (
+                         <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                       ))}
+                     </SelectContent>
+                   </Select>
+                 </div>
+                 <div>
+                    <h3 className="font-bold text-lg mb-2 flex items-center gap-2"><ImageIcon className="w-4 h-4 text-vj-green"/> Imagem de Capa</h3>
+                    <p className="text-sm text-zinc-500 mb-3">Esta imagem será o banner principal da cotação online.</p>
+                    <MediaUploader
+                      multiple={false}
+                      existingUrls={form.cover_image_url ? [form.cover_image_url] : []}
+                      onUploadComplete={(urls) => updateForm('cover_image_url', urls[0])}
+                      folder="quotations/covers"
+                    />
+                 </div>
+               </div>
+               <div className="p-6 rounded-xl bg-green-50/50 border border-green-100 flex flex-col justify-center items-center text-center space-y-4">
+                  <div className="w-16 h-16 rounded-full bg-green-100 text-green-600 flex items-center justify-center">
+                    <CheckCircle2 className="w-8 h-8" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-green-900 mb-1">Tudo Pronto!</h3>
+                    <p className="text-sm text-green-700">A cotação está montada e pronta para ser gerada como um link público e PDF.</p>
+                  </div>
+               </div>
             </div>
-          )}
-        </>
-      )}
-    </SheetPage>
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={(val) => !val && onClose()}>
+      <DialogContent className="max-w-[95vw] w-full max-h-[95vh] h-full p-0 flex flex-col overflow-hidden bg-zinc-50/50 rounded-xl border-zinc-200 shadow-2xl">
+        
+        {/* Header - Bento Grid Style */}
+        <div className="bg-white px-8 py-5 border-b border-zinc-100 flex items-center justify-between shrink-0">
+          <div>
+            <DialogTitle className="text-2xl font-bold font-heading text-zinc-900">Construtor de Cotação</DialogTitle>
+            <DialogDescription className="text-zinc-500 mt-1">Siga as etapas para criar uma proposta comercial de alta conversão.</DialogDescription>
+          </div>
+          <Button variant="ghost" size="icon" onClick={onClose} className="rounded-full bg-zinc-100 hover:bg-zinc-200"><X className="w-4 h-4"/></Button>
+        </div>
+
+        {/* Wizard Layout */}
+        <div className="flex flex-1 min-h-0 overflow-hidden">
+          
+          {/* Stepper Sidebar */}
+          <div className="w-64 bg-white border-r border-zinc-100 p-6 flex flex-col gap-2 shrink-0 overflow-y-auto hidden md:flex">
+            {STEPS.map((step, idx) => {
+              const Icon = step.icon;
+              const isActive = currentStep === idx;
+              const isPast = currentStep > idx;
+              return (
+                <button
+                  key={step.id}
+                  onClick={() => setCurrentStep(idx)}
+                  className={cn(
+                    "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all text-left",
+                    isActive ? "bg-zinc-900 text-white shadow-md" : "text-zinc-500 hover:bg-zinc-50 hover:text-zinc-900",
+                    isPast && !isActive ? "text-zinc-900" : ""
+                  )}
+                >
+                  <Icon className={cn("w-4 h-4", isActive ? "text-white" : isPast ? "text-vj-green" : "text-zinc-400")} />
+                  {step.label}
+                  {isPast && !isActive && <CheckCircle2 className="w-3.5 h-3.5 text-vj-green ml-auto" />}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Main Content Area */}
+          <div className="flex-1 flex flex-col min-w-0 bg-white md:m-4 md:rounded-xl md:shadow-sm md:border md:border-zinc-100 overflow-hidden">
+             
+             {/* Progress Bar Mobile */}
+             <div className="h-1 bg-zinc-100 md:hidden w-full shrink-0">
+               <div className="h-full bg-vj-green transition-all" style={{ width: `${((currentStep + 1) / STEPS.length) * 100}%` }} />
+             </div>
+
+             {/* Dynamic Step Content */}
+             <div className="flex-1 overflow-y-auto p-6 md:p-10">
+               <StepContent />
+             </div>
+
+             {/* Footer Controls */}
+             <div className="p-6 bg-white border-t border-zinc-100 shrink-0 flex items-center justify-between">
+               <Button
+                 variant="ghost"
+                 onClick={() => setCurrentStep(p => Math.max(0, p - 1))}
+                 disabled={currentStep === 0}
+                 className="rounded-xl font-bold"
+               >
+                 <ArrowLeft className="w-4 h-4 mr-2" /> Voltar
+               </Button>
+               
+               <div className="flex items-center gap-3">
+                 <span className="text-sm font-bold text-zinc-400 hidden sm:inline">Passo {currentStep + 1} de {STEPS.length}</span>
+                 {currentStep === STEPS.length - 1 ? (
+                   <Button
+                     onClick={handleSave}
+                     disabled={createQuotation.isPending || !form.destination}
+                     className="rounded-xl px-8 bg-vj-green hover:bg-emerald-600 text-white font-bold shadow-lg shadow-emerald-500/20"
+                   >
+                     {createQuotation.isPending ? <><Loader2 className="w-4 h-4 mr-2 animate-spin"/> Finalizando...</> : <><Save className="w-4 h-4 mr-2" /> Finalizar e Gerar Link</>}
+                   </Button>
+                 ) : (
+                   <Button
+                     onClick={() => setCurrentStep(p => Math.min(STEPS.length - 1, p + 1))}
+                     className="rounded-xl px-8 bg-zinc-900 hover:bg-zinc-800 text-white font-bold"
+                   >
+                     Avançar <ArrowRight className="w-4 h-4 ml-2" />
+                   </Button>
+                 )}
+               </div>
+             </div>
+
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }

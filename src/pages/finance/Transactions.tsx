@@ -65,7 +65,7 @@ export default function Transactions() {
 
         {/* Dashboard Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-white dark:bg-zinc-900 rounded-3xl p-5 border ">
+          <div className="bg-white dark:bg-zinc-900 rounded-xl p-5 border ">
              <div className="flex items-center gap-3 mb-2">
                <div className="p-2 bg-green-100 dark:bg-green-900/40 text-green-600 rounded-xl">
                  <TrendingUp size={18} />
@@ -74,7 +74,7 @@ export default function Transactions() {
              </div>
              <p className="text-2xl font-bold">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalReceivables)}</p>
           </div>
-          <div className="bg-white dark:bg-zinc-900 rounded-3xl p-5 border ">
+          <div className="bg-white dark:bg-zinc-900 rounded-xl p-5 border ">
              <div className="flex items-center gap-3 mb-2">
                <div className="p-2 bg-red-100 dark:bg-red-900/40 text-red-600 rounded-xl">
                  <TrendingDown size={18} />
@@ -83,7 +83,7 @@ export default function Transactions() {
              </div>
              <p className="text-2xl font-bold">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalPayables)}</p>
           </div>
-          <div className="bg-white dark:bg-zinc-900 rounded-3xl p-5 border ">
+          <div className="bg-white dark:bg-zinc-900 rounded-xl p-5 border ">
              <div className="flex items-center gap-3 mb-2">
                <div className="p-2 bg-blue-100 dark:bg-blue-900/40 text-blue-600 rounded-xl">
                  <RefreshCw size={18} />
@@ -94,7 +94,7 @@ export default function Transactions() {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-zinc-900 rounded-3xl p-6 border  flex-1 flex flex-col min-h-0">
+        <div className="bg-white dark:bg-zinc-900 rounded-xl p-6 border flex-1 flex flex-col min-h-0">
            <div className="flex gap-2 mb-6">
               <Button variant={filterType === undefined ? 'default' : 'outline'} className="rounded-full" onClick={() => setFilterType(undefined)}>Todos</Button>
               <Button variant={filterType === 'receivable' ? 'default' : 'outline'} className="rounded-full text-green-600 border-green-200" onClick={() => setFilterType('receivable')}>Entradas (Recebíveis)</Button>
@@ -159,7 +159,7 @@ export default function Transactions() {
     </AppLayout>
 
     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-      <DialogContent className="sm:max-w-md rounded-3xl">
+      <DialogContent className="sm:max-w-md rounded-xl">
         <DialogHeader>
           <DialogTitle>Novo Lançamento Financeiro</DialogTitle>
         </DialogHeader>

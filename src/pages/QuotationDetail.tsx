@@ -254,7 +254,35 @@ export default function QuotationDetail() {
         status: 'draft',
         description_md: quotation.notes_internal ?? null,
       } as Record<string, any>);
+
       if (groupTrip?.id) {
+        // [INTEGRATION] — Link the Kanban Card to this new excursion
+        try {
+          const { data: cards } = await supabase
+            .from('kanban_cards')
+            .select('id, board_id')
+            .eq('quotation_id', quotation.id);
+
+          if (cards && cards.length > 0) {
+            // Find "Fechado" or "Ganho" column in that board
+            const { data: col } = await supabase
+              .from('kanban_columns')
+              .select('id')
+              .eq('board_id', cards[0].board_id)
+              .ilike('name', '%Fechado%')
+              .maybeSingle();
+
+            await supabase.from('kanban_cards').update({
+              group_trip_id: groupTrip.id,
+              column_id: col?.id ?? undefined
+            } as any).eq('id', cards[0].id);
+            
+            logger.info('Kanban card updated after quotation conversion', { cardId: cards[0].id, tripId: groupTrip.id });
+          }
+        } catch (kanbanErr) {
+          logger.error('Failed to link kanban card after conversion', kanbanErr);
+        }
+
         toast({ title: 'Pacote de grupo criado! 🎉', description: 'Redirecionando para o módulo de excursões...' });
         navigate(`/group-trips/${groupTrip.id}`);
       }
@@ -369,7 +397,7 @@ export default function QuotationDetail() {
               size="sm"
               onClick={handleConvertToTrip}
               disabled={createGroupTrip.isPending}
-              className="rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:opacity-90 "
+              className="rounded-xl bg-blue-600 text-white hover:bg-blue-700 "
             >
               {createGroupTrip.isPending
                 ? <><Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> Criando Pacote...</>
@@ -398,7 +426,7 @@ export default function QuotationDetail() {
             size="sm"
             onClick={() => scoreQuotation.mutate(id!)}
             disabled={scoreQuotation.isPending}
-            className="rounded-xl bg-gradient-to-r from-vj-green to-emerald-600 text-white hover:opacity-90 ml-auto "
+            className="rounded-xl bg-vj-green text-white hover:bg-emerald-700 ml-auto "
           >
             {scoreQuotation.isPending ? (
               <><Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> Analisando...</>
@@ -476,10 +504,10 @@ export default function QuotationDetail() {
 
         <Tabs defaultValue="scenarios" className="w-full mt-6 space-y-6">
           <TabsList className="bg-zinc-100/50 p-1.5 rounded-2xl flex gap-1 w-full max-w-sm">
-            <TabsTrigger value="scenarios" className="flex-1 rounded-xl text-xs font-bold uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:text-vj-green data-[state=active]:shadow-sm">
+            <TabsTrigger value="scenarios" className="flex-1 rounded-xl text-xs font-bold uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:text-vj-green">
               <Sparkles className="w-3.5 h-3.5 mr-1.5" /> Cenários IA
             </TabsTrigger>
-            <TabsTrigger value="proposal" className="flex-1 rounded-xl text-xs font-bold uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:text-blue-600 data-[state=active]:shadow-sm">
+            <TabsTrigger value="proposal" className="flex-1 rounded-xl text-xs font-bold uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:text-blue-600">
               <FileText className="w-3.5 h-3.5 mr-1.5" /> Proposta
             </TabsTrigger>
           </TabsList>

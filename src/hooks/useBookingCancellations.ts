@@ -241,6 +241,39 @@ export function useProcessCancellation() {
           if (e4) throw e4;
         }
 
+        // [FINANCIAL SYNC] — Record refund outflow in general ledger
+        const { data: cancelData } = await supabase
+          .from('booking_cancellations')
+          .select('refund_amount, group_trip_id, booking_id')
+          .eq('id', cancellationId)
+          .single();
+
+        if (cancelData && cancelData.refund_amount > 0) {
+          // Add to Global Financial Transactions
+          await supabase.from('financial_transactions').insert({
+            org_id: orgId,
+            group_trip_id: cancelData.group_trip_id,
+            booking_id: cancelData.booking_id,
+            amount: cancelData.refund_amount,
+            type: 'payable',
+            status: 'paid',
+            category: 'Reembolso/Estorno',
+            description: `Reembolso de cancelamento: ${leadName || 'Cliente'}`,
+            paid_at: now
+          });
+
+          // Add to Group Trip Ledger
+          await supabase.from('group_trip_ledger').insert({
+            org_id: orgId,
+            group_trip_id: cancelData.group_trip_id,
+            booking_id: cancelData.booking_id,
+            amount: cancelData.refund_amount,
+            type: 'outflow',
+            category: 'refund',
+            description: `Estorno de reserva - ${leadName || 'Cliente'}`
+          });
+        }
+
         // 5. Mark cancellation as processed
         const { error: e5 } = await supabase
           .from('booking_cancellations')

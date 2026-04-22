@@ -53,22 +53,22 @@ export default function Settings() {
         </div>
 
         <Tabs defaultValue="aikeys" className="w-full">
-          <TabsList className="bg-zinc-100/50 p-1.5 rounded-[32px] flex gap-1 mb-10 border border-zinc-200/50 backdrop-blur-md w-fit mx-auto overflow-x-auto">
+          <TabsList className="bg-zinc-100/50 p-1.5 rounded-xl flex gap-1 mb-10 border border-zinc-200/50 backdrop-blur-md w-fit mx-auto overflow-x-auto">
             {[
-              { id: 'agents',       label: 'Equipe',     icon: Users },
-              { id: 'aikeys',       label: 'Chaves IA',  icon: Key },
-              { id: 'knowledge',    label: 'Especialista', icon: Brain },
-              { id: 'policies',     label: 'Operadoras', icon: Database },
-              { id: 'kanban',       label: 'Board',      icon: Columns },
-              { id: 'integrations', label: 'Webhooks',   icon: Mail },
-              { id: 'bus',          label: 'Ônibus',     icon: Bus },
-              { id: 'b2b',          label: 'Portais B2B', icon: KeyRound },
-              { id: 'logs',         label: 'Logs IA',    icon: Activity },
+              { id: 'agents',       label: 'Agentes e Equipe', icon: Users },
+              { id: 'aikeys',       label: 'Cérebro da IA',    icon: Key },
+              { id: 'knowledge',    label: 'Especialista',     icon: Brain },
+              { id: 'policies',     label: 'Operadoras',       icon: Database },
+              { id: 'kanban',       label: 'Painel de Vendas', icon: Columns },
+              { id: 'integrations', label: 'Conexões',         icon: Mail },
+              { id: 'bus',          label: 'Frotas de Ônibus', icon: Bus },
+              { id: 'b2b',          label: 'Acessos B2B',      icon: KeyRound },
+              { id: 'logs',         label: 'Histórico da IA',  icon: Activity },
             ].map(t => (
               <TabsTrigger 
                 key={t.id} 
                 value={t.id} 
-                className="px-8 py-3 rounded-[24px] text-xs font-bold uppercase tracking-widest transition-all data-[state=active]:bg-vj-txt data-[state=active]:text-white"
+                className="px-8 py-3 rounded-xl text-xs font-bold uppercase tracking-widest transition-all data-[state=active]:bg-vj-txt data-[state=active]:text-white"
               >
                 <t.icon className="w-3.5 h-3.5 mr-2 shrink-0" /> {t.label}
               </TabsTrigger>
@@ -94,7 +94,7 @@ export default function Settings() {
                   <div className="space-y-2">
                     <Label className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">Provedor Principal</Label>
                     <Select value={provider} onValueChange={setProvider}>
-                      <SelectTrigger className="h-12 rounded-2xl border-zinc-100 bg-zinc-50 font-medium">
+                      <SelectTrigger className="h-12 rounded-xl border-zinc-100 bg-zinc-50 font-medium">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -105,7 +105,7 @@ export default function Settings() {
                   </div>
                   <div className="space-y-2">
                     <Label className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">Token de Acesso</Label>
-                    <Input type="password" placeholder="••••••••••••••••" value={apiKey} onChange={e => setApiKey(e.target.value)} className="h-12 rounded-2xl border-zinc-100 bg-zinc-50" />
+                    <Input type="password" placeholder="••••••••••••••••" value={apiKey} onChange={e => setApiKey(e.target.value)} className="h-12 rounded-xl border-zinc-100 bg-zinc-50" />
                   </div>
                   <Button className="w-full premium-button h-12" onClick={handleSaveKey} disabled={!apiKey || saveKey.isPending}>
                      {saveKey.isPending ? 'Verificando...' : 'Ativar no Cérebro Central'}
@@ -118,7 +118,7 @@ export default function Settings() {
                 <CardContent>
                    <div className="space-y-3">
                      {isLoading ? <Skeleton className="h-20 w-full" /> : keys?.length ? keys.map((k: any) => (
-                       <div key={k.id} className="p-4 rounded-2xl bg-zinc-50 border border-zinc-100 flex items-center justify-between group">
+                       <div key={k.id} className="p-4 rounded-xl bg-zinc-50 border border-zinc-100 flex items-center justify-between group">
                           <div className="flex items-center gap-3">
                             <div className="h-2 w-2 rounded-full bg-vj-green animate-pulse" />
                             <span className="text-sm font-bold uppercase">{k.provider}</span>
@@ -143,7 +143,7 @@ export default function Settings() {
                       <Input placeholder="Slug (ex: orinter)" value={policyOperadora} onChange={e => setPolicyOperadora(e.target.value)} className="rounded-xl" />
                       <Input placeholder="Nome (ex: Orinter Tour)" value={policyDisplay} onChange={e => setPolicyDisplay(e.target.value)} className="rounded-xl" />
                     </div>
-                    <Textarea placeholder="Cole aqui as regras de pagamento ou cancelamento..." value={policyConteudo} onChange={e => setPolicyConteudo(e.target.value)} rows={7} className="rounded-2xl border-zinc-100" />
+                    <Textarea placeholder="Cole aqui as regras de pagamento ou cancelamento..." value={policyConteudo} onChange={e => setPolicyConteudo(e.target.value)} rows={7} className="rounded-xl border-zinc-100" />
                     <Button className="w-full premium-button h-12" onClick={() => createPolicy.mutate({ operadora: policyOperadora, operadora_display: policyDisplay, conteudo: policyConteudo })}>Cachear Regras</Button>
                  </CardContent>
               </Card>
@@ -151,7 +151,7 @@ export default function Settings() {
                 <CardHeader><CardTitle className="text-lg">Políticas Verificadas</CardTitle></CardHeader>
                 <CardContent className="space-y-2">
                   {policies?.map((p: any) => (
-                    <div key={p.id} className="p-4 rounded-2xl bg-zinc-50 border border-zinc-100 flex items-center justify-between">
+                    <div key={p.id} className="p-4 rounded-xl bg-zinc-50 border border-zinc-100 flex items-center justify-between">
                       <span className="text-xs font-bold uppercase tracking-widest">{p.operadora_display || p.operadora}</span>
                       <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500" onClick={() => deletePolicy.mutate(p.id)}><Trash2 size={13} /></Button>
                     </div>

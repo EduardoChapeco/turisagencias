@@ -44,7 +44,7 @@ function KpiCard({
     zinc:   'bg-zinc-50    border-zinc-100    text-zinc-500',
   };
   return (
-    <div className={cn('rounded-2xl border p-5 space-y-3', colors[color])}>
+    <div className={cn('rounded-xl border p-5 space-y-3', colors[color])}>
       <div className="flex items-center justify-between">
         <p className="text-[11px] font-bold uppercase tracking-wider opacity-70">{label}</p>
         <div className={cn('h-8 w-8 rounded-xl flex items-center justify-center', colors[color])}>
@@ -296,7 +296,7 @@ function BookingRow({ booking, tripId }: { booking: any; tripId: string }) {
 
   return (
     <>
-      <div className="border border-zinc-100 rounded-2xl overflow-hidden bg-white hover:border-zinc-200 transition-colors">
+      <div className="border border-zinc-100 rounded-xl overflow-hidden bg-white hover:border-zinc-200 transition-colors">
         {/* Header row */}
         <button
           className="w-full flex items-center gap-3 px-4 py-3.5 text-left"
@@ -525,13 +525,13 @@ export default function GroupTripFinance() {
 
         {/* Margin card */}
         {summary && (
-          <div className="bg-gradient-to-r from-zinc-900 to-zinc-800 rounded-2xl p-5 flex items-center justify-between text-white">
+          <div className="bg-zinc-900 rounded-xl p-5 flex items-center justify-between text-white border border-zinc-800">
             <div>
               <p className="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-1">Progresso de arrecadação</p>
-              <p className="font-black text-3xl">
+              <p className="font-black text-3xl text-vj-green">
                 {Math.round((summary.total_received / Math.max(summary.total_expected, 1)) * 100)}%
               </p>
-              <p className="text-sm text-zinc-300">{f(summary.total_received)} de {f(summary.total_expected)}</p>
+              <p className="text-sm text-zinc-400">{f(summary.total_received)} de {f(summary.total_expected)}</p>
             </div>
             <div className="w-32 h-32 relative">
               <svg viewBox="0 0 36 36" className="w-full h-full -rotate-90">

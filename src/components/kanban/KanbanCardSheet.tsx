@@ -54,9 +54,16 @@ interface KanbanCard {
   client_id: string | null;
   quotation_id: string | null;
   group_trip_id: string | null;
+  assigned_to: string | null;
   clients?: { name: string; phone: string | null } | null;
   quotations?: { destination: string | null } | null;
   group_trips?: { title: string | null } | null;
+}
+
+interface KanbanColumnData {
+  id: string;
+  name: string;
+  color: string | null;
 }
 
 interface Props {
@@ -64,15 +71,21 @@ interface Props {
   isOpen: boolean;
   onClose: () => void;
   onDeleted?: () => void;
+  columns?: KanbanColumnData[];
 }
+
+import { useTeam } from '@/hooks/useTeam';
+import { AlignLeft, CheckSquare, FileText, Link2, Pencil, Plus, Send, Trash2, User, X, Plane, MessageCircle, MoreVertical, LayoutKanban, HardHat } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 
 /* ─────────────────────────────────────────────
    SEÇÃO: Dados Gerais
    ───────────────────────────────────────────── */
-function DadosSection({ card }: { card: KanbanCard }) {
+function DadosSection({ card, columns }: { card: KanbanCard, columns?: KanbanColumnData[] }) {
   const updateCard = useUpdateKanbanCard();
   const { data: allTags } = useKanbanTags();
   const createTag = useCreateKanbanTag();
+  const { data: team } = useTeam();
 
   const [form, setForm] = useState({
     title: card.title,
@@ -80,6 +93,8 @@ function DadosSection({ card }: { card: KanbanCard }) {
     estimated_value: card.estimated_value ?? '',
     whatsapp: card.whatsapp ?? '',
     email: card.email ?? '',
+    column_id: card.column_id,
+    assigned_to: card.assigned_to ?? 'none',
   });
   const [tagInput, setTagInput] = useState('');
   const [cardTags, setCardTags] = useState<string[]>(card.tags ?? []);
@@ -99,6 +114,8 @@ function DadosSection({ card }: { card: KanbanCard }) {
       whatsapp: form.whatsapp || null,
       email: form.email || null,
       tags: cardTags,
+      column_id: form.column_id,
+      assigned_to: form.assigned_to === 'none' ? null : form.assigned_to,
     });
     setDirty(false);
   };
@@ -106,7 +123,6 @@ function DadosSection({ card }: { card: KanbanCard }) {
   const addTag = async (name: string) => {
     const trimmed = name.trim();
     if (!trimmed || cardTags.includes(trimmed)) return;
-    // Cria tag no banco se não existir
     if (!allTags?.find((t) => t.name === trimmed)) {
       await createTag.mutateAsync({ name: trimmed });
     }
@@ -123,71 +139,111 @@ function DadosSection({ card }: { card: KanbanCard }) {
   };
 
   return (
-    <div className="space-y-5">
-      {/* Título */}
-      <div className="space-y-1.5">
-        <Label htmlFor="card-title">Título do card</Label>
-        <Input
-          id="card-title"
-          value={form.title}
-          onChange={(e) => update('title', e.target.value)}
-          className="border-vj-border"
-        />
-      </div>
-
-      {/* Descrição */}
-      <div className="space-y-1.5">
-        <Label htmlFor="card-desc">Descrição</Label>
-        <Textarea
-          id="card-desc"
-          value={form.description}
-          onChange={(e) => update('description', e.target.value)}
-          rows={3}
-          placeholder="Detalhes do contato, contexto..."
-          className="border-vj-border resize-none"
-        />
-      </div>
-
-      {/* Valor estimado */}
-      <div className="space-y-1.5">
-        <Label htmlFor="card-value">Valor estimado (R$)</Label>
-        <Input
-          id="card-value"
-          type="number"
-          min="0"
-          step="0.01"
-          value={form.estimated_value}
-          onChange={(e) => update('estimated_value', e.target.value)}
-          placeholder="0,00"
-          className="border-vj-border"
-        />
-      </div>
-
-      <div className="grid grid-cols-2 gap-3">
-        {/* WhatsApp */}
-        <div className="space-y-1.5">
-          <Label htmlFor="card-wa">WhatsApp</Label>
-          <Input
-            id="card-wa"
-            value={form.whatsapp}
-            onChange={(e) => update('whatsapp', e.target.value)}
-            placeholder="49999999999"
-            className="border-vj-border"
-          />
+    <div className="space-y-6">
+      
+      {/* Dynamic Header Actions */}
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3 p-4 bg-zinc-50/50 rounded-xl border border-zinc-100">
+        <div className="flex-1 space-y-1.5">
+          <Label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5"><LayoutKanban size={12}/> Etapa no Funil</Label>
+          <Select value={form.column_id} onValueChange={(v) => update('column_id', v)}>
+            <SelectTrigger className="w-full h-10 bg-white border-zinc-200 rounded-xl font-bold">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {columns?.map((col) => (
+                <SelectItem key={col.id} value={col.id}>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full shadow-sm" style={{ backgroundColor: col.color || '#ccc' }} />
+                    {col.name}
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
-        {/* Email */}
-        <div className="space-y-1.5">
-          <Label htmlFor="card-email">E-mail</Label>
-          <Input
-            id="card-email"
-            type="email"
-            value={form.email}
-            onChange={(e) => update('email', e.target.value)}
-            placeholder="cliente@email.com"
-            className="border-vj-border"
-          />
+        <div className="flex-1 space-y-1.5">
+          <Label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5"><HardHat size={12}/> Responsável</Label>
+          <Select value={form.assigned_to} onValueChange={(v) => update('assigned_to', v)}>
+            <SelectTrigger className="w-full h-10 bg-white border-zinc-200 rounded-xl font-medium">
+              <SelectValue placeholder="Sem atribuição" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none" className="text-zinc-400 italic">Sem atribuição</SelectItem>
+              {team?.map((member) => (
+                <SelectItem key={member.id} value={member.user_id}>
+                  {member.first_name} {member.last_name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
+
+      <div className="space-y-4">
+        {/* Título */}
+        <div className="space-y-1.5">
+          <Label htmlFor="card-title">Título do card</Label>
+          <Input
+            id="card-title"
+            value={form.title}
+            onChange={(e) => update('title', e.target.value)}
+            className="border-vj-border h-11 rounded-xl"
+          />
+        </div>
+
+        {/* Descrição */}
+        <div className="space-y-1.5">
+          <Label htmlFor="card-desc">Descrição</Label>
+          <Textarea
+            id="card-desc"
+            value={form.description}
+            onChange={(e) => update('description', e.target.value)}
+            rows={3}
+            placeholder="Detalhes do contato, contexto..."
+            className="border-vj-border resize-none rounded-xl"
+          />
+        </div>
+
+        {/* Valor estimado */}
+        <div className="space-y-1.5">
+          <Label htmlFor="card-value">Valor estimado (R$)</Label>
+          <Input
+            id="card-value"
+            type="number"
+            min="0"
+            step="0.01"
+            value={form.estimated_value}
+            onChange={(e) => update('estimated_value', e.target.value)}
+            placeholder="0,00"
+            className="border-vj-border h-11 rounded-xl font-mono"
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          {/* WhatsApp */}
+          <div className="space-y-1.5">
+            <Label htmlFor="card-wa">WhatsApp</Label>
+            <Input
+              id="card-wa"
+              value={form.whatsapp}
+              onChange={(e) => update('whatsapp', e.target.value)}
+              placeholder="49999999999"
+              className="border-vj-border h-11 rounded-xl"
+            />
+          </div>
+          {/* Email */}
+          <div className="space-y-1.5">
+            <Label htmlFor="card-email">E-mail</Label>
+            <Input
+              id="card-email"
+              type="email"
+              value={form.email}
+              onChange={(e) => update('email', e.target.value)}
+              placeholder="cliente@email.com"
+              className="border-vj-border h-11 rounded-xl"
+            />
+          </div>
+        </div>
 
       {/* Tags */}
       <div className="space-y-2">

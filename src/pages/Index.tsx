@@ -15,6 +15,7 @@ import { useRadarNews } from '@/hooks/useAiRadar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { GlobalRadarMapWidget, RadarMarker } from '@/components/GlobalRadarMapWidget';
 import { geocodeCity } from '@/utils/geocoder';
+import { AiInsightsWidget } from '@/components/AiInsightsWidget';
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -120,14 +121,16 @@ export default function Dashboard() {
           </div>
         </div>
 
+        <AiInsightsWidget />
+
         {/* BENTO GRID: Operations & Map */}
         <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 gap-4">
           
           {/* Quick Ops Panel */}
           <div className="col-span-1 md:col-span-2 lg:col-span-2 grid grid-rows-3 gap-4">
-            <div className="bg-white border text-vj-txt border-vj-border rounded-[24px] p-5 flex items-center justify-between hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/kanban/departures')}>
+            <div className="bg-white border text-vj-txt border-vj-border rounded-xl p-5 flex items-center justify-between cursor-pointer" onClick={() => navigate('/kanban/departures')}>
                <div className="flex items-center gap-4">
-                  <div className="bg-amber-100 text-amber-600 p-3 rounded-2xl"><PlaneTakeoff size={24} /></div>
+                  <div className="bg-amber-100 text-amber-600 p-3 rounded-xl"><PlaneTakeoff size={24} /></div>
                   <div>
                      <p className="text-3xl font-extrabold">{opsStats?.todayDepartures || 0}</p>
                      <p className="text-xs uppercase tracking-wider text-vj-txt3 font-bold mt-1">Check-ins Liberados Hoje</p>
@@ -136,9 +139,9 @@ export default function Dashboard() {
                <ArrowRight className="text-vj-txt3" />
             </div>
 
-            <div className="bg-white border text-vj-txt border-vj-border rounded-[24px] p-5 flex items-center justify-between hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/quotations')}>
+            <div className="bg-white border text-vj-txt border-vj-border rounded-xl p-5 flex items-center justify-between cursor-pointer" onClick={() => navigate('/quotations')}>
                <div className="flex items-center gap-4">
-                  <div className="bg-blue-100 text-blue-600 p-3 rounded-2xl"><FileText size={24} /></div>
+                  <div className="bg-blue-100 text-blue-600 p-3 rounded-xl"><FileText size={24} /></div>
                   <div>
                      <p className="text-3xl font-extrabold">{opsStats?.activeQuotations || 0}</p>
                      <p className="text-xs uppercase tracking-wider text-vj-txt3 font-bold mt-1">Cotações em Andamento</p>
@@ -147,9 +150,9 @@ export default function Dashboard() {
                <ArrowRight className="text-vj-txt3" />
             </div>
 
-            <div className="bg-white border text-vj-txt border-vj-border rounded-[24px] p-5 flex items-center justify-between hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/group-trips')}>
+            <div className="bg-white border text-vj-txt border-vj-border rounded-xl p-5 flex items-center justify-between cursor-pointer" onClick={() => navigate('/group-trips')}>
                <div className="flex items-center gap-4">
-                  <div className="bg-green-100 text-green-600 p-3 rounded-2xl"><CheckCircle2 size={24} /></div>
+                  <div className="bg-green-100 text-green-600 p-3 rounded-xl"><CheckCircle2 size={24} /></div>
                   <div>
                      <p className="text-3xl font-extrabold">{opsStats?.traveling?.length || 0}</p>
                      <p className="text-xs uppercase tracking-wider text-vj-txt3 font-bold mt-1 flex items-center gap-1">Vouchers Emitidos (Em viagem)</p>
@@ -160,17 +163,17 @@ export default function Dashboard() {
           </div>
 
           {/* Interactive World Map Block */}
-          <div className="col-span-1 md:col-span-2 lg:col-span-4 bg-zinc-950 rounded-[32px] overflow-hidden relative min-h-[350px] group flex flex-col justify-between p-1 shadow-inner">
+          <div className="col-span-1 md:col-span-2 lg:col-span-4 bg-zinc-950 rounded-xl overflow-hidden relative min-h-[350px] group flex flex-col justify-between p-1">
             <div className="absolute inset-0 z-0">
                <GlobalRadarMapWidget markers={radarMarkers} interactive={false} />
             </div>
             
             <div className="relative z-10 p-5 flex justify-between items-start pointer-events-none">
-               <div className="bg-zinc-950/40 backdrop-blur-md p-4 rounded-2xl border border-zinc-800/50">
-                  <h3 className="text-white font-bold tracking-widest text-sm uppercase flex items-center gap-2 drop-shadow-md">
-                      <Plane className="w-5 h-5 text-green-400" /> Malha de Passageiros
+               <div className="bg-zinc-950/40 backdrop-blur-md p-4 rounded-xl border border-zinc-800/50">
+                  <h3 className="text-white font-bold tracking-widest text-sm uppercase flex items-center gap-2">
+                      <Plane className="w-5 h-5 text-green-400" /> Mapa de Viajantes
                   </h3>
-                  <p className="text-zinc-200 text-xs mt-1 drop-shadow-md">{opsStats?.paxTraveling || 0} viajantes posicionados globalmente.</p>
+                  <p className="text-zinc-200 text-xs mt-1">{opsStats?.paxTraveling || 0} passageiros posicionados globalmente.</p>
                </div>
                <div className="flex gap-2 pointer-events-auto">
                  <Button size="sm" variant="outline" className="bg-zinc-950/50 backdrop-blur-md border-zinc-700 text-white hover:bg-zinc-800 h-8" onClick={() => navigate('/radar-global')}>Expandir Mapa 🌍</Button>
@@ -178,7 +181,7 @@ export default function Dashboard() {
             </div>
             <div className="relative z-10 p-5 pointer-events-auto">
                 <div className="flex items-center gap-3">
-                   <div className="bg-zinc-800/80 backdrop-blur-md rounded-2xl px-4 py-2.5 border border-zinc-700/50 max-w-sm flex items-center gap-2 w-full hover:bg-zinc-800 transition-colors">
+                   <div className="bg-zinc-800/80 backdrop-blur-md rounded-xl px-4 py-2.5 border border-zinc-700/50 max-w-sm flex items-center gap-2 w-full hover:bg-zinc-800 transition-colors">
                        <Search className="w-5 h-5 text-zinc-400" />
                        <Input placeholder="Buscar por cliente, localizador ou voo..." className="bg-transparent border-none text-white focus-visible:ring-0 placeholder:text-zinc-400 h-6 p-0 text-sm font-medium" />
                    </div>
@@ -190,13 +193,13 @@ export default function Dashboard() {
         {/* BENTO GRID: Blog & Daily Context */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 mt-8">
            {/* Header / Sidebar for Content Hub */}
-           <div className="bg-gradient-to-br from-zinc-50 to-white border border-vj-border rounded-[32px] p-8 lg:row-span-2 shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow">
+           <div className="bg-white border border-vj-border rounded-xl p-8 lg:row-span-2 relative overflow-hidden group">
               <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform duration-700 pointer-events-none">
                  <Newspaper className="w-32 h-32 text-vj-green" />
               </div>
               <div className="relative z-10">
                 <div className="flex items-center gap-3 mb-3">
-                    <div className="bg-vj-green text-white p-2.5 rounded-xl shadow-lg shadow-vj-green/20"><Globe2 className="w-5 h-5" /></div>
+                    <div className="bg-vj-green text-white p-2.5 rounded-xl"><Globe2 className="w-5 h-5" /></div>
                     <h3 className="font-extrabold tracking-tight text-xl text-vj-txt">Daily Digest</h3>
                 </div>
                 <p className="text-sm font-medium text-vj-txt3 mb-8 leading-relaxed">
@@ -207,9 +210,9 @@ export default function Dashboard() {
                    <div>
                       <p className="text-[11px] font-bold uppercase tracking-wider text-vj-txt3 mb-3">Acompanhamento Específico</p>
                       <div className="flex flex-wrap gap-2">
-                         <span className="bg-white border border-zinc-200 text-vj-txt text-xs px-3.5 py-1.5 rounded-full font-semibold shadow-sm cursor-pointer hover:border-vj-green transition-colors">Mercado Aéreo</span>
-                         <span className="bg-white border border-zinc-200 text-vj-txt text-xs px-3.5 py-1.5 rounded-full font-semibold shadow-sm cursor-pointer hover:border-vj-green transition-colors">Destinos Nacionais</span>
-                         <span className="bg-white border border-zinc-200 text-vj-txt text-xs px-3.5 py-1.5 rounded-full font-semibold shadow-sm cursor-pointer hover:border-vj-green transition-colors">Regulação</span>
+                         <span className="bg-white border border-zinc-200 text-vj-txt text-xs px-3.5 py-1.5 rounded-full font-semibold cursor-pointer hover:border-vj-green transition-colors">Mercado Aéreo</span>
+                         <span className="bg-white border border-zinc-200 text-vj-txt text-xs px-3.5 py-1.5 rounded-full font-semibold cursor-pointer hover:border-vj-green transition-colors">Destinos Nacionais</span>
+                         <span className="bg-white border border-zinc-200 text-vj-txt text-xs px-3.5 py-1.5 rounded-full font-semibold cursor-pointer hover:border-vj-green transition-colors">Regulação</span>
                       </div>
                    </div>
                    
@@ -226,14 +229,14 @@ export default function Dashboard() {
 
            {/* Curated Blog Articles */}
            {isNewsLoading ? (
-             [1,2,3,4].map(i => <Skeleton key={i} className="h-[260px] rounded-[32px]" />)
+             [1,2,3,4].map(i => <Skeleton key={i} className="h-[260px] rounded-xl" />)
            ) : aiNews.length === 0 ? (
-             <div className="col-span-full lg:col-span-3 text-center py-20 bg-zinc-50/50 rounded-[32px] border border-dashed border-zinc-200 flex flex-col items-center justify-center">
+             <div className="col-span-full lg:col-span-3 text-center py-20 bg-zinc-50/50 rounded-xl border border-dashed border-zinc-200 flex flex-col items-center justify-center">
                 <Newspaper className="w-8 h-8 text-zinc-300 mb-3" />
                 <p className="text-sm font-semibold text-vj-txt3">Nenhum informe setorial consolidado até o momento.</p>
              </div>
            ) : aiNews.map((news) => (
-               <div key={news.id} onClick={() => navigate('/radar')} className={`p-6 rounded-[32px] border flex flex-col justify-between cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ${news.alert ? 'bg-gradient-to-b from-red-50 to-white border-red-200' : 'bg-white border-vj-border'}`}>
+               <div key={news.id} onClick={() => navigate('/radar')} className={`p-6 rounded-xl border flex flex-col justify-between cursor-pointer transition-all duration-300 hover:-translate-y-1 ${news.alert ? 'bg-red-50 border-red-200' : 'bg-white border-vj-border'}`}>
                   <div>
                       <div className="flex items-center justify-between mb-4">
                          <div className="flex items-center gap-2">

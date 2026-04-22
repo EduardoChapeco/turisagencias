@@ -11,10 +11,14 @@ export function useTickets(tripId?: string) {
     queryFn: async () => {
       let query = supabase
         .from('tickets')
-        .select('*, clients(name), group_trips(title)')
+        .select('*, clients(name), trips(destination), group_trips(title), sla_deadline, priority_score, last_interaction_at')
+        .order('priority', { ascending: false })
         .order('created_at', { ascending: false });
 
-      if (tripId) query = query.eq('group_trip_id', tripId);
+      if (tripId) {
+        // [COMPAT] — Check both trip_id and group_trip_id
+        query = query.or(`trip_id.eq.${tripId},group_trip_id.eq.${tripId}`);
+      }
 
       const { data, error } = await query;
       if (error) throw error;
@@ -30,7 +34,7 @@ export function useTicket(id: string | undefined) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('tickets')
-        .select('*, clients(name), group_trips(title), ticket_messages(*), email_messages(*)')
+        .select('*, clients(name), trips(destination), group_trips(title), ticket_messages(*)')
         .eq('id', id!)
         .maybeSingle();
       if (error) throw error;
@@ -53,17 +57,18 @@ export function useCreateTicket() {
       type?: string;
       priority?: string;
       trip_id?: string | null;
+      group_trip_id?: string | null;
       client_id?: string | null;
     }) => {
       const { data, error } = await supabase
         .from('tickets')
         .insert({
-          subject: payload.title,
           title: payload.title,
-          description: payload.description,
+          description: payload.description || '',
           type: payload.type ?? 'general',
           priority: payload.priority ?? 'medium',
-          group_trip_id: payload.trip_id ?? null,
+          trip_id: payload.trip_id ?? null,
+          group_trip_id: payload.group_trip_id ?? null,
           client_id: payload.client_id ?? null,
           org_id: organization!.id,
           created_by: user?.id ?? null,
@@ -112,6 +117,32 @@ export function useCreateTicketMessage() {
     },
     onError: (err: Error) => {
       toast({ title: 'Erro ao enviar mensagem', description: err.message, variant: 'destructive' });
+    },
+  });
+}
+
+export function useUpdateTicket() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async ({ id, ...payload }: { id: string } & Record<string, any>) => {
+      const { data, error } = await supabase
+        .from('tickets')
+        .update(payload)
+        .eq('id', id)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['ticket', data.id] });
+      queryClient.invalidateQueries({ queryKey: ['tickets'] });
+      toast({ title: 'Protocolo atualizado com sucesso!' });
+    },
+    onError: (err: Error) => {
+      toast({ title: 'Erro ao atualizar protocolo', description: err.message, variant: 'destructive' });
     },
   });
 }

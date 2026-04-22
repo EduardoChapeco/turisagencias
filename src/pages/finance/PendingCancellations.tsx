@@ -59,7 +59,7 @@ export default function PendingCancellations() {
             {[1,2,3].map(i => <Skeleton key={i} className="h-24 rounded-2xl w-full" />)}
           </div>
         ) : filtered.length === 0 ? (
-          <div className="text-center py-20 border border-dashed rounded-3xl bg-zinc-50 border-zinc-200 text-zinc-400">
+          <div className="text-center py-20 border border-dashed rounded-2xl bg-zinc-50 border-zinc-200 text-zinc-400">
             <XCircle size={48} className="mx-auto mb-3 opacity-30 text-vj-txt" />
             <p className="font-medium text-zinc-500">Nenhum cancelamento pendente</p>
             <p className="text-sm">As solicitações dos viajantes ou agentes aparecerão aqui.</p>

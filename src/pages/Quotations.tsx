@@ -65,7 +65,7 @@ export default function Quotations() {
         {/* Header Section */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div>
-            <h1 className="font-heading text-4xl font-extrabold tracking-tight">Cotações <span className="highlight-text">Exclusivas</span></h1>
+            <h1 className="font-heading text-4xl font-extrabold tracking-tight">Propostas <span className="highlight-text">Exclusivas</span></h1>
             <p className="text-muted-foreground text-sm mt-2 flex items-center gap-2">
               <FileText className="w-4 h-4 text-vj-green" /> Construtor de orçamentos ultra-personalizados
             </p>
@@ -118,7 +118,7 @@ export default function Quotations() {
               placeholder="Pesquisar destino ou cliente..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-11 h-12 bg-white border-vj-border rounded-2xl focus-visible:ring-vj-green"
+              className="pl-11 h-12 bg-white border-vj-border rounded-xl focus-visible:ring-vj-green"
             />
           </div>
           <div className="flex gap-2">
@@ -138,14 +138,14 @@ export default function Quotations() {
 
         {isLoading ? (
           <div className="bento-grid-premium">
-             {[1,2,3,4,5,6].map(i => <Skeleton key={i} className="h-[280px] rounded-[32px]" />)}
+             {[1,2,3,4,5,6].map(i => <Skeleton key={i} className="h-[280px] rounded-xl" />)}
           </div>
         ) : !filteredQuotations?.length ? (
           <EmptyState
             icon={FileText}
-            title="Nenhuma cotação encontrada"
+            title="Nenhuma proposta encontrada"
             description="Tente ajustar os filtros ou comece criando sua primeira oferta."
-            action={<Button className="premium-button" onClick={() => setBuilderOpen(true)}><Plus className="mr-2 h-4 w-4" /> Criar Cotação</Button>}
+            action={<Button className="premium-button" onClick={() => setBuilderOpen(true)}><Plus className="mr-2 h-4 w-4" /> Criar Proposta</Button>}
           />
         ) : (
           <div className="bento-grid-premium">
@@ -165,7 +165,7 @@ export default function Quotations() {
                     {coverImage ? (
                       <img src={coverImage} alt={q.destination || ''} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" />
                     ) : (
-                      <div className="h-full flex flex-col items-center justify-center bg-gradient-to-br from-zinc-50 to-zinc-100 text-zinc-300">
+                      <div className="h-full flex flex-col items-center justify-center bg-zinc-100 text-zinc-400">
                         <MapPin className="h-10 w-10 mb-2" />
                         <span className="text-[10px] font-bold uppercase tracking-widest">{q.destination || 'Sem Destino'}</span>
                       </div>
@@ -177,7 +177,7 @@ export default function Quotations() {
                       </div>
                     </div>
 
-                    <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/60 to-transparent">
+                    <div className="absolute bottom-0 left-0 right-0 p-4 bg-black/60 backdrop-blur-sm">
                        <p className="text-white text-sm font-bold truncate">{q.destination || "Roteiro Customizado"}</p>
                     </div>
                   </div>

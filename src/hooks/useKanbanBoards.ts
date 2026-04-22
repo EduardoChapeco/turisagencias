@@ -118,7 +118,15 @@ export function useKanbanBoard(slug: string) {
         supabase.from('kanban_columns').select('*').eq('board_id', board.id).order('position'),
         supabase
           .from('kanban_cards')
-          .select('id, board_id, column_id, title, description, client_id, quotation_id, group_trip_id, position, meta, assigned_to, whatsapp, email, tags, estimated_value, created_at, updated_at, clients(name, phone), quotations(destination), group_trips(title)')
+          .select(`
+            id, board_id, column_id, title, description, client_id, quotation_id, 
+            trip_id, group_trip_id, position, meta, assigned_to, whatsapp, email, 
+            tags, estimated_value, created_at, updated_at, 
+            clients(name, phone), 
+            quotations(destination), 
+            trips(destination),
+            group_trips(title)
+          `)
           .eq('board_id', board.id)
           .order('position'),
       ]);
@@ -153,6 +161,7 @@ export function useCreateKanbanCard() {
       client_id?: string | null;
       quotation_id?: string | null;
       group_trip_id?: string | null;
+      trip_id?: string | null;
       ticket_id?: string | null;
       task_type?: string | null;
       linked_card_ids?: string[];
@@ -198,6 +207,7 @@ export function useUpdateKanbanCard() {
       tags?: string[];
       client_id?: string | null;
       quotation_id?: string | null;
+      trip_id?: string | null;
       group_trip_id?: string | null;
       task_type?: string | null;
       linked_card_ids?: string[];

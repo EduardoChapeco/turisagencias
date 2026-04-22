@@ -143,7 +143,6 @@ export function useCreateLedgerEntry(tripId: string) {
   });
 }
 
-// ── Mark installment paid/late/dispensed ─────────────────────────────────────
 export function useUpdateInstallmentStatus(tripId: string) {
   const qc = useQueryClient();
   const { toast } = useToast();
@@ -161,20 +160,60 @@ export function useUpdateInstallmentStatus(tripId: string) {
       payment_method?: string | null;
       notes_finance?: string | null;
     }) => {
+      // 1. Check current status to prevent duplicate inserts
+      const { data: currentInst } = await supabase.from('booking_installments').select('status, amount, due_date, booking_id').eq('id', installmentId).single();
+      const wasPaid = currentInst?.status === 'paid';
+
       const update: Record<string, unknown> = { status };
       if (paid_at !== undefined) update.paid_at = paid_at;
       if (payment_method !== undefined) update.payment_method = payment_method;
       if (notes_finance !== undefined) update.notes_finance = notes_finance;
+      
       const { error } = await supabase
         .from('booking_installments')
         .update(update as any)
         .eq('id', installmentId);
       if (error) throw error;
+
+      // 2. Synchronize with Global Finance and Trip Ledger if it became Paid
+      if (status === 'paid' && !wasPaid && currentInst) {
+        const { data: booking } = await supabase.from('group_bookings').select('group_trip_id, org_id, lead_name').eq('id', currentInst.booking_id).single();
+        if (booking) {
+          // Sync with Global Agency Finance
+          await supabase.from('financial_transactions').insert({
+            org_id: booking.org_id,
+            group_trip_id: booking.group_trip_id,
+            type: 'receivable',
+            status: 'paid',
+            amount: currentInst.amount,
+            currency: 'BRL',
+            due_date: currentInst.due_date,
+            paid_at: paid_at || new Date().toISOString(),
+            payment_method: payment_method || 'transferencia',
+            description: `Recebimento Parcela ${installmentId.split('-')[0].toUpperCase()} - ${booking.lead_name}`,
+          });
+
+          // Sync with Internal Trip Ledger
+          await supabase.from('group_trip_ledger').insert({
+            org_id: booking.org_id,
+            group_trip_id: booking.group_trip_id,
+            type: 'income',
+            category: 'venda_pacote',
+            amount: currentInst.amount,
+            currency: 'BRL',
+            status: 'paid',
+            paid_at: paid_at || new Date().toISOString(),
+            description: `Recebimento Passageiro: ${booking.lead_name}`,
+          });
+        }
+      }
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['group_trip_bookings_full', tripId] });
       qc.invalidateQueries({ queryKey: ['group_trip_finance_summary', tripId] });
-      toast({ title: 'Parcela atualizada' });
+      qc.invalidateQueries({ queryKey: ['group_trip_ledger', tripId] });
+      qc.invalidateQueries({ queryKey: ['financial_transactions'] });
+      toast({ title: 'Parcela atualizada e Sincronizada no Financeiro Geral!' });
     },
     onError: (e: Error) => toast({ title: 'Erro', description: e.message, variant: 'destructive' }),
   });

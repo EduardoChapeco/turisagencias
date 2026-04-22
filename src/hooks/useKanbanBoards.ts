@@ -124,7 +124,6 @@ export function useKanbanBoard(slug: string) {
             tags, estimated_value, created_at, updated_at, 
             clients(name, phone), 
             quotations(destination), 
-            trips(destination),
             group_trips(title)
           `)
           .eq('board_id', board.id)

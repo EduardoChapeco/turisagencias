@@ -1,12 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  FileText, Save, Sparkles, Loader2, Plus, Trash2, X,
-  Plane, Ship, Bus, Train, MapPin, Hotel, Camera, Star,
-  Users, UserCheck, Tent, Image as ImageIcon, ArrowRight, ArrowLeft,
-  CheckCircle2
+  Save, Sparkles, Loader2, Plus, X, MapPin, Hotel,
+  Plane, Tent, CheckCircle2, Calendar, DollarSign, Image as ImageIcon, Users
 } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { SheetPage } from '@/components/ui/SheetPage';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -16,8 +14,6 @@ import { MediaUploader } from '@/components/ui/MediaUploader';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useCreateQuotation } from '@/hooks/useQuotations';
 import { useClients } from '@/hooks/useClients';
-import { useHotels } from '@/hooks/useHotels';
-import { useAuthStore } from '@/stores/authStore';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useQuotationForm } from './quotation-builder/useQuotationForm';
@@ -32,15 +28,17 @@ const TRANSPORT_TYPES = [
   { value: 'outro', label: 'Outro' },
 ];
 
-const STEPS = [
-  { id: 'destino', label: 'Destino & IA', icon: MapPin },
-  { id: 'itinerario', label: 'Itinerário', icon: Calendar }, // Wait Calendar missing? imported below? actually not imported. Let's use Plane for now
-  { id: 'transportes', label: 'Voos & Transp.', icon: Plane },
+const MEAL_PLANS: Record<string,string> = { all_inclusive:'All Inclusive', half_board:'Meia Pensão', bed_breakfast:'Café da Manhã', room_only:'Só Hospedagem' };
+const ROOM_TYPES: Record<string,string> = { standard:'Standard', superior:'Superior', deluxe:'Deluxe', suite:'Suíte', family:'Familiar', twin:'Twin' };
+
+const SECTIONS = [
+  { id: 'hospedagem', label: 'Hospedagem', icon: Hotel },
+  { id: 'itinerario', label: 'Itinerário', icon: Calendar },
+  { id: 'transportes', label: 'Transportes', icon: Plane },
   { id: 'passeios', label: 'Passeios', icon: Tent },
-  { id: 'valores', label: 'Valores', icon: DollarSign }, // Imported below
-  { id: 'cliente', label: 'Fechamento', icon: CheckCircle2 },
+  { id: 'valores', label: 'Valores', icon: DollarSign },
+  { id: 'fechamento', label: 'Finalizar', icon: CheckCircle2 },
 ];
-import { Calendar, DollarSign } from 'lucide-react';
 
 export interface QuotationBuilderSheetProps {
   open: boolean;
@@ -52,8 +50,6 @@ export function QuotationBuilderSheet({ open, onClose, clientId }: QuotationBuil
   const navigate = useNavigate();
   const createQuotation = useCreateQuotation();
   const { data: clients } = useClients();
-  const { data: hotels } = useHotels();
-  const { organization } = useAuthStore();
   const { toast } = useToast();
 
   const [currentStep, setCurrentStep] = useState(0);
@@ -76,13 +72,7 @@ export function QuotationBuilderSheet({ open, onClose, clientId }: QuotationBuil
   const [instCount, setInstCount] = useState('');
   const [instValue, setInstValue] = useState('');
 
-  useEffect(() => {
-    if (open) {
-      setCurrentStep(0);
-      reset();
-      if (clientId) updateForm('client_id', clientId);
-    }
-  }, [open, clientId]);
+  const handleOpen = () => { reset(); if (clientId) updateForm('client_id', clientId); };
 
   const handleAiExtract = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -126,6 +116,8 @@ export function QuotationBuilderSheet({ open, onClose, clientId }: QuotationBuil
     }
   };
 
+  const SECTION_STEP: Record<string,number> = { hospedagem:0, itinerario:1, transportes:2, passeios:3, valores:4, fechamento:5 };
+
   const handleSave = async () => {
     const result = await createQuotation.mutateAsync({
       destination: form.destination || undefined,
@@ -156,14 +148,14 @@ export function QuotationBuilderSheet({ open, onClose, clientId }: QuotationBuil
       excluded_items: form.excluded_items,
       media_urls: form.media_urls,
     } as any);
-
-    if (result) {
-      onClose();
-      navigate(`/quotations/${result.id}`);
-    }
+    if (result) { onClose(); navigate(`/quotations/${result.id}`); }
   };
 
-  const StepContent = () => {
+  // Map activeSection to step index for StepContent switch
+  const sectionToStep = (s: string) => SECTION_STEP[s] ?? 0;
+
+
+  const StepContent = ({ currentStep }: { currentStep: number }) => {
     switch (currentStep) {
       case 0:
         return (
@@ -472,93 +464,31 @@ export function QuotationBuilderSheet({ open, onClose, clientId }: QuotationBuil
   };
 
   return (
-    <Dialog open={open} onOpenChange={(val) => !val && onClose()}>
-      <DialogContent className="max-w-[95vw] w-full max-h-[95vh] h-full p-0 flex flex-col overflow-hidden bg-zinc-50/50 rounded-xl border-zinc-200 shadow-2xl">
-        
-        {/* Header - Bento Grid Style */}
-        <div className="bg-white px-8 py-5 border-b border-zinc-100 flex items-center justify-between shrink-0">
-          <div>
-            <DialogTitle className="text-2xl font-bold font-heading text-zinc-900">Construtor de Cotação</DialogTitle>
-            <DialogDescription className="text-zinc-500 mt-1">Siga as etapas para criar uma proposta comercial de alta conversão.</DialogDescription>
-          </div>
-          <Button variant="ghost" size="icon" onClick={onClose} className="rounded-full bg-zinc-100 hover:bg-zinc-200"><X className="w-4 h-4"/></Button>
+    <SheetPage
+      open={open}
+      onClose={onClose}
+      title="Construtor de Cotação"
+      subtitle="Crie uma proposta comercial completa"
+      icon={MapPin}
+      sections={SECTIONS}
+      defaultSection="hospedagem"
+      footer={
+        <div className="flex items-center justify-end gap-3 w-full">
+          <Button variant="ghost" onClick={onClose} className="rounded-xl">Cancelar</Button>
+          <Button
+            onClick={handleSave}
+            disabled={createQuotation.isPending || !form.destination}
+            className="rounded-full px-8 bg-vj-green hover:bg-vj-green/90 shadow-none font-bold"
+          >
+            {createQuotation.isPending ? <><Loader2 className="w-4 h-4 mr-2 animate-spin"/>Salvando...</> : <><Save className="w-4 h-4 mr-2"/>Gerar Cotação</>}
+          </Button>
         </div>
-
-        {/* Wizard Layout */}
-        <div className="flex flex-1 min-h-0 overflow-hidden">
-          
-          {/* Stepper Sidebar */}
-          <div className="w-64 bg-white border-r border-zinc-100 p-6 flex flex-col gap-2 shrink-0 overflow-y-auto hidden md:flex">
-            {STEPS.map((step, idx) => {
-              const Icon = step.icon;
-              const isActive = currentStep === idx;
-              const isPast = currentStep > idx;
-              return (
-                <button
-                  key={step.id}
-                  onClick={() => setCurrentStep(idx)}
-                  className={cn(
-                    "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all text-left",
-                    isActive ? "bg-zinc-900 text-white shadow-md" : "text-zinc-500 hover:bg-zinc-50 hover:text-zinc-900",
-                    isPast && !isActive ? "text-zinc-900" : ""
-                  )}
-                >
-                  <Icon className={cn("w-4 h-4", isActive ? "text-white" : isPast ? "text-vj-green" : "text-zinc-400")} />
-                  {step.label}
-                  {isPast && !isActive && <CheckCircle2 className="w-3.5 h-3.5 text-vj-green ml-auto" />}
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Main Content Area */}
-          <div className="flex-1 flex flex-col min-w-0 bg-white md:m-4 md:rounded-xl md:shadow-sm md:border md:border-zinc-100 overflow-hidden">
-             
-             {/* Progress Bar Mobile */}
-             <div className="h-1 bg-zinc-100 md:hidden w-full shrink-0">
-               <div className="h-full bg-vj-green transition-all" style={{ width: `${((currentStep + 1) / STEPS.length) * 100}%` }} />
-             </div>
-
-             {/* Dynamic Step Content */}
-             <div className="flex-1 overflow-y-auto p-6 md:p-10">
-               <StepContent />
-             </div>
-
-             {/* Footer Controls */}
-             <div className="p-6 bg-white border-t border-zinc-100 shrink-0 flex items-center justify-between">
-               <Button
-                 variant="ghost"
-                 onClick={() => setCurrentStep(p => Math.max(0, p - 1))}
-                 disabled={currentStep === 0}
-                 className="rounded-xl font-bold"
-               >
-                 <ArrowLeft className="w-4 h-4 mr-2" /> Voltar
-               </Button>
-               
-               <div className="flex items-center gap-3">
-                 <span className="text-sm font-bold text-zinc-400 hidden sm:inline">Passo {currentStep + 1} de {STEPS.length}</span>
-                 {currentStep === STEPS.length - 1 ? (
-                   <Button
-                     onClick={handleSave}
-                     disabled={createQuotation.isPending || !form.destination}
-                     className="rounded-xl px-8 bg-vj-green hover:bg-emerald-600 text-white font-bold shadow-lg shadow-emerald-500/20"
-                   >
-                     {createQuotation.isPending ? <><Loader2 className="w-4 h-4 mr-2 animate-spin"/> Finalizando...</> : <><Save className="w-4 h-4 mr-2" /> Finalizar e Gerar Link</>}
-                   </Button>
-                 ) : (
-                   <Button
-                     onClick={() => setCurrentStep(p => Math.min(STEPS.length - 1, p + 1))}
-                     className="rounded-xl px-8 bg-zinc-900 hover:bg-zinc-800 text-white font-bold"
-                   >
-                     Avançar <ArrowRight className="w-4 h-4 ml-2" />
-                   </Button>
-                 )}
-               </div>
-             </div>
-
-          </div>
-        </div>
-      </DialogContent>
-    </Dialog>
+      }
+    >
+      {(activeSection) => {
+        const step = sectionToStep(activeSection);
+        return <StepContent currentStep={step} />;
+      }}
+    </SheetPage>
   );
 }

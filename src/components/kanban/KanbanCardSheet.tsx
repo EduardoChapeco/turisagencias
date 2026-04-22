@@ -26,6 +26,7 @@ import { StatusBadge, mapStatusToVariant } from '@/components/ui/StatusBadge';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { ClientSearchSelect } from '@/components/ui/ClientSearchSelect';
 import { useGroupTrips } from '@/hooks/useGroupTrips';
+import { useAuthStore } from '@/stores/authStore';
 import {
   useUpdateKanbanCard,
   useDeleteKanbanCard,

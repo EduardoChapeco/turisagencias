@@ -10,17 +10,22 @@ import { Card, CardDescription, CardHeader, CardTitle, CardFooter } from '@/comp
 import { MapPin, Plus, Map, Eye, Users } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { SheetPage } from '@/components/ui/SheetPage';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
+
+const ROTEIRO_SECTIONS = [
+  { id: 'dados', label: 'Dados do Roteiro', icon: Map },
+  { id: 'grupo', label: 'Configurações de Grupo', icon: Users },
+];
 
 export default function Itineraries() {
   const navigate = useNavigate();
   const { profile } = useAuthStore();
   const { itineraries, isLoading, createItinerary } = useItineraries(profile?.org_id);
   const [isCreating, setIsCreating] = useState(false);
-  const [showDialog, setShowDialog] = useState(false);
+  const [showSheet, setShowSheet] = useState(false);
   
   // Form State
   const [isGroup, setIsGroup] = useState(false);
@@ -39,7 +44,7 @@ export default function Itineraries() {
         group_name: isGroup ? groupName : null,
         max_pax: isGroup && maxPax ? parseInt(maxPax, 10) : null,
       });
-      setShowDialog(false);
+      setShowSheet(false);
       navigate(`/itineraries/${newItinerary.id}/builder`);
     } catch (e) {
       logger.error(e);
@@ -62,7 +67,7 @@ export default function Itineraries() {
             </p>
           </div>
           <Button
-            onClick={() => setShowDialog(true)}
+            onClick={() => setShowSheet(true)}
             disabled={isCreating}
             className="rounded-full px-6 gap-2"
           >
@@ -86,7 +91,7 @@ export default function Itineraries() {
             <p className="text-vj-txt3 mb-8 max-w-md">
               Crie seu primeiro roteiro. Use nossa IA para gerar rotas completas com mapas e dicas.
             </p>
-            <Button onClick={() => setShowDialog(true)} disabled={isCreating} size="lg" className="rounded-full px-8 gap-2">
+            <Button onClick={() => setShowSheet(true)} disabled={isCreating} size="lg" className="rounded-full px-8 gap-2">
               <Plus className="w-5 h-5" /> Começar a Criar
             </Button>
           </div>
@@ -143,63 +148,92 @@ export default function Itineraries() {
         )}
       </div>
 
-      <Dialog open={showDialog} onOpenChange={setShowDialog}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Criar Novo Roteiro</DialogTitle>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="title">Nome do Roteiro</Label>
-              <Input
-                id="title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="Ex: Viagem Europa 2026"
-              />
-            </div>
-            <div className="flex items-center justify-between mt-2">
-              <Label htmlFor="is-group" className="cursor-pointer">Este é um Roteiro de Grupo?</Label>
-              <Switch
-                id="is-group"
-                checked={isGroup}
-                onCheckedChange={setIsGroup}
-              />
-            </div>
-            
-            {isGroup && (
-              <div className="space-y-4 p-4 border rounded-xl bg-vj-surface mt-2 animate-in fade-in">
-                <div className="grid gap-2">
-                  <Label htmlFor="group_name">Nome do Grupo (Comercial)</Label>
+      <SheetPage
+        open={showSheet}
+        onClose={() => setShowSheet(false)}
+        title="Criar Novo Roteiro"
+        subtitle="Configure o título e o tipo de roteiro"
+        icon={Map}
+        sections={ROTEIRO_SECTIONS}
+        defaultSection="dados"
+        footer={
+          <div className="flex items-center gap-3 w-full justify-end">
+            <Button variant="ghost" onClick={() => setShowSheet(false)}>Cancelar</Button>
+            <Button
+              onClick={handleCreate}
+              disabled={isCreating || !title}
+              className="rounded-full px-8 bg-vj-green hover:bg-vj-green/90"
+            >
+              {isCreating ? 'Criando...' : 'Criar Roteiro e Abrir Editor'}
+            </Button>
+          </div>
+        }
+      >
+        {(activeSection) => (
+          <>
+            {activeSection === 'dados' && (
+              <div className="space-y-5">
+                <div className="space-y-1.5">
+                  <Label className="font-semibold">Nome do Roteiro *</Label>
                   <Input
-                    id="group_name"
-                    value={groupName}
-                    onChange={(e) => setGroupName(e.target.value)}
-                    placeholder="Ex: Grupo Turquia VIP"
+                    id="title"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="Ex: Viagem Europa 2026"
+                    className="h-12 rounded-xl bg-zinc-50 border-zinc-200"
+                    autoFocus
                   />
                 </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="max_pax">Total de Vagas</Label>
-                  <Input
-                    id="max_pax"
-                    type="number"
-                    min="1"
-                    value={maxPax}
-                    onChange={(e) => setMaxPax(e.target.value)}
-                    placeholder="Ex: 25"
+                <div className="flex items-center justify-between p-4 rounded-xl bg-zinc-50 border border-zinc-200">
+                  <div>
+                    <Label htmlFor="is-group" className="cursor-pointer font-semibold">Este é um Roteiro de Grupo?</Label>
+                    <p className="text-xs text-zinc-500 mt-0.5">Ative para configurar vagas e nome de grupo.</p>
+                  </div>
+                  <Switch
+                    id="is-group"
+                    checked={isGroup}
+                    onCheckedChange={setIsGroup}
                   />
                 </div>
               </div>
             )}
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowDialog(false)}>Cancelar</Button>
-            <Button onClick={handleCreate} disabled={isCreating || !title}>
-              {isCreating ? 'Criando...' : 'Criar Roteiro'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+
+            {activeSection === 'grupo' && (
+              <div className="space-y-5">
+                {!isGroup ? (
+                  <div className="p-6 rounded-xl border border-dashed border-zinc-300 text-center text-zinc-500">
+                    <Users className="mx-auto mb-2 text-zinc-400" />
+                    <p className="text-sm">Ative a opção "Roteiro de Grupo" na aba anterior para configurar aqui.</p>
+                  </div>
+                ) : (
+                  <>
+                    <div className="space-y-1.5">
+                      <Label className="font-semibold">Nome do Grupo (Comercial)</Label>
+                      <Input
+                        value={groupName}
+                        onChange={(e) => setGroupName(e.target.value)}
+                        placeholder="Ex: Grupo Turquia VIP"
+                        className="h-12 rounded-xl bg-zinc-50 border-zinc-200"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="font-semibold">Total de Vagas</Label>
+                      <Input
+                        type="number"
+                        min="1"
+                        value={maxPax}
+                        onChange={(e) => setMaxPax(e.target.value)}
+                        placeholder="Ex: 25"
+                        className="h-12 rounded-xl bg-zinc-50 border-zinc-200"
+                      />
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+          </>
+        )}
+      </SheetPage>
     </AppLayout>
   );
 }

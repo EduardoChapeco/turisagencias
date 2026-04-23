@@ -5,13 +5,18 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { SheetPage } from '@/components/ui/SheetPage';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, UserPlus, Users, MoreVertical, Edit2, Trash2, MailIcon } from 'lucide-react';
+import { Search, UserPlus, Users, MoreVertical, Edit2, Trash2, MailIcon, Shield, Percent } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
 import { useTeamMembers, useCreateTeamMember, useUpdateTeamMember, useDeleteTeamMember, TeamMember } from '@/hooks/useTeam';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { PageSkeleton } from '@/components/ui/EmptyState';
+
+const TEAM_SECTIONS = [
+  { id: 'dados', label: 'Dados do Agente', icon: UserPlus },
+  { id: 'acesso', label: 'Acesso e Comissão', icon: Shield },
+];
 
 export default function Team() {
   const { profile } = useAuthStore();
@@ -21,7 +26,7 @@ export default function Team() {
   const deleteMember = useDeleteTeamMember();
 
   const [search, setSearch] = useState('');
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [editingMember, setEditingMember] = useState<TeamMember | null>(null);
 
   const [formData, setFormData] = useState({
@@ -35,7 +40,7 @@ export default function Team() {
   const handleOpenNew = () => {
     setEditingMember(null);
     setFormData({ full_name: '', email: '', role: 'agent', commission_rate: 0, status: 'pending' });
-    setIsDialogOpen(true);
+    setIsSheetOpen(true);
   };
 
   const handleOpenEdit = (m: TeamMember) => {
@@ -47,7 +52,7 @@ export default function Team() {
       commission_rate: m.commission_rate,
       status: m.status
     });
-    setIsDialogOpen(true);
+    setIsSheetOpen(true);
   };
 
   const handleSubmit = async () => {
@@ -57,8 +62,10 @@ export default function Team() {
     } else {
       await createMember.mutateAsync({ org_id: profile!.org_id!, ...formData });
     }
-    setIsDialogOpen(false);
+    setIsSheetOpen(false);
   };
+
+  const isPending = createMember.isPending || updateMember.isPending;
 
   const filtered = members?.filter(m => m.full_name.toLowerCase().includes(search.toLowerCase()) || m.email.toLowerCase().includes(search.toLowerCase())) || [];
 
@@ -75,6 +82,7 @@ export default function Team() {
             <Button onClick={handleOpenNew} className="rounded-full gap-2 px-6">
               <UserPlus size={16}/> Convidar Membro
             </Button>
+
           }
         />
 
@@ -159,60 +167,105 @@ export default function Team() {
         </div>
       </div>
 
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-[425px] rounded-3xl">
-          <DialogHeader>
-            <DialogTitle>{editingMember ? 'Editar Perfil de Acesso' : 'Adicionar Novo Membro'}</DialogTitle>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label>Nome Completo</Label>
-              <Input value={formData.full_name} onChange={e => setFormData({...formData, full_name: e.target.value})} className="rounded-xl" />
-            </div>
-            <div className="grid gap-2">
-              <Label>E-mail Corporativo</Label>
-              <Input type="email" disabled={!!editingMember} value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} className="rounded-xl" />
-              {!!editingMember && <span className="text-[10px] text-muted-foreground">O e-mail de acesso não pode ser alterado após o convite.</span>}
-            </div>
-            <div className="grid gap-2">
-              <Label>Nível de Acesso</Label>
-              <Select value={formData.role} onValueChange={(v: any) => setFormData({...formData, role: v})}>
-                <SelectTrigger className="rounded-xl"><SelectValue /></SelectTrigger>
-                <SelectContent className="rounded-xl">
-                  <SelectItem value="admin">Administrador (Acesso Total)</SelectItem>
-                  <SelectItem value="agent">Agente (Somente Vendas)</SelectItem>
-                  <SelectItem value="viewer">Visualizador (Leitura)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid gap-2">
-              <Label>Taxa de Comissão % (Opcional)</Label>
-              <Input type="number" min="0" max="100" value={formData.commission_rate} onChange={e => setFormData({...formData, commission_rate: Number(e.target.value)})} className="rounded-xl" />
-            </div>
-            {editingMember && (
-               <div className="grid gap-2">
-                 <Label>Status da Conta</Label>
-                 <Select value={formData.status} onValueChange={(v: any) => setFormData({...formData, status: v})}>
-                   <SelectTrigger className="rounded-xl border-red-200"><SelectValue /></SelectTrigger>
-                   <SelectContent className="rounded-xl">
-                     <SelectItem value="active">Ativo (Permitir Acesso)</SelectItem>
-                     <SelectItem value="suspended">Suspenso (Bloqueado)</SelectItem>
-                   </SelectContent>
-                 </Select>
-               </div>
-            )}
-            
-            {!editingMember && (
-                <p className="text-xs text-muted-foreground mt-2 bg-muted/50 p-2 rounded-lg border">
-                  Uma notificação não será enviada automaticamente. Peça para o usuário acessar o Portal de Login usando este e-mail.
-                </p>
-            )}
+      <SheetPage
+        open={isSheetOpen}
+        onClose={() => setIsSheetOpen(false)}
+        title={editingMember ? 'Editar Perfil de Acesso' : 'Convidar Novo Membro'}
+        subtitle="Gerencie os acessos e comissões da sua equipe"
+        icon={Users}
+        sections={TEAM_SECTIONS}
+        defaultSection="dados"
+        footer={
+          <div className="flex items-center gap-3 w-full justify-end">
+            <Button variant="ghost" onClick={() => setIsSheetOpen(false)}>Cancelar</Button>
+            <Button
+              onClick={handleSubmit}
+              disabled={!formData.full_name || !formData.email || isPending}
+              className="rounded-full px-8 bg-vj-green hover:bg-vj-green/90"
+            >
+              {isPending ? 'Salvando...' : editingMember ? 'Salvar Alterações' : 'Enviar Convite'}
+            </Button>
           </div>
-          <DialogFooter>
-            <Button disabled={!formData.full_name || !formData.email} onClick={handleSubmit} className="rounded-xl w-full">Salvar Acesso</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        }
+      >
+        {(activeSection) => (
+          <>
+            {activeSection === 'dados' && (
+              <div className="space-y-5">
+                <div className="space-y-1.5">
+                  <Label className="font-semibold">Nome Completo *</Label>
+                  <Input
+                    value={formData.full_name}
+                    onChange={e => setFormData({...formData, full_name: e.target.value})}
+                    placeholder="Ex: Maria Santos"
+                    className="h-12 rounded-xl bg-zinc-50 border-zinc-200"
+                    autoFocus
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="font-semibold flex items-center gap-2"><MailIcon size={14} /> E-mail Corporativo *</Label>
+                  <Input
+                    type="email"
+                    disabled={!!editingMember}
+                    value={formData.email}
+                    onChange={e => setFormData({...formData, email: e.target.value})}
+                    placeholder="agente@agencia.com.br"
+                    className="h-12 rounded-xl bg-zinc-50 border-zinc-200"
+                  />
+                  {!!editingMember && <p className="text-xs text-zinc-500">O e-mail de acesso não pode ser alterado após o convite.</p>}
+                </div>
+                {!editingMember && (
+                  <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 text-sm text-amber-700">
+                    ℹ️ Peça ao usuário para acessar o portal de login com este e-mail. O primeiro acesso será configurado por ele.
+                  </div>
+                )}
+              </div>
+            )}
+
+            {activeSection === 'acesso' && (
+              <div className="space-y-5">
+                <div className="space-y-1.5">
+                  <Label className="font-semibold flex items-center gap-2"><Shield size={14} /> Nível de Acesso</Label>
+                  <Select value={formData.role} onValueChange={(v: any) => setFormData({...formData, role: v})}>
+                    <SelectTrigger className="h-12 rounded-xl bg-zinc-50 border-zinc-200"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="admin">👑 Administrador (Acesso Total)</SelectItem>
+                      <SelectItem value="agent">🧳 Agente (Somente Vendas)</SelectItem>
+                      <SelectItem value="viewer">👁️ Visualizador (Somente Leitura)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="font-semibold flex items-center gap-2"><Percent size={14} /> Taxa de Comissão (%)</Label>
+                  <Input
+                    type="number"
+                    min="0"
+                    max="100"
+                    step="0.5"
+                    value={formData.commission_rate}
+                    onChange={e => setFormData({...formData, commission_rate: Number(e.target.value)})}
+                    className="h-12 rounded-xl bg-zinc-50 border-zinc-200"
+                  />
+                </div>
+
+                {editingMember && (
+                  <div className="space-y-1.5">
+                    <Label className="font-semibold">Status da Conta</Label>
+                    <Select value={formData.status} onValueChange={(v: any) => setFormData({...formData, status: v})}>
+                      <SelectTrigger className="h-12 rounded-xl bg-zinc-50 border-zinc-200"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="active">✅ Ativo (Acesso Liberado)</SelectItem>
+                        <SelectItem value="suspended">🔒 Suspenso (Acesso Bloqueado)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+              </div>
+            )}
+          </>
+        )}
+      </SheetPage>
     </AppLayout>
   );
 }

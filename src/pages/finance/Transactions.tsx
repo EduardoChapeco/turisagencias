@@ -141,9 +141,12 @@ export default function Transactions() {
                           )}
                         </td>
                         <td className="px-4 py-3">
-                           <Badge variant={t.status === 'paid' ? 'default' : t.status === 'overdue' ? 'destructive' : 'secondary'} className={t.status === 'paid' ? 'bg-green-500' : ''}>
-                             {t.status}
-                           </Badge>
+                           {{
+                             pending: <Badge variant="secondary" className="bg-amber-100 text-amber-700 border-amber-200">Pendente</Badge>,
+                             paid: <Badge className="bg-green-500 text-white">Pago</Badge>,
+                             overdue: <Badge variant="destructive">Vencido</Badge>,
+                             canceled: <Badge variant="outline" className="text-zinc-400">Cancelado</Badge>,
+                           }[t.status] ?? <Badge variant="secondary">{t.status}</Badge>}
                         </td>
                         <td className="px-4 py-3">
                            {t.type === 'receivable' ? t.clients?.name || '-' : t.suppliers?.name || t.description || '-'}
@@ -212,10 +215,10 @@ export default function Transactions() {
                     type="number"
                     min="0"
                     step="0.01"
-                    placeholder="0,00"
-                    value={formData.amount}
+                    placeholder="Ex: 1500.00"
+                    value={formData.amount === '' ? '' : formData.amount}
                     onChange={e => update('amount', e.target.value)}
-                    className="h-12 rounded-xl bg-zinc-50 border-zinc-200"
+                    className="h-12 rounded-xl bg-zinc-50 border-zinc-200 text-lg font-semibold"
                   />
                 </div>
 

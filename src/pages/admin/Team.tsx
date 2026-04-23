@@ -111,8 +111,19 @@ export default function Team() {
               <tbody>
                 {filtered.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="p-8 text-center text-muted-foreground">
-                      Nenhum membro encontrado.
+                    <td colSpan={5} className="py-16 text-center">
+                      <div className="flex flex-col items-center gap-3">
+                        <div className="p-4 bg-zinc-100 rounded-full">
+                          <Users className="h-8 w-8 text-zinc-400" />
+                        </div>
+                        <div>
+                          <p className="font-semibold text-zinc-700">Nenhum membro na equipe</p>
+                          <p className="text-sm text-zinc-500 mt-1">Convide agentes para colaborar e gerenciar vendas.</p>
+                        </div>
+                        <Button onClick={handleOpenNew} className="rounded-full mt-2 gap-2 bg-vj-green hover:bg-vj-green/90">
+                          <UserPlus size={14} /> Convidar Primeiro Membro
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 ) : (
@@ -125,11 +136,14 @@ export default function Team() {
                         </div>
                       </td>
                       <td className="px-4 py-3">
-                         <span className={`px-2 py-1 rounded text-xs uppercase font-bold tracking-wider ${
-                            m.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'
-                         }`}>
-                           {m.role}
-                         </span>
+                         {{
+                           admin: <span className="px-2 py-1 rounded text-xs uppercase font-bold tracking-wider bg-purple-100 text-purple-700">Administrador</span>,
+                           agent: <span className="px-2 py-1 rounded text-xs uppercase font-bold tracking-wider bg-blue-100 text-blue-700">Agente</span>,
+                           viewer: <span className="px-2 py-1 rounded text-xs uppercase font-bold tracking-wider bg-zinc-100 text-zinc-600">Visualizador</span>,
+                           org_admin: <span className="px-2 py-1 rounded text-xs uppercase font-bold tracking-wider bg-purple-100 text-purple-700">Org. Admin</span>,
+                           super_admin: <span className="px-2 py-1 rounded text-xs uppercase font-bold tracking-wider bg-red-100 text-red-700">Super Admin</span>,
+                           support: <span className="px-2 py-1 rounded text-xs uppercase font-bold tracking-wider bg-cyan-100 text-cyan-700">Suporte</span>,
+                         }[m.role as string] ?? <span className="px-2 py-1 rounded text-xs uppercase font-bold tracking-wider bg-zinc-100 text-zinc-600">{m.role}</span>}
                       </td>
                       <td className="px-4 py-3">
                          <Badge variant={m.status === 'active' ? 'default' : m.status === 'pending' ? 'secondary' : 'destructive'} 

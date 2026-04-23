@@ -52,6 +52,8 @@ import {
   CopyCheck
 } from 'lucide-react';
 import { useEmailTracking } from '@/hooks/useEmailTracking';
+import { SheetPage } from '@/components/ui/SheetPage';
+import { Eye, Clock, MapPin, Globe } from 'lucide-react';
 
 /* ─────────────────────────────────────────────
    SEÇÃO: Dados Gerais
@@ -631,6 +633,87 @@ function VinculosSection({ card }: { card: any }) {
 }
 
 /* ─────────────────────────────────────────────
+   SEÇÃO: Rastreio (Logs de E-mail)
+   ───────────────────────────────────────────── */
+function RastreioSection({ cardId }: { cardId: string }) {
+  const { logs, isLoading } = useEmailTracking(cardId);
+
+  if (isLoading) return <div className="text-sm text-vj-txt3">Carregando rastreio...</div>;
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h3 className="font-bold text-zinc-800 flex items-center gap-2">
+          <Globe className="w-4 h-4 text-blue-500" /> Logs de Rastreamento
+        </h3>
+        <span className="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
+          Beta
+        </span>
+      </div>
+
+      {!logs || logs.length === 0 ? (
+        <EmptyState
+          icon={Globe}
+          title="Nenhum log de rastreio"
+          description="Quando você enviar e-mails rastreados para este lead, as aberturas e interações aparecerão aqui."
+        />
+      ) : (
+        <div className="space-y-3">
+          {logs.map((log: any) => (
+            <div key={log.id} className="p-4 rounded-2xl border border-zinc-100 bg-white hover:border-blue-100 transition-colors">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-bold text-zinc-500 uppercase tracking-tight mb-1">Destinatário</p>
+                  <p className="font-semibold text-zinc-800 truncate">{log.recipient_email}</p>
+                  {log.subject && <p className="text-sm text-zinc-600 mt-0.5">{log.subject}</p>}
+                </div>
+                <div className="text-right">
+                  <div className={cn(
+                    "inline-flex items-center gap-1.5 px-2 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider",
+                    log.opened_at ? "bg-green-50 text-green-700 border border-green-100" : "bg-zinc-100 text-zinc-500 border border-zinc-200"
+                  )}>
+                    {log.opened_at ? <Eye size={11} /> : <Clock size={11} />}
+                    {log.opened_at ? 'Lido' : 'Pendente'}
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-4 pt-3 border-t border-zinc-50 grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <span className="text-[10px] text-zinc-400 block font-bold uppercase tracking-wider">Enviado em</span>
+                  <span className="text-xs text-zinc-600 flex items-center gap-1.5">
+                    <Clock size={12} className="text-zinc-300" />
+                    {new Date(log.created_at).toLocaleString('pt-BR')}
+                  </span>
+                </div>
+                {log.opened_at && (
+                  <div className="space-y-1">
+                    <span className="text-[10px] text-green-600 block font-bold uppercase tracking-wider">Lido em</span>
+                    <span className="text-xs text-green-700 font-medium flex items-center gap-1.5">
+                      <Eye size={12} className="text-green-300" />
+                      {new Date(log.opened_at).toLocaleString('pt-BR')}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {log.last_ip && (
+                <div className="mt-3 flex items-center gap-2 text-[10px] text-zinc-400 bg-zinc-50/50 p-2 rounded-lg">
+                  <MapPin size={10} />
+                  <span>IP: {log.last_ip}</span>
+                  <span className="mx-1">•</span>
+                  <span className="truncate">{log.last_user_agent}</span>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────
    COMPONENTE PRINCIPAL (PAGE)
    ───────────────────────────────────────────── */
 export default function KanbanCardPage() {
@@ -638,8 +721,6 @@ export default function KanbanCardPage() {
   const navigate = useNavigate();
   const deleteCard = useDeleteKanbanCard();
   const { data, isLoading } = useKanbanCard(id);
-
-  const [activeTab, setActiveTab] = useState('dados');
 
   if (isLoading) {
     return (
@@ -656,7 +737,7 @@ export default function KanbanCardPage() {
           icon={User}
           title="Card não encontrado"
           description="O card que você está procurando pode ter sido removido ou você não tem acesso."
-          action={<Button onClick={() => navigate(-1)}>Voltar</Button>}
+          action={<Button onClick={() => navigate('/kanban/sales')}>Ir para Kanban</Button>}
         />
       </AppLayout>
     );
@@ -667,111 +748,63 @@ export default function KanbanCardPage() {
   const handleDelete = async () => {
     if (!window.confirm(`Excluir o card "${card.title}"? Esta ação não pode ser desfeita.`)) return;
     await deleteCard.mutateAsync(card.id);
-    navigate(-1);
+    navigate('/kanban/sales');
   };
+
+  const SECTIONS = [
+    { id: 'dados', label: 'Dados Gerais', icon: AlignLeft },
+    { id: 'checklist', label: 'Checklist', icon: CheckSquare },
+    { id: 'notas', label: 'Notas', icon: FileText },
+    { id: 'vinculos', label: 'Vínculos', icon: Link2 },
+    { id: 'whatsapp', label: 'WhatsApp', icon: MessageCircle },
+    { id: 'rastreio', label: 'Rastreio', icon: Globe },
+  ];
 
   return (
     <AppLayout>
-      <div className="max-w-5xl mx-auto w-full pb-10">
-        <div className="mb-6 flex items-center gap-4">
-          <Button variant="outline" size="icon" onClick={() => navigate(-1)} className="rounded-full">
-            <ArrowLeft size={16} />
-          </Button>
-          <div className="flex-1">
-            <PageHeader
-              title={card.title}
-              description={card.clients?.name ?? card.quotations?.destination ?? "Detalhes do Card CRM"}
-              icon={User}
-            />
-          </div>
-          <div className="flex items-center gap-3">
-            <EmailTrackingBadge entityId={card.id} />
+      <SheetPage
+        open={true}
+        onClose={() => navigate('/kanban/sales')}
+        title={card.title}
+        subtitle={card.clients?.name ?? card.quotations?.destination ?? "Detalhes do Lead CRM"}
+        icon={User}
+        sections={SECTIONS}
+        defaultSection="dados"
+        footer={
+          <div className="flex w-full justify-between items-center">
             <Button
-              variant="outline"
-              className="border-vj-red/40 text-vj-red hover:bg-vj-red/5"
+              variant="ghost"
+              className="text-vj-red hover:bg-vj-red/5 hover:text-vj-red rounded-xl"
               onClick={handleDelete}
               disabled={deleteCard.isPending}
             >
               <Trash2 size={16} className="mr-2" />
-              Excluir Card
+              Excluir Lead
             </Button>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          <div className="lg:col-span-3">
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="mb-6 w-full justify-start h-12 bg-white border border-zinc-200 rounded-xl px-2">
-                <TabsTrigger value="dados" className="h-9 px-4 text-sm font-medium data-[state=active]:bg-zinc-100 rounded-lg">
-                  <AlignLeft className="w-4 h-4 mr-2" /> Dados Gerais
-                </TabsTrigger>
-                <TabsTrigger value="checklist" className="h-9 px-4 text-sm font-medium data-[state=active]:bg-zinc-100 rounded-lg">
-                  <CheckSquare className="w-4 h-4 mr-2" /> Checklist
-                </TabsTrigger>
-                <TabsTrigger value="notas" className="h-9 px-4 text-sm font-medium data-[state=active]:bg-zinc-100 rounded-lg">
-                  <FileText className="w-4 h-4 mr-2" /> Notas
-                </TabsTrigger>
-                <TabsTrigger value="vinculos" className="h-9 px-4 text-sm font-medium data-[state=active]:bg-zinc-100 rounded-lg">
-                  <Link2 className="w-4 h-4 mr-2" /> Vínculos
-                </TabsTrigger>
-                <TabsTrigger value="whatsapp" className="h-9 px-4 text-sm font-medium data-[state=active]:bg-zinc-100 rounded-lg">
-                  <MessageCircle className="w-4 h-4 mr-2" /> WhatsApp
-                </TabsTrigger>
-                <TabsTrigger value="rastreio" className="h-9 px-4 text-sm font-medium data-[state=active]:bg-zinc-100 rounded-lg text-blue-600">
-                  <Globe className="w-4 h-4 mr-2" /> Rastreio
-                </TabsTrigger>
-              </TabsList>
-
-              <div className="bg-white rounded-3xl border border-zinc-200 p-6 md:p-8 shadow-sm">
-                <TabsContent value="dados" className="mt-0 outline-none">
-                  <DadosSection card={card} columns={columns} />
-                </TabsContent>
-                <TabsContent value="checklist" className="mt-0 outline-none">
-                  <ChecklistSection cardId={card.id} />
-                </TabsContent>
-                <TabsContent value="notas" className="mt-0 outline-none">
-                  <NotasSection cardId={card.id} />
-                </TabsContent>
-                <TabsContent value="vinculos" className="mt-0 outline-none">
-                  <VinculosSection card={card} />
-                </TabsContent>
-                <TabsContent value="whatsapp" className="mt-0 outline-none">
-                  <WaChatPanel clientId={card.client_id} phone={card.whatsapp} />
-                </TabsContent>
-                <TabsContent value="rastreio" className="mt-0 outline-none">
-                  <RastreioSection cardId={card.id} orgId={card.org_id} />
-                </TabsContent>
-              </div>
-            </Tabs>
-          </div>
-          
-          <div className="lg:col-span-1 space-y-6">
-            <div className="bg-white rounded-3xl border border-zinc-200 p-6 shadow-sm">
-              <h3 className="text-sm font-bold text-zinc-800 mb-4 uppercase tracking-wider">Atividade</h3>
-              <div className="space-y-4">
-                <div className="text-sm">
-                  <span className="text-zinc-500 block text-xs">Criado em</span>
-                  <span className="font-medium text-zinc-800">{new Date(card.created_at).toLocaleDateString('pt-BR')}</span>
-                </div>
-                {card.updated_at && card.updated_at !== card.created_at && (
-                  <div className="text-sm">
-                    <span className="text-zinc-500 block text-xs">Última atualização</span>
-                    <span className="font-medium text-zinc-800">{new Date(card.updated_at).toLocaleDateString('pt-BR')}</span>
-                  </div>
-                )}
-                {card.estimated_value > 0 && (
-                  <div className="text-sm pt-4 border-t border-zinc-100">
-                    <span className="text-zinc-500 block text-xs">Valor Estimado</span>
-                    <span className="font-bold text-vj-green text-lg">
-                      {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(card.estimated_value)}
-                    </span>
-                  </div>
-                )}
-              </div>
+            <div className="flex items-center gap-3">
+              <EmailTrackingBadge entityId={card.id} />
+              <Button variant="outline" onClick={() => navigate('/kanban/sales')} className="rounded-xl">
+                Fechar
+              </Button>
             </div>
           </div>
-        </div>
-      </div>
+        }
+      >
+        {(activeSection) => (
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
+            {activeSection === 'dados' && <DadosSection card={card} columns={columns} />}
+            {activeSection === 'checklist' && <ChecklistSection cardId={card.id} />}
+            {activeSection === 'notas' && <NotasSection cardId={card.id} />}
+            {activeSection === 'vinculos' && <VinculosSection card={card} />}
+            {activeSection === 'whatsapp' && (
+              <div className="h-[calc(100vh-250px)]">
+                <WaChatPanel clientId={card.client_id} phone={card.whatsapp} />
+              </div>
+            )}
+            {activeSection === 'rastreio' && <RastreioSection cardId={card.id} />}
+          </div>
+        )}
+      </SheetPage>
     </AppLayout>
   );
 }

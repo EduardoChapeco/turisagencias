@@ -1,13 +1,6 @@
 import { useState } from 'react';
 import { Bot, Loader2, Sparkles } from 'lucide-react';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
+import { SheetPage } from '@/components/ui/SheetPage';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
@@ -72,38 +65,52 @@ export function KanbanAiLeadDialog({ boardId, defaultColumnId }: { boardId?: str
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button size="sm" className="premium-button bg-violet-600 hover:bg-violet-700 text-white  ">
-          <Sparkles className="w-4 h-4 mr-2 text-violet-200" /> Lead Rápida IA
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px] rounded-[2rem] p-6 border-violet-100/50 bg-white  backdrop-blur-xl">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-violet-800 font-heading">
-            <Bot className="w-5 h-5 text-violet-500" /> Assistente de Leads (Agente 0)
-          </DialogTitle>
-          <DialogDescription>
-            Cole o texto do cliente, WhatsApp ou e-mail abaixo. A Inteligência vai estruturá-lo e adicionar ao Kanban.
-          </DialogDescription>
-        </DialogHeader>
+    <>
+      <Button 
+        size="sm" 
+        onClick={() => setOpen(true)}
+        className="premium-button bg-violet-600 hover:bg-violet-700 text-white shadow-none font-bold rounded-full px-6"
+      >
+        <Sparkles className="w-4 h-4 mr-2 text-violet-200" /> Lead Rápida IA
+      </Button>
 
-        <div className="mt-4 space-y-4">
-          <Textarea 
-            placeholder="Ex: Oi, queria ver opções para Disney no natal, somos 2 adultos e 2 crianças (3 e 5 anos). Queria gastar pouco..."
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            className="min-h-[150px] resize-none bg-zinc-50 border-violet-100 focus-visible:ring-violet-500 text-sm"
-          />
-          <Button 
-            className="w-full premium-button bg-gradient-to-r from-violet-600 to-indigo-600 border-none  "
-            disabled={!text.trim() || isExtracting || !boardId || !defaultColumnId}
-            onClick={handleExtract}
-          >
-            {isExtracting ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Analisando Intenção...</> : 'Criar Card Automaticamente'}
-          </Button>
-        </div>
-      </DialogContent>
-    </Dialog>
+      <SheetPage
+        open={open}
+        onClose={() => setOpen(false)}
+        title="Assistente de Leads (Agente 0)"
+        subtitle="Cole o texto do cliente, WhatsApp ou e-mail abaixo. A Inteligência vai estruturá-lo."
+        icon={Bot}
+        footer={
+          <div className="flex w-full justify-end gap-2">
+            <Button variant="ghost" onClick={() => setOpen(false)} className="rounded-xl">Cancelar</Button>
+            <Button 
+              className="premium-button bg-gradient-to-r from-violet-600 to-indigo-600 border-none rounded-full px-8 font-bold"
+              disabled={!text.trim() || isExtracting || !boardId || !defaultColumnId}
+              onClick={handleExtract}
+            >
+              {isExtracting ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Analisando...</> : 'Criar Card Agora'}
+            </Button>
+          </div>
+        }
+      >
+        {() => (
+          <div className="space-y-4">
+             <Textarea 
+              placeholder="Ex: Oi, queria ver opções para Disney no natal, somos 2 adultos e 2 crianças (3 e 5 anos). Queria gastar pouco..."
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              className="min-h-[300px] resize-none bg-zinc-50 border-violet-100 focus-visible:ring-violet-500 text-sm rounded-2xl p-4"
+              autoFocus
+            />
+            <div className="p-4 rounded-2xl bg-violet-50/50 border border-violet-100/50 flex items-start gap-3">
+              <Bot className="w-5 h-5 text-violet-500 shrink-0 mt-0.5" />
+              <p className="text-[11px] text-violet-700 leading-relaxed">
+                O Agente 0 analisa o contexto da conversa, extrai destinos, orçamentos, passageiros e datas, criando automaticamente um card estruturado no seu funil de vendas.
+              </p>
+            </div>
+          </div>
+        )}
+      </SheetPage>
+    </>
   );
 }

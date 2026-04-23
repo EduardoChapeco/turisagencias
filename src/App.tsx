@@ -153,17 +153,14 @@ const App = () => (
               <Route path="/radar-global" element={<ProtectedWithOrg><GlobalRadarMap /></ProtectedWithOrg>} />
 
               <Route path="/clients" element={<ProtectedWithOrg><Clients /></ProtectedWithOrg>} />
-              <Route path="/clients/:id" element={<ProtectedWithOrg><ClientDetail /></ProtectedWithOrg>} />
 
               <Route path="/quotations" element={<ProtectedWithOrg><Quotations /></ProtectedWithOrg>} />
-              <Route path="/quotations/:id" element={<ProtectedWithOrg><QuotationDetail /></ProtectedWithOrg>} />
 
               <Route path="/itineraries" element={<ProtectedWithOrg><Itineraries /></ProtectedWithOrg>} />
               <Route path="/itineraries/:id/builder" element={<ProtectedWithOrg><ItineraryBuilder /></ProtectedWithOrg>} />
               <Route path="/roteiro/:token" element={<PublicItinerary />} />
 
               <Route path="/kanban/sales" element={<ProtectedWithOrg><TripsRole><KanbanBoard /></TripsRole></ProtectedWithOrg>} />
-              <Route path="/kanban/cards/:id" element={<ProtectedWithOrg><TripsRole><KanbanCardPage /></TripsRole></ProtectedWithOrg>} />
               <Route path="/kanban/departures" element={<ProtectedWithOrg><TripsRole><DeparturesKanban /></TripsRole></ProtectedWithOrg>} />
               <Route path="/kanban/tasks" element={<ProtectedWithOrg><TripsRole><TasksKanban /></TripsRole></ProtectedWithOrg>} />
               <Route path="/ai-chat" element={<ProtectedWithOrg><TripsRole><AIChat /></TripsRole></ProtectedWithOrg>} />
@@ -179,15 +176,12 @@ const App = () => (
 
               {/* CRM Legacy */}
               <Route path="/guides" element={<ProtectedWithOrg><TripsRole><Guides /></TripsRole></ProtectedWithOrg>} />
-              <Route path="/guides/:id" element={<ProtectedWithOrg><TripsRole><GuideDetail /></TripsRole></ProtectedWithOrg>} />
 
               <Route path="/info" element={<ProtectedWithOrg><TripsRole><TravelerInfo /></TripsRole></ProtectedWithOrg>} />
 
               <Route path="/hotels" element={<ProtectedWithOrg><TripsRole><Hotels /></TripsRole></ProtectedWithOrg>} />
-              <Route path="/hotels/:id" element={<ProtectedWithOrg><TripsRole><HotelDetail /></TripsRole></ProtectedWithOrg>} />
 
               <Route path="/tickets" element={<ProtectedWithOrg><TripsRole><Tickets /></TripsRole></ProtectedWithOrg>} />
-              <Route path="/tickets/:id" element={<ProtectedWithOrg><TripsRole><TicketDetail /></TripsRole></ProtectedWithOrg>} />
 
               <Route path="/experiences" element={<ProtectedWithOrg><TripsRole><Experiences /></TripsRole></ProtectedWithOrg>} />
 

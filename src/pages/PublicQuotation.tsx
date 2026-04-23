@@ -145,6 +145,15 @@ export default function PublicQuotation() {
       });
   }, [token]);
 
+  useEffect(() => {
+    if (data?.destination) {
+      document.title = `Proposta para ${data.destination} | Turis Agências`;
+    }
+    return () => {
+      document.title = "Turis Agências — Gestão de Viagens";
+    };
+  }, [data]);
+
   const fmt = (value: number | null, currency = 'BRL') => {
     if (!value) return '—';
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency }).format(value);
@@ -755,7 +764,7 @@ export default function PublicQuotation() {
 
         {/* Footer nota */}
         <div style={{ marginTop: 40, textAlign: 'center', fontSize: 11, color: 'var(--vj-txt3)', padding: '20px 0', borderTop: '1px solid var(--vj-border)' }}>
-          Proposta gerada pela plataforma Turis Agencias · Turis Agencias.
+          Proposta gerada pela plataforma Turis Agências.
           Valores e disponibilidade sujeitos a confirmação até a emissão formal.
         </div>
       </div>

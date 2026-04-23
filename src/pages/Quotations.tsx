@@ -10,6 +10,7 @@ import { StatusBadge } from '@/components/ui/StatusBadge';
 import { EmptyState, PageSkeleton } from '@/components/ui/EmptyState';
 import { QuotationBuilderSheet } from '@/components/QuotationBuilderSheet';
 import { QuotationAiImportSheet } from '@/components/QuotationAiImportSheet';
+import { QuotationDetailSheet } from '@/components/QuotationDetailSheet';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus, Search, FileText, MapPin, Hotel, Trash2, Calendar, Users, Sparkles, ArrowRight, ArrowUpRight, CheckCircle2, Navigation, FileSignature } from 'lucide-react';
 import { getClientName } from '@/lib/utils';
@@ -33,6 +34,7 @@ export default function Quotations() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [builderOpen, setBuilderOpen] = useState(false);
   const [aiImportOpen, setAiImportOpen] = useState(false);
+  const [detailSheet, setDetailSheet] = useState<{ open: boolean; id: string | null }>({ open: false, id: null });
   const navigate = useNavigate();
 
   const { data: allQuotations, isLoading } = useQuotations();
@@ -158,7 +160,7 @@ export default function Quotations() {
                 <div
                   key={q.id}
                   className="premium-card group overflow-hidden flex flex-col cursor-pointer"
-                  onClick={() => navigate(`/quotations/${q.id}`)}
+                  onClick={() => setDetailSheet({ open: true, id: q.id })}
                 >
                   {/* Visual Header */}
                   <div className="relative h-40 bg-zinc-100 border-b border-zinc-100 overflow-hidden">
@@ -228,7 +230,13 @@ export default function Quotations() {
       <QuotationAiImportSheet
         open={aiImportOpen}
         onClose={() => setAiImportOpen(false)}
-        onSuccess={(id) => { setAiImportOpen(false); navigate(`/quotations/${id}`); }}
+        onSuccess={(id) => { setAiImportOpen(false); setDetailSheet({ open: true, id }); }}
+      />
+
+      <QuotationDetailSheet
+        id={detailSheet.id}
+        open={detailSheet.open}
+        onClose={() => setDetailSheet({ open: false, id: null })}
       />
     </AppLayout>
   );

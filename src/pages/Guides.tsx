@@ -80,7 +80,7 @@ export default function Guides() {
                   <Card 
                      key={guide.id} 
                      className="group overflow-hidden rounded-2xl border-vj-border hover: hover:border-vj-green/20 transition-all cursor-pointer flex flex-col"
-                     onClick={() => navigate(`/guides/${guide.id}`)}
+                     onClick={() => setEditSheet({ open: true, id: guide.id })}
                   >
                      <div className="h-40 bg-muted relative overflow-hidden">
                         {guide.cover_image_url ? (

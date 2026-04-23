@@ -16,7 +16,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { SheetPage } from '@/components/ui/SheetPage';
-import { ClientSearchSelect } from '@/components/ui/ClientSearchSelect';
+import { QuotationDetailSheet } from '@/components/QuotationDetailSheet';
+import { TicketDetailSheet } from '@/components/TicketDetailSheet';
 import { useGroupTrips } from '@/hooks/useGroupTrips';
 
 /* ── Constants ── */
@@ -75,7 +76,7 @@ const CREATE_SECTIONS = [
   { id: 'vinculo', label: 'Vínculo', icon: User },
 ];
 
-function TicketCreateSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
+function TicketCreateSheet({ open, onClose, onCreated }: { open: boolean; onClose: () => void; onCreated: (id: string) => void }) {
   const createTicket = useCreateTicket();
   const { data: groupTrips } = useGroupTrips();
   const { organization } = useAuthStore();
@@ -111,7 +112,7 @@ function TicketCreateSheet({ open, onClose }: { open: boolean; onClose: () => vo
       assigned_to: form.assigned_to || null,
     });
     onClose();
-    if (result?.id) navigate(`/tickets/${result.id}`);
+    if (result?.id) onCreated(result.id);
   };
 
   return (
@@ -361,6 +362,7 @@ export default function Tickets() {
   const [createOpen, setCreateOpen] = useState(false);
   const [activeStatus, setActiveStatus] = useState('all');
   const [search, setSearch] = useState('');
+  const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
 
   const { data: tickets, isLoading } = useTickets({
     status: activeStatus === 'all' ? undefined : activeStatus,
@@ -483,7 +485,7 @@ export default function Tickets() {
               <TicketCard
                 key={ticket.id}
                 ticket={ticket}
-                onClick={() => navigate(`/tickets/${ticket.id}`)}
+                onClick={() => setSelectedTicketId(ticket.id)}
               />
             ))}
           </div>
@@ -491,7 +493,18 @@ export default function Tickets() {
       </div>
 
       {/* Create Sheet — NO DIALOG, SheetPage 70% */}
-      <TicketCreateSheet open={createOpen} onClose={() => setCreateOpen(false)} />
+      <TicketCreateSheet 
+        open={createOpen} 
+        onClose={() => setCreateOpen(false)} 
+        onCreated={(id) => { setCreateOpen(false); setSelectedTicketId(id); }}
+      />
+
+      {/* Detail Sheet */}
+      <TicketDetailSheet
+        id={selectedTicketId}
+        open={!!selectedTicketId}
+        onClose={() => setSelectedTicketId(null)}
+      />
     </AppLayout>
   );
 }

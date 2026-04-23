@@ -75,7 +75,7 @@ export default function ClientsPage() {
               <div
                 key={client.id}
                 className="premium-card group relative hover:border-vj-green/30 cursor-pointer p-5 flex flex-col gap-4 min-h-[140px]"
-                onClick={() => navigate(`/clients/${client.id}`)}
+                onClick={() => openQuickView(client.id)}
               >
                 {/* Header */}
                 <div className="flex items-start gap-4">
@@ -185,8 +185,8 @@ export default function ClientsPage() {
       <ClientEditSheet
         id={editId}
         open={sheetOpen}
-        onClose={() => setSheetOpen(false)}
-        onSuccess={(id) => { setSheetOpen(false); navigate(`/clients/${id}`); }}
+        onClose={() => setEditId(null)}
+        onSuccess={(id) => { setEditId(null); setQuickViewId(id); setQuickViewOpen(true); }}
       />
 
       <ClientQuickView

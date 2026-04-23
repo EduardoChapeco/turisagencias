@@ -716,13 +716,23 @@ function RastreioSection({ cardId }: { cardId: string }) {
 /* ─────────────────────────────────────────────
    COMPONENTE PRINCIPAL (PAGE)
    ───────────────────────────────────────────── */
-export default function KanbanCardPage() {
-  const { id } = useParams<{ id: string }>();
+export default function KanbanCardPage({ isEmbedded, embeddedId, onClose }: { isEmbedded?: boolean; embeddedId?: string; onClose?: () => void }) {
+  const params = useParams<{ id: string }>();
+  const id = isEmbedded ? embeddedId : params.id;
   const navigate = useNavigate();
   const deleteCard = useDeleteKanbanCard();
   const { data, isLoading } = useKanbanCard(id);
 
+  const handleClose = () => {
+    if (isEmbedded && onClose) {
+      onClose();
+    } else {
+      navigate('/kanban/sales');
+    }
+  };
+
   if (isLoading) {
+    if (isEmbedded) return <div className="p-10"><PageSkeleton /></div>;
     return (
       <AppLayout>
         <PageSkeleton />
@@ -731,6 +741,7 @@ export default function KanbanCardPage() {
   }
 
   if (!data?.card) {
+    if (isEmbedded) return null;
     return (
       <AppLayout>
         <EmptyState
@@ -748,7 +759,7 @@ export default function KanbanCardPage() {
   const handleDelete = async () => {
     if (!window.confirm(`Excluir o card "${card.title}"? Esta ação não pode ser desfeita.`)) return;
     await deleteCard.mutateAsync(card.id);
-    navigate('/kanban/sales');
+    handleClose();
   };
 
   const SECTIONS = [
@@ -760,12 +771,11 @@ export default function KanbanCardPage() {
     { id: 'rastreio', label: 'Rastreio', icon: Globe },
   ];
 
-  return (
-    <AppLayout>
-      <SheetPage
-        open={true}
-        onClose={() => navigate('/kanban/sales')}
-        title={card.title}
+  const content = (
+    <SheetPage
+      open={true}
+      onClose={handleClose}
+      title={card.title}
         subtitle={card.clients?.name ?? card.quotations?.destination ?? "Detalhes do Lead CRM"}
         icon={User}
         sections={SECTIONS}
@@ -783,7 +793,7 @@ export default function KanbanCardPage() {
             </Button>
             <div className="flex items-center gap-3">
               <EmailTrackingBadge entityId={card.id} />
-              <Button variant="outline" onClick={() => navigate('/kanban/sales')} className="rounded-xl">
+              <Button variant="outline" onClick={handleClose} className="rounded-xl">
                 Fechar
               </Button>
             </div>
@@ -805,6 +815,8 @@ export default function KanbanCardPage() {
           </div>
         )}
       </SheetPage>
-    </AppLayout>
   );
+
+  if (isEmbedded) return content;
+  return <AppLayout>{content}</AppLayout>;
 }

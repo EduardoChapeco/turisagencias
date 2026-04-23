@@ -65,6 +65,13 @@ export function SheetPage({
     defaultSection ?? sections[0]?.id ?? '',
   );
 
+  // Sync internal state when defaultSection changes or sheet opens
+  useEffect(() => {
+    if (open) {
+      setActiveSection(defaultSection ?? sections[0]?.id ?? '');
+    }
+  }, [open, defaultSection, sections]);
+
   const handleBackdropClick = useCallback(
     (e: React.MouseEvent) => {
       if (e.target === e.currentTarget) onClose();
@@ -76,68 +83,66 @@ export function SheetPage({
 
   const hasSidebar = sections.length > 0;
 
-  return (
+  const portalContent = (
     <div
-      className="fixed inset-0 z-[200] flex items-stretch justify-end"
+      className="fixed inset-0 z-[999] flex items-stretch justify-end overflow-hidden"
       role="dialog"
       aria-modal="true"
-      aria-labelledby="sheet-page-title"
+      style={{ pointerEvents: 'auto' }}
     >
       {/* Overlay */}
       <div
-        className="absolute inset-0 bg-cb-text/40 animate-in fade-in duration-200"
+        className="absolute inset-0 bg-black/40 backdrop-blur-[2px] animate-in fade-in duration-200"
         onClick={handleBackdropClick}
-        aria-hidden="true"
       />
 
       {/* Panel */}
       <div
         className={cn(
-          'relative flex flex-col z-10',
-          'w-full sm:w-[min(85vw,_900px)] lg:w-[min(70vw,_900px)] h-[100dvh]',
-          'bg-white sm:border-l-0 border-transparent',
+          'relative flex flex-col z-10 shadow-2xl h-screen',
+          'w-full lg:w-[70vw]',
+          'bg-white border-l border-vj-border',
           'animate-in slide-in-from-right duration-300',
+          'rounded-none',
           className,
         )}
       >
         {/* Header */}
-        <div className="flex items-center gap-3 px-6 py-4 border-b border-vj-border flex-shrink-0">
+        <div className="flex items-center gap-4 px-6 py-5 border-b border-vj-border flex-shrink-0 bg-white">
           {Icon && (
-            <div className="flex h-9 w-9 items-center justify-center rounded-cb-md bg-vj-bg border border-vj-border text-vj-txt3">
-              <Icon size={18} />
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-vj-green/10 text-vj-green border border-vj-green/20">
+              <Icon size={20} />
             </div>
           )}
           <div className="flex-1 min-w-0">
-            <h2 id="sheet-page-title" className="font-heading font-semibold text-base text-vj-txt leading-tight truncate">
+            <h2 className="font-heading font-bold text-lg text-vj-txt leading-tight truncate">
               {title}
             </h2>
             {subtitle && (
-              <p className="text-xs text-vj-txt3 mt-0.5 truncate">{subtitle}</p>
+              <p className="text-sm text-vj-txt3 mt-0.5 truncate">{subtitle}</p>
             )}
           </div>
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 shrink-0 text-vj-txt3 hover:text-vj-txt"
+            className="h-10 w-10 shrink-0 text-vj-txt3 hover:text-vj-red hover:bg-vj-red/5 rounded-xl transition-all"
             onClick={onClose}
-            aria-label="Fechar"
           >
-            <X size={16} />
+            <X size={20} />
           </Button>
         </div>
 
         {/* Body */}
         <div
           className={cn(
-            'flex flex-col md:flex-row flex-1 min-h-0',
-            hasSidebar && 'md:grid md:grid-cols-[220px_1fr]',
+            'flex flex-col md:flex-row flex-1 min-h-0 bg-white',
+            hasSidebar && 'md:grid md:grid-cols-[240px_1fr]',
           )}
         >
-          {/* Sidebar (opcional) - Transforma em navegação horizontal no mobile */}
+          {/* Sidebar */}
           {hasSidebar && (
             <nav
-              className="md:border-r border-b md:border-b-0 border-vj-border bg-vj-bg p-2 flex md:flex-col gap-1 overflow-x-auto md:overflow-y-auto scrollbar-none shrink-0"
-              aria-label="Seções"
+              className="md:border-r border-b md:border-b-0 border-vj-border bg-zinc-50/50 p-3 flex md:flex-col gap-1.5 overflow-x-auto md:overflow-y-auto scrollbar-none shrink-0"
             >
               {sections.map((section) => {
                 const SectionIcon = section.icon;
@@ -148,13 +153,13 @@ export function SheetPage({
                     type="button"
                     onClick={() => setActiveSection(section.id)}
                     className={cn(
-                      'flex items-center gap-2 w-max md:w-full px-3 md:px-3 py-1.5 md:py-2 rounded-cb-md text-sm font-medium transition-colors duration-100 text-left shrink-0',
+                      'flex items-center gap-3 w-max md:w-full px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 text-left shrink-0',
                       isActive
-                        ? 'bg-vj-green/10 text-vj-green font-semibold  border border-vj-green/20 md:border-transparent md:'
-                        : 'text-vj-txt3 hover:bg-vj-bg hover:text-vj-txt border border-transparent',
+                        ? 'bg-vj-green text-white shadow-lg shadow-vj-green/20'
+                        : 'text-vj-txt2 hover:bg-white hover:text-vj-txt hover:shadow-sm border border-transparent hover:border-vj-border/50',
                     )}
                   >
-                    {SectionIcon && <SectionIcon size={14} className="shrink-0" />}
+                    {SectionIcon && <SectionIcon size={16} className={cn("shrink-0", isActive ? "text-white" : "text-vj-txt3")} />}
                     <span className="truncate">{section.label}</span>
                   </button>
                 );
@@ -162,19 +167,21 @@ export function SheetPage({
             </nav>
           )}
 
-          {/* Content */}
-          <div className="overflow-y-auto w-full p-4 md:p-6 flex-1 bg-white">
+          {/* Content Area */}
+          <div className="overflow-y-auto w-full p-6 md:p-8 flex-1 bg-white">
             {typeof children === 'function' ? children(activeSection) : children}
           </div>
         </div>
 
         {/* Footer */}
         {footer && (
-          <div className="flex items-center justify-end gap-2 px-6 py-4 border-t border-vj-border flex-shrink-0">
+          <div className="flex items-center justify-end gap-3 px-8 py-5 border-t border-vj-border flex-shrink-0 bg-white/50 backdrop-blur-sm">
             {footer}
           </div>
         )}
       </div>
     </div>
   );
+
+  return createPortal(portalContent, document.body);
 }

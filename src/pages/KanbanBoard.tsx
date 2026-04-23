@@ -14,6 +14,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { KanbanSquare, X, Eye, Users } from 'lucide-react';
 import { AiInsightsWidget } from '@/components/AiInsightsWidget';
+import KanbanCardPage from './KanbanCardPage';
+import { useSearchParams } from 'react-router-dom';
 
 import {
   DndContext,
@@ -308,6 +310,8 @@ export default function KanbanBoard() {
   const ensureBoards = useEnsureDefaultBoards();
   useKanbanRealtime(data?.board?.id);
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const selectedCardId = searchParams.get('card');
 
   const [activeCard, setActiveCard] = useState<KanbanCardData | null>(null);
   const { user } = useAuthStore();
@@ -356,7 +360,11 @@ export default function KanbanBoard() {
   };
 
   const openCard = (card: KanbanCardData) => {
-    navigate(`/kanban/cards/${card.id}`);
+    setSearchParams({ card: card.id });
+  };
+
+  const closeCard = () => {
+    setSearchParams({});
   };
 
   if (isLoading) {
@@ -454,6 +462,15 @@ export default function KanbanBoard() {
               {activeCard ? <CardOverlay card={activeCard} /> : null}
             </DragOverlay>
           </DndContext>
+        )}
+
+        {/* Universal Card Sheet — Prova de profundidade */}
+        {selectedCardId && (
+          <KanbanCardPage 
+            isEmbedded={true} 
+            embeddedId={selectedCardId} 
+            onClose={closeCard} 
+          />
         )}
       </div>
     </AppLayout>

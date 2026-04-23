@@ -12,6 +12,15 @@ export default function PublicGroupTrip() {
   const { data, isLoading } = usePublicGroupTrip(slug);
   const [bookingOpen, setBookingOpen] = useState(false);
 
+  useEffect(() => {
+    if (data?.trip?.title) {
+      document.title = `${data.trip.title} | Turis Agências`;
+    }
+    return () => {
+      document.title = "Turis Agências — Gestão de Viagens";
+    };
+  }, [data]);
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-vj-bg">

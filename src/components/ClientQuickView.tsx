@@ -51,9 +51,7 @@ export function ClientQuickView({ clientId, open, onClose, onEdit }: ClientQuick
       footer={
         <div className="flex w-full gap-2 justify-end">
           <Button variant="outline" onClick={onClose}>Fechar</Button>
-          <Button variant="outline" onClick={() => { onClose(); navigate(`/clients/${clientId}`); }}>
-            Ver Ficha Completa
-          </Button>
+
           <Button className="bg-vj-green text-white hover:bg-vj-green/90" onClick={() => { onClose(); onEdit(clientId!); }}>
             <Edit className="mr-2 h-4 w-4" /> Editar Cliente
           </Button>

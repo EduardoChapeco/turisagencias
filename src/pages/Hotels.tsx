@@ -85,7 +85,7 @@ export default function Hotels() {
           searchPlaceholder="Buscar por nome ou cidade..."
           searchValue={search}
           onSearch={setSearch}
-          onRowClick={(row) => navigate(`/hotels/${row.id}`)}
+          onRowClick={(row) => setEditSheet({ open: true, id: row.id })}
         />
       </div>
 
@@ -93,7 +93,6 @@ export default function Hotels() {
         open={editSheet.open}
         id={editSheet.id}
         onClose={() => setEditSheet({ open: false, id: null })}
-        onSuccess={(id) => navigate(`/hotels/${id}`)}
       />
     </AppLayout>
   );

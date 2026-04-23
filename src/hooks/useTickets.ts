@@ -240,6 +240,7 @@ export function useCreateTicketMessage() {
         .from('ticket_messages')
         .insert({
           ticket_id: payload.ticket_id,
+          org_id: user?.user_metadata?.org_id || null,
           body: payload.content,
           content: payload.content,
           message_type: payload.message_type ?? 'public',

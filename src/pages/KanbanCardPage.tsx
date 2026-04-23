@@ -1,33 +1,24 @@
-import { useState, useRef, useEffect } from 'react';
-import {
-  AlignLeft,
-  CheckSquare,
-  FileText,
-  Link2,
-  Pencil,
-  Plus,
-  Send,
-  Trash2,
-  User,
-  X,
-  Plane,
-  MessageCircle,
-  MoreVertical,
-  KanbanSquare,
-} from 'lucide-react';
-import { useTeamMembers } from '@/hooks/useTeam';
-import { SheetPage } from '@/components/ui/SheetPage';
+import { useState, useRef } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { AppLayout } from '@/components/AppLayout';
+import { PageHeader } from '@/components/ui/PageHeader';
+import { PageSkeleton } from '@/components/ui/EmptyState';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { StatusBadge, mapStatusToVariant } from '@/components/ui/StatusBadge';
-import { EmptyState } from '@/components/ui/EmptyState';
 import { ClientSearchSelect } from '@/components/ui/ClientSearchSelect';
-import { useGroupTrips } from '@/hooks/useGroupTrips';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { WaChatPanel } from '@/components/kanban/WaChatPanel';
 import { useAuthStore } from '@/stores/authStore';
+import { useTeamMembers } from '@/hooks/useTeam';
+import { useGroupTrips } from '@/hooks/useGroupTrips';
+import { cn } from '@/lib/utils';
+import { EmailTrackingBadge } from '@/components/ui/EmailTrackingBadge';
 import {
+  useKanbanCard,
   useUpdateKanbanCard,
   useDeleteKanbanCard,
   useKanbanNotes,
@@ -42,48 +33,30 @@ import {
   useKanbanTags,
   useCreateKanbanTag,
 } from '@/hooks/useKanbanBoards';
-import { cn } from '@/lib/utils';
-
-/* ── Types ── */
-interface KanbanCard {
-  id: string;
-  board_id: string;
-  column_id: string;
-  title: string;
-  description: string | null;
-  estimated_value: number | null;
-  whatsapp: string | null;
-  email: string | null;
-  tags: string[] | null;
-  client_id: string | null;
-  quotation_id: string | null;
-  group_trip_id: string | null;
-  assigned_to: string | null;
-  clients?: { name: string; phone: string | null } | null;
-  quotations?: { destination: string | null } | null;
-  group_trips?: { title: string | null } | null;
-}
-
-interface KanbanColumnData {
-  id: string;
-  name: string;
-  color: string | null;
-}
-
-interface Props {
-  card: KanbanCard | null;
-  isOpen: boolean;
-  onClose: () => void;
-  onDeleted?: () => void;
-  columns?: KanbanColumnData[];
-}
-
-import { Badge } from '@/components/ui/badge';
+import {
+  AlignLeft,
+  CheckSquare,
+  FileText,
+  Link2,
+  MessageCircle,
+  Pencil,
+  Plus,
+  Send,
+  Trash2,
+  User,
+  X,
+  KanbanSquare,
+  ArrowLeft,
+  Save,
+  Globe,
+  CopyCheck
+} from 'lucide-react';
+import { useEmailTracking } from '@/hooks/useEmailTracking';
 
 /* ─────────────────────────────────────────────
    SEÇÃO: Dados Gerais
    ───────────────────────────────────────────── */
-function DadosSection({ card, columns }: { card: KanbanCard, columns?: KanbanColumnData[] }) {
+function DadosSection({ card, columns }: { card: any, columns?: any[] }) {
   const updateCard = useUpdateKanbanCard();
   const { data: allTags } = useKanbanTags();
   const createTag = useCreateKanbanTag();
@@ -248,99 +221,75 @@ function DadosSection({ card, columns }: { card: KanbanCard, columns?: KanbanCol
           </div>
         </div>
 
-      {/* Tags */}
-      <div className="space-y-2">
-        <Label>Tags</Label>
-        <div className="flex flex-wrap gap-1.5 min-h-8">
-          {cardTags.map((t) => {
-            const tagData = allTags?.find((x) => x.name === t);
-            return (
-              <span
-                key={t}
-                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border"
-                style={{
-                  backgroundColor: tagData ? `${tagData.color}18` : '#2E86AB18',
-                  color: tagData?.color ?? '#2E86AB',
-                  borderColor: tagData ? `${tagData.color}35` : '#2E86AB35',
-                }}
-              >
-                {t}
-                <button type="button" onClick={() => removeTag(t)} className="opacity-60 hover:opacity-100 ml-0.5">
-                  <X size={10} />
-                </button>
-              </span>
-            );
-          })}
-        </div>
-        <div className="flex gap-2">
-          <Input
-            value={tagInput}
-            onChange={(e) => setTagInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') { e.preventDefault(); void addTag(tagInput); }
-            }}
-            placeholder="Adicionar tag (Enter)"
-            className="border-vj-border text-sm h-8"
-          />
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => void addTag(tagInput)}
-            disabled={!tagInput.trim()}
-            className="border-vj-border"
-          >
-            <Plus size={14} />
-          </Button>
-        </div>
-        {allTags && allTags.length > 0 && (
-          <div className="flex flex-wrap gap-1">
-            {allTags.filter((t) => !cardTags.includes(t.name)).map((t) => (
-              <button
-                key={t.id}
-                type="button"
-                onClick={() => void addTag(t.name)}
-                className="text-xs px-2 py-0.5 rounded-full border opacity-60 hover:opacity-100 transition-opacity"
-                style={{ borderColor: `${t.color}40`, color: t.color }}
-              >
-                + {t.name}
-              </button>
-            ))}
+        {/* Tags */}
+        <div className="space-y-2">
+          <Label>Tags</Label>
+          <div className="flex flex-wrap gap-1.5 min-h-8">
+            {cardTags.map((t) => {
+              const tagData = allTags?.find((x) => x.name === t);
+              return (
+                <span
+                  key={t}
+                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border"
+                  style={{
+                    backgroundColor: tagData ? `${tagData.color}18` : '#2E86AB18',
+                    color: tagData?.color ?? '#2E86AB',
+                    borderColor: tagData ? `${tagData.color}35` : '#2E86AB35',
+                  }}
+                >
+                  {t}
+                  <button type="button" onClick={() => removeTag(t)} className="opacity-60 hover:opacity-100 ml-0.5">
+                    <X size={10} />
+                  </button>
+                </span>
+              );
+            })}
           </div>
-        )}
-      </div>
-    </div>
-
-    {/* Vínculos */}
-      {(card.clients || card.quotations || card.group_trips) && (
-        <div className="pt-2 border-t border-vj-border space-y-2">
-          <p className="text-xs font-semibold text-vj-txt3 uppercase tracking-wide">Vínculos</p>
-          {card.clients && (
-            <div className="flex items-center gap-2 text-sm text-vj-txt">
-              <User size={13} className="text-vj-txt3 shrink-0" />
-              <span>Cliente: <strong>{card.clients.name}</strong></span>
-            </div>
-          )}
-          {card.quotations?.destination && (
-            <div className="flex items-center gap-2 text-sm text-vj-txt">
-              <Link2 size={13} className="text-vj-txt3 shrink-0" />
-              <span>Cotação: <strong>{card.quotations.destination}</strong></span>
-            </div>
-          )}
-          {card.group_trips?.title && (
-            <div className="flex items-center gap-2 text-sm text-vj-txt">
-              <Link2 size={13} className="text-vj-txt3 shrink-0" />
-              <span>Viagem: <strong>{card.group_trips.title}</strong></span>
+          <div className="flex gap-2">
+            <Input
+              value={tagInput}
+              onChange={(e) => setTagInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') { e.preventDefault(); void addTag(tagInput); }
+              }}
+              placeholder="Adicionar tag (Enter)"
+              className="border-vj-border text-sm h-8"
+            />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => void addTag(tagInput)}
+              disabled={!tagInput.trim()}
+              className="border-vj-border"
+            >
+              <Plus size={14} />
+            </Button>
+          </div>
+          {allTags && allTags.length > 0 && (
+            <div className="flex flex-wrap gap-1">
+              {allTags.filter((t) => !cardTags.includes(t.name)).map((t) => (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => void addTag(t.name)}
+                  className="text-xs px-2 py-0.5 rounded-full border opacity-60 hover:opacity-100 transition-opacity"
+                  style={{ borderColor: `${t.color}40`, color: t.color }}
+                >
+                  + {t.name}
+                </button>
+              ))}
             </div>
           )}
         </div>
-      )}
+      </div>
 
       {dirty && (
         <Button
           onClick={() => void handleSave()}
           disabled={updateCard.isPending}
-          className="w-full"
+          className="w-full mt-4"
         >
+          <Save size={16} className="mr-2" />
           {updateCard.isPending ? 'Salvando...' : 'Salvar alterações'}
         </Button>
       )}
@@ -439,7 +388,6 @@ function ChecklistSection({ cardId }: { cardId: string }) {
                   </div>
                 ))}
             </div>
-            {/* Quick-add item */}
             <div className="flex gap-2 pt-1">
               <Input
                 value={newItemText[cl.id] ?? ''}
@@ -512,7 +460,6 @@ function NotasSection({ cardId }: { cardId: string }) {
 
   return (
     <div className="space-y-4">
-      {/* Compose */}
       <div className="surface-muted rounded-cb-md p-3 space-y-2">
         <Textarea
           ref={textareaRef}
@@ -537,7 +484,6 @@ function NotasSection({ cardId }: { cardId: string }) {
         </div>
       </div>
 
-      {/* Lista */}
       {!notes || notes.length === 0 ? (
         <EmptyState
           icon={FileText}
@@ -616,7 +562,7 @@ function NotasSection({ cardId }: { cardId: string }) {
 /* ─────────────────────────────────────────────
    SEÇÃO: Vínculos (editable)
    ───────────────────────────────────────────── */
-function VinculosSection({ card }: { card: KanbanCard }) {
+function VinculosSection({ card }: { card: any }) {
   const updateCard = useUpdateKanbanCard();
   const { data: groupTrips } = useGroupTrips();
   const [clientId, setClientId] = useState(card.client_id ?? '');
@@ -661,7 +607,6 @@ function VinculosSection({ card }: { card: KanbanCard }) {
         </Select>
       </div>
 
-      {/* Show current links */}
       {card.clients && (
         <div className="surface-muted rounded-cb-md p-4">
           <p className="text-xs font-semibold text-vj-txt3 uppercase tracking-wide mb-2">Cliente atual</p>
@@ -685,67 +630,148 @@ function VinculosSection({ card }: { card: KanbanCard }) {
   );
 }
 
-import { WaChatPanel } from '@/components/kanban/WaChatPanel';
-
 /* ─────────────────────────────────────────────
-   COMPONENTE PRINCIPAL
+   COMPONENTE PRINCIPAL (PAGE)
    ───────────────────────────────────────────── */
-const SECTIONS = [
-  { id: 'dados', label: 'Dados Gerais', icon: AlignLeft },
-  { id: 'checklist', label: 'Checklist', icon: CheckSquare },
-  { id: 'notas', label: 'Notas', icon: FileText },
-  { id: 'vinculos', label: 'Vínculos', icon: Link2 },
-  { id: 'whatsapp', label: 'WhatsApp', icon: MessageCircle },
-];
-
-export function KanbanCardSheet({ card, isOpen, onClose, onDeleted }: Props) {
+export default function KanbanCardPage() {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const deleteCard = useDeleteKanbanCard();
+  const { data, isLoading } = useKanbanCard(id);
 
-  if (!card) return null;
+  const [activeTab, setActiveTab] = useState('dados');
+
+  if (isLoading) {
+    return (
+      <AppLayout>
+        <PageSkeleton />
+      </AppLayout>
+    );
+  }
+
+  if (!data?.card) {
+    return (
+      <AppLayout>
+        <EmptyState
+          icon={User}
+          title="Card não encontrado"
+          description="O card que você está procurando pode ter sido removido ou você não tem acesso."
+          action={<Button onClick={() => navigate(-1)}>Voltar</Button>}
+        />
+      </AppLayout>
+    );
+  }
+
+  const { card, columns } = data;
 
   const handleDelete = async () => {
     if (!window.confirm(`Excluir o card "${card.title}"? Esta ação não pode ser desfeita.`)) return;
     await deleteCard.mutateAsync(card.id);
-    onDeleted?.();
-    onClose();
+    navigate(-1);
   };
 
   return (
-    <SheetPage
-      open={isOpen}
-      onClose={onClose}
-      title={card.title}
-      subtitle={card.clients?.name ?? card.quotations?.destination ?? undefined}
-      icon={User}
-      sections={SECTIONS}
-      defaultSection="dados"
-      footer={
-        <div className="flex items-center justify-between w-full">
-          <Button
-            variant="outline"
-            size="sm"
-            className="border-vj-red/40 text-vj-red hover:bg-vj-red/5"
-            onClick={() => void handleDelete()}
-            disabled={deleteCard.isPending}
-          >
-            <Trash2 size={14} className="mr-1.5" />
-            Excluir card
+    <AppLayout>
+      <div className="max-w-5xl mx-auto w-full pb-10">
+        <div className="mb-6 flex items-center gap-4">
+          <Button variant="outline" size="icon" onClick={() => navigate(-1)} className="rounded-full">
+            <ArrowLeft size={16} />
           </Button>
-          <Button variant="ghost" size="sm" onClick={onClose}>
-            Fechar
-          </Button>
+          <div className="flex-1">
+            <PageHeader
+              title={card.title}
+              description={card.clients?.name ?? card.quotations?.destination ?? "Detalhes do Card CRM"}
+              icon={User}
+            />
+          </div>
+          <div className="flex items-center gap-3">
+            <EmailTrackingBadge entityId={card.id} />
+            <Button
+              variant="outline"
+              className="border-vj-red/40 text-vj-red hover:bg-vj-red/5"
+              onClick={handleDelete}
+              disabled={deleteCard.isPending}
+            >
+              <Trash2 size={16} className="mr-2" />
+              Excluir Card
+            </Button>
+          </div>
         </div>
-      }
-    >
-      {(activeSection) => (
-        <>
-          {activeSection === 'dados' && <DadosSection card={card} />}
-          {activeSection === 'checklist' && <ChecklistSection cardId={card.id} />}
-          {activeSection === 'notas' && <NotasSection cardId={card.id} />}
-          {activeSection === 'vinculos' && <VinculosSection card={card} />}
-          {activeSection === 'whatsapp' && <WaChatPanel clientId={card.client_id} phone={card.whatsapp} />}
-        </>
-      )}
-    </SheetPage>
+
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          <div className="lg:col-span-3">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsList className="mb-6 w-full justify-start h-12 bg-white border border-zinc-200 rounded-xl px-2">
+                <TabsTrigger value="dados" className="h-9 px-4 text-sm font-medium data-[state=active]:bg-zinc-100 rounded-lg">
+                  <AlignLeft className="w-4 h-4 mr-2" /> Dados Gerais
+                </TabsTrigger>
+                <TabsTrigger value="checklist" className="h-9 px-4 text-sm font-medium data-[state=active]:bg-zinc-100 rounded-lg">
+                  <CheckSquare className="w-4 h-4 mr-2" /> Checklist
+                </TabsTrigger>
+                <TabsTrigger value="notas" className="h-9 px-4 text-sm font-medium data-[state=active]:bg-zinc-100 rounded-lg">
+                  <FileText className="w-4 h-4 mr-2" /> Notas
+                </TabsTrigger>
+                <TabsTrigger value="vinculos" className="h-9 px-4 text-sm font-medium data-[state=active]:bg-zinc-100 rounded-lg">
+                  <Link2 className="w-4 h-4 mr-2" /> Vínculos
+                </TabsTrigger>
+                <TabsTrigger value="whatsapp" className="h-9 px-4 text-sm font-medium data-[state=active]:bg-zinc-100 rounded-lg">
+                  <MessageCircle className="w-4 h-4 mr-2" /> WhatsApp
+                </TabsTrigger>
+                <TabsTrigger value="rastreio" className="h-9 px-4 text-sm font-medium data-[state=active]:bg-zinc-100 rounded-lg text-blue-600">
+                  <Globe className="w-4 h-4 mr-2" /> Rastreio
+                </TabsTrigger>
+              </TabsList>
+
+              <div className="bg-white rounded-3xl border border-zinc-200 p-6 md:p-8 shadow-sm">
+                <TabsContent value="dados" className="mt-0 outline-none">
+                  <DadosSection card={card} columns={columns} />
+                </TabsContent>
+                <TabsContent value="checklist" className="mt-0 outline-none">
+                  <ChecklistSection cardId={card.id} />
+                </TabsContent>
+                <TabsContent value="notas" className="mt-0 outline-none">
+                  <NotasSection cardId={card.id} />
+                </TabsContent>
+                <TabsContent value="vinculos" className="mt-0 outline-none">
+                  <VinculosSection card={card} />
+                </TabsContent>
+                <TabsContent value="whatsapp" className="mt-0 outline-none">
+                  <WaChatPanel clientId={card.client_id} phone={card.whatsapp} />
+                </TabsContent>
+                <TabsContent value="rastreio" className="mt-0 outline-none">
+                  <RastreioSection cardId={card.id} orgId={card.org_id} />
+                </TabsContent>
+              </div>
+            </Tabs>
+          </div>
+          
+          <div className="lg:col-span-1 space-y-6">
+            <div className="bg-white rounded-3xl border border-zinc-200 p-6 shadow-sm">
+              <h3 className="text-sm font-bold text-zinc-800 mb-4 uppercase tracking-wider">Atividade</h3>
+              <div className="space-y-4">
+                <div className="text-sm">
+                  <span className="text-zinc-500 block text-xs">Criado em</span>
+                  <span className="font-medium text-zinc-800">{new Date(card.created_at).toLocaleDateString('pt-BR')}</span>
+                </div>
+                {card.updated_at && card.updated_at !== card.created_at && (
+                  <div className="text-sm">
+                    <span className="text-zinc-500 block text-xs">Última atualização</span>
+                    <span className="font-medium text-zinc-800">{new Date(card.updated_at).toLocaleDateString('pt-BR')}</span>
+                  </div>
+                )}
+                {card.estimated_value > 0 && (
+                  <div className="text-sm pt-4 border-t border-zinc-100">
+                    <span className="text-zinc-500 block text-xs">Valor Estimado</span>
+                    <span className="font-bold text-vj-green text-lg">
+                      {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(card.estimated_value)}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </AppLayout>
   );
 }

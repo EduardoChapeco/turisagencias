@@ -1,80 +1,59 @@
-import { logger } from '@/utils/logger';
+import React, { Component, ErrorInfo, ReactNode } from 'react';
+import { AlertCircle, RotateCcw } from 'lucide-react';
+import { Button } from './ui/button';
 
-import React from 'react';
-import { AlertTriangle, RefreshCw } from 'lucide-react';
+interface Props {
+  children: ReactNode;
+}
 
-interface ErrorBoundaryState {
+interface State {
   hasError: boolean;
   error: Error | null;
 }
 
-interface ErrorBoundaryProps {
-  children: React.ReactNode;
-  fallback?: React.ReactNode;
-}
+export class ErrorBoundary extends Component<Props, State> {
+  public state: State = {
+    hasError: false,
+    error: null,
+  };
 
-export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
-  constructor(props: ErrorBoundaryProps) {
-    super(props);
-    this.state = { hasError: false, error: null };
-  }
-
-  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+  public static getDerivedStateFromError(error: Error): State {
     return { hasError: true, error };
   }
 
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo): void {
-    // In production, you'd send this to an error reporting service
-    if (import.meta.env.DEV) {
-      // eslint-disable-next-line no-console
-      logger.error('[ErrorBoundary]', error, errorInfo);
-    }
+  public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.error('ErrorBoundary capturou um erro:', error, errorInfo);
   }
 
-  handleReset = () => {
-    this.setState({ hasError: false, error: null });
-  };
-
-  render() {
+  public render() {
     if (this.state.hasError) {
-      if (this.props.fallback) {
-        return this.props.fallback;
-      }
-
       return (
-        <div className="flex min-h-screen items-center justify-center bg-background p-4">
-          <div className="mx-auto max-w-md rounded-xl border border-border/40 bg-card p-8 text-center ">
-            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-destructive/10">
-              <AlertTriangle className="h-7 w-7 text-destructive" />
-            </div>
-            <h2 className="mb-2 text-xl font-semibold text-foreground">
-              Algo deu errado
-            </h2>
-            <p className="mb-6 text-sm text-muted-foreground">
-              Ocorreu um erro inesperado. Tente recarregar a página ou voltar para o início.
-            </p>
-            {this.state.error && (
-              <pre className="mb-4 max-h-32 overflow-auto rounded-lg bg-muted/50 p-3 text-left text-xs text-muted-foreground whitespace-pre-wrap">
-                {this.state.error.message}
-                {"\n"}
-                {this.state.error.stack}
-              </pre>
-            )}
-            <div className="flex gap-3 justify-center">
-              <button
-                onClick={this.handleReset}
-                className="inline-flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-accent-foreground transition-colors hover:bg-accent/90"
-              >
-                <RefreshCw className="h-4 w-4" />
-                Tentar novamente
-              </button>
-              <a
-                href="/"
-                className="inline-flex items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
-              >
-                Voltar ao início
-              </a>
-            </div>
+        <div className="flex flex-col items-center justify-center min-h-[50vh] p-8 text-center animate-in fade-in duration-300">
+          <div className="bg-red-50 p-4 rounded-full mb-4">
+            <AlertCircle className="h-10 w-10 text-red-500" />
+          </div>
+          <h2 className="text-xl font-bold text-zinc-900 mb-2 font-heading">Ops, algo saiu do roteiro.</h2>
+          <p className="text-sm text-zinc-500 mb-6 max-w-md">
+            Encontramos uma instabilidade ao carregar esta parte do sistema. O erro foi registrado.
+          </p>
+          <div className="flex gap-3">
+            <Button 
+              onClick={() => window.location.reload()} 
+              className="bg-vj-green hover:bg-vj-green/90 text-white shadow-none rounded-full"
+            >
+              <RotateCcw className="w-4 h-4 mr-2" />
+              Recarregar Página
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={() => { this.setState({ hasError: false, error: null }); window.history.back(); }} 
+              className="rounded-full shadow-none border-zinc-200"
+            >
+              Voltar Atrás
+            </Button>
+          </div>
+          <div className="mt-8 text-left max-w-2xl w-full bg-zinc-50 p-4 rounded-xl border border-zinc-100 overflow-auto">
+             <p className="text-xs font-mono text-zinc-400 break-all">{this.state.error?.toString()}</p>
           </div>
         </div>
       );

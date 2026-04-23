@@ -29,6 +29,7 @@ const ItineraryBuilder = lazy(() => import('./pages/ItineraryBuilder'));
 const PublicItinerary = lazy(() => import('./pages/PublicItinerary'));
 
 const KanbanBoard = lazy(() => import('./pages/KanbanBoard'));
+const KanbanCardPage = lazy(() => import('./pages/KanbanCardPage'));
 const DeparturesKanban = lazy(() => import('./pages/DeparturesKanban'));
 const TasksKanban = lazy(() => import('./pages/TasksKanban'));
 const Settings = lazy(() => import('./pages/Settings'));
@@ -162,6 +163,7 @@ const App = () => (
               <Route path="/roteiro/:token" element={<PublicItinerary />} />
 
               <Route path="/kanban/sales" element={<ProtectedWithOrg><TripsRole><KanbanBoard /></TripsRole></ProtectedWithOrg>} />
+              <Route path="/kanban/cards/:id" element={<ProtectedWithOrg><TripsRole><KanbanCardPage /></TripsRole></ProtectedWithOrg>} />
               <Route path="/kanban/departures" element={<ProtectedWithOrg><TripsRole><DeparturesKanban /></TripsRole></ProtectedWithOrg>} />
               <Route path="/kanban/tasks" element={<ProtectedWithOrg><TripsRole><TasksKanban /></TripsRole></ProtectedWithOrg>} />
               <Route path="/ai-chat" element={<ProtectedWithOrg><TripsRole><AIChat /></TripsRole></ProtectedWithOrg>} />

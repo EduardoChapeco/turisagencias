@@ -5,10 +5,10 @@ import { AppLayout } from '@/components/AppLayout';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { EmptyState, PageSkeleton } from '@/components/ui/EmptyState';
-import { KanbanCardSheet } from '@/components/kanban/KanbanCardSheet';
 import { KanbanAiLeadDialog } from '@/components/kanban/KanbanAiLeadDialog';
 import { useCreateKanbanCard, useKanbanBoard, useUpdateKanbanCard, useEnsureDefaultBoards, useKanbanRealtime } from '@/hooks/useKanbanBoards';
 import { useAuthStore } from '@/stores/authStore';
+import { useNavigate } from 'react-router-dom';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -307,10 +307,9 @@ export default function KanbanBoard() {
   const updateCard = useUpdateKanbanCard();
   const ensureBoards = useEnsureDefaultBoards();
   useKanbanRealtime(data?.board?.id);
+  const navigate = useNavigate();
 
   const [activeCard, setActiveCard] = useState<KanbanCardData | null>(null);
-  const [selectedCard, setSelectedCard] = useState<KanbanCardData | null>(null);
-  const [sheetOpen, setSheetOpen] = useState(false);
   const { user } = useAuthStore();
   const [viewMode, setViewMode] = useState<'me' | 'all'>('all');
 
@@ -357,8 +356,7 @@ export default function KanbanBoard() {
   };
 
   const openCard = (card: KanbanCardData) => {
-    setSelectedCard(card);
-    setSheetOpen(true);
+    navigate(`/kanban/cards/${card.id}`);
   };
 
   if (isLoading) {
@@ -458,15 +456,6 @@ export default function KanbanBoard() {
           </DndContext>
         )}
       </div>
-
-      {/* Sheet de detalhes */}
-      <KanbanCardSheet
-        card={selectedCard}
-        isOpen={sheetOpen}
-        onClose={() => setSheetOpen(false)}
-        onDeleted={() => setSelectedCard(null)}
-        columns={data?.columns ?? []}
-      />
     </AppLayout>
   );
 }

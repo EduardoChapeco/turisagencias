@@ -147,6 +147,43 @@ export function useKanbanBoard(slug: string) {
   });
 }
 
+export function useKanbanCard(id?: string) {
+  return useQuery({
+    queryKey: ['kanban-card', id],
+    queryFn: async () => {
+      if (!id) return null;
+      const { data: card, error: cardError } = await supabase
+        .from('kanban_cards')
+        .select(`
+          id, board_id, column_id, title, description, client_id, quotation_id, 
+          trip_id, group_trip_id, position, meta, assigned_to, whatsapp, email, 
+          tags, estimated_value, created_at, updated_at, 
+          clients(name, phone), 
+          quotations(destination), 
+          group_trips(title)
+        `)
+        .eq('id', id)
+        .maybeSingle();
+
+      if (cardError) throw cardError;
+      if (!card) throw new Error('Card not found');
+
+      // Fetch the columns for this board to populate the status dropdown
+      const { data: columns, error: colError } = await supabase
+        .from('kanban_columns')
+        .select('*')
+        .eq('board_id', card.board_id)
+        .order('position');
+
+      if (colError) throw colError;
+
+      return { card, columns: columns ?? [] };
+    },
+    enabled: !!id,
+    staleTime: 60 * 1000,
+  });
+}
+
 export function useCreateKanbanCard() {
   const queryClient = useQueryClient();
   const { organization } = useAuthStore();

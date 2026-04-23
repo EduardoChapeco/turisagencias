@@ -52,6 +52,24 @@ serve(async (req) => {
     const fromDomain = Deno.env.get('EMAIL_FROM_DOMAIN') || 'turisagencias.com';
     const fromAddress = `${org?.name || 'Turis Agências'} <atendimento@${fromDomain}>`;
 
+    // ── Email Tracking Setup ──
+    const { data: trackingLog } = await supabase
+      .from('email_tracking_logs')
+      .insert({
+        org_id: ticket?.org_id,
+        entity_type: 'ticket',
+        entity_id: ticket_id,
+        recipient_email: to_email,
+        subject: emailSubject
+      })
+      .select('id')
+      .single();
+
+    const trackingUrl = `${Deno.env.get('SUPABASE_URL')}/functions/v1/track-email-open?id=${trackingLog?.id}`;
+    const trackingPixel = trackingLog?.id 
+      ? `<img src="${trackingUrl}" width="1" height="1" style="display:none !important;" alt="" />`
+      : '';
+
     // Enviar o email via Resend
     const { data: emailResult, error: sendError } = await resend.emails.send({
       from: fromAddress,
@@ -67,6 +85,7 @@ serve(async (req) => {
           <p style="font-size: 11px; color: #9ca3af; margin-top: 24px; text-align: center;">
             Referência do atendimento: TK-${ticketCode} · ${org?.name || 'Turis Agências'}
           </p>
+          ${trackingPixel}
         </div>
       `,
       replyTo: org?.email || fromAddress,

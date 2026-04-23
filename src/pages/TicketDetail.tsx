@@ -18,6 +18,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ClientSearchSelect } from '@/components/ui/ClientSearchSelect';
 import { cn } from '@/lib/utils';
+import { EmailTrackingBadge } from '@/components/ui/EmailTrackingBadge';
 
 const STATUS_CONFIG: Record<string, { color: string; icon: any; label: string; bg: string }> = {
   open:        { color: 'text-blue-700',  bg: 'bg-blue-100',  icon: AlertCircle,  label: 'Aberto' },
@@ -165,6 +166,7 @@ export default function TicketDetail() {
                   <StatusIcon size={11} /> {statusConf.label}
                 </span>
                 <SlaTimer deadline={ticket.sla_deadline} status={ticket.status} />
+                <EmailTrackingBadge entityId={ticket.id} />
               </div>
               <h1 className="font-bold text-lg text-zinc-900 leading-tight">{ticket.title}</h1>
               {ticket.description && (

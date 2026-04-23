@@ -23,6 +23,7 @@ import { parseInstallments } from '@/lib/utils';
 import { cn } from '@/lib/utils';
 import { useBuildProposal } from '@/hooks/useBuildProposal';
 import { supabase } from '@/integrations/supabase/client';
+import { EmailTrackingBadge } from '@/components/ui/EmailTrackingBadge';
 
 const statusLabels: Record<string, string> = {
   draft: 'Rascunho', sent: 'Enviada', viewed: 'Visualizada',
@@ -349,6 +350,7 @@ export default function QuotationDetail() {
           <span className={cn('text-xs font-bold px-3 py-1.5 rounded-full capitalize', statusColors[quotation.status] ?? 'bg-zinc-100 text-zinc-600')}>
             {statusLabels[quotation.status] ?? quotation.status}
           </span>
+          <EmailTrackingBadge entityId={quotation.id} />
         </div>
 
         {/* Ações */}

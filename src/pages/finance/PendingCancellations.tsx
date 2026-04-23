@@ -1,14 +1,13 @@
 import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import {
-  XCircle, Check, Loader2, ArrowLeft, Search, Eye, AlertCircle, RefreshCcw, Wallet
-} from 'lucide-react';
+import { XCircle, Check, Loader2, ArrowLeft, Search, Eye, AlertCircle, RefreshCcw, Wallet } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { AppLayout } from '@/components/AppLayout';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { SheetPage } from '@/components/ui/SheetPage';
 import { useOrgPendingCancellations, useProcessCancellation, CancellationRequest } from '@/hooks/useBookingCancellations';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/stores/authStore';
@@ -157,56 +156,84 @@ function ProcessCancellationDialog({ cancellation: c, onClose }: { cancellation:
   };
 
   return (
-    <Dialog open onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">Avaliar Cancelamento</DialogTitle>
-          <DialogDescription>Reveja os valores antes de autorizar. A reserva do cliente será permanentemente cancelada.</DialogDescription>
-        </DialogHeader>
-
-        <div className="space-y-4">
-          <div className="p-3 bg-zinc-50 border rounded-xl text-sm space-y-1">
+    <SheetPage
+      open
+      onClose={onClose}
+      title="Avaliar Cancelamento"
+      subtitle={`Reserva de ${c.group_bookings?.lead_name} — ${c.group_trips?.title}`}
+      icon={XCircle}
+      footer={
+        <div className="flex items-center gap-3 w-full">
+          <Button
+            variant="outline"
+            className="flex-1 border-red-200 text-red-600 hover:bg-red-50"
+            onClick={handleReject}
+            disabled={process.isPending}
+          >
+            <XCircle size={16} className="mr-2" /> Rejeitar Pedido
+          </Button>
+          <Button
+            className="flex-1 bg-vj-green text-white hover:bg-emerald-600"
+            onClick={handleApprove}
+            disabled={process.isPending}
+          >
+            {process.isPending ? <Loader2 size={16} className="animate-spin mr-2" /> : <Check size={16} className="mr-2" />}
+            Confirmar &amp; Cancelar
+          </Button>
+        </div>
+      }
+    >
+      {() => (
+        <div className="space-y-5">
+          <div className="p-4 bg-zinc-50 border rounded-2xl text-sm space-y-1.5">
             <p><strong>Motivo:</strong> {c.reason_code}</p>
             {c.reason_notes && <p className="text-zinc-500 italic">"{c.reason_notes}"</p>}
           </div>
 
-          <div className="space-y-1">
-            <label className="text-xs font-bold uppercase text-zinc-500">Ação solicitada pelo cliente:</label>
+          <div>
+            <label className="text-xs font-bold uppercase text-zinc-500 mb-2 block">Ação solicitada pelo cliente:</label>
             {isCredit ? (
-               <div className="p-3 bg-emerald-50 border border-emerald-100 rounded-xl flex items-center gap-3">
-                 <Wallet size={24} className="text-emerald-500" />
-                 <div><p className="font-bold text-emerald-800">Gerar Crédito na Agência</p><p className="text-sm text-emerald-700">Valor exato de {fmt(c.credit_amount)}</p></div>
-               </div>
+              <div className="p-4 bg-emerald-50 border border-emerald-100 rounded-2xl flex items-center gap-3">
+                <Wallet size={28} className="text-emerald-500" />
+                <div>
+                  <p className="font-bold text-emerald-800">Gerar Crédito na Agência</p>
+                  <p className="text-sm text-emerald-700">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(c.credit_amount || 0))}</p>
+                </div>
+              </div>
             ) : (
-               <div className="p-3 bg-blue-50 border border-blue-100 rounded-xl flex items-center gap-3">
-                 <RefreshCcw size={24} className="text-blue-500" />
-                 <div><p className="font-bold text-blue-800">Transferir Reembolso (PIX/TED)</p><p className="text-sm text-blue-700">Valor de {fmt(c.refund_amount)}</p></div>
-               </div>
+              <div className="p-4 bg-blue-50 border border-blue-100 rounded-2xl flex items-center gap-3">
+                <RefreshCcw size={28} className="text-blue-500" />
+                <div>
+                  <p className="font-bold text-blue-800">Transferir Reembolso (PIX/TED)</p>
+                  <p className="text-sm text-blue-700">{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(c.refund_amount || 0))}</p>
+                </div>
+              </div>
             )}
           </div>
 
           {!isCredit && (
-             <div>
-               <label className="text-xs font-bold uppercase text-zinc-500 mb-1 block">Como você enviou o reembolso?</label>
-               <Input value={method} onChange={e => setMethod(e.target.value)} placeholder="Ex: PIX no Banco Itaú do cliente" />
-             </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold uppercase text-zinc-500">Como você enviou o reembolso?</label>
+              <Input
+                value={method}
+                onChange={e => setMethod(e.target.value)}
+                placeholder="Ex: PIX no Banco Itaú do cliente"
+                className="h-12 rounded-xl bg-zinc-50 border-zinc-200"
+              />
+            </div>
           )}
 
-          <div>
-             <label className="text-xs font-bold uppercase text-zinc-500 mb-1 block">Anotação Interna (Financeiro)</label>
-             <Input value={notes} onChange={e => setNotes(e.target.value)} placeholder="Notas internas da auditoria (opcional)" />
-          </div>
-
-          <div className="flex gap-2 pt-2">
-            <Button variant="outline" className="flex-1 border-red-200 text-red-600 hover:bg-red-50" onClick={handleReject} disabled={process.isPending}>
-               <XCircle size={16} className="mr-2" /> Rejeitar Pedido
-            </Button>
-            <Button className="flex-1 bg-vj-green text-white hover:bg-emerald-600 focus:ring-vj-green/20" onClick={handleApprove} disabled={process.isPending}>
-               {process.isPending ? <Loader2 size={16} className="animate-spin mr-2" /> : <Check size={16} className="mr-2" />} Confirmar & Cancelar
-            </Button>
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold uppercase text-zinc-500">Anotação Interna (Financeiro)</label>
+            <Input
+              value={notes}
+              onChange={e => setNotes(e.target.value)}
+              placeholder="Notas internas da auditoria (opcional)"
+              className="h-12 rounded-xl bg-zinc-50 border-zinc-200"
+            />
           </div>
         </div>
-      </DialogContent>
-    </Dialog>
+      )}
+    </SheetPage>
   );
 }

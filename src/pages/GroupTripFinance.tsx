@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { SheetPage } from '@/components/ui/SheetPage';
 import {
   useGroupTripFinancialSummary,
   useGroupTripBookings,
@@ -69,96 +70,98 @@ function ProofsDialog({ bookingId, installmentId, onClose }: {
   const pending = proofs?.filter(p => p.status === 'pending_review') ?? [];
 
   return (
-    <Dialog open onOpenChange={onClose}>
-      <DialogContent className="max-w-lg">
-        <DialogHeader>
-          <DialogTitle>Comprovantes — Aguardando revisão</DialogTitle>
-        </DialogHeader>
-        {isLoading ? (
-          <Skeleton className="h-40" />
-        ) : pending.length === 0 ? (
-          <div className="text-center py-8 text-zinc-400">
-            <CheckCircle2 size={36} className="mx-auto mb-2 text-vj-green/50" />
-            <p>Nenhum comprovante pendente</p>
-          </div>
-        ) : (
-          <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-1">
-            {pending.map(proof => (
-              <div key={proof.id} className="border border-zinc-100 rounded-xl overflow-hidden">
-                {/* Preview */}
-                {proof.file_url && (
-                  <a href={proof.file_url} target="_blank" rel="noopener noreferrer">
-                    <div className="relative h-40 bg-zinc-100 flex items-center justify-center group">
-                      {proof.file_url.match(/\.(jpg|jpeg|png|gif|webp)/i) ? (
-                        <img src={proof.file_url} alt="Comprovante" className="h-full w-full object-cover group-hover:opacity-80 transition-opacity" />
-                      ) : (
-                        <div className="flex flex-col items-center gap-2 text-zinc-400">
-                          <FileText size={32} />
-                          <span className="text-xs">{proof.file_name ?? 'Ver arquivo'}</span>
+    <SheetPage
+      open
+      onClose={onClose}
+      title="Comprovantes de Pagamento"
+      subtitle="Aguardando revisão do agente"
+      icon={Upload}
+      footer={
+        <div className="flex w-full justify-end">
+          <Button variant="ghost" onClick={onClose}>Fechar</Button>
+        </div>
+      }
+    >
+      {() => (
+        <>
+          {isLoading ? (
+            <Skeleton className="h-40" />
+          ) : pending.length === 0 ? (
+            <div className="text-center py-16 text-zinc-400">
+              <CheckCircle2 size={48} className="mx-auto mb-3 text-vj-green/50" />
+              <p className="font-medium">Nenhum comprovante pendente</p>
+              <p className="text-sm mt-1">Todos os pagamentos desta reserva já foram revisados.</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {pending.map(proof => (
+                <div key={proof.id} className="border border-zinc-100 rounded-2xl overflow-hidden">
+                  {proof.file_url && (
+                    <a href={proof.file_url} target="_blank" rel="noopener noreferrer">
+                      <div className="relative h-52 bg-zinc-100 flex items-center justify-center group">
+                        {proof.file_url.match(/\.(jpg|jpeg|png|gif|webp)/i) ? (
+                          <img src={proof.file_url} alt="Comprovante" className="h-full w-full object-cover group-hover:opacity-80 transition-opacity" />
+                        ) : (
+                          <div className="flex flex-col items-center gap-2 text-zinc-400">
+                            <FileText size={40} />
+                            <span className="text-sm">{proof.file_name ?? 'Ver arquivo'}</span>
+                          </div>
+                        )}
+                        <div className="absolute top-2 right-2 bg-white/90 rounded-lg px-2 py-0.5 text-[10px] font-bold text-zinc-600 flex items-center gap-1">
+                          <Eye size={10} /> Ver
                         </div>
-                      )}
-                      <div className="absolute top-2 right-2 bg-white/90 rounded-lg px-2 py-0.5 text-[10px] font-bold text-zinc-600 flex items-center gap-1">
-                        <Eye size={10} /> Ver
                       </div>
-                    </div>
-                  </a>
-                )}
-
-                <div className="p-3 space-y-2">
-                  {proof.amount_declared && (
-                    <p className="text-sm font-bold text-vj-green">
-                      Valor declarado: {fmt(proof.amount_declared)}
-                    </p>
+                    </a>
                   )}
-                  {proof.notes_client && (
-                    <p className="text-xs text-zinc-500 italic">"{proof.notes_client}"</p>
-                  )}
-                  <p className="text-[10px] text-zinc-400">{fmtDate(proof.created_at)}</p>
-
-                  {rejectingId === proof.id ? (
-                    <div className="space-y-2">
-                      <Input
-                        placeholder="Motivo da rejeição..."
-                        value={rejectReason}
-                        onChange={e => setRejectReason(e.target.value)}
-                        className="text-sm"
-                      />
+                  <div className="p-4 space-y-3">
+                    {proof.amount_declared && (
+                      <p className="text-sm font-bold text-vj-green">Valor declarado: {fmt(proof.amount_declared)}</p>
+                    )}
+                    {proof.notes_client && (
+                      <p className="text-xs text-zinc-500 italic">"{proof.notes_client}"</p>
+                    )}
+                    <p className="text-[10px] text-zinc-400">{fmtDate(proof.created_at)}</p>
+                    {rejectingId === proof.id ? (
+                      <div className="space-y-2">
+                        <Input
+                          placeholder="Motivo da rejeição..."
+                          value={rejectReason}
+                          onChange={e => setRejectReason(e.target.value)}
+                          className="rounded-xl"
+                        />
+                        <div className="flex gap-2">
+                          <Button size="sm" variant="outline" className="flex-1" onClick={() => { setRejectingId(null); setRejectReason(''); }}>Cancelar</Button>
+                          <Button size="sm" variant="destructive" className="flex-1"
+                            disabled={!rejectReason.trim() || review.isPending}
+                            onClick={() => review.mutate({
+                              proofId: proof.id, bookingId, installmentId,
+                              action: 'rejected', rejectionReason: rejectReason,
+                            }, { onSuccess: () => { setRejectingId(null); setRejectReason(''); } })}>
+                            Rejeitar
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
                       <div className="flex gap-2">
-                        <Button size="sm" variant="outline" className="flex-1"
-                          onClick={() => { setRejectingId(null); setRejectReason(''); }}>
-                          Cancelar
+                        <Button size="sm" variant="outline" className="flex-1 text-red-500 border-red-100 hover:bg-red-50" onClick={() => setRejectingId(proof.id)}>
+                          <X size={12} className="mr-1" /> Rejeitar
                         </Button>
-                        <Button size="sm" variant="destructive" className="flex-1"
-                          disabled={!rejectReason.trim() || review.isPending}
-                          onClick={() => review.mutate({
-                            proofId: proof.id, bookingId, installmentId,
-                            action: 'rejected', rejectionReason: rejectReason,
-                          }, { onSuccess: () => { setRejectingId(null); setRejectReason(''); } })}>
-                          Rejeitar
+                        <Button size="sm" className="flex-1 bg-vj-green text-white hover:bg-vj-green/90"
+                          disabled={review.isPending}
+                          onClick={() => review.mutate({ proofId: proof.id, bookingId, installmentId, action: 'approved' })}>
+                          {review.isPending ? <Loader2 size={12} className="animate-spin mr-1" /> : <Check size={12} className="mr-1" />}
+                          Aprovar
                         </Button>
                       </div>
-                    </div>
-                  ) : (
-                    <div className="flex gap-2">
-                      <Button size="sm" variant="outline" className="flex-1 text-red-500 border-red-100 hover:bg-red-50"
-                        onClick={() => setRejectingId(proof.id)}>
-                        <X size={12} className="mr-1" /> Rejeitar
-                      </Button>
-                      <Button size="sm" className="flex-1 bg-vj-green text-white hover:bg-vj-green/90"
-                        disabled={review.isPending}
-                        onClick={() => review.mutate({ proofId: proof.id, bookingId, installmentId, action: 'approved' })}>
-                        {review.isPending ? <Loader2 size={12} className="animate-spin mr-1" /> : <Check size={12} className="mr-1" />}
-                        Aprovar
-                      </Button>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </DialogContent>
-    </Dialog>
+              ))}
+            </div>
+          )}
+        </>
+      )}
+    </SheetPage>
   );
 }
 
@@ -183,27 +186,42 @@ function TransferBookingDialog({ booking, currentTripId, onClose }: {
   };
 
   return (
-    <Dialog open onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <ArrowRightLeft size={18} className="text-blue-500" /> Transferir Viagem
-          </DialogTitle>
-        </DialogHeader>
-        <div className="space-y-4">
-          <p className="text-sm text-zinc-600">
-            Transferir <strong>{booking.lead_name}</strong> para outro pacote. 
-            O histórico financeiro será mantido, mas as <strong>cadeiras do ônibus atuais serão liberadas</strong>.
-          </p>
-
-          <div>
-            <label className="text-xs font-bold text-zinc-500 uppercase">Novo Pacote</label>
+    <SheetPage
+      open
+      onClose={onClose}
+      title="Transferir Reserva de Viagem"
+      subtitle={`Mover ${booking.lead_name} para outro pacote publicado`}
+      icon={ArrowRightLeft}
+      footer={
+        <div className="flex items-center gap-3 w-full justify-end">
+          <Button variant="ghost" onClick={onClose}>Cancelar</Button>
+          <Button
+            onClick={handleTransfer}
+            disabled={transfer.isPending || !selectedTrip}
+            className="rounded-full px-8 bg-blue-600 hover:bg-blue-700 text-white font-bold"
+          >
+            {transfer.isPending ? <Loader2 size={16} className="animate-spin mr-2" /> : null}
+            Confirmar Transferência
+          </Button>
+        </div>
+      }
+    >
+      {() => (
+        <div className="space-y-5">
+          <div className="p-4 rounded-xl bg-amber-50 border border-amber-200">
+            <p className="text-sm font-bold text-amber-800">⚠️ Atenção</p>
+            <p className="text-sm text-amber-700 mt-1">
+              As <strong>cadeiras do ônibus atuais serão liberadas</strong>. O histórico financeiro será mantido.
+            </p>
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-sm font-semibold text-zinc-700">Novo Pacote de Destino</label>
             {isLoading ? (
-              <Skeleton className="h-10 w-full mt-1" />
+              <Skeleton className="h-12 w-full rounded-xl" />
             ) : (
               <Select value={selectedTrip} onValueChange={setSelectedTrip}>
-                <SelectTrigger className="mt-1 h-10 rounded-xl">
-                  <SelectValue placeholder="Selecione o destino..." />
+                <SelectTrigger className="h-12 rounded-xl bg-zinc-50 border-zinc-200">
+                  <SelectValue placeholder="Selecione o pacote de destino..." />
                 </SelectTrigger>
                 <SelectContent>
                   {otherTrips.map((t: any) => (
@@ -213,18 +231,17 @@ function TransferBookingDialog({ booking, currentTripId, onClose }: {
               </Select>
             )}
           </div>
-          <div>
-            <label className="text-xs font-bold text-zinc-500 uppercase">Motivo</label>
-            <Input value={reason} onChange={e => setReason(e.target.value)} className="mt-1 h-10" />
+          <div className="space-y-1.5">
+            <label className="text-sm font-semibold text-zinc-700">Motivo da Transferência</label>
+            <Input
+              value={reason}
+              onChange={e => setReason(e.target.value)}
+              className="h-12 rounded-xl bg-zinc-50 border-zinc-200"
+            />
           </div>
-
-          <Button onClick={handleTransfer} disabled={transfer.isPending || !selectedTrip} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold">
-            {transfer.isPending ? <Loader2 size={16} className="animate-spin mr-2" /> : null}
-            Confirmar Transferência
-          </Button>
         </div>
-      </DialogContent>
-    </Dialog>
+      )}
+    </SheetPage>
   );
 }
 

@@ -7,9 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/ui/EmptyState';
-import {
-  Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription
-} from '@/components/ui/sheet';
+import { SheetPage } from '@/components/ui/SheetPage';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel,
@@ -20,6 +18,12 @@ import {
   Globe2, Plus, Search, Trash2, Pencil, MapPin,
   Plane, Clock, Thermometer, CheckCircle2, XCircle, ChevronRight
 } from 'lucide-react';
+
+const DEST_SECTIONS = [
+  { id: 'dados', label: 'Dados do Destino', icon: MapPin },
+  { id: 'gateway', label: 'Regras de Gateway IA', icon: Plane },
+  { id: 'sazonalidade', label: 'Sazonalidade', icon: Thermometer },
+];
 
 const SEASON_LABELS: Record<string, string> = {
   jan: 'Jan', feb: 'Fev', mar: 'Mar', apr: 'Abr',
@@ -209,107 +213,116 @@ function DestinationForm({
   };
 
   return (
-    <Sheet open={open} onOpenChange={v => !v && onClose()}>
-      <SheetContent className="w-full max-w-xl overflow-y-auto">
-        <SheetHeader className="mb-6">
-          <SheetTitle>{isEditing ? 'Editar Destino' : 'Novo Destino'}</SheetTitle>
-          <SheetDescription>Configure as regras de gateway que o Agente IA usa para cotações automáticas.</SheetDescription>
-        </SheetHeader>
-
-        <div className="space-y-6">
-          {/* Dados Básicos */}
-          <div>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-3">📍 Dados do Destino</p>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="col-span-2 space-y-1">
-                <Label className="text-xs">Nome do Destino *</Label>
-                <Input value={form.name} onChange={e => set('name', e.target.value)} placeholder="Jericoacoara" className="rounded-xl" />
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs">Slug (ID único) *</Label>
-                <Input value={form.slug} onChange={e => set('slug', e.target.value)} placeholder="jericoacoara" className="rounded-xl" />
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs">País *</Label>
-                <Input value={form.country} onChange={e => set('country', e.target.value)} placeholder="Brasil" className="rounded-xl" />
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs">Região/Estado</Label>
-                <Input value={form.region} onChange={e => set('region', e.target.value)} placeholder="Ceará" className="rounded-xl" />
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs">IATA do Gateway</Label>
-                <Input value={form.iata_gateway} onChange={e => set('iata_gateway', e.target.value)} placeholder="FOR" className="rounded-xl font-mono" maxLength={4} />
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs">Tempo de Transfer (horas)</Label>
-                <Input type="number" value={form.transfer_time_hours} onChange={e => set('transfer_time_hours', e.target.value)} placeholder="4" className="rounded-xl" />
-              </div>
-            </div>
-          </div>
-
-          {/* Regras de Gateway */}
-          <div className="rounded-2xl border border-blue-100 bg-blue-50/30 p-4">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-blue-500 mb-3">✈️ Regras para o Agente IA</p>
-            <div className="space-y-3">
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <Label className="text-xs">Cidade Gateway</Label>
-                  <Input value={form.gateway_city} onChange={e => set('gateway_city', e.target.value)} placeholder="Fortaleza" className="rounded-xl" />
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-xs">IATA Gateway</Label>
-                  <Input value={form.gateway_iata} onChange={e => set('gateway_iata', e.target.value)} placeholder="FOR" className="rounded-xl font-mono" maxLength={4} />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <Label className="text-xs">Tipo de Transfer</Label>
-                  <Input value={form.transfer_type} onChange={e => set('transfer_type', e.target.value)} placeholder="van, avião, barco..." className="rounded-xl" />
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-xs">Conexão Mínima (h)</Label>
-                  <Input type="number" value={form.min_connection_hours} onChange={e => set('min_connection_hours', e.target.value)} placeholder="3" className="rounded-xl" />
-                </div>
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs">Observações de Transfer</Label>
-                <Textarea
-                  value={form.transfer_notes}
-                  onChange={e => set('transfer_notes', e.target.value)}
-                  placeholder="Ex: Van de 4h sem asfalto. Voos para Jijoca operam somente com Gol/Latam. Evitar conexão menor que 3h em FOR."
-                  rows={3}
-                  className="rounded-xl text-xs"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Sazonalidade */}
-          <div>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-3">🌤️ Sazonalidade (separado por vírgula: jan, feb, mar...)</p>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1">
-                <Label className="text-xs text-green-600">✅ Melhores Meses</Label>
-                <Input value={form.best_season} onChange={e => set('best_season', e.target.value)} placeholder="jul, aug, sep" className="rounded-xl" />
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs text-red-500">❌ Evitar</Label>
-                <Input value={form.avoid_season} onChange={e => set('avoid_season', e.target.value)} placeholder="nov, dec" className="rounded-xl" />
-              </div>
-            </div>
-          </div>
-
+    <SheetPage
+      open={open}
+      onClose={onClose}
+      title={isEditing ? 'Editar Destino' : 'Novo Destino'}
+      subtitle="Configure as regras de gateway que o Agente IA usa para cotações automáticas."
+      icon={Globe2}
+      sections={DEST_SECTIONS}
+      defaultSection="dados"
+      footer={
+        <div className="flex items-center gap-3 w-full justify-end">
+          <Button variant="ghost" onClick={onClose}>Cancelar</Button>
           <Button
-            className="w-full bg-vj-green text-white hover:bg-vj-green/90 h-12 rounded-2xl font-bold"
+            className="rounded-full px-8 bg-vj-green hover:bg-vj-green/90 font-bold"
             onClick={handleSubmit}
             disabled={!form.name || !form.slug || !form.country || upsert.isPending}
           >
             {upsert.isPending ? 'Salvando...' : isEditing ? 'Salvar Alterações' : 'Criar Destino'}
           </Button>
         </div>
-      </SheetContent>
-    </Sheet>
+      }
+    >
+      {(activeSection) => (
+        <>
+          {activeSection === 'dados' && (
+            <div className="space-y-5">
+              <div className="space-y-1.5">
+                <Label className="font-semibold">Nome do Destino *</Label>
+                <Input value={form.name} onChange={e => set('name', e.target.value)} placeholder="Jericoacoara" className="h-12 rounded-xl bg-zinc-50 border-zinc-200" autoFocus />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label className="font-semibold">Slug (ID único) *</Label>
+                  <Input value={form.slug} onChange={e => set('slug', e.target.value)} placeholder="jericoacoara" className="h-12 rounded-xl bg-zinc-50 border-zinc-200 font-mono" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="font-semibold">País *</Label>
+                  <Input value={form.country} onChange={e => set('country', e.target.value)} placeholder="Brasil" className="h-12 rounded-xl bg-zinc-50 border-zinc-200" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="font-semibold">Região / Estado</Label>
+                  <Input value={form.region} onChange={e => set('region', e.target.value)} placeholder="Ceará" className="h-12 rounded-xl bg-zinc-50 border-zinc-200" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="font-semibold">IATA do Gateway</Label>
+                  <Input value={form.iata_gateway} onChange={e => set('iata_gateway', e.target.value)} placeholder="FOR" className="h-12 rounded-xl bg-zinc-50 border-zinc-200 font-mono" maxLength={4} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="font-semibold">Tempo de Transfer (horas)</Label>
+                  <Input type="number" value={form.transfer_time_hours} onChange={e => set('transfer_time_hours', e.target.value)} placeholder="4" className="h-12 rounded-xl bg-zinc-50 border-zinc-200" />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeSection === 'gateway' && (
+            <div className="space-y-5">
+              <div className="p-4 rounded-xl bg-blue-50 border border-blue-100">
+                <p className="text-xs font-bold text-blue-600 mb-1">✈️ Estas regras são usadas pelo Agente IA</p>
+                <p className="text-xs text-blue-500">Configure como a IA deve calcular rotas e conexões para este destino.</p>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label className="font-semibold">Cidade Gateway</Label>
+                  <Input value={form.gateway_city} onChange={e => set('gateway_city', e.target.value)} placeholder="Fortaleza" className="h-12 rounded-xl bg-zinc-50 border-zinc-200" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="font-semibold">IATA Gateway</Label>
+                  <Input value={form.gateway_iata} onChange={e => set('gateway_iata', e.target.value)} placeholder="FOR" className="h-12 rounded-xl bg-zinc-50 border-zinc-200 font-mono" maxLength={4} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="font-semibold">Tipo de Transfer</Label>
+                  <Input value={form.transfer_type} onChange={e => set('transfer_type', e.target.value)} placeholder="van, avião, barco..." className="h-12 rounded-xl bg-zinc-50 border-zinc-200" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="font-semibold">Conexão Mínima (h)</Label>
+                  <Input type="number" value={form.min_connection_hours} onChange={e => set('min_connection_hours', e.target.value)} placeholder="3" className="h-12 rounded-xl bg-zinc-50 border-zinc-200" />
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="font-semibold">Observações de Transfer</Label>
+                <Textarea
+                  value={form.transfer_notes}
+                  onChange={e => set('transfer_notes', e.target.value)}
+                  placeholder="Ex: Van de 4h sem asfalto. Voos para Jijoca operam somente com Gol/Latam..."
+                  rows={5}
+                  className="rounded-xl text-sm bg-zinc-50 border-zinc-200 resize-none"
+                />
+              </div>
+            </div>
+          )}
+
+          {activeSection === 'sazonalidade' && (
+            <div className="space-y-5">
+              <div className="p-4 rounded-xl bg-amber-50 border border-amber-100">
+                <p className="text-xs font-bold text-amber-700 mb-1">🌤️ Sazonalidade</p>
+                <p className="text-xs text-amber-600">Separe os meses por vírgula usando abreviações: jan, feb, mar, apr, may, jun, jul, aug, sep, oct, nov, dec</p>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="font-semibold text-green-700">✅ Melhores Meses</Label>
+                <Input value={form.best_season} onChange={e => set('best_season', e.target.value)} placeholder="jul, aug, sep" className="h-12 rounded-xl bg-zinc-50 border-zinc-200" />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="font-semibold text-red-600">❌ Meses a Evitar</Label>
+                <Input value={form.avoid_season} onChange={e => set('avoid_season', e.target.value)} placeholder="nov, dec" className="h-12 rounded-xl bg-zinc-50 border-zinc-200" />
+              </div>
+            </div>
+          )}
+        </>
+      )}
+    </SheetPage>
   );
 }
 

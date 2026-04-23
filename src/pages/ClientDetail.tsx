@@ -14,18 +14,21 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger
-} from '@/components/ui/dialog';
+import { SheetPage } from '@/components/ui/SheetPage';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { 
   ArrowLeft, Plus, User, Mail, Phone, MapPin, Calendar, Copy, 
-  Trash2, MessageCircle, FileText, Plane, Globe, Link, Shield, Camera, ImageIcon
+  Trash2, MessageCircle, FileText, Plane, Globe, Link, Shield, Camera, ImageIcon, Users
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+
+const TRAVELER_SECTIONS = [
+  { id: 'dados', label: 'Dados Pessoais', icon: User },
+  { id: 'relacao', label: 'Vínculo', icon: Users },
+];
 
 export default function ClientDetail() {
   const { id } = useParams<{ id: string }>();
@@ -37,7 +40,7 @@ export default function ClientDetail() {
   const updateClient = useUpdateClient();
   const { toast } = useToast();
   const [newTraveler, setNewTraveler] = useState({ full_name: '', cpf: '', birth_date: '', email: '', phone: '', relation: '' });
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [travelerSheetOpen, setTravelerSheetOpen] = useState(false);
   const [clientSheetOpen, setClientSheetOpen] = useState(false);
   const [quotationBuilderOpen, setQuotationBuilderOpen] = useState(false);
   const [uploadingCover, setUploadingCover] = useState(false);
@@ -49,7 +52,7 @@ export default function ClientDetail() {
     if (!newTraveler.full_name) return;
     await createTraveler.mutateAsync({ ...newTraveler, client_id: id });
     setNewTraveler({ full_name: '', cpf: '', birth_date: '', email: '', phone: '', relation: '' });
-    setDialogOpen(false);
+    setTravelerSheetOpen(false);
   };
 
   const copyFormLink = (token: string) => {
@@ -303,37 +306,12 @@ export default function ClientDetail() {
                   <h3 className="font-medium">Grupo Familiar / Companheiros</h3>
                   <p className="text-xs text-muted-foreground mt-1">Viajantes que utilizam os pacotes comprados por este cliente.</p>
                </div>
-              <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button className=" rounded-full px-5"><Plus className="mr-2 h-4 w-4" /> Adicionar Viajante</Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-[425px]">
-                  <DialogHeader><DialogTitle>Designar Viajante</DialogTitle></DialogHeader>
-                  <div className="space-y-4 pt-4">
-                    <div className="space-y-2">
-                      <Label>Nome completo *</Label>
-                      <Input value={newTraveler.full_name} onChange={(e) => setNewTraveler(p => ({ ...p, full_name: e.target.value }))} autoFocus />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label>CPF</Label>
-                        <Input value={newTraveler.cpf} onChange={(e) => setNewTraveler(p => ({ ...p, cpf: e.target.value }))} />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Nascimento</Label>
-                        <Input type="date" value={newTraveler.birth_date} onChange={(e) => setNewTraveler(p => ({ ...p, birth_date: e.target.value }))} />
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Relação com o comprador</Label>
-                      <Input value={newTraveler.relation} onChange={(e) => setNewTraveler(p => ({ ...p, relation: e.target.value }))} placeholder="Ex: Esposa, Filho, Amigo" />
-                    </div>
-                    <Button onClick={handleAddTraveler} disabled={!newTraveler.full_name || createTraveler.isPending} className="w-full mt-2">
-                      {createTraveler.isPending ? 'Salvando vinculação...' : 'Salvar Viajante'}
-                    </Button>
-                  </div>
-                </DialogContent>
-              </Dialog>
+              <Button
+                className=" rounded-full px-5"
+                onClick={() => setTravelerSheetOpen(true)}
+              >
+                <Plus className="mr-2 h-4 w-4" /> Adicionar Viajante
+              </Button>
             </div>
 
             {loadingTravelers ? (
@@ -482,6 +460,99 @@ export default function ClientDetail() {
         onClose={() => setQuotationBuilderOpen(false)}
         clientId={id}
       />
+
+      <SheetPage
+        open={travelerSheetOpen}
+        onClose={() => setTravelerSheetOpen(false)}
+        title="Adicionar Viajante"
+        subtitle="Vincule um companheiro de viagem a este cliente"
+        icon={Users}
+        sections={TRAVELER_SECTIONS}
+        defaultSection="dados"
+        footer={
+          <div className="flex items-center gap-3 w-full justify-end">
+            <Button variant="ghost" onClick={() => setTravelerSheetOpen(false)}>Cancelar</Button>
+            <Button
+              onClick={handleAddTraveler}
+              disabled={!newTraveler.full_name || createTraveler.isPending}
+              className="rounded-full px-8 bg-vj-green hover:bg-vj-green/90"
+            >
+              {createTraveler.isPending ? 'Salvando...' : 'Vincular Viajante'}
+            </Button>
+          </div>
+        }
+      >
+        {(activeSection) => (
+          <>
+            {activeSection === 'dados' && (
+              <div className="space-y-5">
+                <div className="space-y-1.5">
+                  <Label className="font-semibold">Nome Completo *</Label>
+                  <Input
+                    value={newTraveler.full_name}
+                    onChange={e => setNewTraveler(p => ({ ...p, full_name: e.target.value }))}
+                    placeholder="Ex: Maria da Silva"
+                    className="h-12 rounded-xl bg-zinc-50 border-zinc-200"
+                    autoFocus
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <Label className="font-semibold">CPF</Label>
+                    <Input
+                      value={newTraveler.cpf}
+                      onChange={e => setNewTraveler(p => ({ ...p, cpf: e.target.value }))}
+                      placeholder="000.000.000-00"
+                      className="h-12 rounded-xl bg-zinc-50 border-zinc-200"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="font-semibold">Data de Nascimento</Label>
+                    <Input
+                      type="date"
+                      value={newTraveler.birth_date}
+                      onChange={e => setNewTraveler(p => ({ ...p, birth_date: e.target.value }))}
+                      className="h-12 rounded-xl bg-zinc-50 border-zinc-200"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+            {activeSection === 'relacao' && (
+              <div className="space-y-5">
+                <div className="space-y-1.5">
+                  <Label className="font-semibold">Relação com o Responsável</Label>
+                  <Input
+                    value={newTraveler.relation}
+                    onChange={e => setNewTraveler(p => ({ ...p, relation: e.target.value }))}
+                    placeholder="Ex: Esposa, Filho, Amigo, Sócio..."
+                    className="h-12 rounded-xl bg-zinc-50 border-zinc-200"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="font-semibold">E-mail do Viajante</Label>
+                  <Input
+                    type="email"
+                    value={newTraveler.email}
+                    onChange={e => setNewTraveler(p => ({ ...p, email: e.target.value }))}
+                    placeholder="viajante@email.com"
+                    className="h-12 rounded-xl bg-zinc-50 border-zinc-200"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="font-semibold">Telefone</Label>
+                  <Input
+                    value={newTraveler.phone}
+                    onChange={e => setNewTraveler(p => ({ ...p, phone: e.target.value }))}
+                    placeholder="+55 (49) 99999-9999"
+                    className="h-12 rounded-xl bg-zinc-50 border-zinc-200"
+                  />
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </SheetPage>
     </AppLayout>
   );
 }

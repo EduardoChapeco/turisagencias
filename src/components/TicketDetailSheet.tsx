@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useTicket, useUpdateTicket, useTicketMessages, useCreateTicketMessage } from '@/hooks/useTickets';
+import { useTicket, useUpdateTicket, useCreateTicketMessage } from '@/hooks/useTickets';
 import { SheetPage } from '@/components/ui/SheetPage';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -23,14 +23,15 @@ const STATUS_CONFIG: Record<string, { color: string; bg: string; icon: any; labe
 export function TicketDetailSheet({ id, open, onClose }: { id: string | null; open: boolean; onClose: () => void }) {
   const { data: ticket, isLoading } = useTicket(id);
   const updateTicket = useUpdateTicket();
-  const { data: messages } = useTicketMessages(id);
   const createMessage = useCreateTicketMessage();
   const { user } = useAuthStore();
   const [newMessage, setNewMessage] = useState('');
 
+  const messages = ticket?.ticket_messages || [];
+
   const handleSendMessage = async () => {
     if (!newMessage.trim() || !id) return;
-    await createMessage.mutateAsync({ ticket_id: id, body: newMessage.trim() });
+    await createMessage.mutateAsync({ ticket_id: id, content: newMessage.trim() });
     setNewMessage('');
     // If ticket is open, move to in_progress automatically when agent replies
     if (ticket?.status === 'open') {

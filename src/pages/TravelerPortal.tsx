@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { SheetPage } from '@/components/ui/SheetPage';
 import { cn } from '@/lib/utils';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
@@ -105,75 +105,99 @@ function UploadProofDialog({
   };
 
   return (
-    <Dialog open onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle>Enviar comprovante — Parcela {installmentNum}</DialogTitle>
-          <DialogDescription>
-            Envie foto ou PDF do comprovante de pagamento de {fmt(amount)}.
-            O financeiro irá analisar e confirmar em breve.
-          </DialogDescription>
-        </DialogHeader>
-
-        {success ? (
-          <div className="flex flex-col items-center py-8 gap-3">
-            <CheckCircle2 size={48} className="text-emerald-500" />
-            <p className="font-bold text-emerald-700">Comprovante enviado!</p>
-            <p className="text-sm text-zinc-500">Aguardando análise do financeiro.</p>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {/* Drop zone */}
-            <div
-              className={cn(
-                'border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer transition-colors',
-                preview ? 'border-emerald-200 bg-emerald-50/30' : 'border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50',
-              )}
-              onDrop={handleDrop}
-              onDragOver={e => e.preventDefault()}
-              onClick={() => fileRef.current?.click()}
-            >
-              <input ref={fileRef} type="file" className="hidden"
-                accept="image/*,.pdf" onChange={e => e.target.files?.[0] && handleFile(e.target.files[0])} />
-              {preview ? (
-                <div className="relative">
-                  <img src={preview} alt="preview" className="max-h-40 mx-auto rounded-xl object-cover" />
-                  <p className="text-xs text-emerald-600 mt-2 font-medium">{file?.name}</p>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <Camera size={32} className="mx-auto text-zinc-300" />
-                  <p className="text-sm font-medium text-zinc-500">Arraste ou clique para selecionar</p>
-                  <p className="text-xs text-zinc-400">JPG, PNG ou PDF — máx. 10MB</p>
-                </div>
-              )}
+    <SheetPage
+      open
+      onClose={onClose}
+      title="Enviar Comprovante"
+      subtitle={`Parcela ${installmentNum} — ${fmt(amount)}`}
+      icon={Upload}
+      footer={
+        <div className="flex w-full justify-end">
+          <Button variant="ghost" onClick={onClose}>Cancelar</Button>
+        </div>
+      }
+    >
+      {() => (
+        <div className="space-y-6">
+          {success ? (
+            <div className="flex flex-col items-center py-12 gap-4 text-center">
+              <div className="h-16 w-16 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-600">
+                <CheckCircle2 size={32} />
+              </div>
+              <div>
+                <p className="text-xl font-bold text-zinc-900">Comprovante enviado!</p>
+                <p className="text-sm text-zinc-500 mt-1">Aguardando análise do financeiro da agência.</p>
+              </div>
             </div>
+          ) : (
+            <div className="space-y-5">
+              <div
+                className={cn(
+                  'border-2 border-dashed rounded-3xl p-8 text-center cursor-pointer transition-all duration-200',
+                  preview ? 'border-emerald-200 bg-emerald-50/30' : 'border-zinc-200 hover:border-vj-green/30 hover:bg-zinc-50',
+                )}
+                onDrop={handleDrop}
+                onDragOver={e => e.preventDefault()}
+                onClick={() => fileRef.current?.click()}
+              >
+                <input ref={fileRef} type="file" className="hidden"
+                  accept="image/*,.pdf" onChange={e => e.target.files?.[0] && handleFile(e.target.files[0])} />
+                {preview ? (
+                  <div className="relative animate-in fade-in zoom-in duration-300">
+                    <img src={preview} alt="preview" className="max-h-56 mx-auto rounded-2xl shadow-xl border-4 border-white object-cover" />
+                    <p className="text-sm text-emerald-600 mt-3 font-bold flex items-center justify-center gap-1">
+                      <CheckCircle2 size={14} /> {file?.name}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-3 py-4">
+                    <div className="h-16 w-16 bg-zinc-100 rounded-2xl flex items-center justify-center mx-auto text-zinc-400 group-hover:text-vj-green transition-colors">
+                      <Camera size={32} />
+                    </div>
+                    <div>
+                      <p className="font-bold text-zinc-800">Selecione o comprovante</p>
+                      <p className="text-xs text-zinc-400 mt-1">Arraste ou clique para tirar uma foto ou subir PDF</p>
+                    </div>
+                  </div>
+                )}
+              </div>
 
-            <div>
-              <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">
-                Valor declarado (R$)
-              </label>
-              <Input value={amountInput} onChange={e => setAmountInput(e.target.value)}
-                type="number" step="0.01" className="mt-1 rounded-xl" />
-            </div>
-            <div>
-              <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider">
-                Observação (opcional)
-              </label>
-              <Textarea value={notes} onChange={e => setNotes(e.target.value)}
-                placeholder="Ex: Paguei via PIX no dia 10/04..." rows={2}
-                className="mt-1 rounded-xl resize-none" />
-            </div>
+              <div className="space-y-1.5">
+                <label className="text-sm font-bold text-zinc-700">Valor Pago (R$)</label>
+                <Input
+                  value={amountInput}
+                  onChange={e => setAmountInput(e.target.value)}
+                  type="number"
+                  step="0.01"
+                  className="h-12 rounded-xl bg-zinc-50 border-zinc-200 text-lg font-bold"
+                />
+              </div>
 
-            <Button onClick={handleSubmit} disabled={!file || loading} className="w-full h-12 font-bold">
-              {loading ? <><Loader2 size={16} className="animate-spin mr-2" /> Enviando...</> : <>
-                <Upload size={16} className="mr-2" /> Enviar comprovante
-              </>}
-            </Button>
-          </div>
-        )}
-      </DialogContent>
-    </Dialog>
+              <div className="space-y-1.5">
+                <label className="text-sm font-bold text-zinc-700">Anotações extras</label>
+                <Textarea
+                  value={notes}
+                  onChange={e => setNotes(e.target.value)}
+                  placeholder="Ex: Paguei via PIX hoje pela manhã..."
+                  rows={3}
+                  className="rounded-xl bg-zinc-50 border-zinc-200 resize-none"
+                />
+              </div>
+
+              <Button
+                onClick={handleSubmit}
+                disabled={!file || loading}
+                className="w-full h-14 rounded-full bg-vj-green hover:bg-emerald-600 text-white font-bold text-lg shadow-lg shadow-emerald-200 transition-all active:scale-95"
+              >
+                {loading ? <><Loader2 size={20} className="animate-spin mr-2" /> Enviando...</> : <>
+                  <Upload size={20} className="mr-2" /> Confirmar Pagamento
+                </>}
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
+    </SheetPage>
   );
 }
 
@@ -273,93 +297,137 @@ function CancelRequestDialog({
   };
 
   return (
-    <Dialog open onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle className="text-red-600 flex items-center gap-2">
-            <AlertCircle size={18} /> Solicitar cancelamento
-          </DialogTitle>
-          <DialogDescription>
-            O cancelamento está sujeito às políticas da viagem. Revise os valores antes de confirmar.
-          </DialogDescription>
-        </DialogHeader>
-        <div className="space-y-4">
-          <div>
-            <label className="text-xs font-bold uppercase tracking-wider text-zinc-500">Motivo</label>
-            <Select value={reasonCode} onValueChange={setReasonCode}>
-              <SelectTrigger className="mt-1 h-10 rounded-xl">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {reasons.map(r => <SelectItem key={r.v} value={r.v}>{r.l}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <label className="text-xs font-bold uppercase tracking-wider text-zinc-500">Observações</label>
-            <Textarea value={reasonNotes} onChange={e => setReasonNotes(e.target.value)}
-              placeholder="Descreva o motivo..." rows={3} className="mt-1 rounded-xl resize-none text-sm" />
-          </div>
-
-          {fineData ? (
-            <div className="rounded-2xl border border-amber-100 bg-amber-50 p-4 space-y-2">
-              <p className="text-xs font-bold text-amber-700 uppercase tracking-wider">
-                📋 {fineData.policy_desc}
-              </p>
-              <div className="grid grid-cols-2 gap-2 text-sm">
-                <div>
-                  <p className="text-zinc-500 text-xs">Total pago</p>
-                  <p className="font-bold">{fmt(fineData.total_paid)}</p>
-                </div>
-                <div>
-                  <p className="text-zinc-500 text-xs">Multa ({fineData.fine_pct}%)</p>
-                  <p className="font-bold text-red-600">{fmt(fineData.fine_amount)}</p>
-                </div>
-                <div className="col-span-2">
-                  <p className="text-zinc-500 text-xs">Valor a devolver / creditar</p>
-                  <p className="font-black text-lg text-emerald-700">{fmt(fineData.refund_amount)}</p>
-                </div>
-              </div>
-
-              {fineData.refund_amount > 0 && (
-                <div className="space-y-2 pt-2 border-t border-amber-100">
-                  <p className="text-xs font-bold text-zinc-600">Como deseja receber o valor?</p>
-                  {[
-                    { v: 'full_refund', l: '💸 Reembolso (PIX/TED)' },
-                    { v: 'full_credit', l: '🎟️ Crédito para próxima viagem' },
-                  ].map(opt => (
-                    <label key={opt.v} className="flex items-center gap-2 cursor-pointer text-sm">
-                      <input type="radio" name="resolution" value={opt.v}
-                        checked={resolution === opt.v as Record<string, any>}
-                        onChange={() => setResolution(opt.v as Record<string, any>)}
-                        className="accent-emerald-600" />
-                      {opt.l}
-                    </label>
-                  ))}
-                </div>
-              )}
-            </div>
-          ) : (
-            <Button variant="outline" onClick={fetchFine} disabled={fineLoading} className="w-full">
-              {fineLoading ? <Loader2 size={14} className="animate-spin mr-2" /> : <Info size={14} className="mr-2" />}
-              Ver cálculo de multa e reembolso
-            </Button>
-          )}
-
+    <SheetPage
+      open
+      onClose={onClose}
+      title="Solicitar Cancelamento"
+      subtitle="O cancelamento está sujeito às políticas da viagem"
+      icon={XCircle}
+      footer={
+        <div className="flex w-full justify-end gap-2">
+          <Button variant="ghost" onClick={onClose}>Voltar</Button>
           <Button
             onClick={handleSubmit}
             disabled={loading || !fineData}
-            className="w-full h-12 bg-red-600 hover:bg-red-700 text-white font-bold"
+            className="rounded-full px-8 bg-red-600 hover:bg-red-700 text-white font-bold"
           >
             {loading ? <Loader2 size={16} className="animate-spin mr-2" /> : null}
-            Confirmar solicitação de cancelamento
+            Confirmar Cancelamento
           </Button>
-          <p className="text-[11px] text-zinc-400 text-center">
-            O cancelamento aguardará aprovação do financeiro.
-          </p>
         </div>
-      </DialogContent>
-    </Dialog>
+      }
+    >
+      {() => (
+        <div className="space-y-6">
+          <div className="p-4 bg-red-50 border border-red-100 rounded-2xl text-red-700 text-sm">
+            <p className="font-bold flex items-center gap-2 mb-1">
+              <AlertCircle size={16} /> Atenção
+            </p>
+            <p>Reveja os cálculos abaixo. Uma vez solicitada, a reserva entrará em processo de baixa permanente.</p>
+          </div>
+
+          <div className="space-y-4">
+            <div className="space-y-1.5">
+              <label className="text-sm font-bold text-zinc-700">Motivo principal</label>
+              <Select value={reasonCode} onValueChange={setReasonCode}>
+                <SelectTrigger className="h-12 rounded-xl bg-zinc-50 border-zinc-200">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {reasons.map(r => <SelectItem key={r.v} value={r.v}>{r.l}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-sm font-bold text-zinc-700">Explique brevemente</label>
+              <Textarea
+                value={reasonNotes}
+                onChange={e => setReasonNotes(e.target.value)}
+                placeholder="Descreva o motivo do cancelamento..."
+                rows={3}
+                className="rounded-xl bg-zinc-50 border-zinc-200 resize-none"
+              />
+            </div>
+
+            {fineData ? (
+              <div className="rounded-3xl border border-amber-200 bg-amber-50/50 p-6 space-y-4 shadow-inner">
+                <div className="flex items-center gap-2 pb-3 border-b border-amber-100">
+                  <div className="h-8 w-8 bg-amber-100 rounded-full flex items-center justify-center text-amber-600">
+                    <FileText size={16} />
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-amber-600">Política Aplicada</p>
+                    <p className="text-sm font-bold text-amber-800">{fineData.policy_desc}</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-6 pt-2">
+                  <div className="space-y-1">
+                    <p className="text-xs text-zinc-500 font-medium">Total Pago</p>
+                    <p className="text-lg font-bold text-zinc-900">{fmt(fineData.total_paid)}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-xs text-zinc-500 font-medium">Multa ({fineData.fine_pct}%)</p>
+                    <p className="text-lg font-bold text-red-600">{fmt(fineData.fine_amount)}</p>
+                  </div>
+                </div>
+
+                <div className="bg-white/80 p-4 rounded-2xl border border-amber-100">
+                  <p className="text-xs text-zinc-500 font-medium mb-1">Saldo a devolver / creditar</p>
+                  <p className="text-3xl font-black text-vj-green">{fmt(fineData.refund_amount)}</p>
+                </div>
+
+                {fineData.refund_amount > 0 && (
+                  <div className="space-y-3 pt-2">
+                    <p className="text-sm font-bold text-zinc-800">Como deseja receber o saldo?</p>
+                    <div className="grid gap-2">
+                      {[
+                        { v: 'full_refund', l: '💸 Reembolso via PIX/TED', d: 'Pago pela agência em conta bancária' },
+                        { v: 'full_credit', l: '🎟️ Crédito na Agência', d: 'Use o valor integral em outra viagem' },
+                      ].map(opt => (
+                        <label
+                          key={opt.v}
+                          className={cn(
+                            'flex items-center gap-3 p-4 rounded-2xl border-2 cursor-pointer transition-all',
+                            resolution === opt.v
+                              ? 'border-emerald-500 bg-emerald-50'
+                              : 'border-zinc-100 bg-white hover:border-zinc-200'
+                          )}
+                        >
+                          <input
+                            type="radio"
+                            name="resolution"
+                            value={opt.v}
+                            checked={resolution === opt.v as Record<string, any>}
+                            onChange={() => setResolution(opt.v as Record<string, any>)}
+                            className="h-5 w-5 accent-emerald-600"
+                          />
+                          <div>
+                            <p className="font-bold text-zinc-800">{opt.l}</p>
+                            <p className="text-[11px] text-zinc-500">{opt.d}</p>
+                          </div>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <Button
+                variant="outline"
+                onClick={fetchFine}
+                disabled={fineLoading}
+                className="w-full h-12 rounded-xl border-zinc-200 gap-2"
+              >
+                {fineLoading ? <Loader2 size={16} className="animate-spin" /> : <Info size={16} />}
+                Calcular multa e saldo disponível
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
+    </SheetPage>
   );
 }
 

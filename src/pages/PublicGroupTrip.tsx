@@ -5,7 +5,7 @@ import { usePublicGroupTrip } from '@/hooks/useGroupTrips';
 import { Button } from '@/components/ui/button';
 import { LazyImage } from '@/components/ui/LazyImage';
 import { PublicBookingForm } from '@/components/group-trips/PublicBookingForm';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { SheetPage } from '@/components/ui/SheetPage';
 
 export default function PublicGroupTrip() {
   const { slug } = useParams<{ slug: string }>();
@@ -220,26 +220,30 @@ export default function PublicGroupTrip() {
         </footer>
       )}
 
-      {/* Booking Dialog */}
-      <Dialog open={bookingOpen} onOpenChange={setBookingOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Reservar — {trip.title}</DialogTitle>
-          </DialogHeader>
-          <PublicBookingForm
-            tripId={trip.id}
-            orgId={trip.org_id}
-            tripTitle={trip.title}
-            pricePerPax={Number(trip.price_per_pax)}
-            installmentsCount={trip.installments_count || 1}
-            currency={trip.currency || 'BRL'}
-            onSuccess={(token) => {
-              setBookingOpen(false);
-              window.location.href = `/voucher/${token}`;
-            }}
-          />
-        </DialogContent>
-      </Dialog>
+      <SheetPage
+        open={bookingOpen}
+        onClose={() => setBookingOpen(false)}
+        title="Reservar Viagem"
+        subtitle={trip.title}
+        icon={Ticket}
+      >
+        {() => (
+          <div className="pb-10">
+            <PublicBookingForm
+              tripId={trip.id}
+              orgId={trip.org_id}
+              tripTitle={trip.title}
+              pricePerPax={Number(trip.price_per_pax)}
+              installmentsCount={trip.installments_count || 1}
+              currency={trip.currency || 'BRL'}
+              onSuccess={(token) => {
+                setBookingOpen(false);
+                window.location.href = `/voucher/${token}`;
+              }}
+            />
+          </div>
+        )}
+      </SheetPage>
     </div>
   );
 }

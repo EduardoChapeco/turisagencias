@@ -108,7 +108,7 @@ function SortableCard({
         {isHighValue ? (
           <span className="relative flex h-2.5 w-2.5">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-vj-green opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-vj-green shadow-[0_0_8px_rgba(26,122,74,0.8)]"></span>
+            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-vj-green border border-vj-green/30"></span>
           </span>
         ) : (
           <span className="h-2 w-2 rounded-full bg-zinc-200"></span>
@@ -250,8 +250,8 @@ function KanbanColumn({
         <div className="flex items-center gap-2.5">
           {column.color && (
             <span
-              className="h-2.5 w-2.5 rounded-full shrink-0 shadow-sm"
-              style={{ backgroundColor: column.color, boxShadow: `0 0 10px ${column.color}80` }}
+              className="h-2.5 w-2.5 rounded-full shrink-0 border border-zinc-200"
+              style={{ backgroundColor: column.color }}
             />
           )}
           <span className="kanban-column-title">{column.name}</span>

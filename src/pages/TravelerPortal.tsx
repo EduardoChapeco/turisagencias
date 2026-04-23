@@ -144,7 +144,7 @@ function UploadProofDialog({
                   accept="image/*,.pdf" onChange={e => e.target.files?.[0] && handleFile(e.target.files[0])} />
                 {preview ? (
                   <div className="relative animate-in fade-in zoom-in duration-300">
-                    <img src={preview} alt="preview" className="max-h-56 mx-auto rounded-2xl shadow-xl border-4 border-white object-cover" />
+                    <img src={preview} alt="preview" className="max-h-56 mx-auto rounded-2xl border-4 border-white object-cover" />
                     <p className="text-sm text-emerald-600 mt-3 font-bold flex items-center justify-center gap-1">
                       <CheckCircle2 size={14} /> {file?.name}
                     </p>
@@ -187,7 +187,7 @@ function UploadProofDialog({
               <Button
                 onClick={handleSubmit}
                 disabled={!file || loading}
-                className="w-full h-14 rounded-full bg-vj-green hover:bg-emerald-600 text-white font-bold text-lg shadow-lg shadow-emerald-200 transition-all active:scale-95"
+                className="w-full h-14 rounded-full bg-vj-green hover:bg-emerald-600 text-white font-bold text-lg transition-all active:scale-95"
               >
                 {loading ? <><Loader2 size={20} className="animate-spin mr-2" /> Enviando...</> : <>
                   <Upload size={20} className="mr-2" /> Confirmar Pagamento
@@ -351,7 +351,7 @@ function CancelRequestDialog({
             </div>
 
             {fineData ? (
-              <div className="rounded-3xl border border-amber-200 bg-amber-50/50 p-6 space-y-4 shadow-inner">
+              <div className="rounded-3xl border border-amber-200 bg-amber-50/50 p-6 space-y-4">
                 <div className="flex items-center gap-2 pb-3 border-b border-amber-100">
                   <div className="h-8 w-8 bg-amber-100 rounded-full flex items-center justify-center text-amber-600">
                     <FileText size={16} />

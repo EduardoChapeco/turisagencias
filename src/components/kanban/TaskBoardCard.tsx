@@ -121,7 +121,7 @@ export function TaskBoardCard({ card, onClick }: { card: TaskCardData; onClick: 
 
 export function TaskCardOverlay({ card }: { card: TaskCardData }) {
   return (
-    <div className="kanban-card rotate-1 opacity-95 w-[260px] border-vj-green/40 shadow-xl">
+    <div className="kanban-card rotate-1 opacity-95 w-[260px] border-vj-green/40">
       <div className="pl-6">
         <p className="font-bold text-[15px] text-zinc-800">{card.title}</p>
         <p className="text-xs font-medium text-zinc-500 mt-0.5">{card.clients?.name}</p>

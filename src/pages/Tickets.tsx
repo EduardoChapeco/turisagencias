@@ -418,7 +418,7 @@ export default function Tickets() {
                 onClick={() => setActiveStatus(tab.key)}
                 className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 ${
                   activeStatus === tab.key
-                    ? 'bg-white text-zinc-900 shadow-sm'
+                    ? 'bg-white text-zinc-900 border border-zinc-200'
                     : 'text-zinc-500 hover:text-zinc-700'
                 }`}
               >

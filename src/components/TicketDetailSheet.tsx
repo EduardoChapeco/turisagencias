@@ -112,7 +112,7 @@ export function TicketDetailSheet({ id, open, onClose }: { id: string | null; op
                 </div>
 
                 {/* Description Header */}
-                <div className="p-5 bg-white border border-zinc-100 rounded-2xl shadow-sm">
+                <div className="p-5 bg-white border border-zinc-100 rounded-2xl">
                     <div className="flex items-center gap-2 mb-3">
                         <div className="h-8 w-8 rounded-full bg-zinc-100 flex items-center justify-center text-xs font-bold text-zinc-500">
                             {ticket.clients?.name?.[0] || 'U'}
@@ -145,7 +145,7 @@ export function TicketDetailSheet({ id, open, onClose }: { id: string | null; op
                                         isAgent ? "flex-row-reverse" : "flex-row"
                                     )}>
                                         <div className={cn(
-                                            "max-w-[80%] p-4 rounded-2xl text-sm shadow-sm border",
+                                            "max-w-[80%] p-4 rounded-2xl text-sm border",
                                             isAgent ? "bg-vj-green text-white border-vj-green" : "bg-white text-zinc-800 border-zinc-100"
                                         )}>
                                             <p className="whitespace-pre-wrap leading-relaxed">{msg.body}</p>

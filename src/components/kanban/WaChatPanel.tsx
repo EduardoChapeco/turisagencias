@@ -86,7 +86,7 @@ export function WaChatPanel({ clientId, phone }: { clientId?: string | null; pho
                 return (
                   <div key={log.id} className={cn("flex w-full", isIn ? "justify-start" : "justify-end")}>
                     <div className={cn(
-                      "max-w-[85%] rounded-md p-2 text-[13px] shadow-sm relative",
+                      "max-w-[85%] rounded-md p-2 text-[13px] relative",
                       isIn ? "bg-white text-zinc-900 rounded-tl-none border border-zinc-100" : "bg-[#DCF8C6] text-zinc-900 rounded-tr-none"
                     )}>
                       <p className="whitespace-pre-wrap">{log.message_text}</p>

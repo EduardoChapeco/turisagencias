@@ -131,7 +131,7 @@ function DadosSection({ card, columns }: { card: any, columns?: any[] }) {
               {columns?.map((col) => (
                 <SelectItem key={col.id} value={col.id}>
                   <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full shadow-sm" style={{ backgroundColor: col.color || '#ccc' }} />
+                    <div className="w-2 h-2 rounded-full border border-zinc-200" style={{ backgroundColor: col.color || '#ccc' }} />
                     {col.name}
                   </div>
                 </SelectItem>

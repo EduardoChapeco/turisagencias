@@ -6,25 +6,6 @@ import { Button } from '@/components/ui/button';
 
 /**
  * SheetPage — Shell 70vw padronizado para formulários de edição.
- *
- * Uso:
- * <SheetPage
- *   open={open}
- *   onClose={() => setOpen(false)}
- *   title="Editar Cliente"
- *   sections={[
- *     { id: 'dados', label: 'Dados Gerais', icon: User },
- *     { id: 'docs', label: 'Documentos', icon: FileText },
- *   ]}
- *   footer={<Button onClick={handleSave}>Salvar</Button>}
- * >
- *   {(activeSection) => (
- *     <>
- *       {activeSection === 'dados' && <DadosForm />}
- *       {activeSection === 'docs' && <DocsForm />}
- *     </>
- *   )}
- * </SheetPage>
  */
 
 export interface SheetSection {
@@ -100,7 +81,7 @@ export function SheetPage({
       {/* Panel */}
       <div
         className={cn(
-          'relative flex flex-col z-10 shadow-2xl h-screen',
+          'relative flex flex-col z-10 h-screen',
           'w-full lg:w-[70vw]',
           'bg-white border-l border-vj-border',
           'animate-in slide-in-from-right duration-300',
@@ -156,8 +137,8 @@ export function SheetPage({
                     className={cn(
                       'flex items-center gap-3 w-max md:w-full px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 text-left shrink-0',
                       isActive
-                        ? 'bg-vj-green text-white shadow-lg shadow-vj-green/20'
-                        : 'text-vj-txt2 hover:bg-white hover:text-vj-txt hover:shadow-sm border border-transparent hover:border-vj-border/50',
+                        ? 'bg-vj-green text-white'
+                        : 'text-vj-txt2 hover:bg-white hover:text-vj-txt border border-transparent hover:border-vj-border/50',
                     )}
                   >
                     {SectionIcon && <SectionIcon size={16} className={cn("shrink-0", isActive ? "text-white" : "text-vj-txt3")} />}

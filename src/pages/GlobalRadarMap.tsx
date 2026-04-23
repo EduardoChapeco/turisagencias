@@ -118,7 +118,7 @@ export default function GlobalRadarMap() {
               {radarMarkers.map(m => (
                 <div key={m.id} className="flex justify-between items-center bg-zinc-800/40 hover:bg-zinc-800/60 transition-colors p-2.5 rounded-xl border border-zinc-700/30">
                    <div className="flex items-center gap-3">
-                     <span className="w-2.5 h-2.5 rounded-full shadow-lg shrink-0" style={{ backgroundColor: m.color, boxShadow: `0 0 10px ${m.color}` }}></span>
+                     <span className="w-2.5 h-2.5 rounded-full border border-white/20 shrink-0" style={{ backgroundColor: m.color }}></span>
                      <span className="text-xs font-semibold text-white tracking-wide truncate max-w-[150px]">{m.name}</span>
                    </div>
                    <span className="text-[10px] font-bold text-zinc-300 bg-zinc-950/70 border border-zinc-800 px-2 py-0.5 rounded-md whitespace-nowrap">

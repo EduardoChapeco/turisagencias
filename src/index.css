@@ -109,11 +109,22 @@
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 40 5% 96%;
     --sidebar-accent-foreground: 0 0% 7%;
-    --sidebar-border: 45 4% 89%;
     --sidebar-ring: 150 64% 29%;
   }
 
-  *, *::before, *::after { border-color: var(--border); box-sizing: border-box; margin: 0; padding: 0; }
+  /* LEI PÉTREA: PROIBIÇÃO ABSOLUTA DE SOMBRAS */
+  *, *::before, *::after { 
+    border-color: var(--border); 
+    box-sizing: border-box; 
+    margin: 0; 
+    padding: 0; 
+    box-shadow: none !important; 
+    text-shadow: none !important; 
+    --tw-shadow: 0 0 #0000 !important;
+    --tw-shadow-colored: 0 0 #0000 !important;
+    --tw-ring-shadow: 0 0 #0000 !important;
+    filter: drop-shadow(0 0 0 transparent) !important;
+  }
   
   html {
     scroll-behavior: smooth;

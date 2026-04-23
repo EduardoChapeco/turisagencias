@@ -83,7 +83,7 @@ export default function RadarPortal() {
             return (
               <div 
                 key={item.id} 
-                className={`p-6 rounded-[32px] border flex flex-col justify-between group overflow-hidden relative cursor-pointer hover:shadow-xl transition-all duration-300 ${
+                className={`p-6 rounded-[32px] border flex flex-col justify-between group overflow-hidden relative cursor-pointer transition-all duration-300 ${
                   isFeatured ? 'md:col-span-2 md:row-span-2 bg-zinc-950 text-white min-h-[450px]' : 
                   item.is_alert ? 'bg-red-50 border-red-200 col-span-1' : 
                   'bg-white border-zinc-200 col-span-1'

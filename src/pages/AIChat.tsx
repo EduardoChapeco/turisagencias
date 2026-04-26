@@ -107,26 +107,41 @@ export default function AIChat() {
         setActiveSessionId(sessionId);
       }
 
-      // SIMULAÇÃO DO DEBATE REAL (Vira do Python Engine em breve)
-      setTimeout(() => {
-        setSquadMessages(prev => [...prev, { agent: 'Agent 0 (Interpreter)', text: 'Extraindo intenção semântica... Destino e passageiros identificados.', sentiment: 'neutral' }]);
-      }, 800);
-      setTimeout(() => {
-        setSquadMessages(prev => [...prev, { agent: 'Agent 4 (Planner)', text: 'Gerando 3 cenários ToT. Focando em competitividade e luxo.', sentiment: 'neutral' }]);
-      }, 1600);
-      setTimeout(() => {
-        setSquadMessages(prev => [...prev, { agent: 'Agent 2 (Flight Specialist)', text: 'Auditando malha aérea. Voo direto identificado, mas custo 15% acima da média.', sentiment: 'critical' }]);
-      }, 2400);
-      setTimeout(() => {
-        setSquadMessages(prev => [...prev, { agent: 'Moderator (Prometheus)', text: 'Consenso atingido após ajuste de margem. Plano aprovado.', sentiment: 'supportive' }]);
-      }, 3500);
-
-      const { data, error } = await supabase.functions.invoke('ai-chat-agent', {
-        body: { message: content, conversation_history: updatedMessages.slice(-8).map(m => ({ role: m.role, content: m.content })) },
+      const user = useAuthStore.getState().user;
+      const pythonEngineUrl = import.meta.env.VITE_PYTHON_ENGINE_URL || 'http://localhost:8000';
+      const res = await fetch(`${pythonEngineUrl}/api/v1/quotation/process`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          raw_text: content,
+          org_id: user?.organization_id || 'default_org'
+        }),
       });
 
-      if (error) throw error;
-      const assistantMsg: ChatMessage = { id: (Date.now() + 1).toString(), role: 'assistant', content: data?.content ?? 'Analítica offline no momento.', created_at: new Date().toISOString() };
+      if (!res.ok) {
+         throw new Error('Falha de conexão com o Motor OMEGA v5. Certifique-se que o motor Python está rodando.');
+      }
+
+      const data = await res.json();
+      
+      if (data.debate_log && data.debate_log.length > 0) {
+        setSquadMessages(data.debate_log.map((log: any) => ({
+           agent: log.agent || log.agent_name || 'Agent',
+           text: log.text || log.message || log.content || '',
+           sentiment: log.sentiment || 'neutral'
+        })));
+      }
+
+      const assistantContent = typeof data.decision === 'string' && data.decision.trim() !== ''
+        ? data.decision 
+        : (data.decision?.executive_summary || data.decision?.recommendation || 'Análise OMEGA concluída. Nenhum sumário retornado pelo motor.');
+
+      const assistantMsg: ChatMessage = { 
+        id: (Date.now() + 1).toString(), 
+        role: 'assistant', 
+        content: assistantContent, 
+        created_at: new Date().toISOString() 
+      };
       const fullMessages = [...updatedMessages, assistantMsg];
       setLocalMessages(fullMessages);
       await appendMessage.mutateAsync({ sessionId: sessionId!, messages: fullMessages, title: updatedMessages.length === 1 ? content.slice(0, 60) : undefined });

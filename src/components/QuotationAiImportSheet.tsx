@@ -423,11 +423,14 @@ export function QuotationAiImportSheet({ open, onClose, onSuccess }: QuotationAi
                       <p className="text-xs text-vj-txt3 mt-0.5">Revise e edite qualquer campo diretamente abaixo. Clique em "Salvar Edições" para persistir as correções.</p>
                     </div>
                     {extracted.id && (
-                      <a href={`/quotations/${extracted.id}`} target="_blank" rel="noreferrer" className="flex-shrink-0">
-                        <Button size="sm" variant="outline" className="gap-1.5 border-vj-green text-vj-green hover:bg-vj-green/5">
-                          <ExternalLink className="w-3.5 h-3.5" /> Abrir
-                        </Button>
-                      </a>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="gap-1.5 border-vj-green text-vj-green hover:bg-vj-green/5 flex-shrink-0"
+                        onClick={() => onSuccess?.(extracted.id!)}
+                      >
+                        <ExternalLink className="w-3.5 h-3.5" /> Abrir
+                      </Button>
                     )}
                   </div>
 

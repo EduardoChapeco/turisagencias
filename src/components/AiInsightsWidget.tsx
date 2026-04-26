@@ -1,5 +1,5 @@
 import { useAIInsights, type KanbanInsight } from '@/hooks/useAIInsights';
-import { AlertCircle, TrendingUp, Sparkles, X, Flame, Clock, DollarSign, Tag } from 'lucide-react';
+import { AlertCircle, Sparkles, X, Flame, Clock, DollarSign, Tag } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -26,8 +26,8 @@ export function AiInsightsWidget() {
   if (!isVisible) return null;
   if (isLoading) {
     return (
-      <div className="bg-zinc-900 border border-zinc-800 rounded-[2rem] p-6 mb-6 shadow-none">
-        <div className="flex items-center gap-3 mb-4">
+      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 mb-4 shadow-none">
+        <div className="flex items-center gap-3 mb-3">
           <Skeleton className="h-8 w-8 rounded-xl bg-zinc-800" />
           <Skeleton className="h-4 w-48 bg-zinc-800" />
         </div>
@@ -43,24 +43,19 @@ export function AiInsightsWidget() {
   if (!insights || insights.length === 0 || error) return null;
 
   return (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-[2rem] p-6 mb-6 relative overflow-hidden group shadow-none">
+    <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 mb-4 relative overflow-hidden group shadow-none">
       {/* Background decoration */}
       <div className="absolute top-0 right-0 p-4 opacity-[0.04] group-hover:opacity-[0.07] transition-opacity pointer-events-none">
         <Sparkles size={120} className="text-white" />
       </div>
 
       {/* Header */}
-      <div className="flex items-center justify-between mb-5 relative z-10">
+      <div className="flex items-center justify-between mb-3 relative z-10">
         <div className="flex items-center gap-3">
-          <div className="bg-vj-green/15 p-2.5 rounded-xl border border-vj-green/20">
+          <div className="bg-vj-green/15 p-2 rounded-lg border border-vj-green/20">
             <Sparkles size={16} className="text-vj-green" />
           </div>
-          <div>
-            <h3 className="text-white font-bold text-sm">Sugestões do Assistente</h3>
-            <p className="text-zinc-500 text-[10px] uppercase tracking-widest font-black">
-              {insights.length} {insights.length === 1 ? 'alerta' : 'alertas'} do Funil de Vendas
-            </p>
-          </div>
+          <h3 className="text-white font-bold text-sm">Prioridades comerciais</h3>
         </div>
         <button
           onClick={() => setIsVisible(false)}
@@ -81,7 +76,7 @@ export function AiInsightsWidget() {
             <button
               key={insight.card_id}
               onClick={() => navigate('/kanban/sales')}
-              className="text-left bg-zinc-800/40 border border-zinc-700/40 p-4 rounded-2xl hover:bg-zinc-800/70 hover:border-zinc-600 transition-all cursor-pointer group/item"
+              className="text-left bg-zinc-800/40 border border-zinc-700/40 p-3 rounded-xl hover:bg-zinc-800/70 hover:border-zinc-600 transition-all cursor-pointer group/item"
             >
               <div className="flex items-start gap-3">
                 <div className={`p-1.5 rounded-lg shrink-0 mt-0.5 ${config.bgColor}`}>
@@ -89,9 +84,9 @@ export function AiInsightsWidget() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 mb-1">
-                    <p className={`text-[9px] font-black uppercase tracking-widest ${config.color}`}>
+                    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-wider ${config.bgColor} ${config.color}`}>
                       {config.label}
-                    </p>
+                    </span>
                     <span className="text-[9px] text-zinc-600 font-medium">{insight.column_name}</span>
                   </div>
                   <p className="text-xs font-bold text-white mb-1 group-hover/item:text-vj-green transition-colors line-clamp-1">
@@ -113,14 +108,6 @@ export function AiInsightsWidget() {
             </button>
           );
         })}
-      </div>
-
-      {/* Footer */}
-      <div className="mt-5 pt-4 border-t border-zinc-800/60 flex items-center gap-2 relative z-10">
-        <TrendingUp size={12} className="text-vj-green" />
-        <span className="text-[10px] text-zinc-500 font-medium">
-          Análise em tempo real do Funil de Vendas · Atualizado agora
-        </span>
       </div>
     </div>
   );

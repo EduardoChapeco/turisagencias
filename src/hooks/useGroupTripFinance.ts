@@ -59,6 +59,20 @@ export interface BookingWithInstallments {
   proofs_pending_count: number;
 }
 
+function getBookingPaymentStatus(
+  booking: Pick<BookingWithInstallments, 'status' | 'total_amount' | 'installments'>,
+) {
+  if (booking.status === 'cancelled') return 'cancelled';
+
+  const paidAmount = booking.installments
+    .filter((installment) => installment.status === 'paid')
+    .reduce((sum, installment) => sum + Number(installment.amount || 0), 0);
+
+  if (booking.total_amount > 0 && paidAmount >= booking.total_amount) return 'fully_paid';
+  if (paidAmount > 0) return 'partial';
+  return 'pending';
+}
+
 // ── Financial Summary (KPIs) ─────────────────────────────────────────────────
 export function useGroupTripFinancialSummary(tripId: string | undefined) {
   return useQuery({
@@ -84,7 +98,7 @@ export function useGroupTripBookings(tripId: string | undefined) {
         .from('group_bookings')
         .select(`
           id, lead_name, lead_phone, lead_email, pax_count, total_amount,
-          payment_status, status, seat_numbers, created_at, public_token,
+          status, seat_numbers, created_at, public_token,
           booking_installments (
             id, installment_number, due_date, amount, status,
             paid_at, payment_method, notes_finance, whatsapp_attempts
@@ -94,12 +108,20 @@ export function useGroupTripBookings(tripId: string | undefined) {
         .eq('group_trip_id', tripId!)
         .order('created_at', { ascending: false });
       if (error) throw error;
-      return (data ?? []).map((b) => ({
-        ...b,
-        installments: (b as any).booking_installments ?? [],
-        proofs_count: (b as any).booking_payment_proofs?.length ?? 0,
-        proofs_pending_count: (b as any).booking_payment_proofs?.filter((p: any) => p.status === 'pending_review').length ?? 0,
-      })) as BookingWithInstallments[];
+      return (data ?? []).map((b) => {
+        const installments = (b as any).booking_installments ?? [];
+        const booking = {
+          ...b,
+          installments,
+          proofs_count: (b as any).booking_payment_proofs?.length ?? 0,
+          proofs_pending_count: (b as any).booking_payment_proofs?.filter((p: any) => p.status === 'pending_review').length ?? 0,
+        } as BookingWithInstallments;
+
+        return {
+          ...booking,
+          payment_status: getBookingPaymentStatus(booking),
+        };
+      });
     },
   });
 }

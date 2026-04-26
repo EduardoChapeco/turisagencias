@@ -46,13 +46,14 @@ export function SheetPage({
   const [activeSection, setActiveSection] = useState<string>(
     defaultSection ?? sections[0]?.id ?? '',
   );
+  const firstSectionId = sections[0]?.id ?? '';
 
-  // Sync internal state when defaultSection changes or sheet opens
+  // Keep the selected section stable while the form rerenders.
   useEffect(() => {
     if (open) {
-      setActiveSection(defaultSection ?? sections[0]?.id ?? '');
+      setActiveSection(defaultSection ?? firstSectionId);
     }
-  }, [open, defaultSection, sections]);
+  }, [open, defaultSection, firstSectionId]);
 
   const handleBackdropClick = useCallback(
     (e: React.MouseEvent) => {
@@ -90,27 +91,27 @@ export function SheetPage({
         )}
       >
         {/* Header */}
-        <div className="flex items-center gap-4 px-6 py-5 border-b border-vj-border flex-shrink-0 bg-white">
+        <div className="flex items-center gap-3 px-5 py-3 border-b border-vj-border flex-shrink-0 bg-white">
           {Icon && (
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-vj-green/10 text-vj-green border border-vj-green/20">
-              <Icon size={20} />
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-vj-green/10 text-vj-green border border-vj-green/20">
+              <Icon size={16} />
             </div>
           )}
           <div className="flex-1 min-w-0">
-            <h2 className="font-heading font-bold text-lg text-vj-txt leading-tight truncate">
+            <h2 className="font-heading font-bold text-base text-vj-txt leading-tight truncate">
               {title}
             </h2>
             {subtitle && (
-              <p className="text-sm text-vj-txt3 mt-0.5 truncate">{subtitle}</p>
+              <p className="sr-only">{subtitle}</p>
             )}
           </div>
           <Button
             variant="ghost"
             size="icon"
-            className="h-10 w-10 shrink-0 text-vj-txt3 hover:text-vj-red hover:bg-vj-red/5 rounded-xl transition-all"
+            className="h-8 w-8 shrink-0 text-vj-txt3 hover:text-vj-red hover:bg-vj-red/5 rounded-lg transition-all"
             onClick={onClose}
           >
-            <X size={20} />
+            <X size={17} />
           </Button>
         </div>
 
@@ -118,13 +119,13 @@ export function SheetPage({
         <div
           className={cn(
             'flex flex-col md:flex-row flex-1 min-h-0 bg-white',
-            hasSidebar && 'md:grid md:grid-cols-[240px_1fr]',
+            hasSidebar && 'md:grid md:grid-cols-[220px_1fr]',
           )}
         >
           {/* Sidebar */}
           {hasSidebar && (
             <nav
-              className="md:border-r border-b md:border-b-0 border-vj-border bg-zinc-50/50 p-3 flex md:flex-col gap-1.5 overflow-x-auto md:overflow-y-auto scrollbar-none shrink-0"
+              className="md:border-r border-b md:border-b-0 border-vj-border bg-zinc-50/50 p-2 flex md:flex-col gap-1 overflow-x-auto md:overflow-y-auto scrollbar-none shrink-0"
             >
               {sections.map((section) => {
                 const SectionIcon = section.icon;
@@ -135,7 +136,7 @@ export function SheetPage({
                     type="button"
                     onClick={() => setActiveSection(section.id)}
                     className={cn(
-                      'flex items-center gap-3 w-max md:w-full px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 text-left shrink-0',
+                      'flex items-center gap-2.5 w-max md:w-full px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 text-left shrink-0',
                       isActive
                         ? 'bg-vj-green text-white'
                         : 'text-vj-txt2 hover:bg-white hover:text-vj-txt border border-transparent hover:border-vj-border/50',
@@ -150,14 +151,14 @@ export function SheetPage({
           )}
 
           {/* Content Area */}
-          <div className="overflow-y-auto w-full p-6 md:p-8 flex-1 bg-white">
+          <div className="overflow-y-auto w-full p-4 md:p-5 flex-1 bg-white">
             {typeof children === 'function' ? children(activeSection) : children}
           </div>
         </div>
 
         {/* Footer */}
         {footer && (
-          <div className="flex items-center justify-end gap-3 px-8 py-5 border-t border-vj-border flex-shrink-0 bg-white/50 backdrop-blur-sm">
+          <div className="flex items-center justify-end gap-3 px-5 py-3 border-t border-vj-border flex-shrink-0 bg-white/50 backdrop-blur-sm">
             {footer}
           </div>
         )}

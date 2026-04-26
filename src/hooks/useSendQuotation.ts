@@ -5,10 +5,10 @@ import { useToast } from '@/hooks/use-toast';
 
 export type SendQuotationResult = {
   success: boolean;
-  share_token: string;
+  public_token: string;
   public_url: string;
   status: 'sent';
-  quotation: any;
+  quotation: unknown;
 };
 
 export function useSendQuotation() {
@@ -18,7 +18,7 @@ export function useSendQuotation() {
 
   return useMutation({
     mutationFn: async (quotationId: string): Promise<SendQuotationResult> => {
-      if (!organization?.id) throw new Error('Organização não encontrada');
+      if (!organization?.id) throw new Error('Organizacao nao encontrada');
       const { data, error } = await supabase.functions.invoke('send-quotation', {
         body: { quotation_id: quotationId, org_id: organization.id },
       });
@@ -29,11 +29,10 @@ export function useSendQuotation() {
     onSuccess: (data, quotationId) => {
       qc.invalidateQueries({ queryKey: ['quotation', quotationId] });
       qc.invalidateQueries({ queryKey: ['quotations'] });
-      // Copia o link público automaticamente
       navigator.clipboard.writeText(data.public_url).catch(() => {});
       toast({
-        title: '🚀 Cotação enviada!',
-        description: `Link público copiado para a área de transferência.`,
+        title: 'Cotacao enviada!',
+        description: 'Link publico copiado para a area de transferencia.',
       });
     },
     onError: (e: Error) =>

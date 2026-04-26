@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -38,7 +38,6 @@ vi.mock('@/integrations/supabase/client', () => ({
 }));
 
 import ClientsPage from '@/pages/Clients';
-import ClientNew from '@/pages/ClientNew';
 
 function renderWithProviders(ui: React.ReactElement, route = '/clients') {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -64,17 +63,14 @@ describe('Clients Page', () => {
   it('renders clients list page with title and new button', async () => {
     renderWithProviders(<ClientsPage />);
     expect(screen.getByRole('heading', { name: /clientes/i })).toBeInTheDocument();
-    expect(screen.getByPlaceholderText(/buscar clientes/i)).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/buscar por nome/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /novo cliente/i })).toBeInTheDocument();
   });
-});
 
-describe('Client New Page', () => {
-  beforeEach(() => vi.clearAllMocks());
-
-  it('renders client creation form', () => {
-    renderWithProviders(<ClientNew />, '/clients/new');
-    expect(screen.getByRole('heading', { name: /novo cliente/i })).toBeInTheDocument();
-    expect(screen.getByText(/nome completo/i)).toBeInTheDocument();
+  it('opens client creation in a SheetPage instead of a route page', () => {
+    renderWithProviders(<ClientsPage />);
+    fireEvent.click(screen.getByRole('button', { name: /novo cliente/i }));
+    expect(screen.getByRole('dialog')).toHaveTextContent(/novo cliente/i);
+    expect(screen.getByText(/identidade e fotos/i)).toBeInTheDocument();
   });
 });

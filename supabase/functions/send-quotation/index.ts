@@ -1,11 +1,14 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.6";
-import { v4 as uuidv4 } from "https://esm.sh/uuid@9.0.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+
+function createPublicToken() {
+  return crypto.randomUUID().replace(/-/g, "");
+}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
@@ -16,87 +19,82 @@ serve(async (req) => {
 
     const sc = createClient(
       Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
     const { data: ud, error: ue } = await sc.auth.getUser(authHeader.replace("Bearer ", ""));
-    if (ue || !ud?.user?.id) throw new Error("Não autorizado");
+    if (ue || !ud?.user?.id) throw new Error("Nao autorizado");
 
     const body = await req.json();
     const { quotation_id, org_id } = body;
-    if (!quotation_id || !org_id) throw new Error("quotation_id e org_id são obrigatórios");
+    if (!quotation_id || !org_id) throw new Error("quotation_id e org_id sao obrigatorios");
 
-    // 1. Buscar a cotação atual
     const { data: quotation, error: qErr } = await sc
       .from("quotations")
-      .select("id, status, share_token, destination, hotel_name, client_id")
+      .select("id, org_id, status, public_token, destination, hotel_name, client_id")
       .eq("id", quotation_id)
+      .eq("org_id", org_id)
       .single();
 
-    if (qErr || !quotation) throw new Error("Cotação não encontrada");
+    if (qErr || !quotation) throw new Error("Cotacao nao encontrada");
 
-    // 2. Gerar share_token se não existe
-    let shareToken = quotation.share_token;
-    if (!shareToken) {
-      shareToken = uuidv4().replace(/-/g, "").slice(0, 24);
-    }
+    const publicToken = quotation.public_token || createPublicToken();
 
-    // 3. Atualizar status para 'sent' e garantir share_token
     const { data: updated, error: updateErr } = await sc
       .from("quotations")
       .update({
         status: "sent",
-        share_token: shareToken,
+        public_token: publicToken,
         sent_at: new Date().toISOString(),
       })
       .eq("id", quotation_id)
+      .eq("org_id", org_id)
       .select()
       .single();
 
-    if (updateErr || !updated) throw new Error("Falha ao atualizar cotação");
+    if (updateErr || !updated) throw new Error("Falha ao atualizar cotacao");
 
-    // 4. Criar notificação para o agente que gerou
+    const publicUrl = `${req.headers.get("origin") ?? Deno.env.get("SITE_URL") ?? "https://viaja.app"}/q/${publicToken}`;
+    const summary = quotation.destination || quotation.hotel_name || "sem destino";
+
     await sc.from("notifications").insert({
       org_id,
       user_id: ud.user.id,
       type: "quotation_sent",
-      title: "✅ Cotação Enviada",
-      message: `A cotação "${quotation.destination || quotation.hotel_name || "sem destino"}" foi marcada como enviada. Link público gerado.`,
+      title: "Cotacao enviada",
+      message: `A cotacao "${summary}" foi marcada como enviada. Link publico gerado.`,
       entity_type: "quotation",
       entity_id: quotation_id,
       metadata: {
-        share_token: shareToken,
-        public_url: `${Deno.env.get("SITE_URL") ?? "https://viaja.app"}/q/${shareToken}`,
+        public_token: publicToken,
+        public_url: publicUrl,
         quotation_id,
       },
     });
 
-    // 5. Log de decisão IA
     await sc.from("ai_decision_logs").insert({
       org_id,
       agent_name: "send-quotation",
       decision_type: "quotation_dispatch",
-      input_summary: `Cotação ${quotation_id.slice(0, 8)}: ${quotation.destination ?? "Sem destino"}`,
-      output_summary: `Status → sent. Share token: ${shareToken}`,
+      input_summary: `Cotacao ${quotation_id.slice(0, 8)}: ${summary}`,
+      output_summary: `Status -> sent. Public token: ${publicToken}`,
       confidence_score: 1.0,
-      metadata: { quotation_id, share_token: shareToken },
+      metadata: { quotation_id, public_token: publicToken },
     });
-
-    const publicUrl = `${req.headers.get("origin") ?? "https://viaja.app"}/q/${shareToken}`;
 
     return new Response(
       JSON.stringify({
         success: true,
-        share_token: shareToken,
+        public_token: publicToken,
         public_url: publicUrl,
         status: "sent",
         quotation: updated,
       }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
-    console.error("[send-quotation] Erro:", msg);
+    console.error("[send-quotation] Error:", msg);
     return new Response(JSON.stringify({ error: msg }), {
       status: 400,
       headers: { ...corsHeaders, "Content-Type": "application/json" },

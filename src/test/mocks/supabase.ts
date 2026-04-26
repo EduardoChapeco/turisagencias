@@ -97,7 +97,7 @@ export const mockQuotation = {
   ],
   status: 'draft',
   whatsapp_text: 'Olá! Cotação para Cancún...',
-  share_token: 'share-token-123',
+  public_token: 'public-token-123',
   viewed_at: null,
   source_file_url: null,
   ai_extracted: false,

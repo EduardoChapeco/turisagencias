@@ -23,7 +23,7 @@ export function TaskCardSheet({ card, isOpen, onClose, onDeleted }: Props) {
   const deleteCard = useDeleteKanbanCard();
   const { data: groupTrips } = useGroupTrips();
 
-  const metadata = (card as any)?.metadata || {};
+  const metadata = (card as any)?.metadata || (card as any)?.meta || {};
   const [form, setForm] = useState({
     title: card?.title || '',
     description: card?.description || '',
@@ -37,7 +37,7 @@ export function TaskCardSheet({ card, isOpen, onClose, onDeleted }: Props) {
   // Keep form in sync when a different card opens
   useEffect(() => {
     if (card) {
-      const meta = (card as any)?.metadata || {};
+      const meta = (card as any)?.metadata || (card as any)?.meta || {};
       setForm({
         title: card.title || '',
         description: card.description || '',
@@ -59,7 +59,7 @@ export function TaskCardSheet({ card, isOpen, onClose, onDeleted }: Props) {
       description: form.description,
       client_id: form.client_id || null,
       group_trip_id: form.group_trip_id || null,
-      metadata: { task_type: form.task_type, priority: form.priority, due_date: form.due_date || null },
+      metadata: { task_type: form.task_type || null, priority: form.priority, due_date: form.due_date || null },
     } as Record<string, any>);
     onClose();
   };
@@ -90,7 +90,7 @@ export function TaskCardSheet({ card, isOpen, onClose, onDeleted }: Props) {
               <Label className="text-xs font-semibold text-vj-txt3 mb-1.5 block flex items-center gap-1">
                 <LayoutList size={14} /> Tipo de Tarefa
               </Label>
-              <Select value={form.task_type} onValueChange={(value) => setForm({ ...form, task_type: value })}>
+              <Select value={form.task_type || '_empty'} onValueChange={(value) => setForm({ ...form, task_type: value === '_empty' ? '' : value })}>
                 <SelectTrigger className="w-full bg-white h-10 border-vj-border rounded-md text-sm">
                   <SelectValue placeholder="Tipo" />
                 </SelectTrigger>

@@ -53,7 +53,7 @@ serve(async (req) => {
 
     // 3. AI Analysis Prompt
     const systemPrompt = `You are an expert sales analyst for a travel agency.
-Analyze the following travel quotation that was marked as '${status}' (accepted = WON, lost = LOST).
+Analyze the following travel quotation that was marked as '${status}' (confirmed = WON, cancelled = LOST).
 Extract key reasons why this deal might have been won or lost based on the client profile, price, location, and the AI scenarios generated.
 Keep it strictly under 500 characters, summarizing the actionable insight in Portuguese.`;
 

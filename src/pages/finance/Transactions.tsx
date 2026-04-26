@@ -7,13 +7,16 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Wallet, TrendingUp, TrendingDown, RefreshCw, Plus, DollarSign, Calendar } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
-import { useTransactions, useCreateTransaction, Transaction } from '@/hooks/useFinance';
+import { useSuppliers, useTransactions, useCreateTransaction, Transaction } from '@/hooks/useFinance';
+import { useGroupTrips } from '@/hooks/useGroupTrips';
 import { PageSkeleton } from '@/components/ui/EmptyState';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { SheetPage } from '@/components/ui/SheetPage';
+import { ClientSearchSelect } from '@/components/ui/ClientSearchSelect';
 
 const SHEET_SECTIONS = [
   { id: 'dados', label: 'Dados do Lançamento', icon: DollarSign },
+  { id: 'vinculos', label: 'Vínculos', icon: Wallet },
   { id: 'vencimento', label: 'Datas e Pagamento', icon: Calendar },
 ];
 
@@ -21,6 +24,8 @@ export default function Transactions() {
   const { profile } = useAuthStore();
   const [filterType, setFilterType] = useState<'receivable' | 'payable' | undefined>();
   const { data: transactions, isLoading } = useTransactions(profile?.org_id, { type: filterType });
+  const { data: suppliers } = useSuppliers(profile?.org_id);
+  const { data: groupTrips } = useGroupTrips();
   const createTransaction = useCreateTransaction();
 
   const [isSheetOpen, setIsSheetOpen] = useState(false);
@@ -31,6 +36,11 @@ export default function Transactions() {
     due_date: '',
     description: '',
     payment_method: '',
+    client_id: '',
+    supplier_id: '',
+    group_trip_id: '',
+    category: '',
+    reference_number: '',
   });
 
   const update = (field: string, value: any) =>
@@ -42,15 +52,29 @@ export default function Transactions() {
     await createTransaction.mutateAsync({
       org_id: profile!.org_id!,
       trip_id: null,
-      group_trip_id: null,
-      client_id: null,
-      supplier_id: null,
       ...formData,
+      group_trip_id: formData.group_trip_id || null,
+      client_id: formData.client_id || null,
+      supplier_id: formData.supplier_id || null,
+      category: formData.category || null,
+      reference_number: formData.reference_number || null,
       amount,
       paid_at: null,
     } as Record<string, any>);
     setIsSheetOpen(false);
-    setFormData({ type: 'receivable', status: 'pending', amount: '', due_date: '', description: '', payment_method: '' });
+    setFormData({
+      type: 'receivable',
+      status: 'pending',
+      amount: '',
+      due_date: '',
+      description: '',
+      payment_method: '',
+      client_id: '',
+      supplier_id: '',
+      group_trip_id: '',
+      category: '',
+      reference_number: '',
+    });
   };
 
   if (isLoading) return <AppLayout><PageSkeleton /></AppLayout>;
@@ -230,6 +254,80 @@ export default function Transactions() {
                     placeholder="Ex: Pagamento parcela 1/3 viagem Europa..."
                     className="h-12 rounded-xl bg-zinc-50 border-zinc-200"
                   />
+                </div>
+              </div>
+            )}
+
+            {activeSection === 'vinculos' && (
+              <div className="space-y-5">
+                <div className="space-y-1.5">
+                  <Label className="font-semibold">Cliente vinculado</Label>
+                  <ClientSearchSelect
+                    value={formData.client_id}
+                    onChange={(value) => update('client_id', value)}
+                    placeholder="Buscar cliente..."
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="font-semibold">Fornecedor</Label>
+                  <Select
+                    value={formData.supplier_id || '_none'}
+                    onValueChange={(value) => update('supplier_id', value === '_none' ? '' : value)}
+                  >
+                    <SelectTrigger className="h-12 rounded-xl bg-zinc-50 border-zinc-200">
+                      <SelectValue placeholder="Selecionar fornecedor..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="_none">Nenhum fornecedor</SelectItem>
+                      {suppliers?.map((supplier) => (
+                        <SelectItem key={supplier.id} value={supplier.id}>
+                          {supplier.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="font-semibold">Viagem / pacote</Label>
+                  <Select
+                    value={formData.group_trip_id || '_none'}
+                    onValueChange={(value) => update('group_trip_id', value === '_none' ? '' : value)}
+                  >
+                    <SelectTrigger className="h-12 rounded-xl bg-zinc-50 border-zinc-200">
+                      <SelectValue placeholder="Selecionar viagem..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="_none">Nenhuma viagem</SelectItem>
+                      {groupTrips?.map((trip) => (
+                        <SelectItem key={trip.id} value={trip.id}>
+                          {trip.title || trip.destination || `Pacote ${trip.id.slice(0, 8)}`}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <Label className="font-semibold">Categoria</Label>
+                    <Input
+                      value={formData.category}
+                      onChange={e => update('category', e.target.value)}
+                      placeholder="Ex: hospedagem, passagem..."
+                      className="h-12 rounded-xl bg-zinc-50 border-zinc-200"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="font-semibold">Referencia / nota</Label>
+                    <Input
+                      value={formData.reference_number}
+                      onChange={e => update('reference_number', e.target.value)}
+                      placeholder="NF, localizador, contrato..."
+                      className="h-12 rounded-xl bg-zinc-50 border-zinc-200"
+                    />
+                  </div>
                 </div>
               </div>
             )}

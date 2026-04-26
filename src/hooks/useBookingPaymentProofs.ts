@@ -104,18 +104,22 @@ export function useReviewPaymentProof() {
         if (e2) throw e2;
       }
 
-      // 3. Refresh booking payment_status based on all installments
+      // 3. Keep the canonical booking status in sync when every installment is paid.
       if (action === 'approved') {
-        const { data: allInst } = await supabase
+        const { data: allInst, error: installmentsError } = await supabase
           .from('booking_installments')
           .select('status')
           .eq('booking_id', bookingId);
+        if (installmentsError) throw installmentsError;
 
-        const allPaid = (allInst ?? []).every((i) => (i as any).status === 'paid');
-        await supabase
-          .from('group_bookings')
-          .update({ payment_status: allPaid ? 'fully_paid' : 'partial' } as any)
-          .eq('id', bookingId);
+        const allPaid = (allInst ?? []).length > 0 && (allInst ?? []).every((i) => (i as any).status === 'paid');
+        if (allPaid) {
+          const { error: bookingError } = await supabase
+            .from('group_bookings')
+            .update({ status: 'paid' } as any)
+            .eq('id', bookingId);
+          if (bookingError) throw bookingError;
+        }
       }
     },
     onSuccess: (_, { action }) => {

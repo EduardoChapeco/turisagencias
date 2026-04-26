@@ -96,7 +96,6 @@ serve(async (req) => {
     // Registrar a mensagem de email no banco
     await supabase.from('ticket_messages').insert({
       ticket_id,
-      body: emailBody,
       content: emailBody,
       message_type: 'email_sent',
       is_internal: false,

@@ -18,6 +18,17 @@ import { useGroupTrips } from '@/hooks/useGroupTrips';
 import { cn } from '@/lib/utils';
 import { EmailTrackingBadge } from '@/components/ui/EmailTrackingBadge';
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import {
   useKanbanCard,
   useUpdateKanbanCard,
   useDeleteKanbanCard,
@@ -757,7 +768,6 @@ export default function KanbanCardPage({ isEmbedded, embeddedId, onClose }: { is
   const { card, columns } = data;
 
   const handleDelete = async () => {
-    if (!window.confirm(`Excluir o card "${card.title}"? Esta ação não pode ser desfeita.`)) return;
     await deleteCard.mutateAsync(card.id);
     handleClose();
   };
@@ -782,15 +792,32 @@ export default function KanbanCardPage({ isEmbedded, embeddedId, onClose }: { is
         defaultSection="dados"
         footer={
           <div className="flex w-full justify-between items-center">
-            <Button
-              variant="ghost"
-              className="text-vj-red hover:bg-vj-red/5 hover:text-vj-red rounded-xl"
-              onClick={handleDelete}
-              disabled={deleteCard.isPending}
-            >
-              <Trash2 size={16} className="mr-2" />
-              Excluir Lead
-            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className="text-vj-red hover:bg-vj-red/5 hover:text-vj-red rounded-xl"
+                  disabled={deleteCard.isPending}
+                >
+                  <Trash2 size={16} className="mr-2" />
+                  Excluir Lead
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Excluir Lead?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Tem certeza que deseja excluir o lead "{card.title}"? Esta ação não pode ser desfeita.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleDelete} className="bg-vj-red hover:bg-vj-red/90 text-white shadow-none">
+                    Excluir
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
             <div className="flex items-center gap-3">
               <EmailTrackingBadge entityId={card.id} />
               <Button variant="outline" onClick={handleClose} className="rounded-xl">

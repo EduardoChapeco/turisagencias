@@ -39,8 +39,7 @@ export interface Ticket {
 export interface TicketMessage {
   id: string;
   ticket_id: string;
-  body: string | null;
-  content: string | null;
+  content: string;
   message_type: string;
   is_internal: boolean;
   sender_id: string | null;
@@ -240,8 +239,6 @@ export function useCreateTicketMessage() {
         .from('ticket_messages')
         .insert({
           ticket_id: payload.ticket_id,
-          org_id: user?.user_metadata?.org_id || null,
-          body: payload.content,
           content: payload.content,
           message_type: payload.message_type ?? 'public',
           is_internal: payload.is_internal ?? false,

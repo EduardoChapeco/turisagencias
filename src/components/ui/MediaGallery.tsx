@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { createPortal } from 'react-dom';
 import { X, ChevronLeft, ChevronRight, Maximize2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -37,39 +37,43 @@ export function MediaGallery({ images, className }: MediaGalleryProps) {
         </div>
       ))}
 
-      <Dialog open={selectedIndex !== null} onOpenChange={(open) => !open && closeLightbox()}>
-        <DialogContent className="max-w-[95vw] max-h-[90vh] p-0 border-none bg-transparent  flex items-center justify-center">
-          <div className="relative w-full h-full flex items-center justify-center">
-            {selectedIndex !== null && (
-              <>
-                <img 
-                  src={images[selectedIndex]} 
-                  alt="Lightbox" 
-                  className="max-w-full max-h-[85vh] object-contain rounded-lg  animate-in fade-in zoom-in duration-300"
-                />
-                
-                <button 
-                  onClick={prev}
-                  className="absolute left-4 p-2 rounded-full bg-black/40 text-white hover:bg-black/60 transition-colors"
-                >
-                  <ChevronLeft className="h-8 w-8" />
-                </button>
-                
-                <button 
-                  onClick={next}
-                  className="absolute right-4 p-2 rounded-full bg-black/40 text-white hover:bg-black/60 transition-colors"
-                >
-                  <ChevronRight className="h-8 w-8" />
-                </button>
+      {selectedIndex !== null && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90 backdrop-blur-sm animate-in fade-in duration-200">
+          <button
+            onClick={closeLightbox}
+            className="absolute top-6 right-6 p-2 rounded-full bg-black/40 text-white hover:bg-black/60 transition-colors z-50"
+          >
+            <X className="h-6 w-6" />
+          </button>
 
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full bg-black/40 text-white text-sm backdrop-blur-md">
-                  {selectedIndex + 1} / {images.length}
-                </div>
-              </>
-            )}
+          <div className="relative w-full h-full flex items-center justify-center p-4">
+            <img
+              src={images[selectedIndex]}
+              alt="Lightbox"
+              className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl animate-in zoom-in-95 duration-300"
+            />
+
+            <button
+              onClick={(e) => { e.stopPropagation(); prev(); }}
+              className="absolute left-4 p-2 rounded-full bg-black/40 text-white hover:bg-black/60 transition-colors"
+            >
+              <ChevronLeft className="h-8 w-8" />
+            </button>
+
+            <button
+              onClick={(e) => { e.stopPropagation(); next(); }}
+              className="absolute right-4 p-2 rounded-full bg-black/40 text-white hover:bg-black/60 transition-colors"
+            >
+              <ChevronRight className="h-8 w-8" />
+            </button>
+
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full bg-black/40 text-white text-sm backdrop-blur-md">
+              {selectedIndex + 1} / {images.length}
+            </div>
           </div>
-        </DialogContent>
-      </Dialog>
+        </div>,
+        document.body
+      )}
     </div>
   );
 }

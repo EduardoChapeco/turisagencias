@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Plus, GripVertical, X, Plane, KanbanSquare, Eye, Users, CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react';
 import { AppLayout } from '@/components/AppLayout';
 import { PageHeader } from '@/components/ui/PageHeader';
@@ -152,12 +152,18 @@ type KanbanColumnData = {
 /* ── QuickAdd Form ── */
 function QuickAddForm({ boardId, columnId, onCancel }: { boardId: string; columnId: string; onCancel: () => void }) {
   const createCard = useCreateKanbanCard();
+  const { user } = useAuthStore();
   const [title, setTitle] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return;
-    await createCard.mutateAsync({ board_id: boardId, column_id: columnId, title: title.trim() });
+    await createCard.mutateAsync({
+      board_id: boardId,
+      column_id: columnId,
+      title: title.trim(),
+      assigned_to: user?.id ?? null,
+    });
     setTitle('');
     onCancel();
   };
@@ -183,14 +189,25 @@ function DepartureColumn({
   cards,
   boardId,
   onCardClick,
+  quickAddRequested,
+  onQuickAddHandled,
 }: {
   column: KanbanColumnData;
   cards: DepartureCardData[];
   boardId: string;
   onCardClick: (card: DepartureCardData) => void;
+  quickAddRequested?: boolean;
+  onQuickAddHandled?: () => void;
 }) {
   const { setNodeRef } = useSortable({ id: column.id, data: { type: 'Column', column } });
   const [showQuickAdd, setShowQuickAdd] = useState(false);
+
+  useEffect(() => {
+    if (quickAddRequested) {
+      setShowQuickAdd(true);
+      onQuickAddHandled?.();
+    }
+  }, [quickAddRequested, onQuickAddHandled]);
 
   // Sort: cards with check_in_date first, ordered by date ascending
   const sortedCards = useMemo(() => {
@@ -252,6 +269,7 @@ export default function DeparturesKanban() {
   const { user } = useAuthStore();
   const [viewMode, setViewMode] = useState<'me' | 'all'>('me');
   const [displayMode, setDisplayMode] = useState<'kanban' | 'calendar'>('kanban');
+  const [quickAddColumnId, setQuickAddColumnId] = useState<string | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -321,7 +339,7 @@ export default function DeparturesKanban() {
   return (
     <AppLayout fullHeight>
       <div className="flex flex-col h-full min-h-0">
-        <div className="flex-shrink-0 pb-3">
+        <div className="flex-shrink-0 pb-2">
           <div className="flex w-full justify-between items-end gap-3 flex-wrap">
             <PageHeader
               title="Embarques"
@@ -342,13 +360,22 @@ export default function DeparturesKanban() {
             />
 
             <div className="flex items-center gap-2 flex-wrap">
+              <Button
+                size="sm"
+                className="h-10 rounded-full gap-2"
+                onClick={() => setQuickAddColumnId(data?.columns?.[0]?.id ?? null)}
+                disabled={!data?.columns?.length}
+              >
+                <Plus size={15} /> Novo Embarque
+              </Button>
+
               {/* Kanban | Calendar toggle */}
-              <div className="flex rounded-lg border border-vj-border overflow-hidden">
+              <div className="flex h-10 rounded-lg border border-vj-border overflow-hidden">
                 <button
                   type="button"
                   onClick={() => setDisplayMode('kanban')}
                   className={[
-                    'flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors',
+                    'flex items-center gap-1.5 px-3 text-xs font-medium transition-colors',
                     displayMode === 'kanban' ? 'bg-vj-green text-white' : 'text-vj-txt3 hover:bg-vj-bg',
                   ].join(' ')}
                 >
@@ -358,7 +385,7 @@ export default function DeparturesKanban() {
                   type="button"
                   onClick={() => setDisplayMode('calendar')}
                   className={[
-                    'flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border-l border-vj-border transition-colors',
+                    'flex items-center gap-1.5 px-3 text-xs font-medium border-l border-vj-border transition-colors',
                     displayMode === 'calendar' ? 'bg-vj-green text-white' : 'text-vj-txt3 hover:bg-vj-bg',
                   ].join(' ')}
                 >
@@ -367,7 +394,7 @@ export default function DeparturesKanban() {
               </div>
 
               <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as 'me' | 'all')} className="w-[240px]">
-                 <TabsList className="grid w-full grid-cols-2">
+                 <TabsList className="grid w-full grid-cols-2 h-10">
                      <TabsTrigger value="me" className="flex items-center gap-2 text-xs">
                          <Eye size={14}/> Meu Board
                      </TabsTrigger>
@@ -416,6 +443,8 @@ export default function DeparturesKanban() {
                     cards={groupedCards.get(column.id) ?? []}
                     boardId={data.board.id}
                     onCardClick={openCard}
+                    quickAddRequested={quickAddColumnId === column.id}
+                    onQuickAddHandled={() => setQuickAddColumnId(null)}
                   />
                 ))}
               </SortableContext>

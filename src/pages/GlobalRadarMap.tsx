@@ -90,7 +90,7 @@ export default function GlobalRadarMap() {
       </div>
       
       {/* Top Right Intelligence Dashboard */}
-      <div className="absolute top-6 right-6 z-[1000] bg-zinc-900/80 backdrop-blur-md border border-zinc-700/50 rounded-2xl p-5 min-w-[320px] shadow-2xl">
+      <div className="absolute top-6 right-6 z-[1000] bg-zinc-900/80 backdrop-blur-md border border-zinc-700/50 rounded-2xl p-5 min-w-[320px]">
          <h1 className="text-white font-bold tracking-widest text-sm uppercase flex items-center justify-between mb-1">
            <span className="flex items-center gap-2">
              <Globe2 className="w-4 h-4 text-vj-green" /> Radar Global

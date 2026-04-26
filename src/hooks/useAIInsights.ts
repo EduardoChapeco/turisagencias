@@ -31,7 +31,24 @@ export function useAIInsights() {
         return [];
       }
 
-      return (data as KanbanInsight[]) ?? [];
+      const insights = (data as KanbanInsight[]) ?? [];
+      return insights.filter((insight) => {
+        const title = insight.card_title
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, ' ')
+          .trim();
+        const isPlaceholderLead =
+          title === 'lead' ||
+          title === 'novo lead' ||
+          title === 'novo lead nn lead' ||
+          title.includes('teste');
+        const isOnlyStaleSignal =
+          insight.alert_type === 'lead_cold' || insight.alert_type === 'lead_cooling';
+
+        return !(isOnlyStaleSignal && isPlaceholderLead && !insight.client_name && !insight.estimated_value);
+      });
     },
     enabled: !!organization?.id,
     staleTime: 5 * 60 * 1000, // 5 minutes — real data, no need to refresh too often

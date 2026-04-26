@@ -1,10 +1,8 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { SheetPage } from '@/components/ui/SheetPage';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { supabase } from '@/integrations/supabase/client';
 import { useClient } from '@/hooks/useClients';
+import { useAuthStore } from '@/stores/authStore';
 import {
   User, Mail, Phone, MapPin, Globe, Shield, FileText, Copy,
   Plane, Edit, Star, Calendar
@@ -19,16 +17,16 @@ interface ClientQuickViewProps {
 }
 
 export function ClientQuickView({ clientId, open, onClose, onEdit }: ClientQuickViewProps) {
-  const navigate = useNavigate();
   const { toast } = useToast();
+  const { organization } = useAuthStore();
 
   const { data: client, isLoading } = useClient(open && clientId ? clientId : undefined);
+  const portalLink = organization?.slug ? `${window.location.origin}/portal/${organization.slug}` : null;
 
   const copyPortalLink = () => {
-    if (!clientId) return;
-    const link = `${window.location.origin}/portal-trip/${clientId}`;
-    navigator.clipboard.writeText(link);
-    toast({ title: '🔗 Link do portal copiado!', description: link });
+    if (!portalLink) return;
+    navigator.clipboard.writeText(portalLink);
+    toast({ title: 'Link do portal copiado!', description: portalLink });
   };
 
   const prefs = (client?.preferences as Record<string, any>) || {};
@@ -197,8 +195,8 @@ export function ClientQuickView({ clientId, open, onClose, onEdit }: ClientQuick
                   <div className="space-y-2">
                     <p className="text-xs font-semibold text-vj-txt2 uppercase tracking-wider">Link do Portal</p>
                     <div className="flex gap-2 items-center p-3 bg-vj-bg border border-vj-border rounded-vj-lg">
-                      <code className="text-xs text-vj-txt3 flex-1 truncate">{window.location.origin}/portal-trip/{clientId}</code>
-                      <Button size="sm" variant="outline" onClick={copyPortalLink} className="flex-shrink-0 border-vj-border gap-1.5">
+                      <code className="text-xs text-vj-txt3 flex-1 truncate">{portalLink ?? 'Portal indisponivel'}</code>
+                      <Button size="sm" variant="outline" onClick={copyPortalLink} disabled={!portalLink} className="flex-shrink-0 border-vj-border gap-1.5">
                         <Copy className="h-3.5 w-3.5" /> Copiar
                       </Button>
                     </div>

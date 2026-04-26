@@ -1,36 +1,32 @@
 import { useState, useEffect } from 'react';
 import { useQuotation, useUpdateQuotation } from '@/hooks/useQuotations';
 import { useQuotationScenarios, useScoreQuotation } from '@/hooks/useQuotationScenarios';
-import { useCreateGroupTrip } from '@/hooks/useGroupTrips';
 import { useSendQuotation } from '@/hooks/useSendQuotation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import {
-  Copy, ExternalLink, Send, MapPin, Hotel, Calendar,
-  DollarSign, Sparkles, Brain, Loader2, TrendingDown,
+  Copy, ExternalLink, Send, MapPin, Hotel,
+  Sparkles, TrendingDown,
   TrendingUp, CheckCircle2, ChevronDown, ChevronUp,
-  Clock, Plane, FileText, Check, XCircle, PlaneTakeoff,
-  FileSearch
+  Check, FileSearch
 } from 'lucide-react';
 import { parseInstallments, cn } from '@/lib/utils';
 import { useBuildProposal } from '@/hooks/useBuildProposal';
-import { supabase } from '@/integrations/supabase/client';
 import { EmailTrackingBadge } from '@/components/ui/EmailTrackingBadge';
 import { SheetPage } from '@/components/ui/SheetPage';
 import { logger } from '@/utils/logger';
 
 const statusLabels: Record<string, string> = {
   draft: 'Rascunho', sent: 'Enviada', viewed: 'Visualizada',
-  accepted: 'Aceita', expired: 'Expirada',
+  confirmed: 'Confirmada', expired: 'Expirada', cancelled: 'Cancelada',
 };
 
 const statusColors: Record<string, string> = {
   draft: 'bg-zinc-100 text-zinc-600', sent: 'bg-blue-50 text-blue-700',
-  viewed: 'bg-amber-50 text-amber-700', accepted: 'bg-green-50 text-green-700',
-  expired: 'bg-red-50 text-red-500',
+  viewed: 'bg-amber-50 text-amber-700', confirmed: 'bg-green-50 text-green-700',
+  expired: 'bg-red-50 text-red-500', cancelled: 'bg-zinc-100 text-zinc-500',
 };
 
 const mealLabels: Record<string, string> = {
@@ -164,7 +160,6 @@ export interface QuotationDetailSheetProps {
 export function QuotationDetailSheet({ id, open, onClose }: QuotationDetailSheetProps) {
   const { data: quotation, isLoading } = useQuotation(id);
   const updateQuotation = useUpdateQuotation();
-  const createGroupTrip = useCreateGroupTrip();
   const { toast } = useToast();
   const { data: scenarios, isLoading: scenariosLoading } = useQuotationScenarios(id);
   const scoreQuotation = useScoreQuotation();
@@ -192,10 +187,10 @@ export function QuotationDetailSheet({ id, open, onClose }: QuotationDetailSheet
     }
   };
 
-  const handleFeedbackLoop = async (status: 'accepted' | 'lost') => {
+  const handleFeedbackLoop = async (status: 'confirmed' | 'cancelled') => {
     if (!id) return;
     await updateQuotation.mutateAsync({ id, status });
-    toast({ title: status === 'accepted' ? 'Venda concluída! 🎉' : 'Negócio perdido marcado' });
+    toast({ title: status === 'confirmed' ? 'Venda confirmada!' : 'Cotacao cancelada' });
   };
 
   const formatCurrency = (value: number | null, currency = 'BRL') => {
@@ -274,7 +269,7 @@ export function QuotationDetailSheet({ id, open, onClose }: QuotationDetailSheet
                   <Button variant="outline" size="sm" onClick={copyPublicLink} className="rounded-xl"><ExternalLink className="mr-2 h-3.5 w-3.5" /> Link Público</Button>
                   <Button variant="outline" size="sm" onClick={copyWhatsApp} className="rounded-xl"><Copy className="mr-2 h-3.5 w-3.5" /> Copiar Texto WhatsApp</Button>
                   {quotation.status === 'sent' && (
-                    <Button size="sm" onClick={() => handleFeedbackLoop('accepted')} className="bg-vj-green text-white rounded-xl"><Check className="mr-2 h-3.5 w-3.5" /> Marcar como Vendido</Button>
+                    <Button size="sm" onClick={() => handleFeedbackLoop('confirmed')} className="bg-vj-green text-white rounded-xl"><Check className="mr-2 h-3.5 w-3.5" /> Marcar como Vendido</Button>
                   )}
                 </div>
               </div>

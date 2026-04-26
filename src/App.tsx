@@ -19,10 +19,7 @@ const Onboarding = lazy(() => import('./pages/Onboarding'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
 const Clients = lazy(() => import('./pages/Clients'));
-const ClientDetail = lazy(() => import('./pages/ClientDetail'));
-
 const Quotations = lazy(() => import('./pages/Quotations'));
-const QuotationDetail = lazy(() => import('./pages/QuotationDetail'));
 
 const Itineraries = lazy(() => import('./pages/Itineraries'));
 const ItineraryBuilder = lazy(() => import('./pages/ItineraryBuilder'));
@@ -36,15 +33,12 @@ const Settings = lazy(() => import('./pages/Settings'));
 const AIChat = lazy(() => import('./pages/AIChat'));
 
 const Guides = lazy(() => import('./pages/Guides'));
-const GuideDetail = lazy(() => import('./pages/GuideDetail'));
 
 const TravelerInfo = lazy(() => import('./pages/TravelerInfo'));
 
 const Hotels = lazy(() => import('./pages/Hotels'));
-const HotelDetail = lazy(() => import('./pages/HotelDetail'));
 
 const Tickets = lazy(() => import('./pages/Tickets'));
-const TicketDetail = lazy(() => import('./pages/TicketDetail'));
 const Experiences = lazy(() => import('./pages/Experiences'));
 
 const PortalLogin = lazy(() => import('./pages/PortalLogin'));
@@ -81,9 +75,9 @@ const queryClient = new QueryClient({
       staleTime: 2 * 60 * 1000,
       gcTime: 30 * 60 * 1000,
       retry: 1,
-      refetchOnWindowFocus: true,
+      refetchOnWindowFocus: false,
       refetchOnReconnect: true,
-      refetchOnMount: 'always',
+      refetchOnMount: false,
     },
   },
 });
@@ -174,7 +168,7 @@ const App = () => (
               <Route path="/automations" element={<ProtectedRoute><Automations /></ProtectedRoute>} />
               <Route path="/team" element={<ProtectedRoute><Team /></ProtectedRoute>} />
 
-              {/* CRM Legacy */}
+              {/* CRM */}
               <Route path="/guides" element={<ProtectedWithOrg><TripsRole><Guides /></TripsRole></ProtectedWithOrg>} />
 
               <Route path="/info" element={<ProtectedWithOrg><TripsRole><TravelerInfo /></TripsRole></ProtectedWithOrg>} />

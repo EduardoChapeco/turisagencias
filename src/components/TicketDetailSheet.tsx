@@ -2,18 +2,16 @@ import { useState } from 'react';
 import { useTicket, useUpdateTicket, useCreateTicketMessage } from '@/hooks/useTickets';
 import { SheetPage } from '@/components/ui/SheetPage';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
 import { 
   LifeBuoy, Clock, AlertCircle, CheckCircle2, 
   User, Calendar, Tag, Send, MessageSquare, 
-  Trash2, MoreHorizontal 
 } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useAuthStore } from '@/stores/authStore';
 
-const STATUS_CONFIG: Record<string, { color: string; bg: string; icon: any; label: string }> = {
+const STATUS_CONFIG: Record<string, { color: string; bg: string; icon: LucideIcon; label: string }> = {
   open:        { color: 'text-blue-700',   bg: 'bg-blue-50 border-blue-200',   icon: AlertCircle,  label: 'Aberto' },
   in_progress: { color: 'text-amber-700',  bg: 'bg-amber-50 border-amber-200', icon: Clock,        label: 'Em Andamento' },
   resolved:    { color: 'text-green-700',  bg: 'bg-green-50 border-green-200', icon: CheckCircle2, label: 'Resolvido' },
@@ -24,7 +22,6 @@ export function TicketDetailSheet({ id, open, onClose }: { id: string | null; op
   const { data: ticket, isLoading } = useTicket(id);
   const updateTicket = useUpdateTicket();
   const createMessage = useCreateTicketMessage();
-  const { user } = useAuthStore();
   const [newMessage, setNewMessage] = useState('');
 
   const messages = ticket?.ticket_messages || [];
@@ -138,7 +135,7 @@ export function TicketDetailSheet({ id, open, onClose }: { id: string | null; op
                     ) : (
                         <div className="space-y-4">
                             {messages.map((msg) => {
-                                const isAgent = !!msg.agent_id;
+                                const isAgent = msg.sender_type === 'agent';
                                 return (
                                     <div key={msg.id} className={cn(
                                         "flex gap-3",
@@ -148,7 +145,7 @@ export function TicketDetailSheet({ id, open, onClose }: { id: string | null; op
                                             "max-w-[80%] p-4 rounded-2xl text-sm border",
                                             isAgent ? "bg-vj-green text-white border-vj-green" : "bg-white text-zinc-800 border-zinc-100"
                                         )}>
-                                            <p className="whitespace-pre-wrap leading-relaxed">{msg.body}</p>
+                                            <p className="whitespace-pre-wrap leading-relaxed">{msg.content}</p>
                                             <div className={cn(
                                                 "mt-2 text-[10px] font-medium opacity-60",
                                                 isAgent ? "text-white" : "text-zinc-400"

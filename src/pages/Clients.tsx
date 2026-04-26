@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { AppLayout } from '@/components/AppLayout';
 import { useClients, useDeleteClient } from '@/hooks/useClients';
 import { Button } from '@/components/ui/button';
@@ -23,7 +22,6 @@ export default function ClientsPage() {
   const [editId, setEditId] = useState<string | null>(null);
   const [quickViewId, setQuickViewId] = useState<string | null>(null);
   const [quickViewOpen, setQuickViewOpen] = useState(false);
-  const navigate = useNavigate();
   const { data: clients, isLoading } = useClients(search || undefined);
   const deleteClient = useDeleteClient();
 
@@ -185,8 +183,8 @@ export default function ClientsPage() {
       <ClientEditSheet
         id={editId}
         open={sheetOpen}
-        onClose={() => setEditId(null)}
-        onSuccess={(id) => { setEditId(null); setQuickViewId(id); setQuickViewOpen(true); }}
+        onClose={() => { setSheetOpen(false); setEditId(null); }}
+        onSuccess={(id) => { setSheetOpen(false); setEditId(null); setQuickViewId(id); setQuickViewOpen(true); }}
       />
 
       <ClientQuickView

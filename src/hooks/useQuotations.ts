@@ -4,6 +4,28 @@ import { useAuthStore } from '@/stores/authStore';
 import { useToast } from '@/hooks/use-toast';
 import type { QuotationFormValues } from '@/types';
 
+function createPublicToken() {
+  return crypto.randomUUID().replace(/-/g, '');
+}
+
+function raiseRelationError(error: unknown, context: string) {
+  if (!error) return;
+  const message = error instanceof Error
+    ? error.message
+    : typeof error === 'object' && error && 'message' in error
+      ? String((error as { message: unknown }).message)
+      : String(error);
+  throw new Error(`${context}: ${message}`);
+}
+
+async function waitForRelationWrites(promises: Promise<unknown>[]) {
+  const results = await Promise.allSettled(promises);
+  const failure = results.find((result): result is PromiseRejectedResult => result.status === 'rejected');
+  if (failure) {
+    raiseRelationError(failure.reason, 'Falha ao sincronizar dados relacionais da cotacao');
+  }
+}
+
 export function useQuotations(filters?: { status?: string; search?: string }) {
   const { organization } = useAuthStore();
   return useQuery({
@@ -70,6 +92,7 @@ export function useCreateQuotation() {
         installments: installments ? JSON.parse(JSON.stringify(installments)) : null,
         org_id: organization!.id,
         agent_id: user!.id,
+        public_token: rest.public_token || createPublicToken(),
       };
 
       // 2. Inserir a Cotação Primária
@@ -82,7 +105,7 @@ export function useCreateQuotation() {
       if (error) throw error;
 
       // 3. Fila de inserções relacionais (Fan-out)
-      const relationsPromises: Promise<any>[] = [];
+      const relationsPromises: Promise<unknown>[] = [];
 
       // Mapeamento: Itinerário
       if (itinerary && Array.isArray(itinerary) && itinerary.length > 0) {
@@ -99,10 +122,11 @@ export function useCreateQuotation() {
         // então iteramos e inserimos os dias, depois os itens.
         relationsPromises.push(
           (async () => {
-             const { data: insertedDays } = await supabase
+             const { data: insertedDays, error: daysError } = await supabase
                .from('itinerary_days')
                .insert(daysPayload)
                .select('id, day_number');
+             raiseRelationError(daysError, 'Criacao dos dias do roteiro');
              
              if (insertedDays && insertedDays.length > 0) {
                const itemsPayload: any[] = [];
@@ -117,9 +141,10 @@ export function useCreateQuotation() {
                    });
                  }
                });
-               if (itemsPayload.length > 0) {
-                 await supabase.from('itinerary_items').insert(itemsPayload);
-               }
+                if (itemsPayload.length > 0) {
+                  const { error: itemsError } = await supabase.from('itinerary_items').insert(itemsPayload);
+                  raiseRelationError(itemsError, 'Criacao dos itens do roteiro');
+                }
              }
           })()
         );
@@ -164,7 +189,10 @@ export function useCreateQuotation() {
         });
 
         if (transfersPayload.length > 0) {
-          relationsPromises.push(supabase.from('quote_transfers').insert(transfersPayload));
+          relationsPromises.push((async () => {
+            const { error: transfersError } = await supabase.from('quote_transfers').insert(transfersPayload);
+            raiseRelationError(transfersError, 'Criacao dos transfers da cotacao');
+          })());
         }
 
         if (flightsPayload.length > 0) {
@@ -173,10 +201,12 @@ export function useCreateQuotation() {
                for (const f of flightsPayload) {
                  const segs = f._tempSegments;
                  delete f._tempSegments;
-                 const { data: nFlight } = await supabase.from('flights').insert(f).select('id').single();
+                 const { data: nFlight, error: flightError } = await supabase.from('flights').insert(f).select('id').single();
+                 raiseRelationError(flightError, 'Criacao dos voos da cotacao');
                  if (nFlight && segs.length > 0) {
                    const segments = segs.map((s: any) => ({ ...s, flight_id: nFlight.id }));
-                   await supabase.from('flight_segments').insert(segments);
+                   const { error: segmentsError } = await supabase.from('flight_segments').insert(segments);
+                   raiseRelationError(segmentsError, 'Criacao dos segmentos de voo da cotacao');
                  }
                }
             })()
@@ -192,12 +222,14 @@ export function useCreateQuotation() {
           instrucoes: e.description,
           order_position: ix + 1,
         }));
-        relationsPromises.push(supabase.from('quote_experiences').insert(excPayload));
+        relationsPromises.push((async () => {
+          const { error: experiencesError } = await supabase.from('quote_experiences').insert(excPayload);
+          raiseRelationError(experiencesError, 'Criacao dos passeios da cotacao');
+        })());
       }
 
-      // Esperar todos os mapeamentos atômicos finalizarem
       if (relationsPromises.length > 0) {
-        await Promise.allSettled(relationsPromises).catch(console.error);
+        await waitForRelationWrites(relationsPromises);
       }
 
       return quotation;
@@ -249,12 +281,16 @@ export function useUpdateQuotation() {
       // apagamos os velhos e recriamos para manter simplicidade na prototipagem, ou mantemos os antigos para não ser destrutivo.
       // Optamos por limpar e recriar as seções se vieram novos arrays:
       
-      const updatePromises: Promise<any>[] = [];
+      const updatePromises: Promise<unknown>[] = [];
       
       if (itinerary && Array.isArray(itinerary)) {
          updatePromises.push((async () => {
-             const { data: oldDays } = await supabase.from('itinerary_days').select('id').eq('quote_id', id);
-             if (oldDays?.length) await supabase.from('itinerary_days').delete().in('id', oldDays.map(d => d.id));
+             const { data: oldDays, error: oldDaysError } = await supabase.from('itinerary_days').select('id').eq('quote_id', id);
+             raiseRelationError(oldDaysError, 'Leitura dos dias antigos do roteiro');
+             if (oldDays?.length) {
+               const { error: deleteDaysError } = await supabase.from('itinerary_days').delete().in('id', oldDays.map(d => d.id));
+               raiseRelationError(deleteDaysError, 'Remocao dos dias antigos do roteiro');
+             }
              
              if (itinerary.length > 0) {
                  const daysPayload = itinerary.map((d: any, ix: number) => ({
@@ -264,7 +300,8 @@ export function useUpdateQuotation() {
                    city: d.location || '',
                    label: d.title || `Dia ${ix + 1}`,
                  }));
-                 const { data: insertedDays } = await supabase.from('itinerary_days').insert(daysPayload).select('id, day_number');
+                 const { data: insertedDays, error: daysError } = await supabase.from('itinerary_days').insert(daysPayload).select('id, day_number');
+                 raiseRelationError(daysError, 'Recriacao dos dias do roteiro');
                  if (insertedDays?.length) {
                    const itemsPayload: any[] = [];
                    itinerary.forEach((d: any, ix: number) => {
@@ -272,7 +309,10 @@ export function useUpdateQuotation() {
                      const dbDay = insertedDays.find(idDay => idDay.day_number === (d.day || ix + 1));
                      if (dbDay) itemsPayload.push({ itinerary_day_id: dbDay.id, description: d.description, order_position: 1 });
                    });
-                   if (itemsPayload.length > 0) await supabase.from('itinerary_items').insert(itemsPayload);
+                   if (itemsPayload.length > 0) {
+                     const { error: itemsError } = await supabase.from('itinerary_items').insert(itemsPayload);
+                     raiseRelationError(itemsError, 'Recriacao dos itens do roteiro');
+                   }
                  }
              }
          })());
@@ -280,10 +320,18 @@ export function useUpdateQuotation() {
       
       if (transports && Array.isArray(transports)) {
          updatePromises.push((async () => {
-            const { data: oldTransfers } = await supabase.from('quote_transfers').select('id').eq('quote_id', id);
-            if (oldTransfers?.length) await supabase.from('quote_transfers').delete().in('id', oldTransfers.map(d => d.id));
-            const { data: oldFlights } = await supabase.from('flights').select('id').eq('quote_id', id);
-            if (oldFlights?.length) await supabase.from('flights').delete().in('id', oldFlights.map(f => f.id));
+            const { data: oldTransfers, error: oldTransfersError } = await supabase.from('quote_transfers').select('id').eq('quote_id', id);
+            raiseRelationError(oldTransfersError, 'Leitura dos transfers antigos da cotacao');
+            if (oldTransfers?.length) {
+              const { error: deleteTransfersError } = await supabase.from('quote_transfers').delete().in('id', oldTransfers.map(d => d.id));
+              raiseRelationError(deleteTransfersError, 'Remocao dos transfers antigos da cotacao');
+            }
+            const { data: oldFlights, error: oldFlightsError } = await supabase.from('flights').select('id').eq('quote_id', id);
+            raiseRelationError(oldFlightsError, 'Leitura dos voos antigos da cotacao');
+            if (oldFlights?.length) {
+              const { error: deleteFlightsError } = await supabase.from('flights').delete().in('id', oldFlights.map(f => f.id));
+              raiseRelationError(deleteFlightsError, 'Remocao dos voos antigos da cotacao');
+            }
             
             // Refazer binds
             if (transports.length > 0) {
@@ -297,12 +345,19 @@ export function useUpdateQuotation() {
                   transfersPayload.push({ quote_id: id, tipo: t.type, nome: `Transfer (${t.from} → ${t.to})`, fornecedor: t.operator, data_inicio: t.departure?.slice(0, 10) || null, instrucoes: t.notes, order_position: tOrder++ });
                 }
               });
-              if (transfersPayload.length > 0) await supabase.from('quote_transfers').insert(transfersPayload);
+              if (transfersPayload.length > 0) {
+                const { error: transfersError } = await supabase.from('quote_transfers').insert(transfersPayload);
+                raiseRelationError(transfersError, 'Recriacao dos transfers da cotacao');
+              }
               if (flightsPayload.length > 0) {
                 for (const f of flightsPayload) {
                  const t = f._ts; delete f._ts;
-                 const { data: nf } = await supabase.from('flights').insert(f).select('id').single();
-                 if (nf) await supabase.from('flight_segments').insert([{ flight_id: nf.id, segment_order: 1, departure_airport_code: t.from, departure_airport_city: t.from, arrival_airport_code: t.to, arrival_airport_city: t.to, departure_datetime: t.departure || null, arrival_datetime: t.arrival || null, connection_info: t.notes }]);
+                 const { data: nf, error: flightError } = await supabase.from('flights').insert(f).select('id').single();
+                 raiseRelationError(flightError, 'Recriacao dos voos da cotacao');
+                 if (nf) {
+                   const { error: segmentError } = await supabase.from('flight_segments').insert([{ flight_id: nf.id, segment_order: 1, departure_airport_code: t.from, departure_airport_city: t.from, arrival_airport_code: t.to, arrival_airport_city: t.to, departure_datetime: t.departure || null, arrival_datetime: t.arrival || null, connection_info: t.notes }]);
+                   raiseRelationError(segmentError, 'Recriacao dos segmentos de voo da cotacao');
+                 }
                 }
               }
             }
@@ -311,16 +366,21 @@ export function useUpdateQuotation() {
       
       if (excursions && Array.isArray(excursions)) {
          updatePromises.push((async () => {
-             const { data: oldExc } = await supabase.from('quote_experiences').select('id').eq('quote_id', id);
-             if (oldExc?.length) await supabase.from('quote_experiences').delete().in('id', oldExc.map(e => e.id));
+             const { data: oldExc, error: oldExperiencesError } = await supabase.from('quote_experiences').select('id').eq('quote_id', id);
+             raiseRelationError(oldExperiencesError, 'Leitura dos passeios antigos da cotacao');
+             if (oldExc?.length) {
+               const { error: deleteExperiencesError } = await supabase.from('quote_experiences').delete().in('id', oldExc.map(e => e.id));
+               raiseRelationError(deleteExperiencesError, 'Remocao dos passeios antigos da cotacao');
+             }
              if (excursions.length > 0) {
                  const excPayload = excursions.map((e: any, ix: number) => ({ quote_id: id, nome: e.title, instrucoes: e.description, order_position: ix + 1 }));
-                 await supabase.from('quote_experiences').insert(excPayload);
+                 const { error: experiencesError } = await supabase.from('quote_experiences').insert(excPayload);
+                 raiseRelationError(experiencesError, 'Recriacao dos passeios da cotacao');
              }
          })());
       }
 
-      if (updatePromises.length > 0) await Promise.allSettled(updatePromises).catch(console.error);
+      if (updatePromises.length > 0) await waitForRelationWrites(updatePromises);
 
       return quotation;
     },

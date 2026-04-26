@@ -1,7 +1,6 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import {
-  Save, Sparkles, Loader2, Plus, X, MapPin, Hotel,
+  Save, Loader2, Plus, X, MapPin, Hotel,
   Plane, Tent, CheckCircle2, Calendar, DollarSign, Image as ImageIcon, Users
 } from 'lucide-react';
 import { SheetPage } from '@/components/ui/SheetPage';
@@ -14,6 +13,7 @@ import { MediaUploader } from '@/components/ui/MediaUploader';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useCreateQuotation } from '@/hooks/useQuotations';
 import { useClients } from '@/hooks/useClients';
+import { useAuthStore } from '@/stores/authStore';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useQuotationForm } from './quotation-builder/useQuotationForm';
@@ -44,12 +44,14 @@ export interface QuotationBuilderSheetProps {
   open: boolean;
   onClose: () => void;
   clientId?: string;
+  /** Chamado após criação bem-sucedida com o ID da nova cotação */
+  onCreated?: (id: string) => void;
 }
 
-export function QuotationBuilderSheet({ open, onClose, clientId }: QuotationBuilderSheetProps) {
-  const navigate = useNavigate();
+export function QuotationBuilderSheet({ open, onClose, clientId, onCreated }: QuotationBuilderSheetProps) {
   const createQuotation = useCreateQuotation();
   const { data: clients } = useClients();
+  const { organization } = useAuthStore();
   const { toast } = useToast();
 
   const [currentStep, setCurrentStep] = useState(0);
@@ -148,7 +150,7 @@ export function QuotationBuilderSheet({ open, onClose, clientId }: QuotationBuil
       excluded_items: form.excluded_items,
       media_urls: form.media_urls,
     } as any);
-    if (result) { onClose(); navigate(`/quotations/${result.id}`); }
+    if (result) { onClose(); onCreated?.(result.id); }
   };
 
   // Map activeSection to step index for StepContent switch
@@ -160,19 +162,11 @@ export function QuotationBuilderSheet({ open, onClose, clientId }: QuotationBuil
       case 0:
         return (
           <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-            {/* AI Banner */}
-            <div className="p-5 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center gap-4 text-white">
-              <div className="bg-white/10 p-3 rounded-xl shadow-sm">
-                <Sparkles className="h-6 w-6 text-vj-green" />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-bold text-white">Mágica da IA</h3>
-                <p className="text-sm text-zinc-400 mt-0.5">Arraste um PDF ou Print de uma cotação de operadora para preencher automaticamente.</p>
-              </div>
-              <label className="cursor-pointer shrink-0">
-                <div className="bg-white px-4 py-2 rounded-xl text-sm font-bold text-blue-600 border border-blue-200 hover:bg-blue-50 transition-colors flex items-center gap-2">
+            <div className="flex justify-end">
+              <label className="cursor-pointer">
+                <div className="px-4 py-2 rounded-full text-sm font-bold text-vj-green border border-vj-green/30 hover:bg-vj-green/10 transition-colors flex items-center gap-2">
                   {extracting ? <Loader2 className="w-4 h-4 animate-spin" /> : <ImageIcon className="w-4 h-4" />}
-                  {extracting ? 'Analisando...' : (aiExtracted ? 'Extraído! Anexar outro' : 'Fazer Upload')}
+                  {extracting ? 'Analisando...' : (aiExtracted ? 'Anexar outro arquivo' : 'Upload IA')}
                 </div>
                 <input type="file" accept="image/*,.pdf" className="hidden" onChange={handleAiExtract} disabled={extracting} />
               </label>
@@ -251,7 +245,7 @@ export function QuotationBuilderSheet({ open, onClose, clientId }: QuotationBuil
              ) : (
                <div className="space-y-4">
                  {itinerary.map(day => (
-                   <div key={day.id} className="p-4 rounded-xl border border-zinc-200 relative group bg-white shadow-sm">
+                   <div key={day.id} className="p-4 rounded-xl border border-zinc-200 relative group bg-white">
                      <button onClick={() => removeDay(day.id)} className="absolute -top-2 -right-2 bg-red-100 text-red-600 rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity"><X className="w-3 h-3"/></button>
                      <div className="flex gap-4">
                        <div className="w-12 h-12 bg-zinc-100 rounded-xl flex items-center justify-center font-black text-xl text-zinc-400 shrink-0">{day.day}</div>
@@ -277,7 +271,7 @@ export function QuotationBuilderSheet({ open, onClose, clientId }: QuotationBuil
             {transports.length === 0 ? <div className="py-12 text-center text-zinc-400">Nenhum transporte inserido.</div> : (
               <div className="space-y-4">
                 {transports.map(t => (
-                  <div key={t.id} className="p-4 rounded-xl border border-zinc-200 bg-white relative group shadow-sm grid md:grid-cols-3 gap-4">
+                  <div key={t.id} className="p-4 rounded-xl border border-zinc-200 bg-white relative group grid md:grid-cols-3 gap-4">
                     <button onClick={() => removeTransport(t.id)} className="absolute -top-2 -right-2 bg-red-100 text-red-600 rounded-full p-1.5 opacity-0 group-hover:opacity-100"><X className="w-3 h-3"/></button>
                     <Select value={t.type} onValueChange={(v) => updateTransport(t.id, { type: v })}>
                       <SelectTrigger className="bg-zinc-50 rounded-xl border-zinc-200"><SelectValue /></SelectTrigger>
@@ -301,7 +295,7 @@ export function QuotationBuilderSheet({ open, onClose, clientId }: QuotationBuil
             {excursions.length === 0 ? <div className="py-12 text-center text-zinc-400">Nenhum passeio inserido.</div> : (
               <div className="space-y-4">
                 {excursions.map(exc => (
-                  <div key={exc.id} className="p-4 rounded-xl border border-zinc-200 bg-white relative group shadow-sm space-y-3">
+                  <div key={exc.id} className="p-4 rounded-xl border border-zinc-200 bg-white relative group space-y-3">
                     <button onClick={() => removeExcursion(exc.id)} className="absolute -top-2 -right-2 bg-red-100 text-red-600 rounded-full p-1.5 opacity-0 group-hover:opacity-100"><X className="w-3 h-3"/></button>
                     <div className="grid md:grid-cols-3 gap-3">
                       <Input value={exc.title} onChange={(e) => updateExcursion(exc.id, { title: e.target.value })} placeholder="Nome do Passeio" className="md:col-span-2 font-bold bg-zinc-50 rounded-xl border-zinc-200" />
@@ -403,7 +397,7 @@ export function QuotationBuilderSheet({ open, onClose, clientId }: QuotationBuil
 
                 <div className="space-y-2 mt-4">
                   {installments.map((inst, i) => (
-                    <div key={i} className="flex items-center justify-between p-3 rounded-xl bg-white border border-zinc-100 shadow-sm text-sm">
+                    <div key={i} className="flex items-center justify-between p-3 rounded-xl bg-white border border-zinc-100 text-sm">
                       <span className="font-medium text-zinc-700"><Badge variant="outline" className="mr-2">{inst.type}</Badge> {inst.installment_count}x de {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: form.currency }).format(inst.value)}</span>
                       <Button variant="ghost" size="icon" onClick={() => removeInstallment(i)} className="text-red-400 h-8 w-8"><X className="h-4 w-4" /></Button>
                     </div>

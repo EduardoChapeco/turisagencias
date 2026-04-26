@@ -112,7 +112,7 @@ export default function Dashboard() {
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <Button variant="outline" className="premium-button border-vj-border bg-white" onClick={() => navigate('/group-trips/new')}>
+            <Button variant="outline" className="premium-button border-vj-border bg-white" onClick={() => navigate('/group-trips')}>
               <Plane className="h-4 w-4 mr-2 text-vj-green" /> Emitir Voucher
             </Button>
             <Button className="premium-button" onClick={() => setQuotationBuilderOpen(true)}>
@@ -193,22 +193,19 @@ export default function Dashboard() {
         {/* BENTO GRID: Blog & Daily Context */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 mt-8">
            {/* Header / Sidebar for Content Hub */}
-           <div className="bg-white border border-vj-border rounded-[2rem] p-8 lg:row-span-2 relative overflow-hidden group shadow-none">
+           <div className="bg-white border border-vj-border rounded-xl p-5 lg:row-span-2 relative overflow-hidden group shadow-none">
               <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform duration-700 pointer-events-none">
                  <Newspaper className="w-32 h-32 text-vj-green" />
               </div>
               <div className="relative z-10">
                 <div className="flex items-center gap-3 mb-3">
                     <div className="bg-vj-green text-white p-2.5 rounded-xl"><Globe2 className="w-5 h-5" /></div>
-                    <h3 className="font-extrabold tracking-tight text-xl text-vj-txt">Daily Digest</h3>
+                    <h3 className="font-extrabold tracking-tight text-xl text-vj-txt">Radar Comercial</h3>
                 </div>
-                <p className="text-sm font-medium text-vj-txt3 mb-8 leading-relaxed">
-                  Conteúdos curados por IA, atualizações e alertas do mercado de turismo B2B e Lazer para pautar o seu dia.
-                </p>
 
-                <div className="space-y-6">
+                <div className="space-y-4">
                    <div>
-                      <p className="text-[11px] font-bold uppercase tracking-wider text-vj-txt3 mb-3">Acompanhamento Específico</p>
+                      <p className="text-[11px] font-bold uppercase tracking-wider text-vj-txt3 mb-3">Filtros</p>
                       <div className="flex flex-wrap gap-2">
                          <span className="bg-white border border-zinc-200 text-vj-txt text-xs px-3.5 py-1.5 rounded-full font-semibold cursor-pointer hover:border-vj-green transition-colors">Mercado Aéreo</span>
                          <span className="bg-white border border-zinc-200 text-vj-txt text-xs px-3.5 py-1.5 rounded-full font-semibold cursor-pointer hover:border-vj-green transition-colors">Destinos Nacionais</span>

@@ -5,17 +5,20 @@ import { MemoryRouter } from 'react-router-dom';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { useAuthStore } from '@/stores/authStore';
 
-function createFromMock() {
-  return {
-    select: vi.fn().mockReturnValue({
-      eq: vi.fn().mockReturnValue({
-        maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
-      }),
-      order: vi.fn().mockReturnValue({
-        limit: vi.fn().mockResolvedValue({ data: [], error: null }),
-      }),
-    }),
+function createQueryMock(data: unknown[] = []) {
+  const result = { data, error: null };
+  const query = {
+    select: vi.fn(() => query),
+    eq: vi.fn(() => query),
+    order: vi.fn(() => query),
+    limit: vi.fn(() => query),
+    maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+    single: vi.fn().mockResolvedValue({ data: null, error: null }),
+    then: (resolve: (value: typeof result) => void, reject?: (reason: unknown) => void) =>
+      Promise.resolve(result).then(resolve, reject),
   };
+
+  return query;
 }
 
 vi.mock('@/integrations/supabase/client', () => ({
@@ -26,10 +29,8 @@ vi.mock('@/integrations/supabase/client', () => ({
       signInWithPassword: vi.fn(),
       signOut: vi.fn(),
     },
-    from: vi.fn(() => createFromMock()),
-    rpc: vi.fn().mockReturnValue({
-      then: (cb: (value: unknown) => void) => cb({ data: [], error: null }),
-    }),
+    from: vi.fn(() => createQueryMock()),
+    rpc: vi.fn(() => createQueryMock()),
     functions: { invoke: vi.fn() },
   },
 }));
@@ -83,7 +84,7 @@ describe('Route Guards', () => {
   it('Login page renders correctly', () => {
     useAuthStore.setState({ user: null, isLoading: false, profile: null, organization: null, roles: [] });
     renderInRouter(<Login />, '/login');
-    expect(screen.getByText(/cloudblock/i)).toBeInTheDocument();
+    expect(screen.getByText(/turis agências/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/e-mail/i)).toBeInTheDocument();
   });
 
@@ -133,6 +134,7 @@ describe('Route Guards', () => {
       isLoading: false,
     });
     renderInRouter(<Dashboard />, '/');
-    expect(screen.getByText(/olá, test/i)).toBeInTheDocument();
+    expect(screen.getByText(/test org/i)).toBeInTheDocument();
+    expect(screen.getByText(/operações em tempo real/i)).toBeInTheDocument();
   });
 });

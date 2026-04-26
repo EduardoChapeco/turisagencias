@@ -4,6 +4,19 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuthStore } from '@/stores/authStore';
 import { useToast } from '@/hooks/use-toast';
 
+const normalizeKanbanCard = (card: Record<string, any>) => {
+  const meta = (card.meta ?? card.metadata ?? {}) as Record<string, any>;
+  return {
+    ...card,
+    metadata: meta,
+    task_type: card.task_type ?? meta.task_type ?? null,
+    due_date: card.due_date ?? meta.due_date ?? null,
+    priority: card.priority ?? meta.priority ?? null,
+    ticket_id: card.ticket_id ?? meta.ticket_id ?? null,
+    linked_card_ids: card.linked_card_ids ?? meta.linked_card_ids ?? null,
+  };
+};
+
 /* ─────────────────────────────────────────────
    Board + Columns + Cards (hook original expandido)
    ───────────────────────────────────────────── */
@@ -139,7 +152,7 @@ export function useKanbanBoard(slug: string) {
         throw cardsError;
       }
 
-      return { board, columns: columns ?? [], cards: cards ?? [] };
+      return { board, columns: columns ?? [], cards: (cards ?? []).map((card) => normalizeKanbanCard(card as Record<string, any>)) };
     },
     enabled: !!organization?.id,
     staleTime: 60 * 1000,
@@ -177,7 +190,7 @@ export function useKanbanCard(id?: string) {
 
       if (colError) throw colError;
 
-      return { card, columns: columns ?? [] };
+      return { card: normalizeKanbanCard(card as Record<string, any>), columns: columns ?? [] };
     },
     enabled: !!id,
     staleTime: 60 * 1000,
@@ -206,10 +219,19 @@ export function useCreateKanbanCard() {
       whatsapp?: string | null;
       email?: string | null;
       tags?: string[];
+      assigned_to?: string | null;
+      meta?: Record<string, any> | null;
+      metadata?: Record<string, any> | null;
     }) => {
+      if (!organization?.id) throw new Error('Organizacao nao carregada');
+      const insertPayload: Record<string, any> = { ...payload, org_id: organization.id };
+      if (insertPayload.metadata !== undefined) {
+        if (insertPayload.meta === undefined) insertPayload.meta = insertPayload.metadata;
+        delete insertPayload.metadata;
+      }
       const { data, error } = await supabase
         .from('kanban_cards')
-        .insert({ ...payload, org_id: organization?.id })
+        .insert(insertPayload)
         .select()
         .single();
       if (error) throw error;
@@ -249,11 +271,20 @@ export function useUpdateKanbanCard() {
       task_type?: string | null;
       linked_card_ids?: string[];
       assigned_to?: string | null;
+      meta?: Record<string, any> | null;
       metadata?: Record<string, any> | null;
     }) => {
+      const finalUpdates: any = { ...updates };
+      if (finalUpdates.metadata !== undefined) {
+        if (finalUpdates.meta === undefined) {
+          finalUpdates.meta = finalUpdates.metadata;
+        }
+        delete finalUpdates.metadata;
+      }
+
       const { data, error } = await supabase
         .from('kanban_cards')
-        .update(updates)
+        .update(finalUpdates)
         .eq('id', id)
         .select()
         .single();

@@ -231,10 +231,10 @@ export default function GroupTrips() {
           action={<Button onClick={openNew}>Criar primeiro pacote</Button>}
         />
       ) : (
-        <div className="bento-grid-premium">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
           {trips.map(t => (
-            <div key={t.id} className="premium-card overflow-hidden group hover:border-vj-green/30 transition-all flex flex-col min-h-[300px]">
-              <div className="aspect-[16/10] bg-vj-bg relative">
+            <div key={t.id} className="premium-card overflow-hidden group hover:border-vj-green/30 transition-all grid md:grid-cols-[220px_1fr] min-h-[220px]">
+              <div className="h-48 md:h-full min-h-[220px] bg-vj-bg relative">
                 {t.cover_image_url ? (
                   <LazyImage src={t.cover_image_url} alt={t.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
                 ) : (
@@ -258,8 +258,8 @@ export default function GroupTrips() {
                 </div>
               </div>
 
-              <div className="p-5 flex-1 flex flex-col">
-                <div className="flex flex-wrap items-center gap-4 text-xs font-bold uppercase tracking-wider text-vj-txt3 mb-4">
+              <div className="p-4 flex-1 flex flex-col">
+                <div className="flex flex-wrap items-center gap-2 text-xs font-bold uppercase tracking-wider text-vj-txt3 mb-4">
                   {t.destination && <span className="flex items-center gap-1.5 p-2 bg-zinc-50 rounded-xl border border-zinc-100"><MapPin size={14} className="text-zinc-400" /> {t.destination}</span>}
                   {t.departure_date && <span className="flex items-center gap-1.5 p-2 bg-zinc-50 rounded-xl border border-zinc-100"><Calendar size={14} className="text-zinc-400" /> {new Date(t.departure_date).toLocaleDateString('pt-BR')}</span>}
                   <span className="flex items-center gap-1.5 p-2 bg-blue-50/50 rounded-xl border border-blue-100 text-blue-600 ml-auto"><Users size={14} /> {t.current_pax}/{t.max_pax} Vagas</span>

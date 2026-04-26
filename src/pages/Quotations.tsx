@@ -1,31 +1,22 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { AppLayout } from '@/components/AppLayout';
-import { useQuotations, useDeleteQuotation } from '@/hooks/useQuotations';
+import { useQuotations } from '@/hooks/useQuotations';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { PageHeader } from '@/components/ui/PageHeader';
-import { StatusBadge } from '@/components/ui/StatusBadge';
-import { EmptyState, PageSkeleton } from '@/components/ui/EmptyState';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { QuotationBuilderSheet } from '@/components/QuotationBuilderSheet';
 import { QuotationAiImportSheet } from '@/components/QuotationAiImportSheet';
 import { QuotationDetailSheet } from '@/components/QuotationDetailSheet';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Search, FileText, MapPin, Hotel, Trash2, Calendar, Users, Sparkles, ArrowRight, ArrowUpRight, CheckCircle2, Navigation, FileSignature } from 'lucide-react';
+import { Plus, Search, FileText, MapPin, Hotel, Calendar, Users, Sparkles, ArrowRight, ArrowUpRight, CheckCircle2, Navigation, FileSignature } from 'lucide-react';
 import { getClientName } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
-import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel,
-  AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
-  AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
+import { PageHeader } from '@/components/ui/PageHeader';
 
 const STATUS_STYLES: Record<string, { color: string; label: string }> = {
   draft:    { color: 'bg-zinc-100 text-zinc-600 border-zinc-200',           label: 'Rascunho' },
   sent:     { color: 'bg-blue-50 text-blue-600 border-blue-100', label: 'Enviada' },
   viewed:   { color: 'bg-orange-50 text-orange-600 border-orange-100',       label: 'Visualizada' },
-  accepted: { color: 'bg-vj-green/10 text-vj-green border-vj-green/20', label: 'Aceita ✅' },
+  confirmed: { color: 'bg-vj-green/10 text-vj-green border-vj-green/20', label: 'Confirmada' },
   expired:  { color: 'bg-red-50 text-red-600 border-red-100',             label: 'Expirada' },
 };
 
@@ -35,10 +26,7 @@ export default function Quotations() {
   const [builderOpen, setBuilderOpen] = useState(false);
   const [aiImportOpen, setAiImportOpen] = useState(false);
   const [detailSheet, setDetailSheet] = useState<{ open: boolean; id: string | null }>({ open: false, id: null });
-  const navigate = useNavigate();
-
   const { data: allQuotations, isLoading } = useQuotations();
-  const deleteQuotation = useDeleteQuotation();
 
   const fmtCurrency = (value: number | null, currency = 'BRL') => {
     if (!value) return '0,00';
@@ -57,82 +45,80 @@ export default function Quotations() {
     total: quotations.length,
     draft: quotations.filter(q => q.status === 'draft').length,
     sent: quotations.filter(q => q.status === 'sent').length,
-    accepted: quotations.filter(q => q.status === 'accepted').length,
+    confirmed: quotations.filter(q => q.status === 'confirmed').length,
   };
 
   return (
     <AppLayout>
-      <div className="space-y-8 max-w-[1400px] mx-auto pb-10 px-4 sm:px-6">
+      <div className="space-y-4 max-w-[1400px] mx-auto pb-10 px-3 sm:px-4">
         
-        {/* Header Section */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div>
-            <h1 className="font-heading text-4xl font-extrabold tracking-tight">Propostas <span className="highlight-text">Exclusivas</span></h1>
-            <p className="text-muted-foreground text-sm mt-2 flex items-center gap-2">
-              <FileText className="w-4 h-4 text-vj-green" /> Construtor de orçamentos ultra-personalizados
-            </p>
-          </div>
+        <PageHeader
+          title="Propostas"
+          description="Construtor comercial de cotações com hospedagem, transporte, passeios, valores, compartilhamento e aceite."
+          icon={FileText}
+          actions={
           <div className="flex items-center gap-3">
-            <Button variant="outline" className="premium-button border-vj-border bg-white" onClick={() => setAiImportOpen(true)}>
+            <Button variant="outline" className="h-10 rounded-full border-vj-border bg-white" onClick={() => setAiImportOpen(true)}>
               <Sparkles className="h-4 w-4 mr-2 text-vj-green" /> Extração IA
             </Button>
-            <Button className="premium-button  " onClick={() => setBuilderOpen(true)}>
+            <Button className="h-10 rounded-full" onClick={() => setBuilderOpen(true)}>
               <Plus className="h-4 w-4 mr-2" /> Nova Cotação
             </Button>
           </div>
-        </div>
+          }
+        />
 
         {/* Stats Row */}
         {!isLoading && (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pb-2">
-            <div className="premium-card p-4 flex flex-col justify-between">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pb-1">
+            <div className="premium-card p-3 flex flex-col justify-between">
               <div className="flex items-center gap-2 text-zinc-400 mb-2 mt-1">
                 <FileText className="w-4 h-4" /> <span className="text-xs uppercase tracking-wider font-bold">Total</span>
               </div>
-              <p className="text-3xl font-black text-zinc-800">{stats.total}</p>
+              <p className="text-2xl font-black text-zinc-800">{stats.total}</p>
             </div>
-            <div className="premium-card border-zinc-200 bg-zinc-50/50 p-4 flex flex-col justify-between">
+            <div className="premium-card border-zinc-200 bg-zinc-50/50 p-3 flex flex-col justify-between">
               <div className="flex items-center gap-2 text-zinc-600 mb-2 mt-1">
                 <FileSignature className="w-4 h-4" /> <span className="text-xs uppercase tracking-wider font-bold">Rascunhos</span>
               </div>
-              <p className="text-3xl font-black text-zinc-700">{stats.draft}</p>
+              <p className="text-2xl font-black text-zinc-700">{stats.draft}</p>
             </div>
-            <div className="premium-card border-blue-200 bg-blue-50/50 p-4 flex flex-col justify-between">
+            <div className="premium-card border-blue-200 bg-blue-50/50 p-3 flex flex-col justify-between">
               <div className="flex items-center gap-2 text-blue-600 mb-2 mt-1">
                 <Navigation className="w-4 h-4" /> <span className="text-xs uppercase tracking-wider font-bold">Enviadas</span>
               </div>
-              <p className="text-3xl font-black text-blue-700">{stats.sent}</p>
+              <p className="text-2xl font-black text-blue-700">{stats.sent}</p>
             </div>
-            <div className="premium-card border-vj-green/30 bg-vj-green/10 p-4 flex flex-col justify-between">
+            <div className="premium-card border-vj-green/30 bg-vj-green/10 p-3 flex flex-col justify-between">
               <div className="flex items-center gap-2 text-vj-green mb-2 mt-1">
-                <CheckCircle2 className="w-4 h-4" /> <span className="text-xs uppercase tracking-wider font-bold">Aceitas</span>
+                <CheckCircle2 className="w-4 h-4" /> <span className="text-xs uppercase tracking-wider font-bold">Confirmadas</span>
               </div>
-              <p className="text-3xl font-black text-vj-green">{stats.accepted}</p>
+              <p className="text-2xl font-black text-vj-green">{stats.confirmed}</p>
             </div>
           </div>
         )}
 
         {/* Filters Row */}
-        <div className="flex flex-wrap gap-4 items-center justify-between pb-4">
+        <div className="flex flex-wrap gap-3 items-center justify-between pb-2">
           <div className="relative flex-1 max-w-sm">
             <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               placeholder="Pesquisar destino ou cliente..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-11 h-12 bg-white border-vj-border rounded-xl focus-visible:ring-vj-green"
+              className="pl-11 h-10 bg-white border-vj-border rounded-xl focus-visible:ring-vj-green"
             />
           </div>
           <div className="flex gap-2">
-             {['all', 'draft', 'sent', 'accepted'].map(f => (
+             {['all', 'draft', 'sent', 'confirmed'].map(f => (
                <Button 
                 key={f}
                 variant={statusFilter === f ? 'default' : 'outline'}
                 size="sm"
-                className="premium-button px-6"
+                className="h-10 rounded-full px-4"
                 onClick={() => setStatusFilter(f)}
                >
-                 {f === 'all' ? 'Tudo' : f === 'draft' ? 'Rascunhos' : f === 'sent' ? 'Enviadas' : 'Aceitas'}
+                 {f === 'all' ? 'Tudo' : f === 'draft' ? 'Rascunhos' : f === 'sent' ? 'Enviadas' : 'Confirmadas'}
                </Button>
              ))}
           </div>
@@ -225,6 +211,7 @@ export default function Quotations() {
       <QuotationBuilderSheet
         open={builderOpen}
         onClose={() => setBuilderOpen(false)}
+        onCreated={(id) => { setBuilderOpen(false); setDetailSheet({ open: true, id }); }}
       />
 
       <QuotationAiImportSheet

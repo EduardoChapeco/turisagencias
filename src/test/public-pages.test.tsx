@@ -45,7 +45,7 @@ describe('Public Traveler Form', () => {
     expect(screen.getByText(/nome completo/i)).toBeInTheDocument();
     expect(screen.getByText(/cpf/i)).toBeInTheDocument();
     expect(screen.getByText(/data de nascimento/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /enviar dados/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /próxima etapa/i })).toBeInTheDocument();
   });
 
   it('has nationality field with default value', () => {
@@ -60,12 +60,12 @@ describe('Public Quotation Page', () => {
   it('shows loading state initially', () => {
     mockRpc.mockReturnValue({ then: () => undefined });
     renderWithRoute(<PublicQuotation />, '/q/:token', '/q/test-token');
-    expect(document.querySelector('.animate-spin')).toBeInTheDocument();
+    expect(document.querySelector('svg')).toBeInTheDocument();
   });
 
   it('shows not found for invalid token', async () => {
     mockRpc.mockReturnValue({
-      then: (cb: (value: unknown) => void) => cb({ data: [], error: null }),
+      then: (cb: (value: unknown) => void) => cb({ data: null, error: null }),
     });
     renderWithRoute(<PublicQuotation />, '/q/:token', '/q/invalid-token');
     expect(await screen.findByText(/cotação não encontrada/i)).toBeInTheDocument();
@@ -74,7 +74,7 @@ describe('Public Quotation Page', () => {
   it('renders quotation data when found', async () => {
     mockRpc.mockReturnValue({
       then: (cb: (value: unknown) => void) => cb({
-        data: [{
+        data: {
           destination: 'Cancún',
           hotel_name: 'Grand Oasis',
           hotel_stars: 5,
@@ -87,18 +87,26 @@ describe('Public Quotation Page', () => {
           total_value: 15000,
           currency: 'BRL',
           installments: [],
-          org_name: 'Viagens Fantásticas',
-          org_logo: null,
-          org_whatsapp: '11999999999',
-          org_primary_color: '#1E3A5F',
-        }],
+          organizations: {
+            name: 'Viagens Fantásticas',
+            logo_url: null,
+            whatsapp: '11999999999',
+            primary_color: '#1E3A5F',
+          },
+          itinerary_days: [],
+          flights: [],
+          quote_transfers: [],
+          quote_price_items: [],
+          quote_includes: [],
+          quote_experiences: [],
+        },
         error: null,
       }),
     });
 
     renderWithRoute(<PublicQuotation />, '/q/:token', '/q/valid-token');
-    expect(await screen.findByText('Cancún')).toBeInTheDocument();
-    expect(screen.getByText(/grand oasis/i)).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /quero reservar/i })).toBeInTheDocument();
+    expect((await screen.findAllByText('Cancún')).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/grand oasis/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByRole('button', { name: /confirmar reserva/i }).length).toBeGreaterThan(0);
   });
 });

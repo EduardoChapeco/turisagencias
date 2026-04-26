@@ -43,13 +43,14 @@ export default function PublicQuotation() {
     setConfirmLoading(true);
     setConfirmError('');
     try {
-      const { error } = await supabase.rpc('confirm_public_quotation', {
+      const { data: confirmed, error } = await supabase.rpc('confirm_public_quotation', {
         p_token: token,
         p_traveler_name: confirmName,
         p_traveler_email: confirmEmail,
         p_notes: confirmNotes
       });
       if (error) throw error;
+      if (!confirmed) throw new Error('quotation_not_confirmable');
       setConfirmSuccess(true);
     } catch (err: unknown) {
       setConfirmError('Ocorreu um erro ao confirmar a cotação.');
@@ -65,37 +66,7 @@ export default function PublicQuotation() {
     // If a relational section (itinerary_days, flights, etc.) has no data,
     // the corresponding UI section will not render. This is the correct behavior.
     supabase
-      .from('quotations')
-      .select(`
-        *,
-        organizations(name, logo_url, whatsapp, primary_color),
-        itinerary_days(
-          id, day_number, date, city, country, label,
-          itinerary_items(description, order_position)
-        ),
-        flights(
-          id, direction, airline_name, airline_code, cabin_class, is_recommended, total_price,
-          flight_segments(
-            segment_order, departure_airport_code, departure_airport_city,
-            arrival_airport_code, arrival_airport_city,
-            departure_datetime, arrival_datetime, duration_minutes,
-            is_direct, stops, connection_info
-          ),
-          flight_amenities(icon, label)
-        ),
-        quote_transfers(
-          id, tipo, nome, fornecedor, data_inicio, data_fim,
-          instrucoes, ponto_encontro, adultos, criancas, valor_total, order_position
-        ),
-        quote_price_items(icon, label, amount, order_position),
-        quote_includes(icon, title, description, order_position),
-        quote_experiences(
-          id, nome, tipo, fornecedor, data_inicio, data_fim,
-          adultos, criancas, valor_total, order_position
-        )
-      `)
-      .eq('public_token', token)
-      .single()
+      .rpc('get_public_quotation', { _token: token })
       .then(({ data: row, error }) => {
         setLoading(false);
         if (error || !row) {
@@ -104,39 +75,40 @@ export default function PublicQuotation() {
           return;
         }
 
-        const org = (row as Record<string, any>).organizations as Record<string, any> | null;
+        const quote = row as Record<string, any>;
+        const org = quote.organizations as Record<string, any> | null;
 
         // [ARCHITECT] — Pure relational mapping. Only real DB data flows through.
         // Sections with no data simply yield empty arrays — UI conditionally omits them.
         const mappedData: PublicQuotationData & Record<string, any> = {
-          ...row,
+          ...quote,
           org_name: org?.name ?? null,
           org_logo: org?.logo_url ?? null,
           org_whatsapp: org?.whatsapp ?? null,
           org_primary_color: org?.primary_color ?? null,
-          installments: parseInstallments(row.installments),
+          installments: parseInstallments(quote.installments),
 
           // Relational sections — sorted, never faked
-          itinerary: ([...((row as Record<string, any>).itinerary_days ?? [])]
+          itinerary: ([...(quote.itinerary_days ?? [])]
             .sort((a: any, b: any) => a.day_number - b.day_number)
           ),
-          flights_data: ([...((row as Record<string, any>).flights ?? [])]
+          flights_data: ([...(quote.flights ?? [])]
             .sort((a: any, b: any) => {
               if (a.direction === 'outbound' && b.direction === 'return') return -1;
               if (a.direction === 'return' && b.direction === 'outbound') return 1;
               return 0;
             })
           ),
-          transfers: ([...((row as Record<string, any>).quote_transfers ?? [])]
+          transfers: ([...(quote.quote_transfers ?? [])]
             .sort((a: any, b: any) => a.order_position - b.order_position)
           ),
-          price_items: ([...((row as Record<string, any>).quote_price_items ?? [])]
+          price_items: ([...(quote.quote_price_items ?? [])]
             .sort((a: any, b: any) => a.order_position - b.order_position)
           ),
-          includes_items: ([...((row as Record<string, any>).quote_includes ?? [])]
+          includes_items: ([...(quote.quote_includes ?? [])]
             .sort((a: any, b: any) => a.order_position - b.order_position)
           ),
-          excursions: ([...((row as Record<string, any>).quote_experiences ?? [])]
+          excursions: ([...(quote.quote_experiences ?? [])]
             .sort((a: any, b: any) => a.order_position - b.order_position)
           ),
         };

@@ -13,7 +13,6 @@ import { MediaUploader } from '@/components/ui/MediaUploader';
 import { AvatarUploader } from '@/components/ui/AvatarUploader';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useCreateClient, useUpdateClient, useClient } from '@/hooks/useClients';
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
 const ORIGIN_OPTIONS = ['Instagram', 'Indicação', 'Google', 'Facebook', 'WhatsApp', 'Site', 'Evento', 'Outro'];

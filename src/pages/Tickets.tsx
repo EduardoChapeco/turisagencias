@@ -1,9 +1,8 @@
 import { useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
 import {
   LifeBuoy, Plus, Clock, AlertCircle, CheckCircle2,
-  Search, Filter, SortAsc, Mail, Phone, MessageSquare,
-  Monitor, X, ChevronRight, Calendar, User, Tag
+  Search, Mail, Phone, MessageSquare,
+  Monitor, X, ChevronRight, User, Tag
 } from 'lucide-react';
 import { AppLayout } from '@/components/AppLayout';
 import { useTickets, useCreateTicket, type Ticket } from '@/hooks/useTickets';
@@ -16,7 +15,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { SheetPage } from '@/components/ui/SheetPage';
-import { QuotationDetailSheet } from '@/components/QuotationDetailSheet';
+import { PageHeader } from '@/components/ui/PageHeader';
 import { TicketDetailSheet } from '@/components/TicketDetailSheet';
 import { useGroupTrips } from '@/hooks/useGroupTrips';
 
@@ -79,9 +78,8 @@ const CREATE_SECTIONS = [
 function TicketCreateSheet({ open, onClose, onCreated }: { open: boolean; onClose: () => void; onCreated: (id: string) => void }) {
   const createTicket = useCreateTicket();
   const { data: groupTrips } = useGroupTrips();
-  const { organization } = useAuthStore();
+  const { organization, user } = useAuthStore();
   const { data: team } = useTeamMembers(organization?.id);
-  const navigate = useNavigate();
 
   const [form, setForm] = useState({
     title: '',
@@ -109,7 +107,7 @@ function TicketCreateSheet({ open, onClose, onCreated }: { open: boolean; onClos
       sla_hours: parseInt(form.sla_hours) || 24,
       client_id: form.client_id || null,
       group_trip_id: form.group_trip_id || null,
-      assigned_to: form.assigned_to || null,
+      assigned_to: form.assigned_to || user?.id || null,
     });
     onClose();
     if (result?.id) onCreated(result.id);
@@ -298,7 +296,7 @@ function TicketCard({ ticket, onClick }: { ticket: Ticket; onClick: () => void }
   return (
     <div
       onClick={onClick}
-      className="group bg-white border border-zinc-200/80 rounded-[2rem] p-6 hover:border-vj-green/40 hover:bg-vj-green/[0.015] transition-all cursor-pointer flex flex-col gap-4 shadow-none"
+      className="group bg-white border border-zinc-200/80 rounded-xl p-4 hover:border-vj-green/40 hover:bg-vj-green/[0.015] transition-all cursor-pointer flex flex-col gap-3 shadow-none"
     >
       {/* Header Row */}
       <div className="flex items-start justify-between gap-3">
@@ -358,7 +356,6 @@ function TicketCard({ ticket, onClick }: { ticket: Ticket; onClick: () => void }
 
 /* ── Main Page ── */
 export default function Tickets() {
-  const navigate = useNavigate();
   const [createOpen, setCreateOpen] = useState(false);
   const [activeStatus, setActiveStatus] = useState('all');
   const [search, setSearch] = useState('');
@@ -388,35 +385,31 @@ export default function Tickets() {
 
   return (
     <AppLayout>
-      <div className="space-y-6 max-w-[1400px] mx-auto pb-10 px-4 sm:px-6 mt-4">
+      <div className="space-y-4 max-w-[1400px] mx-auto pb-10 px-3 sm:px-4">
 
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-[2rem] border border-zinc-200/60 shadow-none">
-          <div>
-            <h1 className="font-heading text-2xl font-bold flex items-center gap-2">
-              <LifeBuoy className="text-vj-green" /> Central de Atendimento
-            </h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              Protocolos, solicitações e suporte aos viajantes com linha do tempo completa.
-            </p>
-          </div>
+        <PageHeader
+          title="Central de Atendimento"
+          description="Protocolos, solicitações e suporte aos viajantes com linha do tempo completa."
+          icon={LifeBuoy}
+          actions={
           <Button
             onClick={() => setCreateOpen(true)}
-            className="rounded-full px-6 h-11 bg-vj-green hover:bg-vj-green/90 shadow-none font-bold transition-all active:scale-95"
+            className="rounded-full px-5 h-10 bg-vj-green hover:bg-vj-green/90 shadow-none font-bold transition-all active:scale-95"
           >
-            <Plus size={18} className="mr-2" /> Novo Protocolo
+            <Plus size={16} className="mr-2" /> Novo Protocolo
           </Button>
-        </div>
+          }
+        />
 
         {/* Filters Bar */}
         <div className="flex flex-col sm:flex-row gap-3">
           {/* Status Tabs */}
-          <div className="flex gap-1 bg-zinc-100 p-1 rounded-2xl">
+          <div className="flex h-10 gap-1 bg-zinc-100 p-1 rounded-xl">
             {TABS.map(tab => (
               <button
                 key={tab.key}
                 onClick={() => setActiveStatus(tab.key)}
-                className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 ${
+                className={`px-3 h-8 rounded-lg text-sm font-semibold transition-all flex items-center gap-2 ${
                   activeStatus === tab.key
                     ? 'bg-white text-zinc-900 border border-zinc-200'
                     : 'text-zinc-500 hover:text-zinc-700'
@@ -441,7 +434,7 @@ export default function Tickets() {
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Buscar por assunto..."
-              className="pl-9 h-10 rounded-2xl bg-white border-zinc-200"
+              className="pl-9 h-10 rounded-xl bg-white border-zinc-200"
             />
             {search && (
               <button
@@ -457,10 +450,10 @@ export default function Tickets() {
         {/* Content */}
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-            {[1,2,3,4,5,6].map(i => <Skeleton key={i} className="h-44 rounded-[2rem]" />)}
+            {[1,2,3,4,5,6].map(i => <Skeleton key={i} className="h-44 rounded-xl" />)}
           </div>
         ) : !tickets?.length ? (
-          <div className="flex-1 flex flex-col items-center justify-center bg-white/50 rounded-[2rem] border border-dashed border-zinc-300 p-16 text-center">
+          <div className="flex-1 flex flex-col items-center justify-center bg-white/50 rounded-xl border border-dashed border-zinc-300 p-16 text-center">
             <div className="p-4 bg-zinc-100 rounded-full mb-4">
               <LifeBuoy className="h-8 w-8 text-zinc-400" />
             </div>

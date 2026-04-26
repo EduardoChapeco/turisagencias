@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Plus, CheckSquare, Eye, Users } from 'lucide-react';
 import { AppLayout } from '@/components/AppLayout';
 import { PageHeader } from '@/components/ui/PageHeader';
@@ -38,6 +38,7 @@ function QuickAddForm({ boardId, columnId, onCancel }: { boardId: string; column
       board_id: boardId, 
       column_id: columnId, 
       title: title.trim(),
+      assigned_to: user?.id ?? null,
     } as Record<string, any>);
     setTitle('');
     onCancel();
@@ -59,9 +60,30 @@ function QuickAddForm({ boardId, columnId, onCancel }: { boardId: string; column
 }
 
 /* ── Task Column ── */
-function TaskColumn({ column, cards, boardId, onCardClick }: { column: KanbanColumnData; cards: TaskCardData[]; boardId: string; onCardClick: (card: TaskCardData) => void }) {
+function TaskColumn({
+  column,
+  cards,
+  boardId,
+  onCardClick,
+  quickAddRequested,
+  onQuickAddHandled,
+}: {
+  column: KanbanColumnData;
+  cards: TaskCardData[];
+  boardId: string;
+  onCardClick: (card: TaskCardData) => void;
+  quickAddRequested?: boolean;
+  onQuickAddHandled?: () => void;
+}) {
   const { setNodeRef } = useSortable({ id: column.id, data: { type: 'Column', column } });
   const [showQuickAdd, setShowQuickAdd] = useState(false);
+
+  useEffect(() => {
+    if (quickAddRequested) {
+      setShowQuickAdd(true);
+      onQuickAddHandled?.();
+    }
+  }, [quickAddRequested, onQuickAddHandled]);
 
   // Sort: cards ordered by position, or fallback to due_date
   const sortedCards = useMemo(() => {
@@ -118,6 +140,7 @@ export default function TasksKanban() {
   const [activeCard, setActiveCard] = useState<TaskCardData | null>(null);
   const [selectedCard, setSelectedCard] = useState<TaskCardData | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [quickAddColumnId, setQuickAddColumnId] = useState<string | null>(null);
   
   // Filter state: 'me' vs 'all'
   const [viewMode, setViewMode] = useState<'me' | 'all'>('me');
@@ -178,7 +201,7 @@ export default function TasksKanban() {
   return (
     <AppLayout fullHeight>
       <div className="flex flex-col h-full min-h-0">
-        <div className="flex-shrink-0 pb-3 flex justify-between items-end">
+        <div className="flex-shrink-0 pb-2">
           <PageHeader
             title="Minhas Tarefas"
             description="Organize o seu dia. Tickets e tarefas vinculadas caem aqui."
@@ -188,18 +211,29 @@ export default function TasksKanban() {
                 {viewMode === 'me' ? myCardsCount : allCardsCount} tarefas
               </StatusBadge>
             }
+            actions={
+              <div className="flex items-center gap-2 flex-wrap justify-end">
+                <Button
+                  size="sm"
+                  className="h-10 rounded-full gap-2"
+                  onClick={() => setQuickAddColumnId(data?.columns?.[0]?.id ?? null)}
+                  disabled={!data?.columns?.length}
+                >
+                  <Plus size={15} /> Nova Tarefa
+                </Button>
+                <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as 'me' | 'all')} className="w-[300px]">
+                  <TabsList className="grid w-full grid-cols-2 h-10">
+                    <TabsTrigger value="me" className="flex items-center gap-2 text-xs">
+                      <Eye size={14}/> Meu Board
+                    </TabsTrigger>
+                    <TabsTrigger value="all" className="flex items-center gap-2 text-xs">
+                      <Users size={14}/> Geral
+                    </TabsTrigger>
+                  </TabsList>
+                </Tabs>
+              </div>
+            }
           />
-
-          <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as 'me' | 'all')} className="w-[300px]">
-             <TabsList className="grid w-full grid-cols-2">
-                 <TabsTrigger value="me" className="flex items-center gap-2 text-xs">
-                     <Eye size={14}/> Meu Board
-                 </TabsTrigger>
-                 <TabsTrigger value="all" className="flex items-center gap-2 text-xs">
-                     <Users size={14}/> Geral (Todos)
-                 </TabsTrigger>
-             </TabsList>
-          </Tabs>
         </div>
 
         {!data?.columns?.length ? (
@@ -218,7 +252,15 @@ export default function TasksKanban() {
             <div className="kanban-board flex-1 min-h-0">
               <SortableContext items={data.columns.map((c) => c.id)}>
                 {data.columns.map((column) => (
-                  <TaskColumn key={column.id} column={column as KanbanColumnData} cards={groupedCards.get(column.id) ?? []} boardId={data.board.id} onCardClick={(c) => { setSelectedCard(c); setSheetOpen(true); }} />
+                  <TaskColumn
+                    key={column.id}
+                    column={column as KanbanColumnData}
+                    cards={groupedCards.get(column.id) ?? []}
+                    boardId={data.board.id}
+                    onCardClick={(c) => { setSelectedCard(c); setSheetOpen(true); }}
+                    quickAddRequested={quickAddColumnId === column.id}
+                    onQuickAddHandled={() => setQuickAddColumnId(null)}
+                  />
                 ))}
               </SortableContext>
             </div>

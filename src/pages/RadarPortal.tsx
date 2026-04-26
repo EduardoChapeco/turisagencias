@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { AppLayout } from '@/components/AppLayout';
 import { useRadarNews, useTriggerRadarCrawler } from '@/hooks/useAiRadar';
-import { Radar, RefreshCw, AlertTriangle, Newspaper, ExternalLink, Filter } from 'lucide-react';
+import { Radar, RefreshCw, AlertTriangle, Newspaper, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { PageHeader } from '@/components/ui/PageHeader';
 
 export default function RadarPortal() {
   const { data: news, isLoading, refetch } = useRadarNews();
@@ -27,27 +28,18 @@ export default function RadarPortal() {
 
   return (
     <AppLayout>
-      <div className="space-y-6 max-w-[1500px] mx-auto pb-10 px-4 sm:px-6 mt-4">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-zinc-200">
-          <div>
-            <div className="flex items-center gap-3 mb-2">
-              <span className="bg-indigo-100 text-indigo-600 p-2 rounded-xl">
-                <Newspaper className="w-6 h-6" />
-              </span>
-              <h1 className="font-heading text-4xl font-extrabold tracking-tight">Portal de Notícias</h1>
-            </div>
-            <p className="text-muted-foreground max-w-2xl">
-              Curadoria inteligente em tempo real. Filtramos conteúdos globais para fornecer atualizações estratégicas voltadas ao turismo B2B e operações de agências.
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-             <Button variant="outline" className="h-12 rounded-xl px-6" onClick={handleScan} disabled={isScanning}>
+      <div className="space-y-4 max-w-[1500px] mx-auto pb-10 px-3 sm:px-4">
+        <PageHeader
+          title="Radar de Mercado"
+          description="Curadoria de notícias e alertas relevantes para turismo, operação e vendas."
+          icon={Newspaper}
+          actions={
+             <Button variant="outline" className="h-10 rounded-full px-5" onClick={handleScan} disabled={isScanning}>
                 <RefreshCw className={`w-4 h-4 mr-2 ${isScanning ? 'animate-spin' : ''}`} />
-                {isScanning ? 'Sincronizando...' : 'Atualizar Portal'}
+                {isScanning ? 'Sincronizando...' : 'Atualizar Radar'}
              </Button>
-          </div>
-        </div>
+          }
+        />
 
         {/* Filters */}
         <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
@@ -56,7 +48,7 @@ export default function RadarPortal() {
             className="rounded-full"
             onClick={() => setActiveFilter(null)}
           >
-            Todas as Notícias
+            Tudo
           </Button>
           {tags.map(tag => (
             <Button 
@@ -116,7 +108,7 @@ export default function RadarPortal() {
                        item.ai_relevance_score >= 90 ? (isFeatured ? 'bg-green-500/20 text-green-400' : 'bg-green-100 text-green-700') :
                        (isFeatured ? 'bg-amber-500/20 text-amber-400' : 'bg-amber-100 text-amber-700')
                     }`}>
-                       Score: {item.ai_relevance_score}
+                       Relevância: {item.ai_relevance_score}
                     </div>
                   </div>
 

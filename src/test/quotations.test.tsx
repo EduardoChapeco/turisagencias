@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -22,6 +22,9 @@ vi.mock('@/integrations/supabase/client', () => ({
           then: (cb: (v: unknown) => void) => cb({ data: [], error: null }),
         }),
         eq: vi.fn().mockReturnValue({
+          order: vi.fn().mockReturnValue({
+            then: (cb: (v: unknown) => void) => cb({ data: [], error: null }),
+          }),
           maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
         }),
       }),
@@ -37,7 +40,6 @@ vi.mock('@/integrations/supabase/client', () => ({
 }));
 
 import Quotations from '@/pages/Quotations';
-import QuotationNew from '@/pages/QuotationNew';
 
 function renderWithProviders(ui: React.ReactElement, route = '/quotations') {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -62,17 +64,14 @@ describe('Quotations Page', () => {
 
   it('renders quotations list with title', () => {
     renderWithProviders(<Quotations />);
-    expect(screen.getByRole('heading', { name: 'Cotações' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /propostas/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /nova cotação/i })).toBeInTheDocument();
   });
-});
 
-describe('Quotation New Page', () => {
-  beforeEach(() => vi.clearAllMocks());
-
-  it('renders quotation creation form with AI upload', () => {
-    renderWithProviders(<QuotationNew />, '/quotations/new');
-    expect(screen.getByRole('heading', { name: /nova cotação/i })).toBeInTheDocument();
-    expect(screen.getByText(/extração por ia/i)).toBeInTheDocument();
+  it('opens quotation creation in a SheetPage instead of a route page', () => {
+    renderWithProviders(<Quotations />);
+    fireEvent.click(screen.getByRole('button', { name: /nova cotação/i }));
+    expect(screen.getByRole('dialog')).toHaveTextContent(/construtor de cota/i);
+    expect(screen.getAllByText(/hospedagem/i).length).toBeGreaterThan(0);
   });
 });

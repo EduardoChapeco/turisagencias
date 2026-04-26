@@ -50,6 +50,13 @@ export default function PortalTripDetail() {
   }));
 
   const hasItinerary = mappedStops.length > 0;
+  const whatsappDigits = String((organization as Record<string, any>).whatsapp ?? '').replace(/\D/g, '');
+  const whatsappPhone = whatsappDigits
+    ? (whatsappDigits.startsWith('55') ? whatsappDigits : `55${whatsappDigits}`)
+    : null;
+  const agentContactUrl = whatsappPhone
+    ? `https://wa.me/${whatsappPhone}?text=${encodeURIComponent(`Ola! Gostaria de falar sobre a viagem ${trip.title}.`)}`
+    : null;
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 text-foreground pb-20 font-sans">
@@ -210,7 +217,15 @@ export default function PortalTripDetail() {
                           <Bot className="w-8 h-8 shrink-0 text-amber-300" />
                           <div>
                             <p className="text-sm font-medium leading-tight mb-2">Já pensou em adicionar um <strong>seguro viagem</strong> ou um passeio especial ao seu roteiro?</p>
-                            <Button size="sm" variant="secondary" className="w-full rounded-xl bg-white text-indigo-700 hover:bg-gray-50 text-xs font-bold" onClick={() => navigate(`/portal/${org_slug}/trip/${id}/chat`)}>
+                            <Button
+                              size="sm"
+                              variant="secondary"
+                              className="w-full rounded-xl bg-white text-indigo-700 hover:bg-gray-50 text-xs font-bold"
+                              onClick={() => {
+                                if (agentContactUrl) window.open(agentContactUrl, '_blank', 'noopener,noreferrer');
+                              }}
+                              disabled={!agentContactUrl}
+                            >
                               Falar com meu Agente
                             </Button>
                           </div>

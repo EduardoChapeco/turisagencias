@@ -2330,7 +2330,7 @@ export type Database = {
           id: string
           is_public: boolean | null
           org_id: string | null
-          public_token: string | null
+          public_token: string
           read_time_minutes: number | null
           title: string | null
         }
@@ -3958,11 +3958,10 @@ export type Database = {
           pax_infantil: number | null
           pax_seniores: number | null
           pricing_mode: string | null
-          public_token: string | null
+          public_token: string
           return_date: string | null
           room_type: string | null
           sent_at: string | null
-          share_token: string | null
           source_file_url: string | null
           status: string
           tarifa_base: number | null
@@ -4023,11 +4022,10 @@ export type Database = {
           pax_infantil?: number | null
           pax_seniores?: number | null
           pricing_mode?: string | null
-          public_token?: string | null
+          public_token?: string
           return_date?: string | null
           room_type?: string | null
           sent_at?: string | null
-          share_token?: string | null
           source_file_url?: string | null
           status?: string
           tarifa_base?: number | null
@@ -4088,11 +4086,10 @@ export type Database = {
           pax_infantil?: number | null
           pax_seniores?: number | null
           pricing_mode?: string | null
-          public_token?: string | null
+          public_token?: string
           return_date?: string | null
           room_type?: string | null
           sent_at?: string | null
-          share_token?: string | null
           source_file_url?: string | null
           status?: string
           tarifa_base?: number | null
@@ -4584,9 +4581,13 @@ export type Database = {
           attachments: string[]
           content: string
           created_at: string
+          email_message_id: string | null
           id: string
           is_internal: boolean
+          message_type: string
+          sender_email: string | null
           sender_id: string | null
+          sender_name: string | null
           sender_type: string
           ticket_id: string
         }
@@ -4594,9 +4595,13 @@ export type Database = {
           attachments?: string[]
           content: string
           created_at?: string
+          email_message_id?: string | null
           id?: string
           is_internal?: boolean
+          message_type?: string
+          sender_email?: string | null
           sender_id?: string | null
+          sender_name?: string | null
           sender_type?: string
           ticket_id: string
         }
@@ -4604,9 +4609,13 @@ export type Database = {
           attachments?: string[]
           content?: string
           created_at?: string
+          email_message_id?: string | null
           id?: string
           is_internal?: boolean
+          message_type?: string
+          sender_email?: string | null
           sender_id?: string | null
+          sender_name?: string | null
           sender_type?: string
           ticket_id?: string
         }
@@ -5671,7 +5680,7 @@ export type Database = {
           p_traveler_email?: string
           p_traveler_name: string
         }
-        Returns: undefined
+        Returns: boolean
       }
       create_notification: {
         Args: {
@@ -5724,20 +5733,7 @@ export type Database = {
       }
       get_public_quotation: {
         Args: { _token: string }
-        Returns: {
-          check_in: string
-          check_out: string
-          client_id: string
-          currency: string
-          destination: string
-          hotel_name: string
-          id: string
-          org_id: string
-          org_logo: string
-          org_name: string
-          status: string
-          total_price: number
-        }[]
+        Returns: Json
       }
       has_role: {
         Args: {

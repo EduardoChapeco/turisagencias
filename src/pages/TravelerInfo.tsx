@@ -1,4 +1,3 @@
-import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { Plus, Search, Book, Globe2, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
 import { AppLayout } from '@/components/AppLayout';
@@ -24,7 +23,6 @@ import {
 import { TravelerInfoEdit } from './TravelerInfoEdit';
 
 export default function TravelerInfo() {
-  const navigate = useNavigate();
   const { data: pages, isLoading } = useTravelerInfoPages();
   const deletePage = useDeleteTravelerInfoPage();
   const [searchTerm, setSearchTerm] = useState('');

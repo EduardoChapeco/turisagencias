@@ -1,4 +1,3 @@
-import { useNavigate } from 'react-router-dom';
 import { Plus, Search, Map, Globe2, BookOpen } from 'lucide-react';
 import { AppLayout } from '@/components/AppLayout';
 import { useGuides } from '@/hooks/useGuides';
@@ -12,7 +11,6 @@ import { PageHeader } from '@/components/ui/PageHeader';
 import { GuideEdit } from './GuideEdit';
 
 export default function Guides() {
-  const navigate = useNavigate();
   const { data: guides, isLoading } = useGuides();
   const [searchTerm, setSearchTerm] = useState('');
   const [editSheet, setEditSheet] = useState<{ open: boolean; id: string | null }>({ open: false, id: null });

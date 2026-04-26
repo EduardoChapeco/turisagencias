@@ -1,4 +1,3 @@
-import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { AppLayout } from '@/components/AppLayout';
 import { useHotels } from '@/hooks/useHotels';
@@ -10,7 +9,6 @@ import { StatusBadge } from '@/components/ui/StatusBadge';
 import { HotelEdit } from './HotelEdit';
 
 export default function Hotels() {
-  const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [editSheet, setEditSheet] = useState<{ open: boolean; id: string | null }>({ open: false, id: null });
   const { data: hotels, isLoading } = useHotels(search || undefined);

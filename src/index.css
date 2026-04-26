@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap');
 @import './styles/viaja-public.css';
 @import './styles/premium-design.css';
 
@@ -7,334 +7,130 @@
 @tailwind utilities;
 
 @layer base {
-
-  /* Variáveis e Reset PRD - Template CSS Base */
   :root {
-    /* Superfícies */
-    --bg:       #f7f7f5;
+    /* 🎨 OMEGA v4.0 CORE PALETTE - SHADOWLESS & PREMIUM */
+    --bg:       #fcfcfb;
     --white:    #ffffff;
     
-    /* Bordas */
-    --border:   #e5e4e0;
-    --border2:  #d0cfc9;
+    /* Surfaces */
+    --vj-bg: #f8f9fa;
+    --vj-bg-dark: #09090b;
+    --vj-surface: #ffffff;
     
-    /* Texto */
-    --txt:      #111110;
-    --txt2:     #6b6a66;
-    --txt3:     #9b9a96;
+    /* Primary / Actions */
+    --vj-green: #22c55e;
+    --vj-green-light: #f0fdf4;
+    --vj-blue: #3b82f6;
     
-    /* Semânticos */
-    --green:     #1a7a4a;  
-    --green-bg:  #f0faf4;
-    --orange:    #d4511a;  
-    --orange-bg: #fff4ee;
-    --blue:      #1a5fa8;  
-    --blue-bg:   #f0f5ff;
-    --red:       #c0392b;  
-    --red-bg:    #fde8e6;
-    --yellow:    #a67c00;
+    /* Borders & Accents */
+    --vj-border: #e4e4e7;
+    --vj-border-light: rgba(228, 228, 231, 0.5);
     
-    /* Raios */
-    --r:    16px;
-    --r-lg: 22px;
-    --r-xl: 28px;
+    /* Typography */
+    --vj-txt: #09090b;
+    --vj-txt2: #52525b;
+    --vj-txt3: #a1a1aa;
+    
+    /* Radius - Keeping the Premium OMEGA feel */
+    --radius: 12px;
+    --r-xl: 2rem;
+    --r-2xl: 2.5rem;
 
-    /* Shadcn/UI fallback mapping to strictly obey Viaja */
-    /* Shadcn takes HSL, we approximate via variables where possible, or just force Viaja colors */
-    --background: 40 6% 97%; /* #f7f7f5 */
-    --foreground: 0 0% 7%; /* #111110 */
-    
+    /* Shadcn/UI mapping */
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 7%;
-    
+    --card-foreground: 240 10% 3.9%;
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 7%;
-    
-    --primary: 150 64% 29%; /* #1a7a4a */
-    --primary-foreground: 0 0% 100%;
-    
-    --secondary: 40 5% 92%;
-    --secondary-foreground: 0 0% 7%;
-    
-    --muted: 40 5% 96%;
-    --muted-foreground: 41 3% 41%; /* #6b6a66 */
-    
-    --accent: 150 64% 29%;
-    --accent-foreground: 0 0% 100%;
-    
-    --destructive: 6 78% 46%; /* #c0392b */
-    --destructive-foreground: 0 0% 100%;
-    
-    /* Ensure border variables for shadcn match Viaja --border #e5e4e0 */
-    --input: 45 4% 89%; /* #e5e4e0 */
-    --ring: 150 64% 29%;
-    --radius: 10px;
-
-    /* Sidebar Variables - Forced to Viaja Neutrals */
-    --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 0 0% 7%;
-    --sidebar-primary: 150 64% 29%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 40 5% 96%;
-    --sidebar-accent-foreground: 0 0% 7%;
-    --sidebar-border: 45 4% 89%;
-    --sidebar-ring: 150 64% 29%;
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 142.1 76.2% 36.3%;
+    --primary-foreground: 355.7 100% 97.3%;
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 142.1 76.2% 36.3%;
   }
 
-  /* No dark mode allowed in Viaja PRD */
-  .dark {
-    /* Mirrored from light to prevent accidental dark mode issues */
-    --background: 40 6% 97%;
-    --foreground: 0 0% 7%;
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 7%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 7%;
-    --primary: 150 64% 29%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 40 5% 92%;
-    --secondary-foreground: 0 0% 7%;
-    --muted: 40 5% 96%;
-    --muted-foreground: 41 3% 41%;
-    --accent: 150 64% 29%;
-    --accent-foreground: 0 0% 100%;
-    --destructive: 6 78% 46%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 45 4% 89%;
-    --input: 45 4% 89%;
-    --ring: 150 64% 29%;
-    --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 0 0% 7%;
-    --sidebar-primary: 150 64% 29%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 40 5% 96%;
-    --sidebar-accent-foreground: 0 0% 7%;
-    --sidebar-ring: 150 64% 29%;
-  }
-
-  /* LEI PÉTREA: PROIBIÇÃO ABSOLUTA DE SOMBRAS */
+  /* 🏛️ PREMIUM GLOBAL STRUCTURE - NO SHADOWS */
   *, *::before, *::after { 
-    border-color: var(--border); 
+    border-color: var(--vj-border); 
     box-sizing: border-box; 
     margin: 0; 
     padding: 0; 
-    box-shadow: none !important; 
-    text-shadow: none !important; 
-    --tw-shadow: 0 0 #0000 !important;
-    --tw-shadow-colored: 0 0 #0000 !important;
-    --tw-ring-shadow: 0 0 #0000 !important;
-    filter: drop-shadow(0 0 0 transparent) !important;
+    box-shadow: none !important; /* The ONLY shadow rule */
+    -webkit-transform: translateZ(0); /* Safari hardware acceleration fix */
+    transition: background-color 0.2s, border-color 0.2s, transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
   
-  html {
-    scroll-behavior: smooth;
-  }
-  
-  body {
-    background-color: var(--bg);
-    color: var(--txt);
+  html, body {
+    height: 100%;
+    background-color: var(--vj-bg);
+    color: var(--vj-txt);
     font-family: "Inter", sans-serif;
     -webkit-font-smoothing: antialiased;
     font-size: 14px;
     line-height: 1.6;
+    overflow: hidden;
   }
   
-  button, input, select, textarea { font-family: inherit; }
-  button { cursor: pointer; }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
 
-  h1, h2, h3, h4, h5, h6, .font-heading {
-    font-family: 'Inter', sans-serif; /* Fallback until PRD exception is hit */
+  /* 🕵️ HIDDEN SCROLLBARS (CLEAN UI) */
+  ::-webkit-scrollbar {
+    display: none !important;
+  }
+  
+  * {
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+  }
+}
+
+@layer components {
+  /* 💎 PREMIUM GLASS (WITHOUT SHADOWS) */
+  .glass-card {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+  }
+
+  /* 📦 BENTO GRID V4 - PREMIUM RADIUS, NO SHADOWS */
+  .bento-card {
+    position: relative;
+    border-radius: var(--r-xl);
+    border: 1px solid var(--vj-border);
+    background: white;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .bento-card:hover {
+    transform: translateY(-4px) scale(1.01);
+    border-color: var(--vj-green);
+    background: var(--vj-bg);
+  }
+
+  /* 🚀 PREMIUM BUTTONS */
+  .premium-button {
+    @apply relative inline-flex items-center justify-center px-6 py-3 font-bold text-white transition-all duration-300 bg-vj-green rounded-full overflow-hidden hover:scale-105 active:scale-95 shadow-none;
   }
 }
 
 @layer utilities {
-  .scrollbar-none {
-    scrollbar-width: none;
-    -ms-overflow-style: none;
+  .no-scrollbar {
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
   }
-  .scrollbar-none::-webkit-scrollbar {
-    display: none;
+  .no-scrollbar::-webkit-scrollbar {
+    display: none !important;
   }
-  .scrollbar-thin {
-    scrollbar-width: thin;
-    scrollbar-color: var(--border) transparent;
-  }
-  .text-balance {
-    text-wrap: balance;
-  }
-
-  /* Utility classes via PRD */
-  .tag-green { background-color: var(--green-bg); color: var(--green); }
-  .tag-orange { background-color: var(--orange-bg); color: var(--orange); }
-  .tag-blue { background-color: var(--blue-bg); color: var(--blue); }
-  .tag-gray { background-color: var(--bg); color: var(--txt3); }
-  .tag-red { background-color: var(--red-bg); color: var(--red); }
-  
-  .note-card { background-color: var(--green-bg); border-left: 4px solid var(--green); }
-  .note-card-orange { background-color: var(--orange-bg); border-left: 4px solid var(--orange); }
-  .note-card-blue { background-color: var(--blue-bg); border-left: 4px solid var(--blue); }
-
-  /* Surface utility */
-  .surface-card { background-color: var(--white); border: 1px solid var(--border); border-radius: var(--r); }
 }
-
-/* Animations */
-@keyframes fade-in {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-.animate-in {
-  animation: fade-in 0.25s ease-out forwards;
-}
-
-/* Focus visibility override PRD */
-*:focus-visible {
-  outline: 3px solid rgba(26,122,74,.15);
-  outline-offset: 2px;
-  border-radius: 4px;
-}
-
-/* BentoGrid legacy from design-system.css */
-.bento-grid {
-  display: grid;
-  gap: 12px;
-  width: 100%;
-}
-
-.bento-cell {
-  background-color: var(--white);
-  border: 1px solid var(--border);
-  border-radius: var(--r);
-  overflow: hidden;
-}
-
-.bento-cell:hover {
-  background-color: var(--bg);
-  transition: background-color 150ms ease;
-}
-
-/* Tamanhos de cell */
-.bento-cell-sm   { grid-column: span 1; }
-.bento-cell-md   { grid-column: span 2; }
-.bento-cell-lg   { grid-column: span 3; }
-.bento-cell-full { grid-column: 1 / -1; }
-.bento-cell-tall { grid-row: span 2; }
-
-/* ─────────────────────────────────────────────
-   LAZY IMAGE
-   ───────────────────────────────────────────── */
-.lazy-image-wrapper {
-  position: relative;
-  overflow: hidden;
-  background-color: var(--bg);
-  border-radius: var(--r);
-}
-
-.lazy-image-wrapper img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-  transition: opacity 350ms ease;
-}
-
-.lazy-image-wrapper img.loading {
-  opacity: 0;
-}
-
-.lazy-image-skeleton {
-  position: absolute;
-  inset: 0;
-  background-color: var(--bg);
-  animation: lazy-pulse 1.6s ease-in-out infinite;
-}
-
-@keyframes lazy-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
-}
-
-/* ─────────────────────────────────────────────
-   PAGE HEADER
-   ───────────────────────────────────────────── */
-.page-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-  padding-bottom: 24px;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 24px;
-}
-
-.page-header-title {
-  font-family: 'Inter', sans-serif;
-  font-size: 24px;
-  font-weight: 700;
-  color: var(--txt);
-  line-height: 1.2;
-}
-
-.page-header-description {
-  font-size: 14px;
-  color: var(--txt2);
-  margin-top: 4px;
-  line-height: 1.6;
-}
-
-/* Kanban Forge UI Styles */
-.kanban-board { display: flex; gap: 16px; overflow-x: auto; height: 100%; min-height: 0; padding-bottom: 12px; }
-.kanban-board::-webkit-scrollbar { height: 0; }
-.kanban-board { scrollbar-width: none; }
-.kanban-column { 
-  width: 300px;
-  min-width: 290px;
-  flex-shrink: 0; 
-  display: flex; 
-  flex-direction: column; 
-  background-color: var(--white); 
-  border: 1px solid var(--border); 
-  border-radius: var(--r); 
-  overflow: hidden; 
-  max-height: 100%;
-  transition: transform 0.3s ease;
-}
-.kanban-column-header { 
-  padding: 12px 14px;
-  border-bottom: 1px solid var(--border); 
-  display: flex; 
-  align-items: center; 
-  justify-content: space-between; 
-  flex-shrink: 0; 
-  background-color: var(--bg);
-}
-.kanban-column-title { font-size: 14px; font-weight: 600; color: var(--txt); letter-spacing: 0;}
-.kanban-column-count { font-size: 11px; font-weight: 600; color: var(--txt2); background-color: var(--border); padding: 4px 10px; border-radius: 100px; }
-.kanban-cards { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 10px; min-height: 0; }
-.kanban-cards::-webkit-scrollbar { width: 4px; }
-.kanban-cards::-webkit-scrollbar-track { background: transparent; }
-.kanban-cards::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 10px; }
-.kanban-cards::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.2); }
-.kanban-card { 
-  background-color: var(--white); 
-  border: 1px solid var(--border); 
-  border-radius: var(--r); 
-  padding: 14px;
-  cursor: grab; 
-  transition: transform 0.2s ease, border-color 0.2s ease;
-  position: relative;
-  overflow: hidden;
-}
-.kanban-card:hover { 
-  border-color: var(--green);
-  transform: translateY(-2px);
-  z-index: 10;
-}
-.kanban-card:active { cursor: grabbing; transform: scale(0.98); transition-duration: 200ms; }
-.kanban-card-dragging { 
-  opacity: 0.9; 
-  border: 2px solid var(--green); 
-  transform: scale(1.02); 
-  cursor: grabbing;
-}
-.kanban-quick-add { padding: 10px 12px; border-top: 1px solid var(--border); flex-shrink: 0; background-color: var(--bg); }

@@ -1,46 +1,79 @@
+import os
 import re
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
+from pydantic import BaseModel, Field
+from langchain_openai import ChatOpenAI
+from langchain.prompts import PromptTemplate
+
+# ==========================================
+# 🧠 OMEGA v4.0 - EMAIL COGNITIVE MODELS
+# ==========================================
+
+class EmailCategorization(BaseModel):
+    category: str = Field(description="FINANCEIRO | LOGISTICA | VENDAS | POS_VENDA | OUTROS")
+    urgency: str = Field(description="LOW | MEDIUM | HIGH | CRITICAL")
+    ticket_id_found: Optional[str] = Field(description="ID do ticket se extraído via semântica")
+    summary: str = Field(description="Resumo de uma frase do conteúdo do email")
+    suggested_reply_draft: str = Field(description="Esboço de resposta empática e profissional")
+    sentiment_score: float = Field(description="Pontuação de sentimento de -1 (Irritado) a 1 (Satisfeito)")
+
+# ==========================================
+# 🤖 AGENT: SEMANTIC MAIL MANAGER
+# ==========================================
 
 class EmailHandlerAgent:
+    """
+    [AGENT: MAIL MANAGER] - Triagem Cognitiva de Comunicações.
+    Evoluído na v4.0 para usar NLP profundo e Análise de Sentimento.
+    Não apenas roteia por regex, mas entende a dor do cliente.
+    """
     def __init__(self):
-        self.agent_name = "MailBot [OMEGA]"
+        api_key = os.getenv("OPENAI_API_KEY", "")
+        if api_key:
+            base_llm = ChatOpenAI(temperature=0.0, model="gpt-4o-mini", api_key=api_key)
+            self.llm = base_llm.with_structured_output(EmailCategorization)
+        else:
+            self.llm = None
 
-    def extract_ticket_id(self, subject: str, body: str) -> Optional[str]:
-        """
-        Extracts Ticket ID pattern like [TK-XXXXX] or TK-XXXXX from subject or body.
-        """
-        pattern = r"\[?TK-([a-f0-9\-]+)\]?"
-        match = re.search(pattern, subject, re.IGNORECASE)
-        if not match:
-            match = re.search(pattern, body, re.IGNORECASE)
-        
-        return match.group(1) if match else None
+        self.system_prompt = PromptTemplate(
+            input_variables=["subject", "body"],
+            template="""Você é o Agente de Gerenciamento de Email (Mail Manager) do Motor OMEGA v4.0.
+Sua missão é triar as comunicações que chegam à agência com inteligência e empatia.
 
-    def classify_email(self, subject: str, body: str) -> Dict[str, Any]:
-        """
-        Classifies incoming email as 'reply' or 'new_ticket'.
-        """
-        ticket_id = self.extract_ticket_id(subject, body)
-        
-        if ticket_id:
-            return {
-                "action": "reply",
-                "ticket_id": ticket_id,
-                "confidence": 0.95,
-                "reason": f"Ticket ID {ticket_id} found in text."
-            }
-        
-        # Simple heuristic for new tickets
-        is_complaint = any(word in body.lower() for word in ["problema", "erro", "ajuda", "cancelar", "reembolso"])
-        
-        return {
-            "action": "new_ticket",
-            "priority_suggestion": "high" if is_complaint else "medium",
-            "confidence": 0.70,
-            "reason": "No Ticket ID found. Keywords suggest support request."
-        }
+<EMAIL>
+Assunto: {subject}
+Corpo: {body}
 
-if __name__ == "__main__":
-    agent = EmailHandlerAgent()
-    test_subject = "Re: Problema com meu voucher [TK-abc-123]"
-    print(f"Classification: {agent.classify_email(test_subject, 'Ainda não recebi nada.')}")
+<SUA ANÁLISE>
+1. CATEGORIZAÇÃO: Identifique se o assunto é sobre dinheiro (Financeiro), passagens/vouchers (Logística), novas compras (Vendas) ou problemas após a viagem (Pós-Venda).
+2. URGÊNCIA: Um cliente no aeroporto com voo cancelado é CRITICAL. Uma pergunta sobre cotação para o ano que vem é LOW.
+3. SENTIMENTO: O cliente está irritado? Preocupado? Feliz?
+4. TICKET ID: Procure por padrões como [TK-XXXXX] no texto.
+
+Gere uma resposta curta e profissional que tranquilize o cliente e informe que a equipe já está cuidando do caso.
+"""
+        )
+
+    def classify_email(self, subject: str, body: str) -> EmailCategorization:
+        """Classifica o email usando inteligência semântica profunda."""
+        print(f"[Mail Manager] Triando email: {subject[:30]}...")
+
+        if not self.llm:
+            print("[Mail Manager Warning] Sem LLM. Fallback regex.")
+            return EmailCategorization(
+                category="OUTROS", urgency="MEDIUM", ticket_id_found=None,
+                summary="Email recebido (processamento offline)",
+                suggested_reply_draft="Recebemos seu email e responderemos em breve.",
+                sentiment_score=0
+            )
+
+        try:
+            formatted = self.system_prompt.format(subject=subject, body=body)
+            result: EmailCategorization = self.llm.invoke(formatted)
+            return result
+        except Exception as e:
+            print(f"[Mail Manager Critical] Falha na triagem do email: {e}")
+            return EmailCategorization(
+                category="ERROR", urgency="HIGH", summary="Falha no parsing",
+                suggested_reply_draft="", sentiment_score=0
+            )

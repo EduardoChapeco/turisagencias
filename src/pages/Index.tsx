@@ -1,9 +1,9 @@
 import { useNavigate } from 'react-router-dom';
 import {
-  FileText, Plane, PlaneTakeoff, CalendarHeart,
-  Globe2, Newspaper, ArrowRight, DollarSign, Users2, CheckCircle2, Ticket, MapPin, Search, Book
+  FileText, PlaneTakeoff, Globe2, Newspaper, ArrowRight, TrendingUp, Zap, ShieldCheck, Activity, Plus, Search, LayoutDashboard
 } from 'lucide-react';
 import { AppLayout } from '@/components/AppLayout';
+import { PageHeader } from '@/components/ui/PageHeader';
 import { useAuthStore } from '@/stores/authStore';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -15,37 +15,28 @@ import { useRadarNews } from '@/hooks/useAiRadar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { GlobalRadarMapWidget, RadarMarker } from '@/components/GlobalRadarMapWidget';
 import { geocodeCity } from '@/utils/geocoder';
-import { AiInsightsWidget } from '@/components/AiInsightsWidget';
+import { useAiInsights } from '@/hooks/useAiInsights';
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { organization, profile } = useAuthStore();
+  const { organization } = useAuthStore();
   const [quotationBuilderOpen, setQuotationBuilderOpen] = useState(false);
   const { data: realNews, isLoading: isNewsLoading } = useRadarNews();
-
-  const hour = new Date().getHours();
-  const greeting = hour < 12 ? 'Bom dia' : hour < 18 ? 'Boa tarde' : 'Boa noite';
+  const { insights, isLoading: isAiLoading } = useAiInsights();
 
   const { data: opsStats } = useQuery({
     queryKey: ['dashboard_ops_stats', organization?.id],
     queryFn: async () => {
       const { data: groupTrips } = await supabase.from('group_trips').select('id, title, destination, current_pax, status, departure_date').eq('org_id', organization!.id);
-      const { data: qts } = await supabase.from('quotations').select('id, status').eq('org_id', organization!.id);
+      const { data: qts } = await supabase.from('quotations').select('id, total_amount').eq('org_id', organization!.id);
 
       const todayStr = new Date().toISOString().split('T')[0];
       const todayDepartures = (groupTrips || []).filter(t => t.departure_date === todayStr).length;
-      
       const traveling = (groupTrips || []).filter(t => t.status === 'traveling');
       const paxTraveling = traveling.reduce((acc, t) => acc + (t.current_pax || 1), 0);
+      const pipelineValue = (qts || []).reduce((acc, q) => acc + (Number(q.total_amount) || 0), 0);
 
-      const activeQuotations = (qts || []).filter(q => q.status === 'sent' || q.status === 'viewed').length;
-
-      return {
-        todayDepartures,
-        activeQuotations,
-        traveling,
-        paxTraveling
-      };
+      return { todayDepartures, traveling, paxTraveling, pipelineValue };
     },
     enabled: !!organization?.id
   });
@@ -54,214 +45,150 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (!opsStats?.traveling) return;
-    let isActive = true;
-
     const buildMarkers = async () => {
       const markers: RadarMarker[] = [];
-      const colors = ['#10b981', '#3b82f6', '#f43f5e', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4'];
-      
+      const colors = ['#10b981', '#3b82f6', '#f43f5e', '#f59e0b', '#8b5cf6'];
       for (let i = 0; i < opsStats.traveling.length; i++) {
         const t = opsStats.traveling[i];
-        // Split destination to separate city and country approx if needed (e.g. "Paris, France")
-        const destParts = t.destination ? t.destination.split(',') : [];
-        const res = await geocodeCity(destParts[0] || t.title, destParts[1]?.trim() || t.destination);
+        const res = await geocodeCity(t.destination?.split(',')[0] || t.title, t.destination);
         if (res && res.lat !== 0) {
-          markers.push({
-            id: t.id,
-            lat: res.lat,
-            lng: res.lng,
-            name: t.destination || t.title || 'Passageiro',
-            pax: t.current_pax || 1,
-            color: colors[i % colors.length]
-          });
+          markers.push({ id: t.id, lat: res.lat, lng: res.lng, name: t.destination || t.title, pax: t.current_pax || 1, color: colors[i % colors.length] });
         }
       }
-      if (isActive) setRadarMarkers(markers);
+      setRadarMarkers(markers);
     };
-
     buildMarkers();
-
-    return () => { isActive = false; };
   }, [opsStats?.traveling]);
-
-  // Map real news to fit the existing UI, taking top 4 most critical
-  const aiNews = (realNews || []).slice(0, 4).map(n => ({
-    id: n.id,
-    tag: n.ai_classification_tags?.[0] || 'Geral',
-    source: n.source,
-    title: n.title,
-    date: new Date(n.published_at).toLocaleDateString('pt-BR'),
-    rating: n.ai_relevance_score,
-    verified: true,
-    alert: n.is_alert,
-    url: n.url
-  }));
 
   return (
     <AppLayout>
-      <div className="space-y-6 max-w-[1500px] mx-auto pb-10 px-4 sm:px-6 mt-4">
-        {/* Header Section */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-2">
-          <div>
-            <h1 className="font-heading text-4xl font-extrabold tracking-tight">
-              {greeting}, <span className="highlight-text">{profile?.first_name || 'Gestor'}</span>
-            </h1>
-            <p className="text-muted-foreground text-sm mt-2 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-              Operações em tempo real. {opsStats?.paxTraveling || 0} viajantes espalhados pelo mundo hoje.
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            <Button variant="outline" className="premium-button border-vj-border bg-white" onClick={() => navigate('/group-trips')}>
-              <Plane className="h-4 w-4 mr-2 text-vj-green" /> Emitir Voucher
+      <PageHeader
+        title="Command Cockpit"
+        description="Monitoramento da operação global e indicadores comerciais do Turis Squad."
+        icon={LayoutDashboard}
+        actions={
+          <div className="flex items-center gap-4">
+            <Button variant="outline" size="lg" className="h-12 rounded-2xl border-vj-border bg-white px-6 font-black text-xs uppercase tracking-widest hover:bg-zinc-50 transition-all" onClick={() => navigate('/group-trips')}>
+              <Activity className="h-4 w-4 mr-3 text-vj-green" /> Ver Operação
             </Button>
-            <Button className="premium-button" onClick={() => setQuotationBuilderOpen(true)}>
-              <FileText className="h-4 w-4 mr-2" /> Iniciar Cotação
+            <Button size="lg" className="h-12 rounded-full bg-vj-green hover:bg-vj-green/90 text-white px-8 font-black text-xs uppercase tracking-widest transition-all hover:scale-105 active:scale-95 shadow-none" onClick={() => setQuotationBuilderOpen(true)}>
+              <Plus className="h-4 w-4 mr-3" /> Nova Cotação
             </Button>
           </div>
-        </div>
+        }
+      />
 
-        <AiInsightsWidget />
-
-        {/* BENTO GRID: Operations & Map */}
-        <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 gap-4">
+      <div className="space-y-10 no-scrollbar">
+        
+        {/* DASHBOARD GRID - PREMIUM BENTO (SHADOWLESS) */}
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 min-h-0">
           
-          {/* Quick Ops Panel */}
-          <div className="col-span-1 md:col-span-2 lg:col-span-2 grid grid-rows-3 gap-4">
-            <div className="bg-white border text-vj-txt border-vj-border rounded-[2rem] p-6 flex items-center justify-between cursor-pointer shadow-none hover:bg-zinc-50 transition-all" onClick={() => navigate('/kanban/departures')}>
-               <div className="flex items-center gap-4">
-                  <div className="bg-amber-100 text-amber-600 p-3 rounded-xl"><PlaneTakeoff size={24} /></div>
-                  <div>
-                     <p className="text-3xl font-extrabold">{opsStats?.todayDepartures || 0}</p>
-                     <p className="text-xs uppercase tracking-wider text-vj-txt3 font-bold mt-1">Check-ins Liberados Hoje</p>
-                  </div>
-               </div>
-               <ArrowRight className="text-vj-txt3" />
-            </div>
-
-            <div className="bg-white border text-vj-txt border-vj-border rounded-[2rem] p-6 flex items-center justify-between cursor-pointer shadow-none hover:bg-zinc-50 transition-all" onClick={() => navigate('/quotations')}>
-               <div className="flex items-center gap-4">
-                  <div className="bg-blue-100 text-blue-600 p-3 rounded-xl"><FileText size={24} /></div>
-                  <div>
-                     <p className="text-3xl font-extrabold">{opsStats?.activeQuotations || 0}</p>
-                     <p className="text-xs uppercase tracking-wider text-vj-txt3 font-bold mt-1">Cotações em Andamento</p>
-                  </div>
-               </div>
-               <ArrowRight className="text-vj-txt3" />
-            </div>
-
-            <div className="bg-white border text-vj-txt border-vj-border rounded-[2rem] p-6 flex items-center justify-between cursor-pointer shadow-none hover:bg-zinc-50 transition-all" onClick={() => navigate('/group-trips')}>
-               <div className="flex items-center gap-4">
-                  <div className="bg-green-100 text-green-600 p-3 rounded-xl"><CheckCircle2 size={24} /></div>
-                  <div>
-                     <p className="text-3xl font-extrabold">{opsStats?.traveling?.length || 0}</p>
-                     <p className="text-xs uppercase tracking-wider text-vj-txt3 font-bold mt-1 flex items-center gap-1">Vouchers Emitidos (Em viagem)</p>
-                  </div>
-               </div>
-               <ArrowRight className="text-vj-txt3" />
+          {/* Radar Map */}
+          <div className="md:col-span-8 bento-card bg-zinc-950 h-[500px] overflow-hidden relative border-none">
+            <GlobalRadarMapWidget markers={radarMarkers} interactive={false} />
+            <div className="absolute top-6 left-6 bg-black/60 backdrop-blur-xl border border-white/10 p-6 rounded-3xl">
+               <h3 className="text-white font-black text-[10px] uppercase tracking-[0.4em] flex items-center gap-3">
+                  <div className="h-2 w-2 rounded-full bg-vj-green animate-pulse" /> Radar Global
+               </h3>
+               <p className="text-zinc-400 text-xs font-bold mt-2">{opsStats?.paxTraveling || 0} passageiros ativos em trânsito.</p>
             </div>
           </div>
 
-          {/* Interactive World Map Block */}
-          <div className="col-span-1 md:col-span-2 lg:col-span-4 bg-zinc-950 rounded-[2rem] overflow-hidden relative min-h-[400px] group flex flex-col justify-between p-1">
-            <div className="absolute inset-0 z-0">
-               <GlobalRadarMapWidget markers={radarMarkers} interactive={false} />
+          {/* AI Insights Sidebar */}
+          <div className="md:col-span-4 flex flex-col gap-8">
+            <div className="bento-card p-8 flex-1 bg-white">
+              <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-vj-txt mb-8">Notificações Intel</h3>
+              <div className="space-y-6">
+                {isAiLoading ? [1,2,3].map(i => <Skeleton key={i} className="h-20 rounded-3xl" />) : 
+                  insights.map(insight => (
+                    <div key={insight.id} className="flex gap-4 p-4 rounded-2xl border border-zinc-50 bg-zinc-50/50 group hover:bg-white hover:border-vj-green/20 transition-all duration-300 cursor-help">
+                      <div className={insight.color + " h-10 w-10 shrink-0 rounded-xl flex items-center justify-center transition-transform group-hover:rotate-6"}>
+                        <insight.icon className="w-5 h-5" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-[11px] font-black text-vj-txt uppercase tracking-wider truncate">{insight.title}</p>
+                        <p className="text-xs text-vj-txt3 font-bold line-clamp-2 mt-1 leading-relaxed opacity-60">{insight.content}</p>
+                      </div>
+                    </div>
+                  ))
+                }
+              </div>
             </div>
-            
-            <div className="relative z-10 p-5 flex justify-between items-start pointer-events-none">
-               <div className="bg-zinc-950/40 backdrop-blur-md p-4 rounded-xl border border-zinc-800/50">
-                  <h3 className="text-white font-bold tracking-widest text-sm uppercase flex items-center gap-2">
-                      <Plane className="w-5 h-5 text-green-400" /> Mapa de Viajantes
-                  </h3>
-                  <p className="text-zinc-200 text-xs mt-1">{opsStats?.paxTraveling || 0} passageiros posicionados globalmente.</p>
+
+            <div className="bento-card bg-vj-bg-dark text-white p-8 border-none overflow-hidden relative group">
+               <div className="absolute -right-10 -bottom-10 p-20 opacity-[0.03] group-hover:opacity-[0.07] transition-opacity duration-700">
+                  <TrendingUp className="w-60 h-60 text-white" />
                </div>
-               <div className="flex gap-2 pointer-events-auto">
-                 <Button size="sm" variant="outline" className="bg-zinc-950/50 backdrop-blur-md border-zinc-700 text-white hover:bg-zinc-800 h-8" onClick={() => navigate('/radar-global')}>Expandir Mapa 🌍</Button>
-               </div>
-            </div>
-            <div className="relative z-10 p-5 pointer-events-auto">
-                <div className="flex items-center gap-3">
-                   <div className="bg-zinc-800/80 backdrop-blur-md rounded-xl px-4 py-2.5 border border-zinc-700/50 max-w-sm flex items-center gap-2 w-full hover:bg-zinc-800 transition-colors">
-                       <Search className="w-5 h-5 text-zinc-400" />
-                       <Input placeholder="Buscar por cliente, localizador ou voo..." className="bg-transparent border-none text-white focus-visible:ring-0 placeholder:text-zinc-400 h-6 p-0 text-sm font-medium" />
-                   </div>
-                </div>
+               <span className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-500">Pipeline Comercial</span>
+               <p className="text-4xl font-black mt-3 tracking-tighter text-vj-green">
+                  {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(opsStats?.pipelineValue || 0)}
+               </p>
+               <p className="text-[10px] font-bold text-zinc-600 mt-4 uppercase tracking-widest flex items-center gap-2">
+                  <Zap className="w-3 h-3" /> Valor Potencial de Conversão
+               </p>
             </div>
           </div>
+
+          {/* Bottom Metrics */}
+          <div className="md:col-span-3 bento-card p-8 bg-white flex flex-col justify-between group hover:border-amber-500/20 transition-all">
+             <div className="h-12 w-12 rounded-2xl bg-amber-50 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <PlaneTakeoff className="w-6 h-6 text-amber-500" />
+             </div>
+             <div>
+                <p className="text-4xl font-black tracking-tighter">{opsStats?.todayDepartures || 0}</p>
+                <p className="text-[10px] font-black uppercase text-vj-txt3 tracking-[0.2em] mt-2">Check-ins Hoje</p>
+             </div>
+          </div>
+
+          <div className="md:col-span-3 bento-card p-8 bg-vj-green text-white border-none flex flex-col justify-between group">
+             <div className="h-12 w-12 rounded-2xl bg-white/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <ShieldCheck className="w-6 h-6 text-white" />
+             </div>
+             <div>
+                <p className="text-4xl font-black tracking-tighter">Status Ativo</p>
+                <p className="text-[10px] font-black uppercase text-white/60 tracking-[0.2em] mt-2">Monitoramento IA</p>
+             </div>
+          </div>
+
+          <div className="md:col-span-6 bento-card p-8 bg-white border-vj-border flex items-center justify-between group hover:border-vj-green/20 transition-all">
+             <div>
+                <span className="text-[9px] font-black uppercase text-vj-txt3 tracking-[0.4em]">Sincronização de Rede</span>
+                <p className="text-sm font-bold text-vj-txt mt-2 flex items-center gap-2">
+                   <div className="h-1.5 w-1.5 rounded-full bg-vj-green" /> Conectado ao GDS Global v4.0
+                </p>
+             </div>
+             <Activity className="w-8 h-8 text-vj-green/30 group-hover:text-vj-green transition-colors" />
+          </div>
+
         </div>
 
-        {/* BENTO GRID: Blog & Daily Context */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 mt-8">
-           {/* Header / Sidebar for Content Hub */}
-           <div className="bg-white border border-vj-border rounded-xl p-5 lg:row-span-2 relative overflow-hidden group shadow-none">
-              <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform duration-700 pointer-events-none">
-                 <Newspaper className="w-32 h-32 text-vj-green" />
-              </div>
-              <div className="relative z-10">
-                <div className="flex items-center gap-3 mb-3">
-                    <div className="bg-vj-green text-white p-2.5 rounded-xl"><Globe2 className="w-5 h-5" /></div>
-                    <h3 className="font-extrabold tracking-tight text-xl text-vj-txt">Radar Comercial</h3>
-                </div>
+        {/* Market News */}
+        <div className="pt-12">
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-2xl font-black text-vj-txt tracking-tighter uppercase">Radar de Mercado</h2>
+            <Button variant="ghost" className="text-[10px] font-black uppercase tracking-widest text-vj-green hover:bg-vj-green/5">Sincronizar Notícias</Button>
+          </div>
 
-                <div className="space-y-4">
-                   <div>
-                      <p className="text-[11px] font-bold uppercase tracking-wider text-vj-txt3 mb-3">Filtros</p>
-                      <div className="flex flex-wrap gap-2">
-                         <span className="bg-white border border-zinc-200 text-vj-txt text-xs px-3.5 py-1.5 rounded-full font-semibold cursor-pointer hover:border-vj-green transition-colors">Mercado Aéreo</span>
-                         <span className="bg-white border border-zinc-200 text-vj-txt text-xs px-3.5 py-1.5 rounded-full font-semibold cursor-pointer hover:border-vj-green transition-colors">Destinos Nacionais</span>
-                         <span className="bg-white border border-zinc-200 text-vj-txt text-xs px-3.5 py-1.5 rounded-full font-semibold cursor-pointer hover:border-vj-green transition-colors">Regulação</span>
-                      </div>
-                   </div>
-                   
-                   <div className="pt-4 border-t border-zinc-100">
-                     <p className="text-[11px] font-bold uppercase tracking-wider text-vj-txt3 mb-3">Materiais Úteis</p>
-                     <div className="bg-white border border-dashed border-zinc-300 p-4 rounded-xl text-center cursor-pointer hover:bg-zinc-50 transition-colors">
-                        <Book className="w-5 h-5 text-vj-txt3 mx-auto mb-2" />
-                        <span className="text-xs font-semibold text-vj-txt line-clamp-1">Guia: Melhores práticas Comerciais</span>
-                     </div>
-                   </div>
-                </div>
-              </div>
-           </div>
-
-           {/* Curated Blog Articles */}
-           {isNewsLoading ? (
-             [1,2,3,4].map(i => <Skeleton key={i} className="h-[260px] rounded-xl" />)
-           ) : aiNews.length === 0 ? (
-             <div className="col-span-full lg:col-span-3 text-center py-20 bg-zinc-50/50 rounded-xl border border-dashed border-zinc-200 flex flex-col items-center justify-center">
-                <Newspaper className="w-8 h-8 text-zinc-300 mb-3" />
-                <p className="text-sm font-semibold text-vj-txt3">Nenhum informe setorial consolidado até o momento.</p>
-             </div>
-           ) : aiNews.map((news) => (
-               <div key={news.id} onClick={() => navigate('/radar')} className={`p-6 rounded-[2rem] border flex flex-col justify-between cursor-pointer transition-all duration-300 hover:-translate-y-1 shadow-none ${news.alert ? 'bg-red-50 border-red-200' : 'bg-white border-vj-border'}`}>
-                  <div>
-                      <div className="flex items-center justify-between mb-4">
-                         <div className="flex items-center gap-2">
-                             <span className={`text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-lg ${news.alert ? 'bg-red-500 text-white' : 'bg-zinc-100 text-vj-txt'}`}>{news.tag}</span>
-                         </div>
-                         <div className="flex items-center gap-1.5 text-xs font-medium text-vj-txt3 bg-zinc-50 px-2.5 py-1 rounded-full border border-zinc-100">
-                             <span className="w-1.5 h-1.5 rounded-full bg-vj-green animate-pulse" />
-                             {news.source}
-                         </div>
-                      </div>
-                      <h4 className={`font-bold leading-tight ${news.alert ? 'text-red-950 text-xl' : 'text-vj-txt text-lg'} line-clamp-3 mb-3`}>
-                          {news.title}
-                      </h4>
-                  </div>
-                  
-                  <div className="mt-4 pt-4 border-t border-zinc-100 flex items-center justify-between">
-                      <span className="text-[10px] font-bold text-vj-txt3 tracking-wider uppercase">{news.date}</span>
-                      <Button variant="ghost" size="sm" className="h-8 px-3 text-sm font-semibold hover:bg-zinc-100">Ler na íntegra</Button>
-                  </div>
-               </div>
-           ))}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+             {isNewsLoading ? [1,2,3,4].map(i => <Skeleton key={i} className="h-56 rounded-[2rem]" />) : 
+               (realNews || []).slice(0, 4).map((news: any) => (
+                 <div key={news.id} className="bento-card p-8 bg-white hover:border-vj-green/40 hover:-translate-y-2 transition-all duration-500">
+                    <span className="text-[8px] font-black uppercase px-3 py-1 bg-zinc-100 text-vj-txt3 rounded-full mb-6 inline-block tracking-widest">
+                       {news.source}
+                    </span>
+                    <h4 className="font-bold text-base leading-tight line-clamp-3 mb-6 tracking-tight">{news.title}</h4>
+                    <div className="flex items-center justify-between mt-auto">
+                       <span className="text-[10px] font-bold text-vj-txt3">{new Date(news.published_at).toLocaleDateString('pt-BR')}</span>
+                       <ArrowRight className="w-4 h-4 text-vj-green opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </div>
+                 </div>
+               ))
+             }
+          </div>
         </div>
       </div>
 
-      <QuotationBuilderSheet 
-        open={quotationBuilderOpen} 
-        onClose={() => setQuotationBuilderOpen(false)} 
-      />
+      <QuotationBuilderSheet open={quotationBuilderOpen} onClose={() => setQuotationBuilderOpen(false)} />
     </AppLayout>
   );
 }

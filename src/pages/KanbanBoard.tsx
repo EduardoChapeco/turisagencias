@@ -5,7 +5,6 @@ import { AppLayout } from '@/components/AppLayout';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { EmptyState, PageSkeleton } from '@/components/ui/EmptyState';
-import { KanbanAiLeadDialog } from '@/components/kanban/KanbanAiLeadDialog';
 import { useCreateKanbanCard, useKanbanBoard, useUpdateKanbanCard, useEnsureDefaultBoards, useKanbanRealtime } from '@/hooks/useKanbanBoards';
 import { useAuthStore } from '@/stores/authStore';
 import { useNavigate } from 'react-router-dom';
@@ -13,7 +12,6 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { KanbanSquare, X, Eye, Users } from 'lucide-react';
-import { AiInsightsWidget } from '@/components/AiInsightsWidget';
 import KanbanCardPage from './KanbanCardPage';
 import { useSearchParams } from 'react-router-dom';
 
@@ -54,6 +52,8 @@ type KanbanCardData = {
   group_trip_id: string | null;
   assigned_to: string | null;
   meta: any;
+  created_at?: string | null;
+  updated_at?: string | null;
   clients?: { name: string; phone: string | null } | null;
   quotations?: { destination: string | null } | null;
   trips?: { destination: string | null } | null;
@@ -67,6 +67,30 @@ type KanbanColumnData = {
   position: number;
   color: string | null;
 };
+
+function getCardSignals(card: KanbanCardData) {
+  const signals: Array<{ label: string; className: string }> = [];
+  const updatedAt = card.updated_at ? new Date(card.updated_at) : null;
+  const inactiveDays = updatedAt && !Number.isNaN(updatedAt.getTime())
+    ? Math.floor((Date.now() - updatedAt.getTime()) / 86400000)
+    : 0;
+
+  if (inactiveDays >= 7) {
+    signals.push({ label: 'Frio', className: 'bg-red-50 text-red-700 border-red-200' });
+  } else if (inactiveDays >= 3) {
+    signals.push({ label: 'Esfriando', className: 'bg-amber-50 text-amber-700 border-amber-200' });
+  }
+
+  if (!card.estimated_value) {
+    signals.push({ label: 'Sem valor', className: 'bg-zinc-50 text-zinc-600 border-zinc-200' });
+  }
+
+  if ((card.estimated_value || 0) > 5000 && !card.quotation_id) {
+    signals.push({ label: 'Sem proposta', className: 'bg-blue-50 text-blue-700 border-blue-200' });
+  }
+
+  return signals.slice(0, 3);
+}
 
 /* ── SortableCard ── */
 function SortableCard({
@@ -92,6 +116,7 @@ function SortableCard({
   };
 
   const isHighValue = (card.estimated_value || 0) > 5000;
+  const signals = getCardSignals(card);
 
   return (
     <div
@@ -129,9 +154,20 @@ function SortableCard({
 
       <div className="pl-6 space-y-3">
         {/* Tags com estilo Forge (pills) */}
-        {card.tags && card.tags.length > 0 && (
+        {(signals.length > 0 || (card.tags && card.tags.length > 0)) && (
           <div className="flex flex-wrap gap-1.5">
-            {card.tags.slice(0, 3).map((t) => (
+            {signals.map((signal) => (
+              <span
+                key={signal.label}
+                className={cn(
+                  'rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider',
+                  signal.className,
+                )}
+              >
+                {signal.label}
+              </span>
+            ))}
+            {(card.tags ?? []).slice(0, 3).map((t) => (
               <span
                 key={t}
                 className="px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase bg-vj-primary/10 text-vj-primary border border-vj-primary/20 backdrop-blur-sm"
@@ -139,8 +175,8 @@ function SortableCard({
                 {t}
               </span>
             ))}
-            {card.tags.length > 3 && (
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-zinc-100 text-zinc-500 border border-zinc-200">+{card.tags.length - 3}</span>
+            {(card.tags?.length ?? 0) > 3 && (
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-zinc-100 text-zinc-500 border border-zinc-200">+{(card.tags?.length ?? 0) - 3}</span>
             )}
           </div>
         )}
@@ -193,12 +229,18 @@ function QuickAddForm({
   onCancel: () => void;
 }) {
   const createCard = useCreateKanbanCard();
+  const { user } = useAuthStore();
   const [title, setTitle] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return;
-    await createCard.mutateAsync({ board_id: boardId, column_id: columnId, title: title.trim() });
+    await createCard.mutateAsync({
+      board_id: boardId,
+      column_id: columnId,
+      title: title.trim(),
+      assigned_to: user?.id ?? null,
+    });
     setTitle('');
     onCancel();
   };
@@ -394,37 +436,29 @@ export default function KanbanBoard() {
 
   return (
     <AppLayout fullHeight>
-      <div className="flex flex-col h-full min-h-0">
-        <div className="flex-shrink-0 pb-3 flex justify-between items-end">
-          <PageHeader
-            title={title}
-            description={description}
-            icon={KanbanSquare}
-            badge={
-              <StatusBadge variant="neutral" size="sm">
-                {totalCards} cards
-              </StatusBadge>
-            }
-          />
-          <div className="flex flex-col items-end gap-3">
-            <KanbanAiLeadDialog 
-              boardId={data?.board?.id} 
-              defaultColumnId={data?.columns?.[0]?.id} 
-            />
-            <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as 'me' | 'all')} className="w-[300px]">
-               <TabsList className="grid w-full grid-cols-2">
-                   <TabsTrigger value="me" className="flex items-center gap-2 text-xs">
-                       <Eye size={14}/> Meu Board
-                   </TabsTrigger>
-                   <TabsTrigger value="all" className="flex items-center gap-2 text-xs">
-                       <Users size={14}/> Geral (Todos)
-                   </TabsTrigger>
-               </TabsList>
+      <div className="flex h-full min-h-0 flex-col">
+        <PageHeader
+          title={title}
+          description={description}
+          icon={KanbanSquare}
+          badge={
+            <StatusBadge variant="neutral" size="sm">
+              {totalCards} cards
+            </StatusBadge>
+          }
+          actions={
+            <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as 'me' | 'all')} className="w-full sm:w-[300px]">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="me" className="flex items-center gap-2 text-xs">
+                  <Eye size={14}/> Meu Board
+                </TabsTrigger>
+                <TabsTrigger value="all" className="flex items-center gap-2 text-xs">
+                  <Users size={14}/> Geral
+                </TabsTrigger>
+              </TabsList>
             </Tabs>
-          </div>
-        </div>
-
-        <AiInsightsWidget />
+          }
+        />
 
         {!data?.columns?.length ? (
           <EmptyState

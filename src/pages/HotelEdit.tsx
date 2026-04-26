@@ -160,6 +160,10 @@ export function HotelEdit({ id, open, onClose, onSuccess }: HotelEditProps) {
                     existingUrls={form.photo_url ? [form.photo_url] : []} 
                     onUploadComplete={(urls) => update('photo_url', urls[0])}
                     folder="hotels/covers"
+                    aspectRatio={16 / 9}
+                    ownerType="hotel"
+                    ownerId={id}
+                    fieldName="photo_url"
                   />
                 </div>
 
@@ -191,6 +195,10 @@ export function HotelEdit({ id, open, onClose, onSuccess }: HotelEditProps) {
                     existingUrls={form.gallery_urls} 
                     onUploadComplete={(urls) => update('gallery_urls', urls)}
                     folder="hotels/gallery"
+                    aspectRatio={4 / 3}
+                    ownerType="hotel"
+                    ownerId={id}
+                    fieldName="gallery_urls"
                   />
                 </div>
 
@@ -251,6 +259,10 @@ export function HotelEdit({ id, open, onClose, onSuccess }: HotelEditProps) {
                               existingUrls={section.items}
                               onUploadComplete={(urls) => updateSection(section.id, { items: urls })}
                               folder={`hotels/sections/${section.id}`}
+                              aspectRatio={4 / 3}
+                              ownerType="hotel"
+                              ownerId={id}
+                              fieldName={`sections.${section.id}.items`}
                             />
                           )}
                         </div>

@@ -339,9 +339,7 @@ export default function DeparturesKanban() {
   return (
     <AppLayout fullHeight>
       <div className="flex flex-col h-full min-h-0">
-        <div className="flex-shrink-0 pb-2">
-          <div className="flex w-full justify-between items-end gap-3 flex-wrap">
-            <PageHeader
+        <PageHeader
               title="Embarques"
               description="Acompanhe check-ins, localizadores aéreos e pacotes de viagem em tempo real."
               icon={Plane}
@@ -357,7 +355,7 @@ export default function DeparturesKanban() {
                   )}
                 </div>
               }
-            />
+          actions={
 
             <div className="flex items-center gap-2 flex-wrap">
               <Button
@@ -404,8 +402,8 @@ export default function DeparturesKanban() {
                  </TabsList>
               </Tabs>
             </div>
-          </div>
-        </div>
+          }
+        />
 
         {displayMode === 'calendar' ? (
           <div className="flex-1 overflow-auto pb-6">

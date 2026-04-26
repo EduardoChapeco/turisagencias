@@ -201,40 +201,38 @@ export default function TasksKanban() {
   return (
     <AppLayout fullHeight>
       <div className="flex flex-col h-full min-h-0">
-        <div className="flex-shrink-0 pb-2">
-          <PageHeader
-            title="Minhas Tarefas"
-            description="Organize o seu dia. Tickets e tarefas vinculadas caem aqui."
-            icon={CheckSquare}
-            badge={
-              <StatusBadge variant="neutral" size="sm">
-                {viewMode === 'me' ? myCardsCount : allCardsCount} tarefas
-              </StatusBadge>
-            }
-            actions={
-              <div className="flex items-center gap-2 flex-wrap justify-end">
-                <Button
-                  size="sm"
-                  className="h-10 rounded-full gap-2"
-                  onClick={() => setQuickAddColumnId(data?.columns?.[0]?.id ?? null)}
-                  disabled={!data?.columns?.length}
-                >
-                  <Plus size={15} /> Nova Tarefa
-                </Button>
-                <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as 'me' | 'all')} className="w-[300px]">
-                  <TabsList className="grid w-full grid-cols-2 h-10">
-                    <TabsTrigger value="me" className="flex items-center gap-2 text-xs">
-                      <Eye size={14}/> Meu Board
-                    </TabsTrigger>
-                    <TabsTrigger value="all" className="flex items-center gap-2 text-xs">
-                      <Users size={14}/> Geral
-                    </TabsTrigger>
-                  </TabsList>
-                </Tabs>
-              </div>
-            }
-          />
-        </div>
+        <PageHeader
+          title="Minhas Tarefas"
+          description="Organize o seu dia. Tickets e tarefas vinculadas caem aqui."
+          icon={CheckSquare}
+          badge={
+            <StatusBadge variant="neutral" size="sm">
+              {viewMode === 'me' ? myCardsCount : allCardsCount} tarefas
+            </StatusBadge>
+          }
+          actions={
+            <div className="flex items-center gap-2 flex-wrap justify-end">
+              <Button
+                size="sm"
+                className="h-10 rounded-full gap-2"
+                onClick={() => setQuickAddColumnId(data?.columns?.[0]?.id ?? null)}
+                disabled={!data?.columns?.length}
+              >
+                <Plus size={15} /> Nova Tarefa
+              </Button>
+              <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as 'me' | 'all')} className="w-[300px]">
+                <TabsList className="grid w-full grid-cols-2 h-10">
+                  <TabsTrigger value="me" className="flex items-center gap-2 text-xs">
+                    <Eye size={14}/> Meu Board
+                  </TabsTrigger>
+                  <TabsTrigger value="all" className="flex items-center gap-2 text-xs">
+                    <Users size={14}/> Geral
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </div>
+          }
+        />
 
         {!data?.columns?.length ? (
           <EmptyState

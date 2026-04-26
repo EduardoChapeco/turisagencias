@@ -73,7 +73,25 @@ export function TaskCardSheet({ card, isOpen, onClose, onDeleted }: Props) {
   };
 
   return (
-    <SheetPage open={isOpen} onClose={onClose} title="Detalhes da Tarefa">
+    <SheetPage
+      open={isOpen}
+      onClose={onClose}
+      title="Detalhes da Tarefa"
+      className="lg:w-[64vw] xl:w-[58vw]"
+      footer={
+        <div className="flex w-full flex-wrap items-center justify-between gap-3">
+          <Button variant="ghost" onClick={handleDelete} className="text-red-500 hover:bg-red-50 hover:text-red-600">
+            <Trash2 className="w-4 h-4 mr-2" /> Excluir
+          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" onClick={onClose}>Cancelar</Button>
+            <Button onClick={handleSave} className="bg-vj-green hover:bg-vj-green-dark">
+              <Save className="w-4 h-4 mr-2" /> Salvar Tarefa
+            </Button>
+          </div>
+        </div>
+      }
+    >
       <div className="space-y-6 p-1">
         <div className="space-y-4">
           <div>
@@ -85,7 +103,7 @@ export function TaskCardSheet({ card, isOpen, onClose, onDeleted }: Props) {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <Label className="text-xs font-semibold text-vj-txt3 mb-1.5 block flex items-center gap-1">
                 <LayoutList size={14} /> Tipo de Tarefa
@@ -120,7 +138,7 @@ export function TaskCardSheet({ card, isOpen, onClose, onDeleted }: Props) {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <Label className="text-xs font-semibold text-vj-txt3 mb-1.5 block">Cliente Vinculado</Label>
               <ClientSearchSelect
@@ -171,17 +189,6 @@ export function TaskCardSheet({ card, isOpen, onClose, onDeleted }: Props) {
           </div>
         </div>
 
-        <div className="pt-4 border-t border-vj-border flex justify-between">
-          <Button variant="ghost" onClick={handleDelete} className="text-red-500 hover:text-red-600 hover:bg-red-50">
-            <Trash2 className="w-4 h-4 mr-2" /> Excluir
-          </Button>
-          <div className="space-x-2">
-            <Button variant="outline" onClick={onClose}>Cancelar</Button>
-            <Button onClick={handleSave} className="bg-vj-green hover:bg-vj-green-dark">
-              <Save className="w-4 h-4 mr-2" /> Salvar Tarefa
-            </Button>
-          </div>
-        </div>
       </div>
     </SheetPage>
   );

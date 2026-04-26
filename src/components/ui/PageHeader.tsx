@@ -1,39 +1,19 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { SheetPage } from '@/components/ui/SheetPage';
 
-/**
- * PageHeader — Cabeçalho padronizado de páginas Turis Agencias.
- *
- * Uso:
- * <PageHeader
- *   title="Clientes"
- *   description="Gerencie seus clientes e viajantes"
- *   icon={Users}
- *   actions={<Button>+ Novo</Button>}
- *   breadcrumb={[{ label: 'Dashboard', href: '/' }, { label: 'Clientes' }]}
- * />
- */
-
-interface BreadcrumbItem {
-  label: string;
-  href?: string;
-  onClick?: () => void;
-}
+export const PageHeaderPortalContext = React.createContext<HTMLElement | null | undefined>(undefined);
 
 export interface PageHeaderProps {
   title: string;
   description?: string;
   icon?: React.ElementType;
   actions?: React.ReactNode;
-  breadcrumb?: BreadcrumbItem[];
-  /** Badge/chip exibido ao lado do título */
+  breadcrumb?: { label: string; href?: string; onClick?: () => void }[];
   badge?: React.ReactNode;
-  /** Back navigation link */
-  backTo?: string;
-  backToLabel?: string;
   className?: string;
 }
 
@@ -44,86 +24,76 @@ export function PageHeader({
   actions,
   breadcrumb,
   badge,
-  backTo,
-  backToLabel,
   className,
 }: PageHeaderProps) {
   const [infoOpen, setInfoOpen] = useState(false);
-  const InfoIcon = Icon ?? Info;
+  const portalTarget = React.useContext(PageHeaderPortalContext);
+  const isPortalAware = portalTarget !== undefined;
+
+  const headerContent = (
+    <div className={cn('flex min-w-0 flex-1 items-center justify-between gap-4 animate-in fade-in slide-in-from-left-4 duration-500', className)}>
+      <div className="flex min-w-0 items-center gap-4">
+        {Icon && (
+          <div className="hidden md:flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-vj-border bg-zinc-50 text-vj-txt3 shadow-none">
+            <Icon size={20} />
+          </div>
+        )}
+        <div className="min-w-0">
+          {breadcrumb && breadcrumb.length > 0 && (
+            <nav className="hidden items-center gap-1.5 text-[10px] font-bold text-vj-txt3 sm:flex mb-1 uppercase tracking-widest opacity-60" aria-label="Breadcrumb">
+              {breadcrumb.map((item, i) => (
+                <React.Fragment key={i}>
+                  {i > 0 && <span className="opacity-40">/</span>}
+                  <span className="truncate">{item.label}</span>
+                </React.Fragment>
+              ))}
+            </nav>
+          )}
+          <div className="flex min-w-0 items-center gap-3">
+            <h1 className="truncate font-heading text-lg font-black text-vj-txt uppercase tracking-tight sm:text-xl leading-none">
+              {title}
+            </h1>
+            {badge && <div className="hidden shrink-0 items-center sm:flex">{badge}</div>}
+            {description && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 shrink-0 rounded-xl text-vj-txt3 hover:bg-vj-green/10 hover:text-vj-green transition-all"
+                onClick={() => setInfoOpen(true)}
+              >
+                <Info size={16} />
+              </Button>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {actions && (
+        <div className="flex h-11 min-w-0 items-center justify-end gap-3 no-scrollbar overflow-x-auto whitespace-nowrap">
+          {actions}
+        </div>
+      )}
+    </div>
+  );
 
   return (
     <>
-      <div className={cn('flex flex-col md:flex-row md:items-center justify-between gap-3 pb-3 border-b border-vj-border mb-4', className)}>
-        <div className="flex items-center gap-2.5 min-w-0">
-          {Icon && (
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-vj-bg border border-vj-border text-vj-txt3">
-              <Icon size={17} />
-            </div>
-          )}
-          <div className="min-w-0">
-            {breadcrumb && breadcrumb.length > 0 && (
-              <nav className="flex items-center gap-1 text-xs text-vj-txt3 mb-1" aria-label="Breadcrumb">
-                {breadcrumb.map((item, i) => (
-                  <React.Fragment key={i}>
-                    {i > 0 && <span className="opacity-40">/</span>}
-                    {item.href || item.onClick ? (
-                      <button
-                        type="button"
-                        onClick={item.onClick}
-                        className="hover:text-vj-txt transition-colors"
-                      >
-                        {item.label}
-                      </button>
-                    ) : (
-                      <span className="text-vj-txt font-medium">{item.label}</span>
-                    )}
-                  </React.Fragment>
-                ))}
-              </nav>
-            )}
-            <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="font-heading font-bold text-xl text-vj-txt leading-tight">
-                {title}
-              </h1>
-              {badge}
-              {description && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7 rounded-lg text-vj-txt3 hover:text-vj-green hover:bg-vj-green/10"
-                  onClick={() => setInfoOpen(true)}
-                  aria-label={`Sobre ${title}`}
-                  title={`Sobre ${title}`}
-                >
-                  <Info size={15} />
-                </Button>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {actions && (
-          <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
-            {actions}
-          </div>
-        )}
-      </div>
+      {isPortalAware ? (portalTarget ? createPortal(headerContent, portalTarget) : null) : headerContent}
 
       {description && (
         <SheetPage
           open={infoOpen}
           onClose={() => setInfoOpen(false)}
           title={title}
-          icon={InfoIcon}
+          icon={Icon || Info}
           className="lg:w-[42vw] xl:w-[38vw]"
         >
-          <div className="max-w-2xl space-y-4 text-sm leading-relaxed text-vj-txt2">
-            <p>{description}</p>
+          <div className="p-8 space-y-4 text-sm leading-relaxed text-vj-txt2 animate-in fade-in duration-500">
+            <p className="font-medium">{description}</p>
           </div>
         </SheetPage>
       )}
     </>
   );
 }
-

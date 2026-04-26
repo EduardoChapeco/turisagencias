@@ -85,7 +85,7 @@ export default function Transactions() {
   return (
     <>
       <AppLayout fullHeight>
-        <div className="flex flex-col h-full gap-4">
+          <div className="flex h-full min-h-0 flex-col gap-4">
           <PageHeader
             title="Financeiro"
             description="Controle de recebimentos de clientes e pagamentos a fornecedores."
@@ -98,7 +98,7 @@ export default function Transactions() {
           />
 
           {/* Dashboard Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <div className="bg-white dark:bg-zinc-900 rounded-xl p-5 border ">
                <div className="flex items-center gap-3 mb-2">
                  <div className="p-2 bg-green-100 dark:bg-green-900/40 text-green-600 rounded-xl">
@@ -128,14 +128,14 @@ export default function Transactions() {
             </div>
           </div>
 
-          <div className="bg-white dark:bg-zinc-900 rounded-xl p-6 border flex-1 flex flex-col min-h-0">
-             <div className="flex gap-2 mb-6">
+          <div className="flex min-h-0 flex-1 flex-col rounded-xl border bg-white p-4 dark:bg-zinc-900 sm:p-6">
+             <div className="mb-4 flex flex-wrap gap-2">
                 <Button variant={filterType === undefined ? 'default' : 'outline'} className="rounded-full" onClick={() => setFilterType(undefined)}>Todos</Button>
                 <Button variant={filterType === 'receivable' ? 'default' : 'outline'} className="rounded-full text-green-600 border-green-200" onClick={() => setFilterType('receivable')}>Entradas (Recebíveis)</Button>
                 <Button variant={filterType === 'payable' ? 'default' : 'outline'} className="rounded-full text-red-600 border-red-200" onClick={() => setFilterType('payable')}>Saídas (Pagáveis)</Button>
              </div>
              
-             <div className="flex-1 overflow-auto rounded-xl border">
+             <div className="min-h-0 flex-1 overflow-auto rounded-xl border">
               <table className="w-full text-sm text-left">
                 <thead className="bg-muted sticky top-0 z-10 text-xs uppercase text-muted-foreground">
                   <tr>
@@ -204,7 +204,7 @@ export default function Transactions() {
         sections={SHEET_SECTIONS}
         defaultSection="dados"
         footer={
-          <div className="flex items-center gap-3 w-full justify-end">
+          <div className="flex w-full flex-wrap items-center justify-end gap-3">
             <Button variant="ghost" onClick={() => setIsSheetOpen(false)}>Cancelar</Button>
             <Button
               onClick={handleSubmit}
@@ -309,7 +309,7 @@ export default function Transactions() {
                   </Select>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <div className="space-y-1.5">
                     <Label className="font-semibold">Categoria</Label>
                     <Input
@@ -361,11 +361,12 @@ export default function Transactions() {
 
                 <div className="space-y-1.5">
                   <Label className="font-semibold">Forma de Pagamento</Label>
-                  <Select value={formData.payment_method || ''} onValueChange={(v) => update('payment_method', v)}>
+                  <Select value={formData.payment_method || '_none'} onValueChange={(v) => update('payment_method', v === '_none' ? '' : v)}>
                     <SelectTrigger className="h-12 rounded-xl bg-zinc-50 border-zinc-200">
                       <SelectValue placeholder="Selecione..." />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="_none">Selecione...</SelectItem>
                       <SelectItem value="pix">PIX</SelectItem>
                       <SelectItem value="transferencia">Transferência Bancária</SelectItem>
                       <SelectItem value="boleto">Boleto</SelectItem>

@@ -13,7 +13,12 @@ export interface TravelerInfoPage {
   org_id: string;
   trip_id: string | null;
   slug: string | null;
+  slug_locked?: boolean;
+  slug_updated_at?: string | null;
   title: string | null;
+  description?: string | null;
+  cover_image_url?: string | null;
+  content_blocks?: unknown[];
   content: unknown[];
   is_published: boolean;
   public_token: string | null;
@@ -25,7 +30,12 @@ export interface TravelerInfoPageInsert {
   org_id: string;
   trip_id?: string | null;
   slug?: string | null;
+  slug_locked?: boolean;
+  slug_updated_at?: string | null;
   title?: string | null;
+  description?: string | null;
+  cover_image_url?: string | null;
+  content_blocks?: unknown[];
   content?: unknown[];
   is_published?: boolean;
   author_id?: string | null;

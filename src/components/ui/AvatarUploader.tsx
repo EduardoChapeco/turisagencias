@@ -1,21 +1,18 @@
 import React, { useRef, useState } from 'react';
 import { Crop } from 'lucide-react';
 import { ImageCropperModal } from './ImageCropperModal';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
 
 interface AvatarUploaderProps {
   url?: string;
   onUpload: (url: string) => void;
   fallbackName?: string;
   folder?: string;
+  bucket?: string;
 }
 
-export function AvatarUploader({ url, onUpload, fallbackName, folder = 'clients/avatars' }: AvatarUploaderProps) {
+export function AvatarUploader({ url, onUpload, fallbackName, folder = 'clients/avatars', bucket = 'media' }: AvatarUploaderProps) {
   const [cropSrc, setCropSrc] = useState<string | null>(null);
-  const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { toast } = useToast();
 
   // Upload direto (sem crop) — centralização automática via object-fit: cover
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -102,14 +99,6 @@ export function AvatarUploader({ url, onUpload, fallbackName, folder = 'clients/
           )}
         </div>
 
-        {/* Indicador de carregando */}
-        {uploading && (
-          <div className="absolute inset-0 rounded-full flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.7)' }}>
-            <svg className="animate-spin" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1a7a4a" strokeWidth="2">
-              <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
-            </svg>
-          </div>
-        )}
       </div>
 
       <input
@@ -120,7 +109,7 @@ export function AvatarUploader({ url, onUpload, fallbackName, folder = 'clients/
         className="hidden"
       />
 
-      {/* Modal de crop — renderizado via portal no body (z-index 9999) */}
+      {/* Editor inline: acompanha o SheetPage e nao cria portal global. */}
       {cropSrc && (
         <ImageCropperModal
           open={!!cropSrc}
@@ -130,6 +119,8 @@ export function AvatarUploader({ url, onUpload, fallbackName, folder = 'clients/
           circular={true}
           aspectRatio={1}
           folder={folder}
+          bucket={bucket}
+          fileNamePrefix="avatar"
         />
       )}
     </>

@@ -106,6 +106,10 @@ export function GroupTripDaysEditor({ tripId }: Props) {
               folder={`days/${tripId}`}
               accept="image/*,video/*"
               existingUrls={(editing.media || []).map(m => m.url)}
+              aspectRatio={4 / 3}
+              ownerType="group_trip_day"
+              ownerId={editing.id ?? null}
+              fieldName="media"
               onUploadComplete={(urls) => {
                 const media = urls.map(url => ({
                   url,

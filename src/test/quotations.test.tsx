@@ -71,7 +71,12 @@ describe('Quotations Page', () => {
   it('opens quotation creation in a SheetPage instead of a route page', () => {
     renderWithProviders(<Quotations />);
     fireEvent.click(screen.getByRole('button', { name: /nova cotação/i }));
-    expect(screen.getByRole('dialog')).toHaveTextContent(/construtor de cota/i);
+    const dialog = screen.getByRole('dialog');
+    expect(dialog).toHaveTextContent(/construtor de cota/i);
+    expect(dialog).toHaveClass('fixed', 'inset-0', 'overflow-hidden');
+    expect(dialog.querySelector('.right-0')).toHaveClass('fixed', 'right-0');
     expect(screen.getAllByText(/hospedagem/i).length).toBeGreaterThan(0);
+    expect(screen.getByText(/upload ia/i)).toBeInTheDocument();
+    expect(screen.queryByText(/m.gica da ia/i)).not.toBeInTheDocument();
   });
 });

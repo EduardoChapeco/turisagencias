@@ -9,6 +9,8 @@ export type GroupTrip = {
   title: string;
   subtitle: string | null;
   slug: string | null;
+  slug_locked: boolean;
+  slug_updated_at: string | null;
   cover_image_url: string | null;
   gallery_urls: string[] | null;
   destination: string | null;
@@ -38,12 +40,32 @@ export type GroupTrip = {
   updated_at: string;
 };
 
-function slugify(s: string): string {
+export function slugifyGroupTrip(s: string): string {
   return s.toLowerCase()
     .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
     .slice(0, 60);
+}
+
+async function resolveUniqueGroupTripSlug(seed: string, currentId?: string | null): Promise<string> {
+  const base = slugifyGroupTrip(seed) || 'pacote';
+  let candidate = base;
+  let suffix = 2;
+
+  while (suffix < 1000) {
+    const { data, error } = await supabase
+      .from('group_trips')
+      .select('id')
+      .eq('slug', candidate)
+      .maybeSingle();
+    if (error) throw error;
+    if (!data || data.id === currentId) return candidate;
+    candidate = `${base}-${suffix}`;
+    suffix += 1;
+  }
+
+  return `${base}-${Date.now().toString(36)}`;
 }
 
 export function useGroupTrips() {
@@ -89,14 +111,15 @@ export function useCreateGroupTrip() {
     mutationFn: async (payload: Partial<GroupTrip>) => {
       if (!organization?.id) throw new Error('Sem organização');
       const title = payload.title || 'Novo Pacote';
-      const baseSlug = slugify(title) || 'pacote';
-      const uniqueSlug = `${baseSlug}-${Date.now().toString(36)}`;
+      const uniqueSlug = await resolveUniqueGroupTripSlug(payload.slug || title);
       const { data, error } = await supabase
         .from('group_trips')
         .insert({
           ...payload,
           title,
-          slug: payload.slug || uniqueSlug,
+          slug: uniqueSlug,
+          slug_locked: payload.slug_locked ?? false,
+          slug_updated_at: new Date().toISOString(),
           org_id: organization.id,
         })
         .select()
@@ -117,9 +140,34 @@ export function useUpdateGroupTrip() {
   const { toast } = useToast();
   return useMutation({
     mutationFn: async ({ id, ...payload }: Partial<GroupTrip> & { id: string }) => {
+      const { data: current, error: currentError } = await supabase
+        .from('group_trips')
+        .select('id, title, slug, status, is_public, slug_locked')
+        .eq('id', id)
+        .maybeSingle();
+      if (currentError) throw currentError;
+
+      const nextPayload: Record<string, unknown> = { ...payload };
+      const hasManualSlug = typeof payload.slug === 'string' && payload.slug.trim().length > 0;
+      const isPublished = current?.status === 'published' || current?.is_public === true;
+
+      if (hasManualSlug) {
+        nextPayload.slug = await resolveUniqueGroupTripSlug(payload.slug!, id);
+        nextPayload.slug_locked = true;
+        nextPayload.slug_updated_at = new Date().toISOString();
+      } else if (
+        typeof payload.title === 'string'
+        && payload.title.trim()
+        && !current?.slug_locked
+        && !isPublished
+      ) {
+        nextPayload.slug = await resolveUniqueGroupTripSlug(payload.title, id);
+        nextPayload.slug_updated_at = new Date().toISOString();
+      }
+
       const { data, error } = await supabase
         .from('group_trips')
-        .update(payload as any)
+        .update(nextPayload as any)
         .eq('id', id)
         .select()
         .single();

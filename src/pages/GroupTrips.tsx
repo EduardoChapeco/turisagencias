@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import { Plus, X, Image as ImageIcon, Bus, FileSignature, Package, BarChart2 } from 'lucide-react';
+import { Copy, Plus, RotateCcw, X, Image as ImageIcon, Bus, FileSignature, Package, BarChart2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { useGroupTrips, useGroupTrip, useCreateGroupTrip, useDeleteGroupTrip, useUpdateGroupTrip } from '@/hooks/useGroupTrips';
+import { slugifyGroupTrip, useGroupTrips, useCreateGroupTrip, useDeleteGroupTrip, useUpdateGroupTrip } from '@/hooks/useGroupTrips';
 import type { GroupTrip } from '@/hooks/useGroupTrips';
 import { useBusLayouts } from '@/hooks/useBusLayouts';
 import { AppLayout } from '@/components/AppLayout';
@@ -16,6 +16,8 @@ import { GroupTripDaysEditor } from '@/components/group-trips/GroupTripDaysEdito
 import { EmptyState } from '@/components/ui/EmptyState';
 import { LazyImage } from '@/components/ui/LazyImage';
 import { Skeleton } from '@/components/ui/skeleton';
+import { MediaField } from '@/components/ui/MediaField';
+import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { Users, MapPin, Calendar, ExternalLink, Trash2, Eye } from 'lucide-react';
 
@@ -60,54 +62,10 @@ function ChipListEditor({
   );
 }
 
-// ─── Gallery URL editor ───────────────────────────────────────────────────────
-function GalleryEditor({ urls, onChange }: { urls: string[]; onChange: (v: string[]) => void }) {
-  const [draft, setDraft] = useState('');
-  const add = () => {
-    const v = draft.trim();
-    if (!v || urls.includes(v)) return;
-    onChange([...urls, v]);
-    setDraft('');
-  };
-  return (
-    <div className="space-y-3">
-      <Label>URLs da galeria</Label>
-      <div className="flex gap-2">
-        <Input value={draft} onChange={e => setDraft(e.target.value)}
-          placeholder="https://..." className="flex-1"
-          onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); add(); } }}
-        />
-        <Button type="button" size="sm" variant="outline" onClick={add}>
-          <Plus size={14} /> Adicionar
-        </Button>
-      </div>
-      {urls.length > 0 && (
-        <div className="grid grid-cols-3 gap-2">
-          {urls.map((url, i) => (
-            <div key={i} className="relative aspect-square rounded-xl overflow-hidden bg-vj-bg group border border-vj-border">
-              <LazyImage src={url} alt={`Foto ${i + 1}`} className="w-full h-full object-cover" />
-              <button type="button"
-                onClick={() => onChange(urls.filter((_, j) => j !== i))}
-                className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                <X size={12} />
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
-      {urls.length === 0 && (
-        <div className="border-2 border-dashed border-vj-border rounded-xl p-8 text-center text-vj-txt3">
-          <ImageIcon size={32} className="mx-auto mb-2 opacity-30" />
-          <p className="text-xs">Adicione URLs de fotos da galeria</p>
-        </div>
-      )}
-    </div>
-  );
-}
-
 // ─── Main Page ────────────────────────────────────────────────────────────────
 type FormState = {
   title: string; subtitle: string; destination: string; origin_city: string;
+  slug: string; slug_locked: boolean;
   departure_date: string; return_date: string; price_per_pax: number; max_pax: number;
   installments_count: number; description_md: string; cover_image_url: string;
   includes: string[]; excludes: string[]; important_notes: string;
@@ -117,6 +75,7 @@ type FormState = {
 
 const defaultForm = (): FormState => ({
   title: '', subtitle: '', destination: '', origin_city: '',
+  slug: '', slug_locked: false,
   departure_date: '', return_date: '', price_per_pax: 0, max_pax: 40,
   installments_count: 1, description_md: '', cover_image_url: '',
   includes: [], excludes: [], important_notes: '',
@@ -131,10 +90,37 @@ export default function GroupTrips() {
   const create = useCreateGroupTrip();
   const update = useUpdateGroupTrip();
   const remove = useDeleteGroupTrip();
+  const { toast } = useToast();
 
   const [editing, setEditing] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>(defaultForm());
   const set = (patch: Partial<FormState>) => setForm(p => ({ ...p, ...patch }));
+  const publicLink = form.slug ? `/g/${form.slug}` : '/g/...';
+  const canAutoUpdateSlug = !form.slug_locked && form.status !== 'published' && !form.is_public;
+
+  const updateTitle = (title: string) => {
+    setForm((prev) => ({
+      ...prev,
+      title,
+      ...(prev.slug_locked || prev.status === 'published' || prev.is_public
+        ? {}
+        : { slug: slugifyGroupTrip(title) }),
+    }));
+  };
+
+  const updateSlug = (slug: string) => {
+    set({ slug: slugifyGroupTrip(slug), slug_locked: true });
+  };
+
+  const regenerateSlug = () => {
+    set({ slug: slugifyGroupTrip(form.title), slug_locked: false });
+  };
+
+  const copyPublicLink = async () => {
+    const path = `${window.location.origin}${publicLink}`;
+    await navigator.clipboard?.writeText(path);
+    toast({ title: 'Link copiado' });
+  };
 
   const openNew = () => { setEditing('new'); setForm(defaultForm()); };
 
@@ -145,6 +131,8 @@ export default function GroupTrips() {
     setForm({
       title: t.title || '',
       subtitle: t.subtitle || '',
+      slug: t.slug || '',
+      slug_locked: t.slug_locked ?? (t.status === 'published' || t.is_public),
       destination: t.destination || '',
       origin_city: t.origin_city || '',
       departure_date: t.departure_date || '',
@@ -168,6 +156,8 @@ export default function GroupTrips() {
   const handleSave = async () => {
     const payload: Partial<GroupTrip> = {
       ...form,
+      slug: form.slug || undefined,
+      slug_locked: form.slug_locked || form.status === 'published' || form.is_public,
       price_per_pax: Number(form.price_per_pax),
       max_pax: Number(form.max_pax),
       installments_count: Number(form.installments_count),
@@ -194,6 +184,7 @@ export default function GroupTrips() {
       id,
       is_public: nowPublic,
       status: nowPublic ? 'published' : 'draft',
+      slug_locked: nowPublic ? true : trip.slug_locked,
     });
   };
 
@@ -231,12 +222,18 @@ export default function GroupTrips() {
           action={<Button onClick={openNew}>Criar primeiro pacote</Button>}
         />
       ) : (
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
           {trips.map(t => (
-            <div key={t.id} className="premium-card overflow-hidden group hover:border-vj-green/30 transition-all grid md:grid-cols-[220px_1fr] min-h-[220px]">
-              <div className="h-48 md:h-full min-h-[220px] bg-vj-bg relative">
+            <div key={t.id} className="premium-card group grid min-h-[180px] overflow-hidden transition-all hover:border-vj-green/30 sm:grid-cols-[160px_1fr]">
+              <div className="relative h-44 bg-vj-bg sm:h-full sm:min-h-[180px]">
                 {t.cover_image_url ? (
-                  <LazyImage src={t.cover_image_url} alt={t.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                  <LazyImage
+                    src={t.cover_image_url}
+                    alt={t.title}
+                    aspectRatio="auto"
+                    wrapperClassName="h-full w-full"
+                    className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  />
                 ) : (
                   <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-zinc-50 to-zinc-100 text-zinc-300">
                     <MapPin size={48} className="opacity-30 mb-2" />
@@ -258,7 +255,7 @@ export default function GroupTrips() {
                 </div>
               </div>
 
-              <div className="p-4 flex-1 flex flex-col">
+              <div className="flex flex-1 flex-col p-4">
                 <div className="flex flex-wrap items-center gap-2 text-xs font-bold uppercase tracking-wider text-vj-txt3 mb-4">
                   {t.destination && <span className="flex items-center gap-1.5 p-2 bg-zinc-50 rounded-xl border border-zinc-100"><MapPin size={14} className="text-zinc-400" /> {t.destination}</span>}
                   {t.departure_date && <span className="flex items-center gap-1.5 p-2 bg-zinc-50 rounded-xl border border-zinc-100"><Calendar size={14} className="text-zinc-400" /> {new Date(t.departure_date).toLocaleDateString('pt-BR')}</span>}
@@ -324,7 +321,7 @@ export default function GroupTrips() {
               <div className="space-y-4 max-w-2xl">
                 <div>
                   <Label>Título do pacote *</Label>
-                  <Input value={form.title} onChange={e => set({ title: e.target.value })}
+                  <Input value={form.title} onChange={e => updateTitle(e.target.value)}
                     placeholder="Ex: Excursão Caldas Novas — Réveillon 2026" />
                 </div>
                 <div>
@@ -332,20 +329,58 @@ export default function GroupTrips() {
                   <Input value={form.subtitle} onChange={e => set({ subtitle: e.target.value })}
                     placeholder="Ex: 5 dias inesquecíveis nas águas termais" />
                 </div>
-                <div>
-                  <Label>URL da imagem de capa</Label>
-                  <Input value={form.cover_image_url} onChange={e => set({ cover_image_url: e.target.value })}
-                    placeholder="https://..." />
-                  {form.cover_image_url && (
-                    <div className="mt-2 h-32 rounded-xl overflow-hidden bg-vj-bg border border-vj-border">
-                      <LazyImage src={form.cover_image_url} alt="preview" className="w-full h-full object-cover" />
-                    </div>
-                  )}
-                </div>
+                <MediaField
+                  label="Imagem de capa"
+                  helperText="Upload local por padrao; link externo fica como opcao avancada."
+                  value={form.cover_image_url ? [form.cover_image_url] : []}
+                  onChange={(urls) => set({ cover_image_url: urls[0] || '' })}
+                  bucket="group-trip-media"
+                  folder="covers"
+                  multiple={false}
+                  accept="image/*"
+                  aspectRatio={16 / 9}
+                  ownerType="group_trip"
+                  ownerId={editing && editing !== 'new' ? editing : null}
+                  fieldName="cover_image_url"
+                />
                 <div>
                   <Label>Descrição (markdown)</Label>
                   <Textarea rows={6} value={form.description_md} onChange={e => set({ description_md: e.target.value })}
                     placeholder="Descreva o pacote com detalhes..." />
+                </div>
+                <div className="space-y-2 rounded-xl border border-vj-border bg-zinc-50/70 p-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-semibold text-vj-txt">Link publico</p>
+                      <p className="text-xs text-vj-txt3">
+                        {canAutoUpdateSlug ? 'Acompanha o titulo enquanto esta em rascunho.' : 'Link estavel; edite manualmente se precisar.'}
+                      </p>
+                    </div>
+                    <Button type="button" variant="outline" size="sm" className="gap-1" onClick={regenerateSlug}>
+                      <RotateCcw size={14} /> Gerar
+                    </Button>
+                  </div>
+                  <div className="flex gap-2">
+                    <Input
+                      value={form.slug}
+                      onChange={e => updateSlug(e.target.value)}
+                      placeholder={slugifyGroupTrip(form.title) || 'nome-do-pacote'}
+                      className="font-mono text-sm"
+                    />
+                    <Button type="button" variant="outline" size="icon" onClick={() => void copyPublicLink()} disabled={!form.slug}>
+                      <Copy size={15} />
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      disabled={!form.slug}
+                      onClick={() => window.open(publicLink, '_blank')}
+                    >
+                      <ExternalLink size={15} />
+                    </Button>
+                  </div>
+                  <p className="text-xs font-mono text-vj-txt3">{publicLink}</p>
                 </div>
                 {editing && editing !== 'new' && (
                   <div className="flex items-center justify-between p-4 bg-vj-bg rounded-xl border border-vj-border">
@@ -365,7 +400,7 @@ export default function GroupTrips() {
             {/* ── DATAS ───────────────────────────────────────────────── */}
             {section === 'details' && (
               <div className="space-y-4 max-w-2xl">
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <div>
                     <Label>Cidade de origem</Label>
                     <Input value={form.origin_city} onChange={e => set({ origin_city: e.target.value })} placeholder="São Paulo" />
@@ -375,7 +410,7 @@ export default function GroupTrips() {
                     <Input value={form.destination} onChange={e => set({ destination: e.target.value })} placeholder="Caldas Novas, GO" />
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <div>
                     <Label>Data de partida</Label>
                     <Input type="date" value={form.departure_date} onChange={e => set({ departure_date: e.target.value })} />
@@ -414,7 +449,20 @@ export default function GroupTrips() {
             {/* ── GALERIA ─────────────────────────────────────────────── */}
             {section === 'gallery' && (
               <div className="max-w-2xl">
-                <GalleryEditor urls={form.gallery_urls} onChange={v => set({ gallery_urls: v })} />
+                <MediaField
+                  label="Galeria"
+                  helperText="Use upload local para as fotos da pagina publica. Links externos ficam como opcao avancada."
+                  value={form.gallery_urls}
+                  onChange={v => set({ gallery_urls: v })}
+                  bucket="group-trip-media"
+                  folder="gallery"
+                  multiple
+                  accept="image/*"
+                  aspectRatio={4 / 3}
+                  ownerType="group_trip"
+                  ownerId={editing && editing !== 'new' ? editing : null}
+                  fieldName="gallery_urls"
+                />
               </div>
             )}
 
@@ -471,7 +519,7 @@ export default function GroupTrips() {
             {/* ── COMERCIAL ───────────────────────────────────────────── */}
             {section === 'commercial' && (
               <div className="space-y-4 max-w-2xl">
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <div>
                     <Label>Preço por pessoa (R$) *</Label>
                     <Input type="number" step="0.01" value={form.price_per_pax}

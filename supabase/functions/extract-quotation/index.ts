@@ -174,7 +174,7 @@ const EXTRACTION_SCHEMA = {
   required: ["destination", "hotel_name", "total_value", "whatsapp_text"],
 };
 
-const SYSTEM_PROMPT = `Você é um especialista sênior em extração de cotações de viagem para o sistema Turis Agências (antigo VoyageOS).
+const SYSTEM_PROMPT = `Você é um especialista sênior em extração de cotações de viagem para o sistema Turis Agências.
 
 MISSÃO: Extraia TODOS os dados com máxima precisão do documento de cotação fornecido.
 

@@ -1,12 +1,11 @@
-import { useState, useCallback, useRef } from 'react';
+import { useRef, useState } from 'react';
 import ReactCrop, { type Crop, type PixelCrop, centerCrop, makeAspectCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
+import { Loader2, RotateCcw, SlidersHorizontal, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, X } from 'lucide-react';
-import { createPortal } from 'react-dom';
 
 interface ImageCropperModalProps {
   open: boolean;
@@ -16,19 +15,44 @@ interface ImageCropperModalProps {
   aspectRatio?: number;
   circular?: boolean;
   folder?: string;
+  bucket?: string;
+  fileNamePrefix?: string;
+  onUploaded?: (asset: {
+    publicUrl: string;
+    path: string;
+    mimeType: string;
+    sizeBytes: number;
+    width: number | null;
+    height: number | null;
+  }) => void | Promise<void>;
 }
 
 function centerAspectCrop(mediaWidth: number, mediaHeight: number, aspect: number) {
   return centerCrop(
-    makeAspectCrop({ unit: '%', width: 90 }, aspect, mediaWidth, mediaHeight),
+    makeAspectCrop({ unit: '%', width: 92 }, aspect, mediaWidth, mediaHeight),
     mediaWidth,
-    mediaHeight
+    mediaHeight,
   );
 }
 
+function safeName(prefix: string) {
+  const id = typeof crypto !== 'undefined' && 'randomUUID' in crypto
+    ? crypto.randomUUID()
+    : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  return `${prefix}-${id}.jpg`;
+}
+
 export function ImageCropperModal({
-  open, onOpenChange, imageUrl, onCropComplete,
-  aspectRatio = 1, circular = false, folder = 'avatars'
+  open,
+  onOpenChange,
+  imageUrl,
+  onCropComplete,
+  aspectRatio = 1,
+  circular = false,
+  folder = 'avatars',
+  bucket = 'media',
+  fileNamePrefix = 'image',
+  onUploaded,
 }: ImageCropperModalProps) {
   const [crop, setCrop] = useState<Crop>();
   const [completedCrop, setCompletedCrop] = useState<PixelCrop>();
@@ -46,115 +70,117 @@ export function ImageCropperModal({
 
   const generateCroppedImage = async (): Promise<Blob | null> => {
     if (!completedCrop || !imgRef.current) return null;
-    const scaleX = imgRef.current.naturalWidth / imgRef.current.width;
-    const scaleY = imgRef.current.naturalHeight / imgRef.current.height;
-    const offscreen = document.createElement('canvas');
-    offscreen.width = completedCrop.width * scaleX;
-    offscreen.height = completedCrop.height * scaleY;
-    const ctx = offscreen.getContext('2d');
+
+    const image = imgRef.current;
+    const scaleX = image.naturalWidth / image.width;
+    const scaleY = image.naturalHeight / image.height;
+    const canvas = document.createElement('canvas');
+    const cropWidth = completedCrop.width * scaleX;
+    const cropHeight = completedCrop.height * scaleY;
+    canvas.width = cropWidth;
+    canvas.height = cropHeight;
+
+    const ctx = canvas.getContext('2d');
     if (!ctx) return null;
-    ctx.drawImage(
-      imgRef.current,
-      completedCrop.x * scaleX, completedCrop.y * scaleY,
-      completedCrop.width * scaleX, completedCrop.height * scaleY,
-      0, 0, offscreen.width, offscreen.height
-    );
-    return new Promise((resolve) => offscreen.toBlob((blob) => resolve(blob), 'image/jpeg', 0.95));
+
+    ctx.imageSmoothingQuality = 'high';
+    ctx.save();
+    ctx.translate(-(completedCrop.x * scaleX), -(completedCrop.y * scaleY));
+    ctx.translate(image.naturalWidth / 2, image.naturalHeight / 2);
+    ctx.scale(scale, scale);
+    ctx.translate(-image.naturalWidth / 2, -image.naturalHeight / 2);
+    ctx.drawImage(image, 0, 0, image.naturalWidth, image.naturalHeight);
+    ctx.restore();
+
+    return new Promise((resolve) => {
+      canvas.toBlob((blob) => resolve(blob), 'image/jpeg', 0.92);
+    });
   };
 
   const handleSave = async () => {
     try {
       setUploading(true);
       const blob = await generateCroppedImage();
-      if (!blob) throw new Error('Erro ao processar imagem');
+      if (!blob) throw new Error('Nao foi possivel processar a imagem.');
 
-      const file = new File([blob], `avatar-${Date.now()}.jpg`, { type: 'image/jpeg' });
-      const filePath = `${folder}/${file.name}`;
-
-      const { error: uploadError } = await supabase.storage.from('media').upload(filePath, file);
+      const filePath = `${folder.replace(/^\/+|\/+$/g, '')}/${safeName(fileNamePrefix)}`;
+      const { error: uploadError } = await supabase.storage
+        .from(bucket)
+        .upload(filePath, blob, { contentType: 'image/jpeg', upsert: false });
       if (uploadError) throw uploadError;
 
-      const { data: { publicUrl } } = supabase.storage.from('media').getPublicUrl(filePath);
-
+      const { data: { publicUrl } } = supabase.storage.from(bucket).getPublicUrl(filePath);
+      await onUploaded?.({
+        publicUrl,
+        path: filePath,
+        mimeType: 'image/jpeg',
+        sizeBytes: blob.size,
+        width: completedCrop ? Math.round(completedCrop.width) : null,
+        height: completedCrop ? Math.round(completedCrop.height) : null,
+      });
       onCropComplete(publicUrl);
       onOpenChange(false);
-      toast({ title: '✅ Foto salva com sucesso!' });
+      toast({ title: 'Imagem ajustada' });
     } catch (err: any) {
-      toast({ title: 'Erro', description: err.message, variant: 'destructive' });
+      toast({ title: 'Erro ao ajustar imagem', description: err.message, variant: 'destructive' });
     } finally {
       setUploading(false);
     }
   };
 
-  // Renderiza via portal no body para garantir z-index acima de qualquer sheet/modal
-  return createPortal(
-    <div
-      style={{ position: 'fixed', inset: 0, zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-      role="dialog"
-      aria-modal="true"
-    >
-      {/* Overlay */}
-      <div
-        style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}
-        onClick={() => onOpenChange(false)}
-      />
-
-      {/* Modal Box */}
-      <div style={{
-        position: 'relative', zIndex: 1, background: 'white', borderRadius: 16,
-        boxShadow: '0 24px 64px rgba(0,0,0,0.25)', width: '90vw', maxWidth: 520,
-        display: 'flex', flexDirection: 'column', gap: 0, overflow: 'hidden'
-      }}>
-        {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', borderBottom: '1px solid #e5e4e0' }}>
-          <div>
-            <h2 style={{ margin: 0, fontWeight: 700, fontSize: 15, color: '#1a1a18' }}>✂️ Ajuste a imagem</h2>
-            <p style={{ margin: 0, fontSize: 11, color: '#888', marginTop: 2 }}>Recorte e ajuste o zoom conforme desejar</p>
-          </div>
-          <button onClick={() => onOpenChange(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#888', padding: 4, display:'flex' }}>
-            <X size={18} />
-          </button>
+  return (
+    <section className="overflow-hidden rounded-xl border border-vj-border bg-white shadow-sm">
+      <div className="flex items-center justify-between gap-3 border-b border-vj-border px-4 py-3">
+        <div className="min-w-0">
+          <h3 className="flex items-center gap-2 text-sm font-bold text-vj-txt">
+            <SlidersHorizontal className="h-4 w-4 text-vj-green" />
+            Ajustar imagem
+          </h3>
+          <p className="mt-0.5 text-xs text-vj-txt3">Opcional: enquadre, ajuste o zoom e salve.</p>
         </div>
+        <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => onOpenChange(false)}>
+          <X className="h-4 w-4" />
+        </Button>
+      </div>
 
-        {/* Crop Area */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f0f0ed', maxHeight: '55vh', overflow: 'auto', padding: 16 }}>
+      <div className="max-h-[48dvh] overflow-auto bg-zinc-50 p-3">
+        <div className="mx-auto flex max-w-3xl justify-center">
           <ReactCrop
             crop={crop}
             onChange={(_, percentCrop) => setCrop(percentCrop)}
-            onComplete={(c) => setCompletedCrop(c)}
+            onComplete={(nextCrop) => setCompletedCrop(nextCrop)}
             aspect={aspectRatio}
             circularCrop={circular}
           >
             <img
               ref={imgRef}
               src={imageUrl}
-              alt="Crop"
-              style={{ transform: `scale(${scale})`, transition: 'transform 0.1s', maxHeight: '50vh', objectFit: 'contain', display: 'block' }}
+              alt="Imagem para ajuste"
               onLoad={handleImageLoad}
+              className="block max-h-[42dvh] max-w-full object-contain"
+              style={{ transform: `scale(${scale})`, transformOrigin: 'center center' }}
             />
           </ReactCrop>
         </div>
+      </div>
 
-        {/* Zoom */}
-        <div style={{ padding: '12px 20px', borderTop: '1px solid #e5e4e0' }}>
-          <p style={{ fontSize: 11, color: '#888', marginBottom: 8, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Zoom</p>
-          <Slider value={[scale]} min={0.5} max={3} step={0.1} onValueChange={(v) => setScale(v[0])} />
+      <div className="space-y-3 border-t border-vj-border px-4 py-3">
+        <div className="flex items-center gap-3">
+          <span className="w-12 text-xs font-semibold uppercase text-vj-txt3">Zoom</span>
+          <Slider value={[scale]} min={0.8} max={2.5} step={0.05} onValueChange={(v) => setScale(v[0])} />
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setScale(1)}>
+            <RotateCcw className="h-4 w-4" />
+          </Button>
         </div>
 
-        {/* Footer */}
-        <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', padding: '12px 20px', borderTop: '1px solid #e5e4e0' }}>
+        <div className="flex justify-end gap-2">
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
-          <Button
-            onClick={handleSave}
-            disabled={uploading || !completedCrop}
-            style={{ background: '#1a7a4a', color: 'white', minWidth: 130 }}
-          >
-            {uploading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-            {uploading ? 'Salvando...' : 'Salvar Foto'}
+          <Button onClick={handleSave} disabled={uploading || !completedCrop}>
+            {uploading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            Salvar ajuste
           </Button>
         </div>
       </div>
-    </div>,
-    document.body
+    </section>
   );
 }

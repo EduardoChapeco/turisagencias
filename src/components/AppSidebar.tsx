@@ -1,33 +1,28 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   Anchor,
   Building2,
-  Cloud,
   FileText,
   Globe2,
   KanbanSquare,
   LayoutDashboard,
-  LifeBuoy,
   LogOut,
   Newspaper,
-  Plane,
   Users,
   Settings as SettingsIcon,
-  Sparkles,
   Book,
-  Bell,
   Map,
   MapPin,
-  FileSignature,
   Bot,
-  UserPlus,
-  XCircle,
-  CalendarDays,
+  Zap,
+  TrendingUp,
+  Activity,
+  Sparkles,
+  Plug
 } from 'lucide-react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthStore } from '@/stores/authStore';
-import { useNotifications, useMarkNotificationAsRead } from '@/hooks/useNotifications';
 import {
   Sidebar,
   SidebarContent,
@@ -46,50 +41,40 @@ type NavGroup = { title: string; items: { title: string; url: string; icon: Reac
 
 const navGroups: NavGroup[] = [
   {
-    title: 'Início da Jornada',
+    title: 'Command Center',
     items: [
       { title: 'Painel Inicial',     url: '/',             icon: LayoutDashboard },
       { title: 'Mapa de Viajantes',  url: '/radar-global', icon: Globe2 },
       { title: 'Radar do Mercado',   url: '/radar',        icon: Newspaper },
-      { title: 'Atendimento',        url: '/tickets',      icon: LifeBuoy },
+      { title: 'Atendimento',        url: '/tickets',      icon: Activity },
     ],
   },
   {
-    title: 'Conversão & Vendas',
+    title: 'Engine de Vendas',
     items: [
       { title: 'Funil de Vendas',    url: '/kanban/sales', icon: KanbanSquare },
-      { title: 'Propostas',          url: '/quotations',   icon: FileText },
-      { title: 'Meus Clientes',      url: '/clients',      icon: Users },
-      { title: 'Pacotes e Grupos',   url: '/group-trips',  icon: UserPlus },
+      { title: 'Propostas IA',       url: '/quotations',   icon: FileText },
+      { title: 'Base de Clientes',   url: '/clients',      icon: Users },
+      { title: 'Pacotes e Grupos',   url: '/group-trips',  icon: TrendingUp },
     ],
   },
   {
-    title: 'Execução Operacional',
+    title: 'Execução & Logs',
     items: [
-      { title: 'Minhas Tarefas',     url: '/kanban/tasks',     icon: KanbanSquare },
+      { title: 'Minhas Tarefas',     url: '/kanban/tasks',     icon: Zap },
       { title: 'Gestão de Embarque', url: '/kanban/departures',icon: Anchor },
       { title: 'Roteiros Digitais',  url: '/itineraries',      icon: Map },
     ],
   },
   {
-    title: 'Inteligência Comercial',
+    title: 'Intelligence Lab',
     items: [
-      { title: 'Biblioteca de Destinos',url: '/guides',       icon: Book },
+      { title: 'Especialistas',      url: '/guides',       icon: Book },
       { title: 'Hotéis e Resorts',   url: '/hotels',          icon: Building2 },
       { title: 'Destinos VIP',       url: '/destinations',    icon: MapPin },
-      { title: 'Minhas Experiências',url: '/experiences',     icon: Globe2 },
-    ],
-  },
-  {
-    title: 'Gestão & Backoffice',
-    items: [
-      { title: 'Financeiro',         url: '/finance/transactions', icon: Book },
-      { title: 'Fornecedores',       url: '/finance/suppliers',    icon: Building2 },
-      { title: 'Agentes e Equipe',   url: '/team',                 icon: Users },
-      { title: 'Contratos e Termos', url: '/legal/contracts',      icon: FileSignature },
       { title: 'IA Squads',          url: '/automations',          icon: Bot },
-      { title: 'Cérebro da Agência', url: '/ai-chat',              icon: Sparkles },
-      { title: 'Painel de Controle', url: '/settings',             icon: SettingsIcon },
+      { title: 'Turis Intel',        url: '/ai-chat',              icon: Sparkles },
+      { title: 'Integrações B2B',    url: '/integrations',         icon: Plug },
     ],
   },
 ];
@@ -100,18 +85,7 @@ export function AppSidebar() {
   const collapsed = state === 'collapsed';
   const navigate = useNavigate();
   const location = useLocation();
-  const { organization, profile, roles } = useAuthStore();
-  const { data: notifications } = useNotifications();
-  const markRead = useMarkNotificationAsRead();
-  const [showNotif, setShowNotif] = useState(false);
-
-  const unreadCount = (notifications ?? []).filter((n) => !n.read_at).length;
-
-  const isAdmin = roles.includes('super_admin') || roles.includes('org_admin');
-  const filteredGroups = navGroups.filter(g => {
-    if (g.title === 'Gestão & Backoffice') return isAdmin;
-    return true;
-  });
+  const { profile, organization } = useAuthStore();
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -119,27 +93,34 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar collapsible="icon">
-      <SidebarContent>
-        <div className="flex items-center gap-2 px-4 py-4">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-sidebar-primary">
-            <Cloud className="h-4 w-4 text-sidebar-primary-foreground" />
+    <Sidebar collapsible="icon" className="border-r border-vj-border/60 bg-white no-scrollbar">
+      <SidebarContent className="no-scrollbar flex flex-col h-full">
+        
+        {/* ✈️ OMEGA V4 LOGO SECTION - SHADOWLESS */}
+        <div className="flex shrink-0 items-center gap-4 px-8 py-10">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[20px] bg-vj-bg-dark border border-white/10 transition-transform hover:rotate-6">
+            <Zap className="h-6 w-6 text-vj-green fill-vj-green" />
           </div>
           {!collapsed && (
-            <span className="truncate font-heading text-sm font-semibold text-sidebar-foreground">
-              {organization?.name || 'Excelência Tour'}
-            </span>
+            <div className="flex flex-col min-w-0">
+              <span className="truncate text-sm font-black text-vj-txt tracking-tighter uppercase leading-none">
+                Turis Agências
+              </span>
+              <span className="text-[10px] font-bold text-vj-green uppercase tracking-[0.2em] mt-1.5">
+                Elite Squad
+              </span>
+            </div>
           )}
         </div>
 
-        <div className="flex-1 overflow-y-auto scrollbar-none py-2 pb-24">
-          {filteredGroups.map((group) => (
-            <SidebarGroup key={group.title} className="mb-2">
-              <SidebarGroupLabel className="text-[10px] uppercase font-bold text-vj-txt3 tracking-wider px-4 mb-2">
+        <div className="min-h-0 flex-1 overflow-y-auto py-2 px-4 no-scrollbar">
+          {navGroups.map((group) => (
+            <SidebarGroup key={group.title} className="mb-8 p-0">
+              <SidebarGroupLabel className="text-[9px] font-black uppercase text-vj-txt3 tracking-[0.3em] px-4 mb-4">
                 {!collapsed && group.title}
               </SidebarGroupLabel>
               <SidebarGroupContent>
-                <SidebarMenu>
+                <SidebarMenu className="gap-1.5">
                   {group.items.map((item) => {
                     const isActive = item.url === '/' ? location.pathname === '/' : location.pathname.startsWith(item.url);
                     return (
@@ -147,11 +128,11 @@ export function AppSidebar() {
                         <SidebarMenuButton 
                           asChild 
                           isActive={isActive} 
-                          className={`hover:bg-sidebar-accent/50 transition-all font-medium border border-transparent ${isActive ? 'bg-vj-green/10 text-vj-green font-semibold border-vj-green/20' : 'text-vj-txt'}`}
+                          className={`h-12 rounded-2xl transition-all duration-300 group/btn ${isActive ? 'bg-vj-green text-white shadow-none' : 'text-vj-txt2 hover:bg-zinc-50 hover:text-vj-txt shadow-none'}`}
                         >
-                          <Link to={item.url} className="flex items-center gap-3">
-                            <item.icon className={`h-[18px] w-[18px] ${isActive ? 'text-vj-green' : 'text-vj-txt3'}`} />
-                            {!collapsed && <span>{item.title}</span>}
+                          <Link to={item.url} className="flex items-center gap-4 px-4">
+                            <item.icon className={`h-4 w-4 transition-colors ${isActive ? 'text-white' : 'text-vj-txt3 group-hover/btn:text-vj-green'}`} />
+                            {!collapsed && <span className="font-bold text-xs tracking-tight">{item.title}</span>}
                           </Link>
                         </SidebarMenuButton>
                       </SidebarMenuItem>
@@ -164,63 +145,32 @@ export function AppSidebar() {
         </div>
       </SidebarContent>
 
-      <SidebarFooter>
-        <div className="flex items-center gap-2 px-2 py-2">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent text-xs font-semibold text-accent-foreground">
-            {profile?.first_name?.[0] || '?'}
-          </div>
-          {!collapsed && (
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-xs font-medium text-sidebar-foreground">
-                {profile?.first_name} {profile?.last_name}
-              </p>
-            </div>
-          )}
-          {/* Notification Bell */}
-          <Button
-            variant="ghost" size="icon"
-            className="h-8 w-8 shrink-0 text-sidebar-foreground relative"
-            onClick={() => setShowNotif(v => !v)}
-            title="Notificações"
-          >
-            <Bell className="h-4 w-4" />
-            {unreadCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-destructive text-[9px] font-bold text-white flex items-center justify-center">
-                {unreadCount > 9 ? '9+' : unreadCount}
-              </span>
-            )}
-          </Button>
-          <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 text-sidebar-foreground" onClick={handleLogout}>
-            <LogOut className="h-4 w-4" />
-          </Button>
-        </div>
-        {/* Notification Dropdown */}
-        {showNotif && (
-          <div className="absolute bottom-14 left-2 right-2 z-50 bg-white rounded-xl border border-vj-border  max-h-72 overflow-y-auto">
-            <div className="px-4 py-3 border-b border-vj-border flex items-center justify-between">
-              <p className="text-xs font-bold uppercase tracking-wide text-vj-txt3">Notificações</p>
-              {unreadCount > 0 && (
-                <button className="text-[10px] text-vj-green font-semibold" onClick={() => {
-                  notifications?.filter((n) => !n.read_at).forEach((n) => markRead.mutate(n.id));
-                }}>Marcar todas como lidas</button>
-              )}
-            </div>
-            {!notifications?.length ? (
-              <p className="text-xs text-muted-foreground p-4 text-center">Nenhuma notificação.</p>
-            ) : (
-              notifications.slice(0, 8).map((n) => (
-                <div key={n.id} className={`px-4 py-3 border-b border-vj-border/50 cursor-pointer hover:bg-muted/30 transition-colors ${!n.read_at ? 'bg-vj-green/5' : ''}`}
-                  onClick={() => { if (!n.read_at) markRead.mutate(n.id); setShowNotif(false); }}>
-                  <p className={`text-xs font-medium ${!n.read_at ? 'text-vj-txt' : 'text-vj-txt3'}`}>{n.title}</p>
-                  {n.message && <p className="text-[10px] text-vj-txt3 mt-0.5 truncate">{n.message}</p>}
-                  <p className="text-[9px] text-vj-txt3/60 mt-1">{new Date(n.created_at).toLocaleString('pt-BR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}</p>
+      <SidebarFooter className="shrink-0 p-6 bg-zinc-50/50 border-t border-vj-border/40">
+        <div className="flex items-center justify-between gap-4">
+           <div className="flex items-center gap-4 overflow-hidden">
+              <div className="h-10 w-10 rounded-full bg-white border border-vj-border flex items-center justify-center text-xs font-black transition-transform group-hover:scale-110">
+                {profile?.first_name?.[0] || '?'}
+              </div>
+              {!collapsed && (
+                <div className="min-w-0">
+                  <p className="truncate text-xs font-black text-vj-txt leading-none">{profile?.first_name}</p>
+                  <p className="text-[10px] font-bold text-vj-txt3 uppercase tracking-tighter mt-1">{organization?.name || 'Pro Plan'}</p>
                 </div>
-              ))
-            )}
-          </div>
-        )}
+              )}
+           </div>
+           
+           {!collapsed && (
+             <div className="flex items-center gap-1.5">
+               <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-white border border-transparent hover:border-vj-border/60 transition-all text-vj-txt3 hover:text-vj-txt" onClick={() => navigate('/settings')}>
+                 <SettingsIcon className="h-4 w-4" />
+               </Button>
+               <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-white border border-transparent hover:border-vj-border/60 transition-all text-red-500 hover:text-red-600" onClick={handleLogout}>
+                 <LogOut className="h-4 w-4" />
+               </Button>
+             </div>
+           )}
+        </div>
       </SidebarFooter>
     </Sidebar>
   );
 }
-

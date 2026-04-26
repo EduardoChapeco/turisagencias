@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Calendar, MapPin, Users, CheckCircle2, XCircle, MessageCircle, Loader2, Ticket } from 'lucide-react';
 import { usePublicGroupTrip } from '@/hooks/useGroupTrips';
@@ -68,7 +68,14 @@ export default function PublicGroupTrip() {
       {/* Hero */}
       <section className="relative h-[60vh] min-h-[400px] bg-vj-bg overflow-hidden">
         {trip.cover_image_url ? (
-          <LazyImage src={trip.cover_image_url} alt={trip.title} className="w-full h-full object-cover" />
+          <LazyImage
+            src={trip.cover_image_url}
+            alt={trip.title}
+            aspectRatio="auto"
+            wrapperClassName="h-full w-full"
+            className="h-full w-full object-cover"
+            fallback={<div className="h-full w-full bg-gradient-to-br from-vj-green/20 to-vj-bg" />}
+          />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-vj-green/20 to-vj-bg" />
         )}
@@ -165,7 +172,13 @@ export default function PublicGroupTrip() {
             <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
               {trip.gallery_urls.map((url, i) => (
                 <div key={i} className="aspect-square overflow-hidden bg-vj-bg">
-                  <LazyImage src={url} alt={`Foto ${i + 1}`} className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
+                  <LazyImage
+                    src={url}
+                    alt={`Foto ${i + 1}`}
+                    aspectRatio="1/1"
+                    wrapperClassName="h-full w-full"
+                    className="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
+                  />
                 </div>
               ))}
             </div>

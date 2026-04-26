@@ -12,13 +12,13 @@ SET public_token = COALESCE(
   NULLIF(public_token, ''),
   CASE
     WHEN share_token IS NOT NULL THEN replace(share_token::text, '-', '')
-    ELSE encode(gen_random_bytes(16), 'hex')
+    ELSE replace(gen_random_uuid()::text, '-', '')
   END
 )
 WHERE public_token IS NULL OR public_token = '';
 
 ALTER TABLE public.quotations
-  ALTER COLUMN public_token SET DEFAULT encode(gen_random_bytes(16), 'hex'),
+  ALTER COLUMN public_token SET DEFAULT replace(gen_random_uuid()::text, '-', ''),
   ALTER COLUMN public_token SET NOT NULL;
 
 CREATE UNIQUE INDEX IF NOT EXISTS idx_quotations_public_token_unique

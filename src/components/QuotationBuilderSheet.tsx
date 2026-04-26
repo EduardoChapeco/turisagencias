@@ -172,13 +172,13 @@ export function QuotationBuilderSheet({ open, onClose, clientId, onCreated }: Qu
               </label>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="space-y-4">
+            <div className="grid min-w-0 gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(280px,0.8fr)]">
+              <div className="min-w-0 space-y-4">
                 <div className="space-y-1.5">
                   <Label className="font-bold text-zinc-700">Destino Principal *</Label>
                   <Input value={form.destination} onChange={(e) => updateForm('destination', e.target.value)} placeholder="Ex: Paris, França" className="h-12 bg-zinc-50 border-zinc-200 rounded-xl" />
                 </div>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <div className="space-y-1.5">
                     <Label className="font-bold text-zinc-700">Check-in</Label>
                     <Input type="date" value={form.check_in} onChange={(e) => updateForm('check_in', e.target.value)} className="h-12 bg-zinc-50 border-zinc-200 rounded-xl" />
@@ -188,7 +188,7 @@ export function QuotationBuilderSheet({ open, onClose, clientId, onCreated }: Qu
                     <Input type="date" value={form.check_out} onChange={(e) => updateForm('check_out', e.target.value)} className="h-12 bg-zinc-50 border-zinc-200 rounded-xl" />
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <div className="space-y-1.5">
                     <Label className="font-bold text-zinc-700">Adultos</Label>
                     <Input type="number" min="1" value={form.num_adults} onChange={(e) => updateForm('num_adults', e.target.value)} className="h-12 bg-zinc-50 border-zinc-200 rounded-xl" />
@@ -200,13 +200,13 @@ export function QuotationBuilderSheet({ open, onClose, clientId, onCreated }: Qu
                 </div>
               </div>
               
-              <div className="p-5 rounded-xl bg-zinc-50 border border-zinc-200 space-y-4">
+              <div className="min-w-0 space-y-4 rounded-xl border border-zinc-200 bg-zinc-50 p-5">
                 <h3 className="font-bold flex items-center gap-2"><Hotel className="text-zinc-400" /> Detalhes da Hospedagem</h3>
                 <div className="space-y-1.5">
                   <Label>Nome do Hotel Base</Label>
                   <Input value={form.hotel_name} onChange={(e) => updateForm('hotel_name', e.target.value)} className="bg-white border-zinc-200 rounded-xl" />
                 </div>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <div className="space-y-1.5">
                     <Label>Categoria</Label>
                     <Select value={form.hotel_stars} onValueChange={(v) => updateForm('hotel_stars', v)}>
@@ -251,7 +251,7 @@ export function QuotationBuilderSheet({ open, onClose, clientId, onCreated }: Qu
                        <div className="w-12 h-12 bg-zinc-100 rounded-xl flex items-center justify-center font-black text-xl text-zinc-400 shrink-0">{day.day}</div>
                        <div className="flex-1 space-y-3">
                           <Input value={day.title} onChange={(e) => updateDay(day.id, { title: e.target.value })} className="font-bold text-lg border-0 px-0 h-auto focus-visible:ring-0 rounded-none border-b border-dashed border-zinc-200" placeholder="Título do dia (Ex: Chegada em Paris)"/>
-                          <div className="grid grid-cols-2 gap-3">
+                          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                             <Input type="date" value={day.date} onChange={(e) => updateDay(day.id, { date: e.target.value })} className="bg-zinc-50 rounded-xl border-zinc-200 h-9" />
                             <Input value={day.location} onChange={(e) => updateDay(day.id, { location: e.target.value })} placeholder="Local/Cidade" className="bg-zinc-50 rounded-xl border-zinc-200 h-9" />
                           </div>
@@ -271,7 +271,7 @@ export function QuotationBuilderSheet({ open, onClose, clientId, onCreated }: Qu
             {transports.length === 0 ? <div className="py-12 text-center text-zinc-400">Nenhum transporte inserido.</div> : (
               <div className="space-y-4">
                 {transports.map(t => (
-                  <div key={t.id} className="p-4 rounded-xl border border-zinc-200 bg-white relative group grid md:grid-cols-3 gap-4">
+                  <div key={t.id} className="relative grid gap-4 rounded-xl border border-zinc-200 bg-white p-4 group md:grid-cols-3">
                     <button onClick={() => removeTransport(t.id)} className="absolute -top-2 -right-2 bg-red-100 text-red-600 rounded-full p-1.5 opacity-0 group-hover:opacity-100"><X className="w-3 h-3"/></button>
                     <Select value={t.type} onValueChange={(v) => updateTransport(t.id, { type: v })}>
                       <SelectTrigger className="bg-zinc-50 rounded-xl border-zinc-200"><SelectValue /></SelectTrigger>
@@ -340,14 +340,14 @@ export function QuotationBuilderSheet({ open, onClose, clientId, onCreated }: Qu
       case 4:
         return (
           <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-            <div className="grid md:grid-cols-3 gap-6">
-              <div className="p-5 rounded-xl bg-zinc-50 border border-zinc-200 md:col-span-1 space-y-4">
+            <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+              <div className="space-y-4 rounded-xl border border-zinc-200 bg-zinc-50 p-5 xl:col-span-1">
                 <h3 className="font-bold flex items-center gap-2 text-zinc-800"><DollarSign className="text-zinc-400" /> Precificação</h3>
                 <div className="space-y-1.5">
                   <Label>Valor Total Final</Label>
                   <Input type="number" step="0.01" value={form.total_value} onChange={(e) => updateForm('total_value', e.target.value)} placeholder="0.00" className="bg-white border-zinc-200 rounded-xl h-12 text-lg font-bold text-green-600" />
                 </div>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <div className="space-y-1.5">
                     <Label>Moeda</Label>
                     <Select value={form.currency} onValueChange={(v) => updateForm('currency', v)}>
@@ -377,18 +377,18 @@ export function QuotationBuilderSheet({ open, onClose, clientId, onCreated }: Qu
                 </div>
               </div>
 
-              <div className="p-5 rounded-xl bg-white border border-zinc-200 md:col-span-2 space-y-4">
+              <div className="space-y-4 rounded-xl border border-zinc-200 bg-white p-5 xl:col-span-2">
                 <h3 className="font-bold text-zinc-800">Formas de Pagamento (Parcelamento)</h3>
-                <div className="flex gap-3 items-end bg-zinc-50 p-4 rounded-xl border border-zinc-100">
-                  <div className="flex-1 space-y-1.5">
+                <div className="grid grid-cols-1 gap-3 rounded-xl border border-zinc-100 bg-zinc-50 p-4 sm:grid-cols-[minmax(0,1fr)_88px_140px_auto] sm:items-end">
+                  <div className="min-w-0 space-y-1.5">
                     <Label className="text-xs text-zinc-500">Tipo (ex: Boleto, Cartão)</Label>
                     <Input value={instType} onChange={(e) => setInstType(e.target.value)} className="bg-white rounded-xl" />
                   </div>
-                  <div className="w-20 space-y-1.5">
+                  <div className="space-y-1.5">
                     <Label className="text-xs text-zinc-500">Qtd.</Label>
                     <Input type="number" value={instCount} onChange={(e) => setInstCount(e.target.value)} placeholder="12" className="bg-white rounded-xl" />
                   </div>
-                  <div className="w-32 space-y-1.5">
+                  <div className="space-y-1.5">
                     <Label className="text-xs text-zinc-500">Valor (R$)</Label>
                     <Input type="number" value={instValue} onChange={(e) => setInstValue(e.target.value)} placeholder="0.00" className="bg-white rounded-xl" />
                   </div>
@@ -414,7 +414,7 @@ export function QuotationBuilderSheet({ open, onClose, clientId, onCreated }: Qu
       case 5:
         return (
           <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-            <div className="grid md:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
                <div className="space-y-6">
                  <div>
                    <h3 className="font-bold text-lg mb-2">Cliente Final</h3>
@@ -437,6 +437,10 @@ export function QuotationBuilderSheet({ open, onClose, clientId, onCreated }: Qu
                       existingUrls={form.cover_image_url ? [form.cover_image_url] : []}
                       onUploadComplete={(urls) => updateForm('cover_image_url', urls[0])}
                       folder="quotations/covers"
+                      aspectRatio={16 / 9}
+                      ownerType="quotation"
+                      ownerId={null}
+                      fieldName="cover_image_url"
                     />
                  </div>
                </div>
@@ -466,13 +470,14 @@ export function QuotationBuilderSheet({ open, onClose, clientId, onCreated }: Qu
       icon={MapPin}
       sections={SECTIONS}
       defaultSection="hospedagem"
+      className="lg:w-[74vw] xl:w-[70vw]"
       footer={
-        <div className="flex items-center justify-end gap-3 w-full">
+        <div className="flex w-full flex-wrap items-center justify-end gap-3">
           <Button variant="ghost" onClick={onClose} className="rounded-xl">Cancelar</Button>
           <Button
             onClick={handleSave}
             disabled={createQuotation.isPending || !form.destination}
-            className="rounded-full px-8 bg-vj-green hover:bg-vj-green/90 shadow-none font-bold"
+            className="rounded-full bg-vj-green px-8 font-bold shadow-none hover:bg-vj-green/90"
           >
             {createQuotation.isPending ? <><Loader2 className="w-4 h-4 mr-2 animate-spin"/>Salvando...</> : <><Save className="w-4 h-4 mr-2"/>Gerar Cotação</>}
           </Button>

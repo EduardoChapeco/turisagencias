@@ -68,7 +68,7 @@ export function SheetPage({
 
   const portalContent = (
     <div
-      className="fixed inset-0 z-[999] flex items-stretch justify-end overflow-hidden"
+      className="fixed inset-0 z-[999] overflow-hidden"
       role="dialog"
       aria-modal="true"
       style={{ pointerEvents: 'auto' }}
@@ -82,7 +82,7 @@ export function SheetPage({
       {/* Panel */}
       <div
         className={cn(
-          'relative flex flex-col z-10 h-screen',
+          'fixed inset-y-0 right-0 z-10 flex h-[100dvh] max-h-[100dvh] min-h-0 flex-col overflow-hidden',
           'w-full lg:w-[70vw]',
           'bg-white border-l border-vj-border',
           'animate-in slide-in-from-right duration-300',
@@ -91,7 +91,7 @@ export function SheetPage({
         )}
       >
         {/* Header */}
-        <div className="flex items-center gap-3 px-5 py-3 border-b border-vj-border flex-shrink-0 bg-white">
+        <div className="flex shrink-0 items-center gap-3 border-b border-vj-border bg-white px-5 py-3">
           {Icon && (
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-vj-green/10 text-vj-green border border-vj-green/20">
               <Icon size={16} />
@@ -118,14 +118,14 @@ export function SheetPage({
         {/* Body */}
         <div
           className={cn(
-            'flex flex-col md:flex-row flex-1 min-h-0 bg-white',
+            'flex min-h-0 flex-1 flex-col overflow-hidden bg-white md:flex-row',
             hasSidebar && 'md:grid md:grid-cols-[220px_1fr]',
           )}
         >
           {/* Sidebar */}
           {hasSidebar && (
             <nav
-              className="md:border-r border-b md:border-b-0 border-vj-border bg-zinc-50/50 p-2 flex md:flex-col gap-1 overflow-x-auto md:overflow-y-auto scrollbar-none shrink-0"
+              className="flex min-h-0 shrink-0 gap-1 overflow-x-auto border-b border-vj-border bg-zinc-50/50 p-2 scrollbar-none md:flex-col md:overflow-y-auto md:border-b-0 md:border-r"
             >
               {sections.map((section) => {
                 const SectionIcon = section.icon;
@@ -151,14 +151,14 @@ export function SheetPage({
           )}
 
           {/* Content Area */}
-          <div className="overflow-y-auto w-full p-4 md:p-5 flex-1 bg-white">
+          <div className="min-h-0 min-w-0 flex-1 overflow-y-auto bg-white p-4 md:p-5">
             {typeof children === 'function' ? children(activeSection) : children}
           </div>
         </div>
 
         {/* Footer */}
         {footer && (
-          <div className="flex items-center justify-end gap-3 px-5 py-3 border-t border-vj-border flex-shrink-0 bg-white/50 backdrop-blur-sm">
+          <div className="flex shrink-0 items-center justify-end gap-3 border-t border-vj-border bg-white/50 px-5 py-3 backdrop-blur-sm">
             {footer}
           </div>
         )}

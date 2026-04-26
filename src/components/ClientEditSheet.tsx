@@ -242,7 +242,12 @@ export function ClientEditSheet({ id, open, onClose, onSuccess }: ClientEditShee
             {activeSection === 'identidade' && (
               <div className="space-y-8">
                 <div className="flex gap-6 items-center">
-                  <AvatarUploader url={form.photo_url} fallbackName={form.name} onUpload={(url) => update('photo_url', url)} />
+                  <AvatarUploader
+                    url={form.photo_url}
+                    fallbackName={form.name}
+                    onUpload={(url) => update('photo_url', url)}
+                    bucket="client-media"
+                  />
                   <div className="flex-1 space-y-1">
                     <Label className="text-base font-semibold">Foto de Perfil Principal</Label>
                     <p className="text-xs text-vj-txt3">Clique no avatar para recortar e enviar uma imagem perfeitamente alinhada.</p>
@@ -291,7 +296,12 @@ export function ClientEditSheet({ id, open, onClose, onSuccess }: ClientEditShee
                     multiple={true}
                     existingUrls={form.gallery_urls || []}
                     onUploadComplete={(urls) => update('gallery_urls', [...urls])}
+                    bucket="client-media"
                     folder="clients/gallery"
+                    aspectRatio={4 / 3}
+                    ownerType="client"
+                    ownerId={id ?? null}
+                    fieldName="preferences.gallery_urls"
                   />
                 </div>
               </div>
@@ -352,7 +362,11 @@ export function ClientEditSheet({ id, open, onClose, onSuccess }: ClientEditShee
                           accept="image/*,application/pdf"
                           existingUrls={doc.url ? [doc.url] : []}
                           onUploadComplete={(urls) => updateDocumentBlock(index, 'url', urls[0])}
+                          bucket="client-media"
                           folder="clients/documents"
+                          ownerType="client"
+                          ownerId={id ?? null}
+                          fieldName={`preferences.documents.${index}.url`}
                         />
                       </div>
                     </div>
@@ -436,7 +450,11 @@ export function ClientEditSheet({ id, open, onClose, onSuccess }: ClientEditShee
                       accept="image/*,application/pdf"
                       existingUrls={form.proof_of_address_url ? [form.proof_of_address_url] : []}
                       onUploadComplete={(urls) => update('proof_of_address_url', urls[0])}
+                      bucket="client-media"
                       folder="clients/documents"
+                      ownerType="client"
+                      ownerId={id ?? null}
+                      fieldName="preferences.proof_of_address_url"
                     />
                 </div>
               </div>

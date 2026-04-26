@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { BookOpen, Save, Plus, Trash2, Globe } from 'lucide-react';
+import { BookOpen, RotateCcw, Save, Plus, Trash2, Globe } from 'lucide-react';
 import { SheetPage } from '@/components/ui/SheetPage';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,6 +8,15 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useSaveTravelerInfoPage, useTravelerInfoPage } from '@/hooks/useTravelerInfo';
+import { MediaField } from '@/components/ui/MediaField';
+
+function slugifyInfoPage(value: string) {
+  return value.toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)+/g, '')
+    .slice(0, 60);
+}
 
 interface AlertContent {
   text: string;
@@ -35,6 +44,7 @@ export function TravelerInfoEdit({ id, open, onClose, onSuccess }: TravelerInfoE
   const [form, setForm] = useState({
     title: '',
     slug: '',
+    slug_locked: false,
     description: '',
     cover_image_url: '',
     is_published: false,
@@ -46,6 +56,7 @@ export function TravelerInfoEdit({ id, open, onClose, onSuccess }: TravelerInfoE
       setForm({
         title: pageData.title,
         slug: pageData.slug,
+        slug_locked: pageData.slug_locked ?? pageData.is_published ?? false,
         description: pageData.description || '',
         cover_image_url: pageData.cover_image_url || '',
         is_published: pageData.is_published || false,
@@ -53,7 +64,7 @@ export function TravelerInfoEdit({ id, open, onClose, onSuccess }: TravelerInfoE
       });
     } else if (open && !isUpdate) {
       setForm({
-        title: '', slug: '', description: '', cover_image_url: '',
+        title: '', slug: '', slug_locked: false, description: '', cover_image_url: '',
         is_published: false, content_blocks: [],
       });
     }
@@ -65,11 +76,19 @@ export function TravelerInfoEdit({ id, open, onClose, onSuccess }: TravelerInfoE
 
   const generateSlug = () => {
     if (!form.title) return;
-    const txt = form.title.toLowerCase()
-      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)+/g, '');
-    update('slug', txt);
+    setForm((prev) => ({ ...prev, slug: slugifyInfoPage(prev.title), slug_locked: false }));
+  };
+
+  const updateTitle = (title: string) => {
+    setForm((prev) => ({
+      ...prev,
+      title,
+      ...(prev.slug_locked || prev.is_published ? {} : { slug: slugifyInfoPage(title) }),
+    }));
+  };
+
+  const updateSlug = (slug: string) => {
+    setForm((prev) => ({ ...prev, slug: slugifyInfoPage(slug), slug_locked: true }));
   };
 
   const addBlock = (type: 'text' | 'alert' | 'image') => {
@@ -139,21 +158,36 @@ export function TravelerInfoEdit({ id, open, onClose, onSuccess }: TravelerInfoE
               <>
                 <div className="space-y-1.5">
                   <Label>Título da Página *</Label>
-                  <Input value={form.title} onChange={(e) => update('title', e.target.value)} onBlur={generateSlug} className="border-vj-border" placeholder="Ex: O que levar na mala?" />
+                  <Input value={form.title} onChange={(e) => updateTitle(e.target.value)} className="border-vj-border" placeholder="Ex: O que levar na mala?" />
                 </div>
                 <div className="space-y-1.5">
                   <Label>Link Público (Slug) *</Label>
-                  <Input value={form.slug} onChange={(e) => update('slug', e.target.value)} className="border-vj-border font-mono text-sm" placeholder="o-que-levar-na-mala" />
+                  <div className="flex gap-2">
+                    <Input value={form.slug} onChange={(e) => updateSlug(e.target.value)} className="border-vj-border font-mono text-sm" placeholder="o-que-levar-na-mala" />
+                    <Button type="button" variant="outline" size="icon" onClick={generateSlug} disabled={!form.title}>
+                      <RotateCcw className="h-4 w-4" />
+                    </Button>
+                  </div>
                   <p className="text-[10px] text-vj-txt3">URL do portal: /p/info/{form.slug || '...'}</p>
                 </div>
                 <div className="space-y-1.5">
                   <Label>Breve Descrição</Label>
                   <Textarea value={form.description} onChange={(e) => update('description', e.target.value)} className="border-vj-border max-h-24" placeholder="Um resumo sobre o que esta página aborda..." />
                 </div>
-                <div className="space-y-1.5">
-                  <Label>URL da Imagem de Capa</Label>
-                  <Input value={form.cover_image_url} onChange={(e) => update('cover_image_url', e.target.value)} className="border-vj-border" placeholder="https://..." />
-                </div>
+                <MediaField
+                  label="Imagem de capa"
+                  helperText="Upload local por padrao; link externo fica como opcao avancada."
+                  value={form.cover_image_url ? [form.cover_image_url] : []}
+                  onChange={(urls) => update('cover_image_url', urls[0] || '')}
+                  bucket="media"
+                  folder="traveler-info/covers"
+                  multiple={false}
+                  accept="image/*"
+                  aspectRatio={16 / 9}
+                  ownerType="traveler_info_page"
+                  ownerId={id}
+                  fieldName="cover_image_url"
+                />
               </>
             )}
 
@@ -206,8 +240,20 @@ export function TravelerInfoEdit({ id, open, onClose, onSuccess }: TravelerInfoE
                         )}
                         {block.type === 'image' && (
                           <div className="space-y-2 pt-2">
-                            <Label className="text-xs text-vj-txt3 font-bold uppercase tracking-wide">Link da Imagem</Label>
-                            <Input value={block.content as string} onChange={e => updateBlock(i, e.target.value)} placeholder="https://..." />
+                            <MediaField
+                              label="Imagem inline"
+                              helperText="Ajuste opcional dentro do proprio SheetPage."
+                              value={block.content ? [block.content as string] : []}
+                              onChange={(urls) => updateBlock(i, urls[0] || '')}
+                              bucket="media"
+                              folder="traveler-info/blocks"
+                              multiple={false}
+                              accept="image/*"
+                              aspectRatio={4 / 3}
+                              ownerType="traveler_info_page"
+                              ownerId={id}
+                              fieldName="content_blocks.image"
+                            />
                           </div>
                         )}
                       </div>
@@ -228,9 +274,9 @@ export function TravelerInfoEdit({ id, open, onClose, onSuccess }: TravelerInfoE
                     Ao ativar esta opção, a página ficará visível publicamente e poderá ser acessada e referenciada nas conversas pelo Agente IA.
                   </p>
                 </div>
-                <Switch 
-                  checked={form.is_published} 
-                  onCheckedChange={(c) => update('is_published', c)} 
+                <Switch
+                  checked={form.is_published}
+                  onCheckedChange={(c) => setForm((prev) => ({ ...prev, is_published: c, slug_locked: c ? true : prev.slug_locked }))}
                 />
               </div>
             )}

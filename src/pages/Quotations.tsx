@@ -7,7 +7,11 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { QuotationBuilderSheet } from '@/components/QuotationBuilderSheet';
 import { QuotationAiImportSheet } from '@/components/QuotationAiImportSheet';
 import { QuotationDetailSheet } from '@/components/QuotationDetailSheet';
-import { Plus, Search, FileText, MapPin, Hotel, Calendar, Users, Sparkles, ArrowRight, ArrowUpRight, CheckCircle2, Navigation, FileSignature } from 'lucide-react';
+import { 
+  Plus, Search, FileText, MapPin, Hotel, Calendar, Users, Sparkles, 
+  ArrowRight, ArrowUpRight, CheckCircle2, Navigation, FileSignature,
+  Zap, BrainCircuit, ShieldCheck, Activity
+} from 'lucide-react';
 import { getClientName } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PageHeader } from '@/components/ui/PageHeader';
@@ -50,93 +54,98 @@ export default function Quotations() {
 
   return (
     <AppLayout>
-      <div className="space-y-4 max-w-[1400px] mx-auto pb-10 px-3 sm:px-4">
+      <div className="space-y-8 max-w-[1600px] mx-auto pb-12">
         
         <PageHeader
-          title="Propostas"
-          description="Construtor comercial de cotações com hospedagem, transporte, passeios, valores, compartilhamento e aceite."
+          title="Engine Comercial"
+          description="Gestão de ofertas, estruturação de propostas IA e controle de pipeline financeiro."
           icon={FileText}
           actions={
-          <div className="flex items-center gap-3">
-            <Button variant="outline" className="h-10 rounded-full border-vj-border bg-white" onClick={() => setAiImportOpen(true)}>
-              <Sparkles className="h-4 w-4 mr-2 text-vj-green" /> Extração IA
-            </Button>
-            <Button className="h-10 rounded-full" onClick={() => setBuilderOpen(true)}>
-              <Plus className="h-4 w-4 mr-2" /> Nova Cotação
-            </Button>
-          </div>
+            <div className="flex items-center gap-3">
+              <Button variant="outline" className="glass-button border-vj-border bg-white rounded-2xl h-12 px-6" onClick={() => setAiImportOpen(true)}>
+                <Zap className="h-4 w-4 mr-2 text-vj-green" /> Extração IA
+              </Button>
+              <Button className="premium-button h-12 px-8" onClick={() => setBuilderOpen(true)}>
+                <Plus className="h-4 w-4 mr-2" /> Nova Proposta
+              </Button>
+            </div>
           }
         />
 
-        {/* Stats Row */}
+        {/* 📊 SQUAD METRICS HUB */}
         {!isLoading && (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pb-1">
-            <div className="premium-card p-3 flex flex-col justify-between">
-              <div className="flex items-center gap-2 text-zinc-400 mb-2 mt-1">
-                <FileText className="w-4 h-4" /> <span className="text-xs uppercase tracking-wider font-bold">Total</span>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="bento-card bg-white p-6 border-vj-border/60">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="p-2 bg-zinc-50 rounded-xl text-zinc-400"><FileText className="w-4 h-4" /></div>
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-vj-txt3">Total no Funil</span>
               </div>
-              <p className="text-2xl font-black text-zinc-800">{stats.total}</p>
+              <p className="text-4xl font-black text-vj-txt tracking-tighter">{stats.total}</p>
             </div>
-            <div className="premium-card border-zinc-200 bg-zinc-50/50 p-3 flex flex-col justify-between">
-              <div className="flex items-center gap-2 text-zinc-600 mb-2 mt-1">
-                <FileSignature className="w-4 h-4" /> <span className="text-xs uppercase tracking-wider font-bold">Rascunhos</span>
+            <div className="bento-card bg-white p-6 border-vj-border/60">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="p-2 bg-blue-50 rounded-xl text-blue-600"><Navigation className="w-4 h-4" /></div>
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-600">Em Aberto</span>
               </div>
-              <p className="text-2xl font-black text-zinc-700">{stats.draft}</p>
+              <p className="text-4xl font-black text-blue-700 tracking-tighter">{stats.sent}</p>
             </div>
-            <div className="premium-card border-blue-200 bg-blue-50/50 p-3 flex flex-col justify-between">
-              <div className="flex items-center gap-2 text-blue-600 mb-2 mt-1">
-                <Navigation className="w-4 h-4" /> <span className="text-xs uppercase tracking-wider font-bold">Enviadas</span>
+            <div className="bento-card bg-white p-6 border-vj-border/60 border-vj-green/20 bg-vj-green/5">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="p-2 bg-vj-green/10 rounded-xl text-vj-green"><CheckCircle2 className="w-4 h-4" /></div>
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-vj-green">Confirmadas</span>
               </div>
-              <p className="text-2xl font-black text-blue-700">{stats.sent}</p>
+              <p className="text-4xl font-black text-vj-green tracking-tighter">{stats.confirmed}</p>
             </div>
-            <div className="premium-card border-vj-green/30 bg-vj-green/10 p-3 flex flex-col justify-between">
-              <div className="flex items-center gap-2 text-vj-green mb-2 mt-1">
-                <CheckCircle2 className="w-4 h-4" /> <span className="text-xs uppercase tracking-wider font-bold">Confirmadas</span>
+            <div className="bento-card bg-vj-bg-dark text-white p-6">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="p-2 bg-white/5 rounded-xl text-white"><Activity className="w-4 h-4" /></div>
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Conversão</span>
               </div>
-              <p className="text-2xl font-black text-vj-green">{stats.confirmed}</p>
+              <p className="text-4xl font-black text-white tracking-tighter">
+                {stats.total > 0 ? Math.round((stats.confirmed / stats.total) * 100) : 0}%
+              </p>
             </div>
           </div>
         )}
 
-        {/* Filters Row */}
-        <div className="flex flex-wrap gap-3 items-center justify-between pb-2">
-          <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        {/* 🔍 SMART FILTER BAR */}
+        <div className="flex flex-wrap gap-4 items-center justify-between glass-card p-4 rounded-3xl border-vj-border/40">
+          <div className="relative flex-1 max-w-md group">
+            <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-vj-txt3 group-focus-within:text-vj-green transition-colors" />
             <Input
-              placeholder="Pesquisar destino ou cliente..."
+              placeholder="Buscar destino, hotel ou cliente..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-11 h-10 bg-white border-vj-border rounded-xl focus-visible:ring-vj-green"
+              className="pl-12 h-12 bg-zinc-50/50 border-transparent rounded-2xl focus-visible:ring-vj-green/20 placeholder:text-vj-txt3/60 font-medium"
             />
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 bg-zinc-50 p-1 rounded-2xl border border-zinc-100">
              {['all', 'draft', 'sent', 'confirmed'].map(f => (
-               <Button 
+               <button 
                 key={f}
-                variant={statusFilter === f ? 'default' : 'outline'}
-                size="sm"
-                className="h-10 rounded-full px-4"
+                className={`h-10 rounded-xl px-5 text-[10px] font-black uppercase tracking-widest transition-all ${statusFilter === f ? 'bg-white text-vj-txt shadow-sm' : 'text-vj-txt3 hover:text-vj-txt'}`}
                 onClick={() => setStatusFilter(f)}
                >
-                 {f === 'all' ? 'Tudo' : f === 'draft' ? 'Rascunhos' : f === 'sent' ? 'Enviadas' : 'Confirmadas'}
-               </Button>
+                 {f === 'all' ? 'Tudo' : f === 'draft' ? 'Rascunhos' : f === 'sent' ? 'Enviadas' : 'Fechadas'}
+               </button>
              ))}
           </div>
         </div>
 
+        {/* 🧩 QUOTATION CARDS GRID */}
         {isLoading ? (
-          <div className="bento-grid-premium">
-             {[1,2,3,4,5,6].map(i => <Skeleton key={i} className="h-[280px] rounded-xl" />)}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+             {[1,2,3,4,5,6,7,8].map(i => <Skeleton key={i} className="h-[360px] rounded-[2rem]" />)}
           </div>
         ) : !filteredQuotations?.length ? (
           <EmptyState
             icon={FileText}
             title="Nenhuma proposta encontrada"
-            description="Tente ajustar os filtros ou comece criando sua primeira oferta."
-            action={<Button className="premium-button" onClick={() => setBuilderOpen(true)}><Plus className="mr-2 h-4 w-4" /> Criar Proposta</Button>}
+            description="O esquadrão cognitivo está pronto para ajudar você a criar novas ofertas."
+            action={<Button className="premium-button" onClick={() => setBuilderOpen(true)}>Criar Proposta</Button>}
           />
         ) : (
-          <div className="bento-grid-premium">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredQuotations.map((q) => {
               const clientName = getClientName(q.clients);
               const style = STATUS_STYLES[q.status] ?? STATUS_STYLES.draft;
@@ -145,58 +154,63 @@ export default function Quotations() {
               return (
                 <div
                   key={q.id}
-                  className="premium-card group overflow-hidden flex flex-col cursor-pointer"
+                  className="bento-card bg-white overflow-hidden flex flex-col group cursor-pointer border-vj-border/60 hover:border-vj-green/40"
                   onClick={() => setDetailSheet({ open: true, id: q.id })}
                 >
-                  {/* Visual Header */}
-                  <div className="relative h-40 bg-zinc-100 border-b border-zinc-100 overflow-hidden">
+                  <div className="relative h-44 bg-zinc-50 overflow-hidden">
                     {coverImage ? (
-                      <img src={coverImage} alt={q.destination || ''} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                      <img src={coverImage} alt={q.destination || ''} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" />
                     ) : (
-                      <div className="h-full flex flex-col items-center justify-center bg-zinc-100 text-zinc-400">
-                        <MapPin className="h-10 w-10 mb-2" />
-                        <span className="text-[10px] font-bold uppercase tracking-widest">{q.destination || 'Sem Destino'}</span>
+                      <div className="h-full flex flex-col items-center justify-center text-zinc-300">
+                        <MapPin className="h-10 w-10 mb-2 opacity-30" />
                       </div>
                     )}
                     
-                    <div className="absolute top-3 right-3">
-                      <div className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border backdrop-blur-md ${style.color.replace('bg-', 'bg-')}`}>
+                    <div className="absolute top-4 right-4">
+                      <div className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border backdrop-blur-md shadow-lg ${style.color.replace('bg-', 'bg-white/80 ')}`}>
                         {style.label}
                       </div>
                     </div>
 
-                    <div className="absolute bottom-0 left-0 right-0 p-4 bg-black/60 backdrop-blur-sm">
-                       <p className="text-white text-sm font-bold truncate">{q.destination || "Roteiro Customizado"}</p>
+                    <div className="absolute bottom-0 left-0 right-0 p-5 bg-gradient-to-t from-black/80 to-transparent">
+                       <p className="text-white text-sm font-black truncate tracking-tight">{q.destination || "Personalizado"}</p>
                     </div>
                   </div>
 
-                  {/* Body Content */}
-                  <div className="p-5 flex-1 flex flex-col">
-                    <div className="flex-1 space-y-3">
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium">
-                        <Users className="w-3 h-3" /> {clientName || "Cliente não vinculado"}
+                  <div className="p-6 flex-1 flex flex-col">
+                    <div className="flex-1 space-y-4">
+                      <div className="flex items-center justify-between">
+                         <div className="flex items-center gap-2 text-[10px] text-vj-txt2 font-black uppercase tracking-wider">
+                           <Users className="w-3.5 h-3.5 text-vj-green" /> {clientName?.split(' ')[0] || "Avulso"}
+                         </div>
+                         <div className="flex items-center gap-1">
+                            <div className="w-1.5 h-1.5 rounded-full bg-vj-green" />
+                            <span className="text-[9px] font-black text-vj-txt3 uppercase tracking-tighter">AI Scored</span>
+                         </div>
                       </div>
                       
                       {q.hotel_name && (
-                        <div className="flex items-center gap-2 text-xs font-bold text-vj-txt uppercase tracking-wider line-clamp-1">
-                          <Hotel className="w-3 h-3 text-vj-green" /> {q.hotel_name}
+                        <div className="flex items-center gap-2 text-xs font-bold text-vj-txt leading-tight line-clamp-1">
+                          <Hotel className="w-3.5 h-3.5 text-vj-txt3" /> {q.hotel_name}
                         </div>
                       )}
 
-                      <div className="flex items-center gap-3 text-[10px] text-muted-foreground font-mono bg-zinc-50 p-2 rounded-xl border border-zinc-100">
-                        <Calendar className="w-3 h-3" />
-                        {q.check_in ? new Date(q.check_in).toLocaleDateString('pt-BR') : 'A definir'}
-                        <ArrowRight className="w-2 h-2" />
-                        {q.check_out ? new Date(q.check_out).toLocaleDateString('pt-BR') : 'A definir'}
+                      <div className="flex items-center justify-between text-[10px] font-bold text-vj-txt3 uppercase tracking-tighter bg-zinc-50 px-4 py-2 rounded-xl border border-zinc-100/50">
+                        <div className="flex items-center gap-2"><Calendar className="w-3.5 h-3.5" /> {q.check_in ? new Date(q.check_in).toLocaleDateString('pt-BR') : 'A definir'}</div>
+                        <ArrowRight className="w-2.5 h-2.5 opacity-30" />
+                        <div>{q.check_out ? new Date(q.check_out).toLocaleDateString('pt-BR') : 'A definir'}</div>
                       </div>
                     </div>
 
-                    <div className="mt-6 pt-4 border-t border-zinc-100 flex items-center justify-between">
-                       <span className="stat-value text-2xl text-vj-txt">
-                        {fmtCurrency(q.total_value).split(',')[0]}
-                        <span className="text-sm opacity-50">,00</span>
-                       </span>
-                       <Button variant="ghost" size="icon" className="group-hover:bg-vj-green/10 group-hover:text-vj-green rounded-xl transition-colors">
+                    <div className="mt-8 pt-6 border-t border-vj-border/40 flex items-center justify-between">
+                       <div>
+                         <p className="text-[9px] font-black text-vj-txt3 uppercase tracking-widest mb-1">Total Sugerido</p>
+                         <span className="text-2xl font-black text-vj-txt tracking-tighter">
+                          {fmtCurrency(q.total_value).split(',')[0]}
+                          <span className="text-sm opacity-30">,00</span>
+                         </span>
+                       </div>
+                       <Button variant="ghost" size="icon" className="h-11 w-11 rounded-2xl group-hover:bg-vj-green group-hover:text-white transition-all duration-300">
                           <ArrowUpRight className="w-5 h-5" />
                        </Button>
                     </div>
@@ -209,23 +223,17 @@ export default function Quotations() {
       </div>
 
       <QuotationBuilderSheet
-        open={builderOpen}
-        onClose={() => setBuilderOpen(false)}
+        open={builderOpen} onClose={() => setBuilderOpen(false)}
         onCreated={(id) => { setBuilderOpen(false); setDetailSheet({ open: true, id }); }}
       />
-
       <QuotationAiImportSheet
-        open={aiImportOpen}
-        onClose={() => setAiImportOpen(false)}
+        open={aiImportOpen} onClose={() => setAiImportOpen(false)}
         onSuccess={(id) => { setAiImportOpen(false); setDetailSheet({ open: true, id }); }}
       />
-
       <QuotationDetailSheet
-        id={detailSheet.id}
-        open={detailSheet.open}
+        id={detailSheet.id} open={detailSheet.open}
         onClose={() => setDetailSheet({ open: false, id: null })}
       />
     </AppLayout>
   );
 }
-

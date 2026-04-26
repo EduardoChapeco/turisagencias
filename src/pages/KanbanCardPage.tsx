@@ -60,11 +60,13 @@ import {
   ArrowLeft,
   Save,
   Globe,
+  Eye,
+  Clock,
+  MapPin,
   CopyCheck
 } from 'lucide-react';
 import { useEmailTracking } from '@/hooks/useEmailTracking';
 import { SheetPage } from '@/components/ui/SheetPage';
-import { Eye, Clock, MapPin, Globe } from 'lucide-react';
 
 /* ─────────────────────────────────────────────
    SEÇÃO: Dados Gerais
@@ -786,12 +788,13 @@ export default function KanbanCardPage({ isEmbedded, embeddedId, onClose }: { is
       open={true}
       onClose={handleClose}
       title={card.title}
-        subtitle={card.clients?.name ?? card.quotations?.destination ?? "Detalhes do Lead CRM"}
-        icon={User}
-        sections={SECTIONS}
-        defaultSection="dados"
-        footer={
-          <div className="flex w-full justify-between items-center">
+      subtitle={card.clients?.name ?? card.quotations?.destination ?? "Detalhes do Lead CRM"}
+      icon={User}
+      sections={SECTIONS}
+      defaultSection="dados"
+      className="lg:w-[72vw] xl:w-[68vw]"
+      footer={
+          <div className="flex w-full items-center justify-between">
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button
@@ -825,16 +828,16 @@ export default function KanbanCardPage({ isEmbedded, embeddedId, onClose }: { is
               </Button>
             </div>
           </div>
-        }
+      }
       >
         {(activeSection) => (
-          <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
+          <div className="h-full min-h-0 animate-in fade-in slide-in-from-bottom-4 duration-300">
             {activeSection === 'dados' && <DadosSection card={card} columns={columns} />}
             {activeSection === 'checklist' && <ChecklistSection cardId={card.id} />}
             {activeSection === 'notas' && <NotasSection cardId={card.id} />}
             {activeSection === 'vinculos' && <VinculosSection card={card} />}
             {activeSection === 'whatsapp' && (
-              <div className="h-[calc(100vh-250px)]">
+              <div className="h-[calc(100dvh-170px)] min-h-[360px]">
                 <WaChatPanel clientId={card.client_id} phone={card.whatsapp} />
               </div>
             )}

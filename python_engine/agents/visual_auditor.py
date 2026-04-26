@@ -3,71 +3,74 @@ import os
 import base64
 from playwright.async_api import async_playwright
 import google.generativeai as genai
+from typing import Optional
 
-# Configuração do Agente AURA (Visual & UX Auditor)
-# Utiliza Vision para avaliar se a interface está seguindo o Bento Grid e Flat Design.
-
-def encode_image_to_base64(image_path: str) -> str:
-    with open(image_path, "rb") as image_file:
-        return base64.b64encode(image_file.read()).decode('utf-8')
+# ==========================================
+# 🧠 AURA v4.1 - COGNITIVE VISUAL AUDITOR (SHADOWLESS)
+# ==========================================
 
 async def capture_and_audit(url: str, output_image: str = "audit_screenshot.png"):
-    print(f"[AURA] Iniciando navegação headless para {url}...")
+    """
+    [AURA] - Agente Auditor Visual de Interface.
+    Evoluído na v4.1 para auditar a Lei Pétrea de Design da Turis Agências: 
+    ZERO sombras e ZERO scrollbars, mantendo a sofisticação Premium.
+    """
+    print(f"\n[👁️ AURA] Iniciando Percepção Multimodal Shadowless em: {url}")
     
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=True)
-        page = await browser.new_page(viewport={"width": 1440, "height": 900})
+        page = await browser.new_page(viewport={"width": 1920, "height": 1080}, device_scale_factor=2)
         
         try:
-            await page.goto(url, wait_until="networkidle")
+            print("[AURA] Renderizando DOM...")
+            await page.goto(url, wait_until="networkidle", timeout=30000)
+            await asyncio.sleep(2) 
             await page.screenshot(path=output_image, full_page=True)
-            print(f"[AURA] Screenshot capturado com sucesso: {output_image}")
+            print(f"[AURA] Snapshot capturado: {output_image}")
         except Exception as e:
-            print(f"[AURA] Erro ao capturar a página: {e}")
+            print(f"[AURA Critical Error] Falha na percepção visual: {e}")
             await browser.close()
             return
             
         await browser.close()
 
-    # 2. Análise Visual com Inteligência Artificial
-    print("[AURA] Invocando LLM Vision para auditoria de UI/UX...")
-    
-    # Assumindo que a chave de API do Gemini/OpenAI esteja nas variáveis de ambiente
     api_key = os.getenv("GEMINI_API_KEY")
     if not api_key:
-        print("[AURA] GEMINI_API_KEY não encontrada. Pulando a análise de IA e salvando apenas a imagem.")
+        print("[AURA Warning] GEMINI_API_KEY ausente.")
         return
         
     genai.configure(api_key=api_key)
-    
-    # Prepara a imagem para o Gemini Vision
     import PIL.Image
     img = PIL.Image.open(output_image)
     
     prompt = """
-    Você é o agente [AURA], um especialista nível Sênior em UI/UX e Design de Interfaces.
-    Avalie a imagem desta interface do sistema Turis Agencias (Omega Bento v3.0).
-    Verifique estritamente as novas regras de design:
-    - **Proibido Gradientes**: Tudo deve ser Flat Design com cores sólidas e harmoniosas.
-    - **Proibido Sombras**: O sistema deve ser limpo, usando bordas sutis (1px) ao invés de box-shadows.
-    - **Arredondamento Consistente**: Usar `rounded-xl` (aprox. 12px-16px). Evite o `rounded-3xl` ou `2rem` exagerados.
-    - **Espaçamento Profissional**: Padding/margin que crie uma sensação de respiro sem ser vazio demais.
-    - **Tipografia**: Hierarquia clara usando fontes modernas (Inter/Outfit).
-    
-    Identifique falhas visuais, botões mal alinhados ou violações do design system, e gere um relatório de melhorias em Markdown.
+    Você é o Agente [AURA v4.1], Arquiteto de Design e Especialista em Neurodesign da Turis Agências.
+    Sua missão é auditar esta interface sob as Leis Pétreas do sistema:
+
+    <LEIS PÉTREAS DE DESIGN OMEGA v4.1>
+    1. ZERO SOMBRAS (box-shadow): É PROIBIDO o uso de sombras em qualquer elemento. A profundidade deve ser comunicada via bordas (1px solid), contrastes de cores neutras e transparências.
+    2. ZERO SCROLLBARS: Nenhuma barra de rolagem deve ser visível, mesmo em áreas com scroll interno.
+    3. BENTO GRID PREMIUM: Use raios de curvatura acentuados (rounded-2xl / 2rem) para criar uma malha orgânica e moderna.
+    4. GLASSMORPHISM SÓBRIO: Use transparências e desfoque de fundo (backdrop-blur) sem depender de sombras para destacar elementos.
+    5. RESPIRO E HIERARQUIA: Verifique se os espaçamentos (paddings/margins) são amplos o suficiente para uma experiência de luxo.
+
+    Identifique qualquer violação (especialmente sombras indesejadas) e sugira o CSS exato para correção.
+    Retorne um relatório Markdown profissional intitulado 'AUDITORIA VISUAL OMEGA v4.1 - SHADOWLESS'.
     """
     
     model = genai.GenerativeModel('gemini-1.5-pro-latest')
-    print("[AURA] Analisando estrutura visual profunda...")
+    print("[AURA] Analisando conformidade com as Leis Pétreas...")
     
-    response = model.generate_content([prompt, img])
-    
-    report_path = "audit_report_aura.md"
-    with open(report_path, "w", encoding="utf-8") as f:
-        f.write(response.text)
-        
-    print(f"[AURA] Auditoria concluída! Relatório gerado em: {report_path}")
+    try:
+        response = model.generate_content([prompt, img])
+        report_path = "audit_report_aura_v4_1.md"
+        with open(report_path, "w", encoding="utf-8") as f:
+            f.write(response.text)
+        print(f"[AURA Success] Auditoria Shadowless Concluída: {report_path}")
+    except Exception as e:
+        print(f"[AURA Error] Erro na geração multimodal: {e}")
 
 if __name__ == "__main__":
-    # Exemplo: Auditando a página de cotações local (se estiver rodando)
-    asyncio.run(capture_and_audit("http://localhost:5173/quotations"))
+    import sys
+    url_to_audit = sys.argv[1] if len(sys.argv) > 1 else "http://localhost:5173"
+    asyncio.run(capture_and_audit(url_to_audit))

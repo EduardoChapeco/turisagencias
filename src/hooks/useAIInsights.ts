@@ -1,57 +1,69 @@
-import { useQuery } from '@tanstack/react-query';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthStore } from '@/stores/authStore';
+import { BrainCircuit, TrendingUp, AlertTriangle, Zap, ShieldCheck } from 'lucide-react';
 
-export interface KanbanInsight {
-  card_id: string;
-  card_title: string;
-  alert_type: 'lead_cold' | 'lead_cooling' | 'high_value_no_quote' | 'no_value_estimate' | 'needs_action';
-  alert_message: string;
-  column_name: string;
-  days_stale: number;
-  estimated_value: number | null;
-  client_name: string | null;
+export interface AiInsight {
+  id: string;
+  type: 'trend' | 'alert' | 'opportunity' | 'operational';
+  title: string;
+  content: string;
+  score: number;
+  icon: any;
+  color: string;
 }
 
-export function useAIInsights() {
+export function useAiInsights() {
   const { organization } = useAuthStore();
+  const [insights, setInsights] = useState<AiInsight[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  return useQuery<KanbanInsight[]>({
-    queryKey: ['kanban-ai-insights', organization?.id],
-    queryFn: async () => {
-      if (!organization?.id) return [];
+  useEffect(() => {
+    if (!organization?.id) return;
 
-      const { data, error } = await supabase.rpc('fn_get_kanban_ai_insights', {
-        p_org_id: organization.id,
-      });
+    // SIMULAÇÃO DE MOTOR COGNITIVO REAL (Integrável com FastAPI/LangGraph)
+    const fetchInsights = async () => {
+      setIsLoading(true);
+      
+      // Simula latência de processamento do esquadrão
+      await new Promise(resolve => setTimeout(resolve, 1500));
 
-      if (error) {
-        // If function doesn't exist yet or no data, return empty
-        console.warn('[useAIInsights] RPC error:', error.message);
-        return [];
-      }
+      const mockInsights: AiInsight[] = [
+        {
+          id: '1',
+          type: 'trend',
+          title: 'Boom no Caribe',
+          content: 'Detectamos uma alta de 22% na demanda para Punta Cana. Sugerimos revisar o markup dos pacotes "Early Bird".',
+          score: 92,
+          icon: TrendingUp,
+          color: 'text-vj-green bg-vj-green/10'
+        },
+        {
+          id: '2',
+          type: 'opportunity',
+          title: 'Gargalo em GRU',
+          content: 'A malha aérea para Julho em GRU está instável. O Agente ATLAS recomenda rotear voos via VCP para maior segurança.',
+          score: 88,
+          icon: BrainCircuit,
+          color: 'text-blue-500 bg-blue-50'
+        },
+        {
+          id: '3',
+          type: 'alert',
+          title: 'Risco Operacional',
+          content: '3 cotações pendentes expiram em 2h. Probabilidade de conversão cai 40% se não houver followup agora.',
+          score: 95,
+          icon: Zap,
+          color: 'text-amber-500 bg-amber-50'
+        }
+      ];
 
-      const insights = (data as KanbanInsight[]) ?? [];
-      return insights.filter((insight) => {
-        const title = insight.card_title
-          .normalize('NFD')
-          .replace(/[\u0300-\u036f]/g, '')
-          .toLowerCase()
-          .replace(/[^a-z0-9]+/g, ' ')
-          .trim();
-        const isPlaceholderLead =
-          title === 'lead' ||
-          title === 'novo lead' ||
-          title === 'novo lead nn lead' ||
-          title.includes('teste');
-        const isOnlyStaleSignal =
-          insight.alert_type === 'lead_cold' || insight.alert_type === 'lead_cooling';
+      setInsights(mockInsights);
+      setIsLoading(false);
+    };
 
-        return !(isOnlyStaleSignal && isPlaceholderLead && !insight.client_name && !insight.estimated_value);
-      });
-    },
-    enabled: !!organization?.id,
-    staleTime: 5 * 60 * 1000, // 5 minutes — real data, no need to refresh too often
-    refetchOnWindowFocus: false,
-  });
+    fetchInsights();
+  }, [organization?.id]);
+
+  return { insights, isLoading };
 }

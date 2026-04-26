@@ -158,6 +158,10 @@ export function GuideEdit({ id, open, onClose, onSuccess }: GuideEditProps) {
                     existingUrls={form.cover_image_url ? [form.cover_image_url] : []} 
                     onUploadComplete={(urls) => update('cover_image_url', urls[0])}
                     folder="guides/covers"
+                    aspectRatio={16 / 9}
+                    ownerType="destination_guide"
+                    ownerId={id}
+                    fieldName="cover_image_url"
                   />
                 </div>
 
@@ -190,6 +194,10 @@ export function GuideEdit({ id, open, onClose, onSuccess }: GuideEditProps) {
                     existingUrls={form.gallery_urls} 
                     onUploadComplete={(urls) => update('gallery_urls', urls)}
                     folder="guides/gallery"
+                    aspectRatio={4 / 3}
+                    ownerType="destination_guide"
+                    ownerId={id}
+                    fieldName="gallery_urls"
                   />
                 </div>
 
@@ -256,6 +264,10 @@ export function GuideEdit({ id, open, onClose, onSuccess }: GuideEditProps) {
                               existingUrls={section.items}
                               onUploadComplete={(urls) => updateSection(section.id, { items: urls })}
                               folder={`guides/sections/${section.id}`}
+                              aspectRatio={4 / 3}
+                              ownerType="destination_guide"
+                              ownerId={id}
+                              fieldName={`sections.${section.id}.items`}
                             />
                           )}
                         </div>

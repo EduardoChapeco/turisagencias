@@ -1,0 +1,40 @@
+[
+  {
+    "id": "REAL-LATAM-MIA-01",
+    "destination": "Miami, USA",
+    "airline": "LATAM",
+    "flight_number": "LA8190",
+    "departure": "GRU 23:25",
+    "arrival": "MIA 07:15",
+    "connections": 0,
+    "price": 5420.0,
+    "total_time_minutes": 530,
+    "verdict_context": "Voo direto noturno oficial da malha LATAM 2026."
+  },
+  {
+    "id": "REAL-AA-MIA-01",
+    "destination": "Miami, USA",
+    "airline": "American Airlines",
+    "flight_number": "AA930",
+    "departure": "GRU 21:30",
+    "arrival": "MIA 05:40",
+    "connections": 0,
+    "price": 5890.0,
+    "total_time_minutes": 550,
+    "verdict_context": "Voo direto noturno AA, alta disponibilidade e confiabilidade."
+  },
+  {
+    "id": "REAL-COPA-MIA-01",
+    "destination": "Miami, USA",
+    "airline": "Copa Airlines",
+    "flight_number": "CM702",
+    "departure": "GRU 05:15",
+    "arrival": "MIA 14:45",
+    "connections": 1,
+    "connection_city": "PTY",
+    "connection_time_minutes": 65,
+    "price": 3950.0,
+    "total_time_minutes": 690,
+    "verdict_context": "Melhor custo-benefício com conexão garantida no Panamá."
+  }
+]

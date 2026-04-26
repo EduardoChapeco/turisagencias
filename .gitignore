@@ -22,3 +22,11 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# ── Segurança: NUNCA commitar chaves secretas ────────────────
+.env
+.env.*
+!.env.example
+python_engine/.env
+python_engine/.env.*
+!python_engine/.env.example

@@ -30,6 +30,7 @@ const KanbanCardPage = lazy(() => import('./pages/KanbanCardPage'));
 const DeparturesKanban = lazy(() => import('./pages/DeparturesKanban'));
 const TasksKanban = lazy(() => import('./pages/TasksKanban'));
 const Settings = lazy(() => import('./pages/Settings'));
+const Integrations = lazy(() => import('./pages/Integrations'));
 const AIChat = lazy(() => import('./pages/AIChat'));
 
 const Guides = lazy(() => import('./pages/Guides'));
@@ -159,6 +160,7 @@ const App = () => (
               <Route path="/kanban/tasks" element={<ProtectedWithOrg><TripsRole><TasksKanban /></TripsRole></ProtectedWithOrg>} />
               <Route path="/ai-chat" element={<ProtectedWithOrg><TripsRole><AIChat /></TripsRole></ProtectedWithOrg>} />
               <Route path="/settings" element={<ProtectedWithOrg><TripsRole><Settings /></TripsRole></ProtectedWithOrg>} />
+              <Route path="/integrations" element={<ProtectedWithOrg><TripsRole><Integrations /></TripsRole></ProtectedWithOrg>} />
               
               {/* ERP v3 Financeiro & Jurídico */}
               <Route path="/finance/suppliers" element={<ProtectedRoute><Suppliers /></ProtectedRoute>} />

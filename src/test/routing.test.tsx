@@ -135,6 +135,7 @@ describe('Route Guards', () => {
     });
     renderInRouter(<Dashboard />, '/');
     expect(screen.getByText(/test org/i)).toBeInTheDocument();
-    expect(screen.getByText(/operações em tempo real/i)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /painel inicial/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /sobre painel inicial/i })).toBeInTheDocument();
   });
 });

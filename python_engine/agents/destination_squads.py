@@ -1,94 +1,82 @@
-from typing import Dict, Any
+import os
+from typing import Dict, List, Any, Optional
+from pydantic import BaseModel, Field
+from langchain_openai import ChatOpenAI
+from langchain.prompts import PromptTemplate
 
-class DestinationSquad:
-    def __init__(self, name: str, focus: str, gateways: list):
-        self.name = name
-        self.focus = focus
-        self.gateways = gateways
+# ==========================================
+# 🧠 OMEGA v4.0 - DESTINATION COGNITIVE MODELS
+# ==========================================
 
-# Instancializando as Regras Baseadas no PRD B2B
-SQUADS = {
-    "SQUAD_1_NORDESTE": DestinationSquad(
-        name="Nordeste Praias",
-        focus="Logística de Transfers complexos mar/terra, Tábuas de maré, Voo diurno.",
-        gateways=["Fortaleza/FOR", "Recife/REC", "Salvador/SSA"]
-    ),
-    "SQUAD_2_AVENTURA": DestinationSquad(
-        name="Aventura / Natureza",
-        focus="Condição climática restritiva, limitação de pax, locação de carros/4x4.",
-        gateways=["Campo Grande/CGR", "Lençóis/LEC"]
-    ),
-    "SQUAD_7_OPERACIONAL": DestinationSquad(
-        name="Suporte Pós Venda",
-        focus="Check-ins 24h, alterações de malha, lacunas de acomodação.",
-        gateways=[]
-    )
-}
+class LogisticRequirement(BaseModel):
+    action: str = Field(description="Ação necessária (ex: 'ADD_GATEWAY_NIGHT', 'BOOK_4X4')")
+    reason: str = Field(description="Justificativa técnica baseada na logística do destino")
+    severity: str = Field(description="CRITICAL | WARNING | INFO")
 
-# Banco Fixo de Heurísticas (Enquanto a Memória Qdrant alimenta com dados históricos novos)
-DESTINATION_RULES = {
-    "jericoacoara": {
-        "gateway": "FOR", # Fortaleza Base
-        "transfer_time_hours": 4.5,
-        "transfer_options": ["van", "4x4", "aviao_pequeno"],
-        "critical_rules": [
-            {"condition": "ARRIVE_FOR > 16:00", "action": "FORCE_ADD_1_NIGHT_GATEWAY"},
-            {"condition": "ARRIVE_FOR < 13:00", "action": "ALLOW_DIRECT_TRANSFER"}
-        ]
-    },
-    "morro_de_sao_paulo": {
-        "gateway": "SSA",
-        "transfer_options": ["catamarã", "lancha"],
-        "critical_rules": [
-            {"condition": "ARRIVE_SSA > 15:30", "action": "FORCE_ADD_1_NIGHT_GATEWAY", "reason": "Último catamarã sai às 18h de SSA."}
-        ]
-    },
-    "fernando_de_noronha": {
-        "gateway": "REC/NAT",
-        "critical_rules": [
-            {"condition": "ALWAYS", "action": "ADD_WARNING_TAXA_PRESERVACAO"},
-            {"condition": "NIGHTS > 10", "action": "FLAG_RISK_MAX_STAY"}
-        ]
-    }
-}
+class DestinationAudit(BaseModel):
+    gateway_city: str = Field(description="Cidade gateway recomendada para o transfer")
+    transfer_feasibility: str = Field(description="Parecer sobre a viabilidade do transfer no horário de chegada")
+    requirements: List[LogisticRequirement] = Field(description="Lista de requisitos operacionais")
+    local_tips: List[str] = Field(description="Dicas de insider sobre o destino (marés, clima, etc)")
 
-def analyze_destination_logistics(destination_id: str, arrival_hour: float) -> Dict[str, Any]:
+# ==========================================
+# 🤖 AGENT 1 - DESTINATION LOGISTICS EXPERT
+# ==========================================
+
+class DestinationSpecialist:
     """
-    Agente 1 — Destination Logistics Expert
+    [AGENT 1] - Especialista em Destinos e Logística Regional.
+    Evoluído na v4.0 para usar Conhecimento Enciclopédico de Turismo.
+    Avalia a "Última Milha" (Last Mile) da viagem.
     """
-    norm_dest = destination_id.lower().strip()
-    rule_set = DESTINATION_RULES.get(norm_dest)
-    
-    if not rule_set:
-        return {"status": "normal", "message": f"Nenhuma regra rigorosa de gateway listada para '{norm_dest}'."}
-        
-    print(f"[Logistics Expert] Analisando regras restritivas para {norm_dest}...")
-    
-    warnings = []
-    actions = []
-    
-    for rule in rule_set.get("critical_rules", []):
-        condition = rule["condition"]
-        action = rule["action"]
-        
-        if "ARRIVE_" in condition and ">" in condition:
-            limit_time_str = condition.split(">")[1].strip()
-            limit_hour = float(limit_time_str.split(":")[0]) + (float(limit_time_str.split(":")[1])/60)
-            
-            if arrival_hour > limit_hour:
-                actions.append(action)
-                warnings.append(rule.get("reason", f"Voo chega às {arrival_hour}h. Excedeu limite seguro de {limit_time_str}."))
-                
-        elif "ARRIVE_" in condition and "<" in condition:
-            limit_time_str = condition.split("<")[1].strip()
-            limit_hour = float(limit_time_str.split(":")[0]) + (float(limit_time_str.split(":")[1])/60)
-            
-            if arrival_hour < limit_hour:
-                actions.append(action)
-    
-    return {
-        "status": "requires_action" if actions else "cleared",
-        "gateway_used": rule_set.get("gateway"),
-        "actions_required": actions,
-        "logistics_warnings": warnings
-    }
+    def __init__(self):
+        api_key = os.getenv("OPENAI_API_KEY", "")
+        if api_key:
+            base_llm = ChatOpenAI(temperature=0.2, model="gpt-4o-mini", api_key=api_key)
+            self.llm = base_llm.with_structured_output(DestinationAudit)
+        else:
+            self.llm = None
+
+        self.system_prompt = PromptTemplate(
+            input_variables=["destination", "arrival_hour"],
+            template="""Você é o Agente 1 (Destination Specialist) do Motor OMEGA v4.0.
+Sua especialidade é a logística de 'última milha' em destinos complexos.
+
+<DESTINO>
+{destination}
+Horário de Chegada do Voo no Gateway: {arrival_hour}h
+
+<SUA MISSÃO>
+Audite a viabilidade de chegar ao destino final no mesmo dia. 
+Considere:
+1. HORÁRIOS DE TRANSFER: Barcos/Lanchas em destinos como Morro de São Paulo ou Fernando de Noronha têm limites rígidos.
+2. DISTÂNCIA: Se o transfer terrestre for > 4h (ex: Jericoacoara via FOR), chegadas noturnas são perigosas/desconfortáveis.
+3. CONDIÇÕES LOCAIS: Tábuas de maré, horários de balsa, segurança de estradas de terra à noite.
+
+Se for impossível ou arriscado chegar com segurança, exija uma noite de hotel na cidade gateway.
+"""
+        )
+
+    def analyze_destination_logistics(self, destination: str, arrival_hour: float) -> DestinationAudit:
+        """Audita a logística do destino usando inteligência geográfica profunda."""
+        print(f"[Agent 1] Auditando logística de 'Last Mile' para {destination} (Chegada: {arrival_hour}h)...")
+
+        if not self.llm:
+            print("[Agent 1 Warning] Sem LLM. Fallback offline.")
+            return DestinationAudit(
+                gateway_city="Unknown",
+                transfer_feasibility="Offline",
+                requirements=[LogisticRequirement(action="MANUAL_CHECK", reason="Sem motor cognitivo", severity="WARNING")],
+                local_tips=[]
+            )
+
+        try:
+            formatted = self.system_prompt.format(destination=destination, arrival_hour=arrival_hour)
+            audit: DestinationAudit = self.llm.invoke(formatted)
+            return audit
+        except Exception as e:
+            print(f"[Agent 1 Critical] Falha na auditoria de destino: {e}")
+            return DestinationAudit(
+                gateway_city="Error", transfer_feasibility="Error", 
+                requirements=[], local_tips=[str(e)]
+            )

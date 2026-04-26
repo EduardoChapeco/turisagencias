@@ -72,23 +72,74 @@ export function useScoreQuotation() {
   return useMutation({
     mutationFn: async (quotationId: string) => {
       if (!organization?.id) throw new Error('Organização não encontrada');
-      const { data, error } = await supabase.functions.invoke('score-quotation', {
-        body: { quotation_id: quotationId, org_id: organization.id },
+
+      // Busca dados da cotação para montar o request
+      const { data: quotation, error } = await supabase
+        .from('quotations')
+        .select('destination, check_in, num_adults, pax_adultos')
+        .eq('id', quotationId)
+        .single();
+      if (error || !quotation) throw new Error('Cotação não encontrada');
+
+      // Chama o Motor Python OMEGA v5.0 diretamente (ZERO mock)
+      const pythonEngineUrl = import.meta.env.VITE_PYTHON_ENGINE_URL || 'http://localhost:8000';
+      const res = await fetch(`${pythonEngineUrl}/api/v1/quotation/score`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          quotation_id:   quotationId,
+          org_id:         organization.id,
+          destination:    quotation.destination || '',
+          departure_date: quotation.check_in || null,
+          adults:         quotation.num_adults ?? quotation.pax_adultos ?? 1,
+          cabin:          'ECONOMY',
+        }),
       });
-      if (error) throw new Error(error.message);
-      if (data?.error) throw new Error(data.error);
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ detail: 'Erro desconhecido no motor Python.' }));
+        // Erro 503 = sem credenciais B2B configuradas
+        if (res.status === 503) {
+          throw new Error(`⚠️ GDS Gateway: ${err.detail}`);
+        }
+        throw new Error(err.detail || `Erro HTTP ${res.status}`);
+      }
+
+      const data = await res.json();
+
+      // Salva os cenários retornados no Supabase
+      if (data.scenarios?.length) {
+        for (const scenario of data.scenarios) {
+          await supabase.from('quotation_scenarios').upsert({
+            quotation_id:            quotationId,
+            org_id:                  organization.id,
+            scenario_type:           scenario.scenario_type,
+            scenario_label:          scenario.title,
+            description:             scenario.description,
+            score:                   scenario.score,
+            agent_rationale:         scenario.agent_rationale,
+            recommended:             scenario.recommended ?? false,
+            estimated_savings_brl:   scenario.estimated_savings_brl ?? null,
+            estimated_extra_cost_brl: scenario.estimated_extra_cost_brl ?? null,
+            metadata: {
+              policy_status: scenario.policy_status,
+              source:        'omega_v5_gds_gateway',
+            },
+          }, { onConflict: 'quotation_id,scenario_type', ignoreDuplicates: false });
+        }
+      }
+
       return data;
     },
-    onSuccess: (data, quotationId) => {
-      qc.invalidateQueries({ queryKey: ['quotation_scenarios', quotationId] });
-      const bestIdx = (data.best_scenario_index ?? 0) + 1;
+    onSuccess: (data) => {
+      qc.invalidateQueries({ queryKey: ['quotation_scenarios'] });
       toast({
-        title: '🧠 Análise IA concluída!',
-        description: `${data.scenarios?.length ?? 3} cenários gerados. Recomendação: opção ${bestIdx}.`,
+        title: '🧠 OMEGA GDS Completo!',
+        description: data.executive_summary || `${data.scenarios?.length ?? 0} cenários gerados com dados reais.`,
       });
     },
     onError: (e: Error) =>
-      toast({ title: 'Erro na análise IA', description: e.message, variant: 'destructive' }),
+      toast({ title: 'Erro no Motor OMEGA', description: e.message, variant: 'destructive' }),
   });
 }
 

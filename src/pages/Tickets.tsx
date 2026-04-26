@@ -18,6 +18,7 @@ import { SheetPage } from '@/components/ui/SheetPage';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { TicketDetailSheet } from '@/components/TicketDetailSheet';
 import { useGroupTrips } from '@/hooks/useGroupTrips';
+import { ClientSearchSelect } from '@/components/ui/ClientSearchSelect';
 
 /* ── Constants ── */
 const STATUS_CONFIG: Record<string, { color: string; bg: string; icon: React.ElementType; label: string }> = {
@@ -161,7 +162,7 @@ function TicketCreateSheet({ open, onClose, onCreated }: { open: boolean; onClos
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="space-y-1.5">
                   <Label className="text-zinc-600 font-semibold text-sm">Categoria</Label>
                   <Select value={form.type} onValueChange={v => update('type', v)}>
@@ -252,7 +253,6 @@ function TicketCreateSheet({ open, onClose, onCreated }: { open: boolean; onClos
             <div className="space-y-5">
               <div className="space-y-1.5">
                 <Label className="text-zinc-700 font-bold">Vincular Cliente</Label>
-                <p className="text-xs text-zinc-500">Busque e vincule o cliente relacionado a este protocolo.</p>
                 <ClientSearchSelect
                   value={form.client_id}
                   onChange={v => update('client_id', v)}
@@ -262,7 +262,6 @@ function TicketCreateSheet({ open, onClose, onCreated }: { open: boolean; onClos
 
               <div className="space-y-1.5">
                 <Label className="text-zinc-700 font-bold">Vincular Excursão / Pacote</Label>
-                <p className="text-xs text-zinc-500">Associe este protocolo a uma viagem específica.</p>
                 <Select value={form.group_trip_id || '_none'} onValueChange={v => update('group_trip_id', v === '_none' ? '' : v)}>
                   <SelectTrigger className="h-11 rounded-xl bg-zinc-50 border-zinc-200">
                     <SelectValue placeholder="Selecionar excursão..." />

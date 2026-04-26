@@ -1,5 +1,12 @@
-from pydantic import BaseModel
-from typing import Dict, List, Any
+import os
+from typing import Dict, List, Any, Optional
+from pydantic import BaseModel, Field
+from langchain_openai import ChatOpenAI
+from langchain.prompts import PromptTemplate
+
+# ==========================================
+# 🧠 OMEGA v4.0 - COGNITIVE FLIGHT MODELS
+# ==========================================
 
 class FlightOutbound(BaseModel):
     flight_number: str
@@ -18,113 +25,99 @@ class FlightOption(BaseModel):
     price: float
     has_transfer: bool = False
 
-class FlightScore(BaseModel):
-    layover_score: float
-    connections_score: float
-    price_score: float
-    arrival_score: float
-    airline_score: float
-    total: float
-    reasoning: List[str]
+class FlightAnalysis(BaseModel):
+    layover_safety_score: float = Field(description="Pontuação de 0 a 1 para segurança da conexão")
+    logistics_score: float = Field(description="Pontuação para horário de chegada e transfers")
+    commercial_score: float = Field(description="Pontuação baseada no custo-benefício B2B")
+    overall_score: float = Field(description="Score final ponderado (0-100)")
+    professional_verdict: str = Field(description="Parecer técnico do especialista")
+    critical_warnings: List[str] = Field(description="Lista de riscos identificados")
+
+# ==========================================
+# 🤖 AGENT 2 - FLIGHT COGNITIVE SPECIALIST
+# ==========================================
 
 class FlightSpecialist:
     """
-    Agente 2 — Flight Specialist
-    Avalia opções de voo extraídas do Infotravel aplicando as Regras Críticas B2B.
+    [AGENT 2] - Especialista em Malha Aérea e Logística.
+    Evoluído na v4.0 para usar Raciocínio Geográfico e Operacional.
+    Analisa voos não apenas por preço, mas por viabilidade real de conexão e conforto.
     """
-    
     def __init__(self):
-        # Base de confiabilidade operacional baseada em malha no BR
-        self.airline_reliability = {
-            "LATAM": 1.0,
-            "AZUL": 0.95,
-            "GOL": 0.85, # Gol em reestruturação (Chapter 11 risk param)
-            "VOEPASS": 0.3
-        }
-
-    def _layover_score(self, minutes: int, reasons: List[str]) -> float:
-        if minutes < 45: 
-            reasons.append(f"ALERTA CRÍTICO: Risco altíssimo de perder conexão com {minutes}m.")
-            return 0.0   
-        if minutes < 60:
-            reasons.append(f"Aviso: Conexão arriscada com {minutes}m.")
-            return 0.3   
-        if minutes < 90:
-            reasons.append("Conexão levemente apertada.")
-            return 0.7   
-        if minutes <= 180:
-            reasons.append("Layover de segurança ideal.")
-            return 1.0   
-        if minutes <= 300: return 0.8   
-        if minutes <= 360:
-            reasons.append("Aviso de desconforto extremo: Layover longo.")
-            return 0.5   
-        if minutes <= 480: return 0.2   
-        
-        reasons.append("Rejeitado: Over-layover quebra logística diária do passageiro.")
-        return 0.0
-
-    def score_flight(self, flight: FlightOption, min_price_in_set: float) -> FlightScore:
-        reasons = []
-        
-        # 1. Componente Layover
-        layover_val = self._layover_score(flight.outbound.connection_time_minutes, reasons) * 0.25
-        
-        # 2. Componente Conexões
-        conn_dict = {0: 1.0, 1: 0.85, 2: 0.50, 3: 0.0}
-        conn_val = conn_dict.get(flight.outbound.connections, 0.0) * 0.20
-        if flight.outbound.connections > 2:
-            reasons.append("Voo rejeitado pela PRD Agency_Rule FR004 (Max 2 conex).")
-
-        # 3. Componente Preço Relativo
-        price_ratio = flight.price / min_price_in_set if min_price_in_set > 0 else 1.0
-        price_sc = max(0.0, 1.0 - (price_ratio - 1.0) * 2)
-        price_val = price_sc * 0.35
-
-        # 4. Componente Logística Terrestre (Chegada Cedo/Tarde)
-        if flight.has_transfer:
-            h = flight.outbound.arrival_hour
-            if h <= 12: arrival_sc = 1.0; reasons.append("Horário excelente para transfer diurno.")
-            elif h <= 15: arrival_sc = 0.7; reasons.append("Horário bom, transfer possível antes do pôr do sol.")
-            elif h <= 17: arrival_sc = 0.4; reasons.append("Risco logístico: Chegada ao limite de embarcações/lanchas rápidas.")
-            else: arrival_sc = 0.1; reasons.append("Extremo risco: Transfer noturno ou perda de diária em destino gateway.")
+        api_key = os.getenv("OPENAI_API_KEY", "")
+        if api_key:
+            base_llm = ChatOpenAI(temperature=0.0, model="gpt-4o-mini", api_key=api_key)
+            self.llm = base_llm.with_structured_output(FlightAnalysis)
         else:
-            arrival_sc = 0.9
+            self.llm = None
 
-        arrival_val = arrival_sc * 0.15
+        self.system_prompt = PromptTemplate(
+            input_variables=["flight_data", "min_price"],
+            template="""Você é o Agente 2 (Flight Specialist) do Motor OMEGA v4.0.
+Sua missão é auditar uma opção de voo extraída do GDS e dar um parecer técnico de nível Staff Engineer.
 
-        # 5. Componente Confiabilidade Cia Aérea
-        arl_sc = self.airline_reliability.get(flight.airline.upper(), 0.5)
-        airline_val = arl_sc * 0.05
+<DADOS DO VOO>
+{flight_data}
+Preço Mínimo do Grupo: {min_price}
 
-        final_score = (layover_val + conn_val + price_val + arrival_val + airline_val) * 100
+<CRITÉRIOS DE AUDITORIA COGNITIVA>
+1. CONEXÃO (LAYOVER): Menos de 60 min em aeroportos grandes (GRU, GIG, EZE, MIA) é CRÍTICO. Mais de 6h é DESCONFORTO.
+2. LOGÍSTICA TERRESTRE: Se houver transfer, chegadas após as 18h são arriscadas para destinos de praia/lancha.
+3. RELATIVIDADE COMERCIAL: Como o preço se comporta frente à média do grupo?
+4. OPERACIONAL: Avalie a confiabilidade da Cia Aérea (LATAM/AZUL são premium, GOL em reestruturação, etc).
 
-        return FlightScore(
-            layover_score=layover_val,
-            connections_score=conn_val,
-            price_score=price_val,
-            arrival_score=arrival_val,
-            airline_score=airline_val,
-            total=round(final_score, 2),
-            reasoning=reasons
+Gere um score de 0 a 100 e um veredito brutalmente honesto.
+"""
         )
 
-# Factory helper para o Agente 5 (Debate/Consenso)
-def optimize_flight_selection(scraped_flights: List[FlightOption]) -> FlightOption:
+    def score_flight(self, flight: FlightOption, min_price_in_set: float) -> FlightAnalysis:
+        """Executa a auditoria cognitiva do voo."""
+        print(f"[Agent 2] Auditando voo {flight.outbound.flight_number} ({flight.airline})...")
+
+        if not self.llm:
+            print("[Agent 2 Warning] Sem LLM. Retornando fallback heurístico.")
+            return FlightAnalysis(
+                layover_safety_score=0.5,
+                logistics_score=0.5,
+                commercial_score=0.5,
+                overall_score=50.0,
+                professional_verdict="Auditoria offline (heurística básica).",
+                critical_warnings=["Motor cognitivo indisponível."]
+            )
+
+        try:
+            formatted = self.system_prompt.format(
+                flight_data=flight.model_dump_json(),
+                min_price=min_price_in_set
+            )
+            analysis: FlightAnalysis = self.llm.invoke(formatted)
+            return analysis
+        except Exception as e:
+            print(f"[Agent 2 Critical] Falha na auditoria de voo: {e}")
+            return FlightAnalysis(
+                layover_safety_score=0.0, logistics_score=0.0, commercial_score=0.0,
+                overall_score=0.0, professional_verdict="Erro na análise.", critical_warnings=[str(e)]
+            )
+
+def optimize_flight_selection(scraped_flights: List[FlightOption]) -> Optional[FlightOption]:
+    """Helper para selecionar o melhor voo usando o esquadrão cognitivo."""
     if not scraped_flights: return None
-    spec = FlightSpecialist()
-    min_price = min([f.price for f in scraped_flights])
     
-    scored_list = []
+    spec = FlightSpecialist()
+    min_price = min(f.price for f in scraped_flights)
+    
+    scored_candidates = []
     for f in scraped_flights:
-        score_obj = spec.score_flight(f, min_price)
-        scored_list.append((f, score_obj))
+        analysis = spec.score_flight(f, min_price)
+        scored_candidates.append((f, analysis))
+    
+    # Ordena pelo score cognitivo mais alto
+    scored_candidates.sort(key=lambda x: x[1].overall_score, reverse=True)
+    best_flight, best_analysis = scored_candidates[0]
+    
+    print(f"\n[Flight Specialist] VENCEDOR COGNITIVO: {best_flight.airline} - Score: {best_analysis.overall_score}")
+    print(f" -> Veredito: {best_analysis.professional_verdict}")
+    for w in best_analysis.critical_warnings:
+        print(f" -> [!] {w}")
         
-    # Ordena pelo melhor score ponderado
-    scored_list.sort(key=lambda x: x[1].total, reverse=True)
-    best_candidate, best_score = scored_list[0]
-    print(f"[Flight Specialist] Voo vencedor: {best_candidate.airline} (Score: {best_score.total})")
-    for r in best_score.reasoning:
-        print(" ->", r)
-        
-    return best_candidate
+    return best_flight

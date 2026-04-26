@@ -71,7 +71,7 @@ export default function Dashboard() {
             <Button variant="outline" size="lg" className="h-12 rounded-2xl border-vj-border bg-white px-6 font-black text-xs uppercase tracking-widest hover:bg-zinc-50 transition-all" onClick={() => navigate('/group-trips')}>
               <Activity className="h-4 w-4 mr-3 text-vj-green" /> Ver Operação
             </Button>
-            <Button size="lg" className="h-12 rounded-full bg-vj-green hover:bg-vj-green/90 text-white px-8 font-black text-xs uppercase tracking-widest transition-all hover:scale-105 active:scale-95 shadow-none" onClick={() => setQuotationBuilderOpen(true)}>
+            <Button size="lg" className="h-12 rounded-full bg-vj-green hover:bg-vj-green/90 text-white px-8 font-black text-xs uppercase tracking-widest transition-all hover:scale-105 active:scale-95 " onClick={() => setQuotationBuilderOpen(true)}>
               <Plus className="h-4 w-4 mr-3" /> Nova Cotação
             </Button>
           </div>

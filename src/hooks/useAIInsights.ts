@@ -21,45 +21,63 @@ export function useAiInsights() {
   useEffect(() => {
     if (!organization?.id) return;
 
-    // SIMULAÇÃO DE MOTOR COGNITIVO REAL (Integrável com FastAPI/LangGraph)
     const fetchInsights = async () => {
       setIsLoading(true);
       
-      // Simula latência de processamento do esquadrão
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      try {
+        const { data, error } = await supabase
+          .from('ai_decision_logs')
+          .select('*')
+          .eq('org_id', organization.id)
+          .order('created_at', { ascending: false })
+          .limit(5);
 
-      const mockInsights: AiInsight[] = [
-        {
-          id: '1',
-          type: 'trend',
-          title: 'Boom no Caribe',
-          content: 'Detectamos uma alta de 22% na demanda para Punta Cana. Sugerimos revisar o markup dos pacotes "Early Bird".',
-          score: 92,
-          icon: TrendingUp,
-          color: 'text-vj-green bg-vj-green/10'
-        },
-        {
-          id: '2',
-          type: 'opportunity',
-          title: 'Gargalo em GRU',
-          content: 'A malha aérea para Julho em GRU está instável. O Agente ATLAS recomenda rotear voos via VCP para maior segurança.',
-          score: 88,
-          icon: BrainCircuit,
-          color: 'text-blue-500 bg-blue-50'
-        },
-        {
-          id: '3',
-          type: 'alert',
-          title: 'Risco Operacional',
-          content: '3 cotações pendentes expiram em 2h. Probabilidade de conversão cai 40% se não houver followup agora.',
-          score: 95,
-          icon: Zap,
-          color: 'text-amber-500 bg-amber-50'
+        if (error) {
+          console.error("Error fetching AI insights from decision logs:", error);
+          setInsights([]);
+          return;
         }
-      ];
 
-      setInsights(mockInsights);
-      setIsLoading(false);
+        if (data && data.length > 0) {
+          const realInsights: AiInsight[] = data.map((log: any) => {
+            let type: AiInsight['type'] = 'operational';
+            let icon = BrainCircuit;
+            let color = 'text-blue-500 bg-blue-50';
+
+            if (log.decision_type === 'alert' || log.confidence_score < 70) {
+              type = 'alert';
+              icon = AlertTriangle;
+              color = 'text-amber-500 bg-amber-50';
+            } else if (log.decision_type === 'optimization') {
+              type = 'opportunity';
+              icon = Zap;
+              color = 'text-vj-green bg-vj-green/10';
+            } else if (log.decision_type === 'trend') {
+              type = 'trend';
+              icon = TrendingUp;
+              color = 'text-purple-500 bg-purple-50';
+            }
+
+            return {
+              id: log.id,
+              type,
+              title: log.agent_name || 'Agente OMEGA',
+              content: log.output_summary || log.input_summary || 'Análise registrada.',
+              score: log.confidence_score || 85,
+              icon,
+              color
+            };
+          });
+          setInsights(realInsights);
+        } else {
+          setInsights([]);
+        }
+      } catch (err) {
+        console.error("Failed to load insights:", err);
+        setInsights([]);
+      } finally {
+        setIsLoading(false);
+      }
     };
 
     fetchInsights();

@@ -198,7 +198,7 @@ export default function Integrations() {
                 <Button 
                   onClick={() => saveCredentials('infotravel', { api_key: infotravel.api_key, username: 'api_token', password_hash: 'managed_by_api', environment: infotravel.environment, is_active: infotravel.api_key.length > 0 })}
                   disabled={saving || !infotravel.api_key}
-                  className="bg-vj-green hover:bg-vj-green/90 text-white shadow-none h-10 px-6 rounded-xl font-bold text-xs"
+                  className="bg-vj-green hover:bg-vj-green/90 text-white  h-10 px-6 rounded-xl font-bold text-xs"
                 >
                   {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Salvar Conexão'}
                 </Button>

@@ -75,13 +75,13 @@ export default function GlobalRadarMap() {
     <div className="w-full h-[100dvh] overflow-hidden bg-zinc-950 relative no-scrollbar">
       {/* Top Left Navigation */}
       <div className="absolute top-6 left-6 z-[1000] flex items-center gap-4">
-        <Button size="icon" variant="outline" className="bg-zinc-900 border-zinc-800 text-white hover:bg-zinc-800 rounded-lg shadow-none" onClick={() => navigate(-1)}>
+        <Button size="icon" variant="outline" className="bg-zinc-900 border-zinc-800 text-white hover:bg-zinc-800 rounded-lg " onClick={() => navigate(-1)}>
           <ArrowLeft className="w-4 h-4" />
         </Button>
       </div>
       
       {/* Top Right Intelligence Dashboard */}
-      <div className="absolute top-6 right-6 z-[1000] bg-zinc-900 border border-zinc-800 rounded-xl p-5 w-80 shadow-none">
+      <div className="absolute top-6 right-6 z-[1000] bg-zinc-900 border border-zinc-800 rounded-xl p-5 w-80 ">
          <h1 className="text-white font-bold tracking-widest text-[10px] uppercase flex items-center justify-between mb-4">
             <span className="flex items-center gap-2">
               <Globe2 className="w-4 h-4 text-vj-green" /> Radar Global

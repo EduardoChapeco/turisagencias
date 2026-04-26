@@ -50,7 +50,7 @@ export function MediaGallery({ images, className }: MediaGalleryProps) {
             <img
               src={images[selectedIndex]}
               alt="Lightbox"
-              className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl animate-in zoom-in-95 duration-300"
+              className="max-w-full max-h-[85vh] object-contain rounded-lg  animate-in zoom-in-95 duration-300"
             />
 
             <button

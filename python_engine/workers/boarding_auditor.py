@@ -52,20 +52,20 @@ class BoardingAuditor:
         now   = datetime.now(timezone.utc)
         limit = now + timedelta(days=self.AUDIT_WINDOW_DAYS)
 
-        # 1. Buscar tickets confirmados com embarque iminente
+        # Buscar trips confirmadas com embarque iminente (tabela real do sistema)
         result = (
-            self.sb.table("tickets")
-            .select("id, org_id, pnr, flight_number, airline, origin_iata, destination_iata, departure_at, total_price")
-            .eq("status", "issued")
-            .gte("departure_at", now.isoformat())
-            .lte("departure_at", limit.isoformat())
+            self.sb.table("trips")
+            .select("id, org_id, title, destination, check_in, check_out, status")
+            .in_("status", ["confirmed", "active"])
+            .gte("check_in", now.date().isoformat())
+            .lte("check_in", limit.date().isoformat())
             .execute()
         )
-        tickets: List[Dict] = result.data or []
-        logger.info(f"[BoardingAuditor] {len(tickets)} tickets para auditar.")
+        trips = result.data or []
+        logger.info(f"[BoardingAuditor] {len(trips)} trips para auditar.")
 
-        for ticket in tickets:
-            await self._audit_ticket(ticket)
+        for trip in trips:
+            await self._audit_trip(trip)
 
         logger.info("[BoardingAuditor] ✅ Ciclo concluído.")
 

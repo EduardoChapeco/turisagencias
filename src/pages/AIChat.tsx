@@ -38,7 +38,7 @@ function MessageBubble({ msg }: { msg: ChatMessage }) {
         'relative rounded-[2rem] px-8 py-5 text-sm leading-relaxed max-w-[80%] border',
         isUser
           ? 'bg-vj-green text-white border-transparent font-medium'
-          : 'bg-white border-vj-border text-vj-txt shadow-none'
+          : 'bg-white border-vj-border text-vj-txt '
       )}>
         <p className="whitespace-pre-wrap">{msg.content}</p>
         <div className={cn('flex items-center gap-2 mt-4 opacity-40 text-[8px] font-black uppercase tracking-[0.2em]', isUser ? 'text-white' : 'text-vj-txt3')}>
@@ -268,12 +268,12 @@ export default function AIChat() {
                     onKeyDown={e => e.key === 'Enter' && sendMessage()}
                     placeholder="Enviar diretrizes para o Turis Intel Lab..."
                     disabled={isLoading}
-                    className="h-16 rounded-2xl border-vj-border bg-white pl-8 pr-20 text-sm font-bold shadow-none focus-visible:ring-vj-green/20 transition-all"
+                    className="h-16 rounded-2xl border-vj-border bg-white pl-8 pr-20 text-sm font-bold  focus-visible:ring-vj-green/20 transition-all"
                   />
                   <Button
                     onClick={() => sendMessage()}
                     disabled={!input.trim() || isLoading}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 h-10 w-10 rounded-xl bg-vj-green hover:bg-vj-green/90 shadow-none p-0"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 h-10 w-10 rounded-xl bg-vj-green hover:bg-vj-green/90  p-0"
                   >
                     {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ChevronRight className="h-5 w-5" />}
                   </Button>

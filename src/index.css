@@ -64,7 +64,7 @@
     box-sizing: border-box; 
     margin: 0; 
     padding: 0; 
-    box-shadow: none !important; /* The ONLY shadow rule */
+    box-shadow: none !important; /* The ONLY  rule */
     -webkit-transform: translateZ(0); /* Safari hardware acceleration fix */
     transition: background-color 0.2s, border-color 0.2s, transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
@@ -121,7 +121,7 @@
 
   /* 🚀 PREMIUM BUTTONS */
   .premium-button {
-    @apply relative inline-flex items-center justify-center px-6 py-3 font-bold text-white transition-all duration-300 bg-vj-green rounded-full overflow-hidden hover:scale-105 active:scale-95 shadow-none;
+    @apply relative inline-flex items-center justify-center px-6 py-3 font-bold text-white transition-all duration-300 bg-vj-green rounded-full overflow-hidden hover:scale-105 active:scale-95 ;
   }
 }
 

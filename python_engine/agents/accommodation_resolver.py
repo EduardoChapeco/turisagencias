@@ -3,7 +3,7 @@ from datetime import datetime, date
 from typing import List, Dict, Any, Optional
 from pydantic import BaseModel, Field
 from langchain_openai import ChatOpenAI
-from langchain.prompts import PromptTemplate
+from langchain_core.prompts import PromptTemplate
 
 # ==========================================
 # 🧠 OMEGA v4.0 - CRISIS RESOLUTION STRUCTURES

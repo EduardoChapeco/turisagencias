@@ -315,7 +315,7 @@ export function QuotationBuilderSheet({ open, onClose, clientId, onCreated }: Qu
                 </div>
                 <div className="flex flex-wrap gap-1.5">
                   {form.included_items.map((item: string, i: number) => (
-                    <Badge key={i} className="bg-green-100 text-green-700 hover:bg-green-200 shadow-none border-0">
+                    <Badge key={i} className="bg-green-100 text-green-700 hover:bg-green-200  border-0">
                       {item} <X className="h-3 w-3 ml-1 cursor-pointer" onClick={() => updateForm('included_items', form.included_items.filter((_:any, idx:number) => idx !== i))}/>
                     </Badge>
                   ))}
@@ -328,7 +328,7 @@ export function QuotationBuilderSheet({ open, onClose, clientId, onCreated }: Qu
                 </div>
                 <div className="flex flex-wrap gap-1.5">
                   {form.excluded_items.map((item: string, i: number) => (
-                    <Badge key={i} className="bg-red-100 text-red-700 hover:bg-red-200 shadow-none border-0">
+                    <Badge key={i} className="bg-red-100 text-red-700 hover:bg-red-200  border-0">
                       {item} <X className="h-3 w-3 ml-1 cursor-pointer" onClick={() => updateForm('excluded_items', form.excluded_items.filter((_:any, idx:number) => idx !== i))}/>
                     </Badge>
                   ))}
@@ -477,7 +477,7 @@ export function QuotationBuilderSheet({ open, onClose, clientId, onCreated }: Qu
           <Button
             onClick={handleSave}
             disabled={createQuotation.isPending || !form.destination}
-            className="rounded-full bg-vj-green px-8 font-bold shadow-none hover:bg-vj-green/90"
+            className="rounded-full bg-vj-green px-8 font-bold  hover:bg-vj-green/90"
           >
             {createQuotation.isPending ? <><Loader2 className="w-4 h-4 mr-2 animate-spin"/>Salvando...</> : <><Save className="w-4 h-4 mr-2"/>Gerar Cotação</>}
           </Button>

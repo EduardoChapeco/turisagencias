@@ -81,21 +81,36 @@ export default function PortalAiPhotos() {
         
       if (insertError) throw insertError;
       
-      // 3. Delay to simulate AI generation time
-      await new Promise(r => setTimeout(r, 4000));
-      
-      // 4. MOCK RESULT and update the database record
-      const mockResultUrl = "https://images.unsplash.com/photo-1518005020951-eccb494ad742?q=80&w=1000&auto=format&fit=crop"; 
+      // 3. Chamada real para o motor Python para gerar a imagem
+      const pythonEngineUrl = import.meta.env.VITE_PYTHON_ENGINE_URL || 'http://localhost:8000';
+      const res = await fetch(`${pythonEngineUrl}/api/v1/ai-photos/generate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          org_id: user.organization_id,
+          trip_id: trip_id,
+          original_url: originalUrl,
+          style: selectedStyle
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error('Serviço de geração indisponível no momento. A API retornou erro.');
+      }
+
+      const data = await res.json();
+      const realResultUrl = data.result_url;
       
       await supabase
         .from('portal_ai_photos')
         .update({
           status: 'completed',
-          result_url: mockResultUrl
+          result_url: realResultUrl,
+          provider: 'omega_v5_vision'
         })
         .eq('id', record.id);
         
-      setGeneratedImgUrl(mockResultUrl);
+      setGeneratedImgUrl(realResultUrl);
 
       toast({
         title: "Magia concluída!",

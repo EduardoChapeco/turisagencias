@@ -11,6 +11,10 @@ FastAPI server com:
 Background Tasks:
 - BoardingAuditor: loop de 6h verificando tickets com embarque em 7 dias
 """
+# ── Carrega .env ANTES de qualquer import que precise das variáveis ──
+from dotenv import load_dotenv
+load_dotenv()  # Lê python_engine/.env automaticamente
+
 import asyncio
 import logging
 from contextlib import asynccontextmanager

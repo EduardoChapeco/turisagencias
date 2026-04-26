@@ -129,7 +129,7 @@ export function ImageCropperModal({
   };
 
   return (
-    <section className="overflow-hidden rounded-xl border border-vj-border bg-white shadow-sm">
+    <section className="overflow-hidden rounded-xl border border-vj-border bg-white ">
       <div className="flex items-center justify-between gap-3 border-b border-vj-border px-4 py-3">
         <div className="min-w-0">
           <h3 className="flex items-center gap-2 text-sm font-bold text-vj-txt">

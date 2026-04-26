@@ -123,7 +123,7 @@ export default function Quotations() {
              {['all', 'draft', 'sent', 'confirmed'].map(f => (
                <button 
                 key={f}
-                className={`h-10 rounded-xl px-5 text-[10px] font-black uppercase tracking-widest transition-all ${statusFilter === f ? 'bg-white text-vj-txt shadow-sm' : 'text-vj-txt3 hover:text-vj-txt'}`}
+                className={`h-10 rounded-xl px-5 text-[10px] font-black uppercase tracking-widest transition-all ${statusFilter === f ? 'bg-white text-vj-txt ' : 'text-vj-txt3 hover:text-vj-txt'}`}
                 onClick={() => setStatusFilter(f)}
                >
                  {f === 'all' ? 'Tudo' : f === 'draft' ? 'Rascunhos' : f === 'sent' ? 'Enviadas' : 'Fechadas'}
@@ -167,7 +167,7 @@ export default function Quotations() {
                     )}
                     
                     <div className="absolute top-4 right-4">
-                      <div className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border backdrop-blur-md shadow-lg ${style.color.replace('bg-', 'bg-white/80 ')}`}>
+                      <div className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border backdrop-blur-md  ${style.color.replace('bg-', 'bg-white/80 ')}`}>
                         {style.label}
                       </div>
                     </div>

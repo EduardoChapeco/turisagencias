@@ -2,7 +2,7 @@ import os
 from typing import List, Dict, Any, Optional
 from pydantic import BaseModel, Field
 from langchain_openai import ChatOpenAI
-from langchain.prompts import PromptTemplate
+from langchain_core.prompts import PromptTemplate
 from utils.supabase_client import get_supabase
 
 # ==========================================

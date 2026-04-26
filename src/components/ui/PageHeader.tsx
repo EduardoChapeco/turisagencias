@@ -34,7 +34,7 @@ export function PageHeader({
     <div className={cn('flex min-w-0 flex-1 items-center justify-between gap-4 animate-in fade-in slide-in-from-left-4 duration-500', className)}>
       <div className="flex min-w-0 items-center gap-4">
         {Icon && (
-          <div className="hidden md:flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-vj-border bg-zinc-50 text-vj-txt3 shadow-none">
+          <div className="hidden md:flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-vj-border bg-zinc-50 text-vj-txt3 ">
             <Icon size={20} />
           </div>
         )}

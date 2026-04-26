@@ -2,7 +2,7 @@ import os
 from typing import Dict, List, Any, Optional
 from pydantic import BaseModel, Field
 from langchain_openai import ChatOpenAI
-from langchain.prompts import PromptTemplate
+from langchain_core.prompts import PromptTemplate
 
 # ==========================================
 # 🧠 OMEGA v4.0 - DESTINATION COGNITIVE MODELS

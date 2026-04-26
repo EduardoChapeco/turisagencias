@@ -39,7 +39,7 @@ export class ErrorBoundary extends Component<Props, State> {
           <div className="flex gap-3">
             <Button 
               onClick={() => window.location.reload()} 
-              className="bg-vj-green hover:bg-vj-green/90 text-white shadow-none rounded-full"
+              className="bg-vj-green hover:bg-vj-green/90 text-white  rounded-full"
             >
               <RotateCcw className="w-4 h-4 mr-2" />
               Recarregar Página
@@ -47,7 +47,7 @@ export class ErrorBoundary extends Component<Props, State> {
             <Button 
               variant="outline" 
               onClick={() => { this.setState({ hasError: false, error: null }); window.history.back(); }} 
-              className="rounded-full shadow-none border-zinc-200"
+              className="rounded-full  border-zinc-200"
             >
               Voltar Atrás
             </Button>

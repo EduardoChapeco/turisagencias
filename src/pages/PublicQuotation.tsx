@@ -163,7 +163,7 @@ export default function PublicQuotation() {
         <div className="absolute bottom-0 left-0 w-full p-12 lg:p-20">
           <div className="container mx-auto max-w-7xl animate-in slide-in-from-bottom-10 duration-1000">
             <div className="flex items-center gap-3 mb-6">
-               <div className="h-2 w-2 rounded-full bg-vj-green animate-pulse shadow-none" />
+               <div className="h-2 w-2 rounded-full bg-vj-green animate-pulse " />
             <span className="text-[10px] font-black uppercase tracking-[0.4em] text-vj-green">Curadoria Exclusiva Turis Squad</span>
             </div>
             <h1 className="text-5xl md:text-7xl font-black text-white tracking-tighter leading-none mb-4 uppercase">
@@ -244,7 +244,7 @@ export default function PublicQuotation() {
                     <Activity className="w-10 h-10 text-vj-green mb-6 animate-pulse" />
                     <p className="text-xs font-black text-zinc-400 uppercase tracking-widest leading-relaxed">Sincronizando coordenadas em tempo real...</p>
                  </div>
-                 <Button className="w-full h-14 rounded-2xl bg-white text-vj-bg-dark font-black text-xs uppercase tracking-widest mt-8 hover:bg-zinc-100 transition-all shadow-none">
+                 <Button className="w-full h-14 rounded-2xl bg-white text-vj-bg-dark font-black text-xs uppercase tracking-widest mt-8 hover:bg-zinc-100 transition-all ">
                     Ver Mapa de Destino
                  </Button>
               </div>

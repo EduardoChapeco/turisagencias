@@ -129,7 +129,7 @@ function TicketCreateSheet({ open, onClose, onCreated }: { open: boolean; onClos
           <Button
             onClick={handleSubmit}
             disabled={!form.title.trim() || createTicket.isPending}
-            className="rounded-full px-8 bg-vj-green hover:bg-vj-green/90 shadow-none font-bold"
+            className="rounded-full px-8 bg-vj-green hover:bg-vj-green/90  font-bold"
           >
             {createTicket.isPending ? 'Abrindo...' : 'Abrir Protocolo'}
           </Button>
@@ -295,7 +295,7 @@ function TicketCard({ ticket, onClick }: { ticket: Ticket; onClick: () => void }
   return (
     <div
       onClick={onClick}
-      className="group bg-white border border-zinc-200/80 rounded-xl p-4 hover:border-vj-green/40 hover:bg-vj-green/[0.015] transition-all cursor-pointer flex flex-col gap-3 shadow-none"
+      className="group bg-white border border-zinc-200/80 rounded-xl p-4 hover:border-vj-green/40 hover:bg-vj-green/[0.015] transition-all cursor-pointer flex flex-col gap-3 "
     >
       {/* Header Row */}
       <div className="flex items-start justify-between gap-3">
@@ -393,7 +393,7 @@ export default function Tickets() {
           actions={
           <Button
             onClick={() => setCreateOpen(true)}
-            className="rounded-full px-5 h-10 bg-vj-green hover:bg-vj-green/90 shadow-none font-bold transition-all active:scale-95"
+            className="rounded-full px-5 h-10 bg-vj-green hover:bg-vj-green/90  font-bold transition-all active:scale-95"
           >
             <Plus size={16} className="mr-2" /> Novo Protocolo
           </Button>
@@ -465,7 +465,7 @@ export default function Tickets() {
             {!search && (
               <Button
                 onClick={() => setCreateOpen(true)}
-                className="rounded-full bg-vj-green hover:bg-vj-green/90 shadow-none"
+                className="rounded-full bg-vj-green hover:bg-vj-green/90 "
               >
                 Abrir Primeiro Protocolo
               </Button>

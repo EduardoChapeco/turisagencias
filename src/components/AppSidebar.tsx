@@ -128,7 +128,7 @@ export function AppSidebar() {
                         <SidebarMenuButton 
                           asChild 
                           isActive={isActive} 
-                          className={`h-12 rounded-2xl transition-all duration-300 group/btn ${isActive ? 'bg-vj-green text-white shadow-none' : 'text-vj-txt2 hover:bg-zinc-50 hover:text-vj-txt shadow-none'}`}
+                          className={`h-12 rounded-2xl transition-all duration-300 group/btn ${isActive ? 'bg-vj-green text-white ' : 'text-vj-txt2 hover:bg-zinc-50 hover:text-vj-txt '}`}
                         >
                           <Link to={item.url} className="flex items-center gap-4 px-4">
                             <item.icon className={`h-4 w-4 transition-colors ${isActive ? 'text-white' : 'text-vj-txt3 group-hover/btn:text-vj-green'}`} />

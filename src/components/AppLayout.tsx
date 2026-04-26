@@ -50,7 +50,7 @@ export function AppLayout({ children, fullHeight }: { children: React.ReactNode;
               <div className="hidden md:flex items-center gap-3 bg-zinc-100/80 border border-transparent focus-within:border-vj-green/30 focus-within:bg-white px-4 py-2 rounded-2xl w-64 lg:w-80 transition-all duration-300">
                 <Search className="w-4 h-4 text-vj-txt3" />
                 <Input placeholder="Buscar no Turis Agências..." className="bg-transparent border-none text-xs h-6 p-0 focus-visible:ring-0 placeholder:text-vj-txt3/60 font-medium" />
-                <span className="text-[10px] font-black bg-white border border-zinc-200 px-2 py-0.5 rounded-lg text-vj-txt3 shadow-none">⌘K</span>
+                <span className="text-[10px] font-black bg-white border border-zinc-200 px-2 py-0.5 rounded-lg text-vj-txt3 ">⌘K</span>
               </div>
 
               <div className="h-6 w-px bg-vj-border mx-2 hidden md:block" />
@@ -71,7 +71,7 @@ export function AppLayout({ children, fullHeight }: { children: React.ReactNode;
                     </div>
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-64 p-2 rounded-[1.5rem] border-vj-border bg-white shadow-none animate-in fade-in zoom-in-95 duration-200">
+                <DropdownMenuContent align="end" className="w-64 p-2 rounded-[1.5rem] border-vj-border bg-white  animate-in fade-in zoom-in-95 duration-200">
                   <DropdownMenuLabel className="font-normal px-4 py-3">
                     <div className="flex flex-col space-y-1">
                       <p className="text-sm font-black text-vj-txt">

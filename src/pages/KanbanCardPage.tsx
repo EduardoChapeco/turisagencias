@@ -815,7 +815,7 @@ export default function KanbanCardPage({ isEmbedded, embeddedId, onClose }: { is
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleDelete} className="bg-vj-red hover:bg-vj-red/90 text-white shadow-none">
+                  <AlertDialogAction onClick={handleDelete} className="bg-vj-red hover:bg-vj-red/90 text-white ">
                     Excluir
                   </AlertDialogAction>
                 </AlertDialogFooter>

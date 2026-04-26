@@ -159,7 +159,7 @@ export function QuotationDetailSheet({ id, open, onClose }: { id: string | null;
             <Button
               onClick={() => sendQuotation.mutate(id!)}
               disabled={sendQuotation.isPending}
-              className="bg-vj-green hover:bg-vj-green/90 text-white rounded-lg h-9 px-6 text-xs font-bold shadow-none"
+              className="bg-vj-green hover:bg-vj-green/90 text-white rounded-lg h-9 px-6 text-xs font-bold "
             >
               <Send className="mr-2 h-3.5 w-3.5" /> Enviar Proposta
             </Button>
@@ -176,7 +176,7 @@ export function QuotationDetailSheet({ id, open, onClose }: { id: string | null;
             {activeSection === 'resumo' && (
               <div className="space-y-8">
                 <div className="flex items-center gap-2">
-                   <Badge className={cn('px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border shadow-none', statusColors[quotation.status])}>
+                   <Badge className={cn('px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ', statusColors[quotation.status])}>
                      {statusLabels[quotation.status] || quotation.status}
                    </Badge>
                    <EmailTrackingBadge entityId={quotation.id} />

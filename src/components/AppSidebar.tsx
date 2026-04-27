@@ -74,6 +74,7 @@ const navGroups: NavGroup[] = [
   {
     title: 'Financeiro & Admin',
     items: [
+      { title: 'Gestão de Parcelas',  url: '/finance/payments',     icon: CreditCard },
       { title: 'Transações',          url: '/finance/transactions', icon: CreditCard },
       { title: 'Fornecedores',        url: '/finance/suppliers',    icon: Briefcase },
       { title: 'Contratos',           url: '/legal/contracts',      icon: FileSignature },

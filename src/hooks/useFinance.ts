@@ -172,3 +172,85 @@ export const useUpdateTransaction = () => {
     },
   });
 };
+
+// --- Bookings & Payments ---
+
+export type Booking = {
+  id: string;
+  org_id: string;
+  trip_id: string | null;
+  client_id: string | null;
+  agent_id: string | null;
+  status: 'pending_payment' | 'confirmed' | 'cancelled' | 'refunded';
+  total_amount: number;
+  currency: string;
+  installment_config: any;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+  clients?: { name: string } | null;
+  trips?: { title: string; destination_city: string } | null;
+};
+
+export type Payment = {
+  id: string;
+  org_id: string;
+  booking_id: string;
+  trip_id: string | null;
+  amount: number;
+  currency: string;
+  due_date: string;
+  paid_at: string | null;
+  status: 'pending' | 'paid' | 'overdue' | 'failed' | 'refunded';
+  payment_method: string | null;
+  proof_url: string | null;
+  installment_number: number;
+  notes: string | null;
+  gateway_transaction_id: string | null;
+  created_at: string;
+  updated_at: string;
+  bookings?: Booking | null;
+  trips?: { title: string; destination_city: string } | null;
+};
+
+export const usePayments = (orgId: string | undefined, filters?: { status?: string; booking_id?: string }) => {
+  return useQuery({
+    queryKey: ['payments', orgId, filters],
+    queryFn: async () => {
+      if (!orgId) return [];
+      let query = supabase
+        .from('payments')
+        .select(`
+          *,
+          bookings!inner(*, clients(name)),
+          trips(title, destination_city)
+        `)
+        .eq('org_id', orgId)
+        .order('due_date', { ascending: true });
+
+      if (filters?.status) query = query.eq('status', filters.status);
+      if (filters?.booking_id) query = query.eq('booking_id', filters.booking_id);
+
+      const { data, error } = await query;
+      if (error) throw error;
+      return data as Payment[];
+    },
+    enabled: !!orgId,
+  });
+};
+
+export const useUpdatePayment = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, ...payload }: Partial<Payment> & { id: string }) => {
+      const { bookings, trips, ...dbPayload } = payload as any;
+      const { data, error } = await supabase.from('payments').update(dbPayload).eq('id', id).select().single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['payments', data.org_id] });
+      toast.success('Parcela atualizada!');
+    },
+  });
+};

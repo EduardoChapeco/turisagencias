@@ -47,6 +47,7 @@ const PortalHome = lazy(() => import('./pages/PortalHome'));
 const PortalTripDetail = lazy(() => import('./pages/PortalTripDetail'));
 const PortalAiPhotos = lazy(() => import('./pages/PortalAiPhotos'));
 
+const Payments = lazy(() => import('./pages/finance/Payments'));
 const Suppliers = lazy(() => import('./pages/finance/Suppliers'));
 const Transactions = lazy(() => import('./pages/finance/Transactions'));
 const PendingCancellations = lazy(() => import('./pages/finance/PendingCancellations'));
@@ -181,6 +182,7 @@ const App = () => (
               <Route path="/integrations" element={<ProtectedWithOrg><TripsRole><Integrations /></TripsRole></ProtectedWithOrg>} />
               
               {/* ERP v3 Financeiro & Jurídico */}
+              <Route path="/finance/payments" element={<ProtectedRoute><Payments /></ProtectedRoute>} />
               <Route path="/finance/suppliers" element={<ProtectedRoute><Suppliers /></ProtectedRoute>} />
               <Route path="/finance/transactions" element={<ProtectedRoute><Transactions /></ProtectedRoute>} />
               <Route path="/finance/cancellations" element={<ProtectedRoute><PendingCancellations /></ProtectedRoute>} />

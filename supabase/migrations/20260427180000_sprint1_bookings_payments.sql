@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS public.bookings (
   client_id UUID REFERENCES public.clients(id) ON DELETE SET NULL,
   agent_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
   status TEXT NOT NULL DEFAULT 'pending_payment', -- pending_payment, confirmed, cancelled, refunded
-  total_amount NUMERIC(12,2) NOT NULL,
+  total_amount NUMERIC(12,2) NOT NULL DEFAULT 0.00,
   currency TEXT NOT NULL DEFAULT 'BRL',
   installment_config JSONB NOT NULL DEFAULT '{}'::jsonb,
   notes TEXT,
@@ -18,12 +18,17 @@ CREATE TABLE IF NOT EXISTS public.bookings (
 
 ALTER TABLE public.bookings ENABLE ROW LEVEL SECURITY;
 
+DROP TRIGGER IF EXISTS update_bookings_updated_at ON public.bookings;
 CREATE TRIGGER update_bookings_updated_at BEFORE UPDATE ON public.bookings
   FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
+DROP POLICY IF EXISTS "Users can view bookings in own org" ON public.bookings;
 CREATE POLICY "Users can view bookings in own org" ON public.bookings FOR SELECT TO authenticated USING (org_id = public.get_my_org_id());
+DROP POLICY IF EXISTS "Users can create bookings in own org" ON public.bookings;
 CREATE POLICY "Users can create bookings in own org" ON public.bookings FOR INSERT TO authenticated WITH CHECK (org_id = public.get_my_org_id());
+DROP POLICY IF EXISTS "Users can update bookings in own org" ON public.bookings;
 CREATE POLICY "Users can update bookings in own org" ON public.bookings FOR UPDATE TO authenticated USING (org_id = public.get_my_org_id()) WITH CHECK (org_id = public.get_my_org_id());
+DROP POLICY IF EXISTS "Users can delete bookings in own org" ON public.bookings;
 CREATE POLICY "Users can delete bookings in own org" ON public.bookings FOR DELETE TO authenticated USING (org_id = public.get_my_org_id());
 
 -- 2. Payments Table (Installments)
@@ -48,12 +53,17 @@ CREATE TABLE IF NOT EXISTS public.payments (
 
 ALTER TABLE public.payments ENABLE ROW LEVEL SECURITY;
 
+DROP TRIGGER IF EXISTS update_payments_updated_at ON public.payments;
 CREATE TRIGGER update_payments_updated_at BEFORE UPDATE ON public.payments
   FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
+DROP POLICY IF EXISTS "Users can view payments in own org" ON public.payments;
 CREATE POLICY "Users can view payments in own org" ON public.payments FOR SELECT TO authenticated USING (org_id = public.get_my_org_id());
+DROP POLICY IF EXISTS "Users can create payments in own org" ON public.payments;
 CREATE POLICY "Users can create payments in own org" ON public.payments FOR INSERT TO authenticated WITH CHECK (org_id = public.get_my_org_id());
+DROP POLICY IF EXISTS "Users can update payments in own org" ON public.payments;
 CREATE POLICY "Users can update payments in own org" ON public.payments FOR UPDATE TO authenticated USING (org_id = public.get_my_org_id()) WITH CHECK (org_id = public.get_my_org_id());
+DROP POLICY IF EXISTS "Users can delete payments in own org" ON public.payments;
 CREATE POLICY "Users can delete payments in own org" ON public.payments FOR DELETE TO authenticated USING (org_id = public.get_my_org_id());
 
 -- 3. Business Logic: Check that the last installment is before or on the departure date
@@ -79,5 +89,6 @@ BEGIN
 END;
 $$;
 
+DROP TRIGGER IF EXISTS trg_check_payment_due_date ON public.payments;
 CREATE TRIGGER trg_check_payment_due_date BEFORE INSERT OR UPDATE ON public.payments
   FOR EACH ROW EXECUTE FUNCTION public.check_payment_due_date();

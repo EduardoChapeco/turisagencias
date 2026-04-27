@@ -3,6 +3,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuthStore } from '@/stores/authStore';
 import { useToast } from '@/hooks/use-toast';
 
+const chatDb = supabase as any;
+
 export type ChatMessage = {
   id: string;
   role: 'user' | 'assistant';
@@ -28,7 +30,7 @@ export function useChatSessions() {
     queryKey: ['chat_sessions', user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
-      const { data, error } = await supabase
+      const { data, error } = await chatDb
         .from('chat_sessions')
         .select('id, title, updated_at, is_archived, messages')
         .eq('user_id', user.id)
@@ -48,7 +50,7 @@ export function useChatSession(id: string | null) {
     queryKey: ['chat_session', id],
     queryFn: async () => {
       if (!id) return null;
-      const { data, error } = await supabase
+      const { data, error } = await chatDb
         .from('chat_sessions')
         .select('*')
         .eq('id', id)
@@ -68,7 +70,7 @@ export function useCreateChatSession() {
     mutationFn: async (params: { title?: string; context?: string; initialMessage?: ChatMessage }) => {
       if (!organization?.id || !user?.id) throw new Error('Usuário não autenticado');
       const messages = params.initialMessage ? [params.initialMessage] : [];
-      const { data, error } = await supabase
+      const { data, error } = await chatDb
         .from('chat_sessions')
         .insert({
           org_id: organization.id,
@@ -102,7 +104,7 @@ export function useAppendMessage() {
       const updatePayload: any = { messages };
       if (title) updatePayload.title = title;
 
-      const { data, error } = await supabase
+      const { data, error } = await chatDb
         .from('chat_sessions')
         .update(updatePayload)
         .eq('id', sessionId)
@@ -124,7 +126,7 @@ export function useArchiveChatSession() {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
+      const { error } = await chatDb
         .from('chat_sessions')
         .update({ is_archived: true })
         .eq('id', id);

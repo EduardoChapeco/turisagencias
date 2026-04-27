@@ -1,24 +1,34 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, type ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthStore } from '@/stores/authStore';
 import type { AppRole } from '@/types';
 import { logger } from '@/utils/logger';
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+export function AuthProvider({ children }: { children: ReactNode }) {
   const { setLoading, setOrganization, setProfile, setRoles, setUser, reset } = useAuthStore();
   const activeUserIdRef = useRef<string | null>(null);
 
   const fetchUserData = useCallback(async (userId: string) => {
+    logger.info('Fetching user context for:', userId);
+
     const [{ data: profile, error: profileError }, { data: rolesData, error: rolesError }] = await Promise.all([
       supabase.from('profiles').select('*').eq('user_id', userId).maybeSingle(),
       supabase.from('user_roles').select('role').eq('user_id', userId),
     ]);
 
-    if (profileError) throw profileError;
-    if (rolesError) throw rolesError;
+    if (profileError) {
+      logger.error('Error fetching profile:', profileError);
+      throw profileError;
+    }
+    if (rolesError) {
+      logger.error('Error fetching roles:', rolesError);
+      throw rolesError;
+    }
 
+    const roles = (rolesData ?? []).map((item) => item.role as AppRole);
+    const isMaster = roles.includes('super_admin');
     setProfile(profile ?? null);
-    setRoles((rolesData ?? []).map((item) => item.role as AppRole));
+    setRoles(roles);
 
     if (profile?.org_id) {
       const { data: org, error: orgError } = await supabase
@@ -27,11 +37,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .eq('id', profile.org_id)
         .maybeSingle();
 
-      if (orgError) throw orgError;
-      setOrganization(org ?? null);
-    } else {
-      setOrganization(null);
+      if (orgError) {
+        logger.error('Error fetching organization:', orgError);
+        if (isMaster) {
+          setOrganization(null);
+          return;
+        }
+        throw orgError;
+      }
+
+      if (org) {
+        setOrganization(org);
+        return;
+      }
     }
+
+    if (isMaster) {
+      logger.info('Super admin without a loaded organization; entering recovery mode.');
+    }
+    setOrganization(null);
   }, [setOrganization, setProfile, setRoles]);
 
   useEffect(() => {
@@ -68,16 +92,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      setUser(session.user);
-
-      if (event === 'TOKEN_REFRESHED') return;
-
       const isNewUser = activeUserIdRef.current !== session.user.id;
       activeUserIdRef.current = session.user.id;
 
-      if (event === 'SIGNED_IN' && !isNewUser) return;
+      if (event === 'TOKEN_REFRESHED') {
+        setUser(session.user);
+        return;
+      }
 
-      setLoading(isNewUser);
+      if (event === 'SIGNED_IN' && !isNewUser) {
+        setUser(session.user);
+        return;
+      }
+
+      if (isNewUser) setLoading(true);
+      setUser(session.user);
 
       setTimeout(() => {
         fetchUserData(session.user.id)

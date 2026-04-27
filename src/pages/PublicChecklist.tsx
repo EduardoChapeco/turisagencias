@@ -9,7 +9,7 @@ export default function PublicChecklist() {
   const { token } = useParams<{ token: string }>();
   const { data, isLoading } = usePublicChecklist(token);
   const toggleItem = useTogglePublicChecklistItem();
-  const title = data?.[0]?.checklist_title ?? 'Checklist da viagem';
+  const title = data?.[0]?.title ?? 'Checklist da viagem';
 
   return (
     <PublicLayout orgName="Seu Checklist">
@@ -31,18 +31,19 @@ export default function PublicChecklist() {
               </div>
             ) : (
               data.map((item) => (
-                <label key={item.item_id} className={`flex items-start gap-4 rounded-cb-md border p-4 cursor-pointer transition-colors ${item.is_checked ? 'bg-vj-bg border-vj-border/50' : 'bg-white border-vj-border hover:border-vj-green hover:'}`}>
+                <label key={item.item_id} className={`flex items-start gap-4 rounded-cb-md border p-4 cursor-pointer transition-colors ${item.is_completed ? 'bg-vj-bg border-vj-border/50' : 'bg-white border-vj-border hover:border-vj-green hover:'}`}>
                   <Checkbox
-                    checked={item.is_checked}
+                    checked={item.is_completed}
                     className="mt-1"
                     onCheckedChange={() =>
                       toggleItem.mutate({
                         token: token!,
                         itemId: item.item_id,
+                        isCompleted: !item.is_completed,
                       })
                     }
                   />
-                  <div className={`space-y-1 ${item.is_checked ? 'opacity-60 line-through' : ''}`}>
+                  <div className={`space-y-1 ${item.is_completed ? 'opacity-60 line-through' : ''}`}>
                     <p className="font-medium text-vj-txt">{item.item_title}</p>
                     {item.item_description && (
                       <p className="text-sm text-vj-txt3 line-clamp-2">{item.item_description}</p>

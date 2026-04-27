@@ -115,7 +115,7 @@ export function useGroupTripBookings(tripId: string | undefined) {
           installments,
           proofs_count: (b as any).booking_payment_proofs?.length ?? 0,
           proofs_pending_count: (b as any).booking_payment_proofs?.filter((p: any) => p.status === 'pending_review').length ?? 0,
-        } as BookingWithInstallments;
+        } as unknown as BookingWithInstallments;
 
         return {
           ...booking,
@@ -247,24 +247,38 @@ export function useAssignSeats(tripId: string) {
   const { toast } = useToast();
   return useMutation({
     mutationFn: async ({ bookingId, seats }: { bookingId: string; seats: string[] }) => {
+      const { data: booking, error: bookingError } = await supabase
+        .from('group_bookings')
+        .select('lead_name')
+        .eq('id', bookingId)
+        .maybeSingle();
+      if (bookingError) throw bookingError;
+
       // 1. Update booking seat_numbers
       const { error: e1 } = await supabase
         .from('group_bookings')
         .update({ seat_numbers: seats })
         .eq('id', bookingId);
       if (e1) throw e1;
-      // 2. Upsert seat assignments
+
+      // 2. Replace seat assignments. The unique constraint protects seats already in use.
+      const { error: deleteError } = await supabase
+        .from('bus_seat_assignments')
+        .delete()
+        .eq('booking_id', bookingId);
+      if (deleteError) throw deleteError;
+
+      if (seats.length === 0) return;
+
       const assignments = seats.map(s => ({
         group_trip_id: tripId,
         booking_id: bookingId,
         seat_label: s,
-        floor_number: 1,
-        assigned_by: 'agent',
-        assigned_at: new Date().toISOString(),
+        traveler_name: booking?.lead_name ?? null,
       }));
       const { error: e2 } = await supabase
         .from('bus_seat_assignments')
-        .upsert(assignments as any, { onConflict: 'group_trip_id,seat_label,floor_number' });
+        .insert(assignments);
       if (e2) throw e2;
     },
     onSuccess: () => {

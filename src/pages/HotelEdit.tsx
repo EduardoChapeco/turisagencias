@@ -111,7 +111,7 @@ export function HotelEdit({ id, open, onClose, onSuccess }: HotelEditProps) {
       onSuccess?.(dbRes.id);
       onClose();
     } else {
-      const dbRes = await createHotel.mutateAsync(payload as Record<string, any>);
+      const dbRes = await createHotel.mutateAsync(payload as any);
       onSuccess?.(dbRes.id);
       onClose();
     }

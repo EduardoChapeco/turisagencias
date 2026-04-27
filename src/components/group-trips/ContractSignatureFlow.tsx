@@ -11,6 +11,7 @@ interface Props {
   bookingToken: string;
   tripTitle: string;
   signerNamePrefill?: string;
+  selectedSeats?: string[];
   onSigned: () => void;
 }
 
@@ -29,7 +30,7 @@ type Step = 'consent' | 'identity' | 'photo' | 'signing' | 'done';
  *  - updates booking status to 'confirmed'
  */
 export function ContractSignatureFlow({
-  bookingId, bookingToken, tripTitle, signerNamePrefill = '', onSigned,
+  bookingId, bookingToken, tripTitle, signerNamePrefill = '', selectedSeats = [], onSigned,
 }: Props) {
   const { toast } = useToast();
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -121,11 +122,13 @@ export function ContractSignatureFlow({
       const { data, error } = await supabase.functions.invoke('sign-group-booking-contract', {
         body: {
           booking_id: bookingId,
+          booking_token: bookingToken,
           signer_name: form.name,
           signer_cpf: form.cpf || null,
           signer_email: form.email || null,
           facial_photo_url: facialPhotoUrl,
           geolocation: geolocation ? { lat: geolocation.lat, lng: geolocation.lng } : null,
+          selected_seats: selectedSeats,
         },
       });
 

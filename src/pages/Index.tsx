@@ -3,10 +3,11 @@ import {
   PlaneTakeoff, Users, FileText, TrendingUp, Zap,
   ArrowRight, Plus, Activity, DollarSign, Clock,
   AlertCircle, CheckCircle2, BarChart2, Headphones,
+  Building2, Loader2,
 } from 'lucide-react';
 import { AppLayout } from '@/components/AppLayout';
 import { useAuthStore } from '@/stores/authStore';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { QuotationBuilderSheet } from '@/components/QuotationBuilderSheet';
@@ -15,6 +16,10 @@ import { useRadarNews } from '@/hooks/useAiRadar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { GlobalRadarMapWidget, RadarMarker } from '@/components/GlobalRadarMapWidget';
 import { geocodeCity } from '@/utils/geocoder';
+import { useToast } from '@/hooks/use-toast';
+import type { Tables } from '@/integrations/supabase/types';
+
+type OrganizationRow = Tables<'organizations'>;
 
 const fmt = (v: number) =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
@@ -27,9 +32,63 @@ function greeting(name?: string | null) {
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { organization, profile } = useAuthStore();
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  const { organization, profile, roles, setOrganization, setProfile, user } = useAuthStore();
   const [quotationOpen, setQuotationOpen] = useState(false);
   const { data: news, isLoading: newsLoading } = useRadarNews();
+  const isMasterRecovery = !organization?.id && roles.includes('super_admin');
+
+  const { data: visibleOrganizations, isLoading: organizationsLoading } = useQuery({
+    queryKey: ['master_recovery_organizations'],
+    enabled: isMasterRecovery,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('organizations')
+        .select('*')
+        .order('name', { ascending: true });
+
+      if (error) throw error;
+
+      return (data ?? []).sort((a, b) => {
+        const aPriority = a.slug === 'excelencia-tour-chapeco' ? 0 : 1;
+        const bPriority = b.slug === 'excelencia-tour-chapeco' ? 0 : 1;
+        return aPriority - bPriority || a.name.localeCompare(b.name);
+      });
+    },
+  });
+
+  const handleSelectOrganization = async (org: OrganizationRow) => {
+    if (!user?.id) return;
+
+    const payload = {
+      user_id: user.id,
+      email: user.email ?? profile?.email ?? null,
+      first_name: profile?.first_name ?? '',
+      last_name: profile?.last_name ?? '',
+      org_id: org.id,
+    };
+
+    const { data: updatedProfile, error } = await supabase
+      .from('profiles')
+      .upsert(payload, { onConflict: 'user_id' })
+      .select('*')
+      .single();
+
+    if (error) {
+      toast({
+        title: 'Nao foi possivel vincular a organizacao',
+        description: error.message,
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setProfile(updatedProfile);
+    setOrganization(org);
+    await queryClient.invalidateQueries();
+    toast({ title: 'Organizacao vinculada', description: org.name });
+  };
 
   /* ── KPIs ── */
   const { data: kpi } = useQuery({
@@ -45,7 +104,7 @@ export default function Dashboard() {
         { data: clients },
       ] = await Promise.all([
         supabase.from('group_trips').select('id,title,destination,current_pax,status,departure_date,return_date').eq('org_id', id),
-        supabase.from('quotations').select('id,total_amount,status,created_at').eq('org_id', id),
+        supabase.from('quotations').select('id,total_value,status,created_at').eq('org_id', id),
         supabase.from('tickets').select('id,status').eq('org_id', id),
         supabase.from('clients').select('id,created_at').eq('org_id', id),
       ]);
@@ -74,7 +133,7 @@ export default function Dashboard() {
 
       // Pipeline: cotacoes nao rejeitadas/canceladas
       const openQ = Q.filter(q => !['rejected', 'cancelled'].includes((q.status || '')));
-      const pipeline = openQ.reduce((s, q) => s + (Number(q.total_amount) || 0), 0);
+      const pipeline = openQ.reduce((s, q) => s + (Number((q as any).total_value) || 0), 0);
 
       // Cotacoes este mes
       const mesInicio = new Date(); mesInicio.setDate(1); mesInicio.setHours(0, 0, 0, 0);
@@ -117,6 +176,62 @@ export default function Dashboard() {
       setMarkers(m);
     })();
   }, [kpi?.traveling]);
+
+  if (isMasterRecovery) {
+    return (
+      <AppLayout>
+        <div className="mx-auto flex min-h-[70vh] w-full max-w-4xl items-center justify-center px-2">
+          <section className="w-full rounded-2xl border border-vj-border bg-white p-6 shadow-sm">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div className="max-w-2xl">
+                <p className="mb-2 text-xs font-black uppercase tracking-[0.25em] text-vj-green">
+                  Recuperacao master
+                </p>
+                <h1 className="text-2xl font-black tracking-tight text-vj-txt">
+                  Selecionar organizacao
+                </h1>
+                <p className="mt-2 text-sm font-medium text-vj-txt3">
+                  Seu acesso administrativo esta ativo, mas nenhuma organizacao foi carregada para esta sessao.
+                </p>
+              </div>
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-vj-green/10">
+                <Building2 className="h-5 w-5 text-vj-green" />
+              </div>
+            </div>
+
+            <div className="mt-6 space-y-2">
+              {organizationsLoading ? (
+                <div className="flex items-center gap-3 rounded-xl border border-vj-border bg-zinc-50 px-4 py-3 text-sm font-bold text-vj-txt3">
+                  <Loader2 className="h-4 w-4 animate-spin text-vj-green" />
+                  Carregando organizacoes...
+                </div>
+              ) : !visibleOrganizations?.length ? (
+                <div className="flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-bold text-amber-700">
+                  <AlertCircle className="h-4 w-4" />
+                  Nenhuma organizacao visivel para este usuario.
+                </div>
+              ) : (
+                visibleOrganizations.map((org) => (
+                  <button
+                    key={org.id}
+                    type="button"
+                    onClick={() => void handleSelectOrganization(org)}
+                    className="flex w-full items-center justify-between gap-4 rounded-xl border border-vj-border bg-white px-4 py-3 text-left transition-colors hover:border-vj-green/50 hover:bg-vj-green/5"
+                  >
+                    <span className="min-w-0">
+                      <span className="block truncate text-sm font-black text-vj-txt">{org.name}</span>
+                      <span className="block truncate text-xs font-bold text-vj-txt3">{org.slug}</span>
+                    </span>
+                    <ArrowRight className="h-4 w-4 shrink-0 text-vj-green" />
+                  </button>
+                ))
+              )}
+            </div>
+          </section>
+        </div>
+      </AppLayout>
+    );
+  }
 
   return (
     <AppLayout>

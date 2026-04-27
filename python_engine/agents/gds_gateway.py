@@ -1,5 +1,5 @@
 """
-GDS Gateway v5.0 - Turis Agências OMEGA Engine
+GDS Gateway v5.0 - Turis Agências Turis AI Engine
 ============================================
 Padrão Adapter com concorrência real (asyncio + httpx).
 ZERO MOCKS. ZERO ARQUIVOS LOCAIS.

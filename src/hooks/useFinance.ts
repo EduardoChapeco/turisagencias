@@ -4,6 +4,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
+const financeDb = supabase as any;
+
 // --- Suppliers ---
 
 export type Supplier = {
@@ -40,8 +42,8 @@ export const useSuppliers = (orgId: string | undefined) => {
 export const useCreateSupplier = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (payload: Omit<Supplier, 'id' | 'org_id' | 'created_at' | 'updated_at'> & { org_id: string }) => {
-      const { data, error } = await supabase.from('financial_suppliers').insert(payload).select().single();
+    mutationFn: async (payload: Record<string, any>) => {
+      const { data, error } = await financeDb.from('financial_suppliers').insert(payload).select().single();
       if (error) throw error;
       return data;
     },
@@ -59,8 +61,8 @@ export const useCreateSupplier = () => {
 export const useUpdateSupplier = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, ...payload }: Partial<Supplier> & { id: string }) => {
-      const { data, error } = await supabase.from('financial_suppliers').update(payload).eq('id', id).select().single();
+    mutationFn: async ({ id, ...payload }: Record<string, any>) => {
+      const { data, error } = await financeDb.from('financial_suppliers').update(payload).eq('id', id).select().single();
       if (error) throw error;
       return data;
     },
@@ -142,8 +144,8 @@ export const useTransactions = (orgId: string | undefined, filters?: { type?: 'r
 export const useCreateTransaction = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (payload: Omit<Transaction, 'id' | 'org_id' | 'suppliers' | 'clients' | 'group_trips' | 'created_at' | 'updated_at'> & { org_id: string }) => {
-      const { data, error } = await supabase.from('financial_transactions').insert(payload).select().single();
+    mutationFn: async (payload: Record<string, any>) => {
+      const { data, error } = await financeDb.from('financial_transactions').insert(payload).select().single();
       if (error) throw error;
       return data;
     },

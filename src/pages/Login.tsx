@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, Navigate, useSearchParams } from 'react-router-dom';
 import { Cloud, Loader2, ShieldCheck, TriangleAlert } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthStore } from '@/stores/authStore';
@@ -79,7 +79,6 @@ function redirectToExtension(redirectUri: string, payload?: unknown, error?: str
 }
 
 export default function Login() {
-  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { toast } = useToast();
   const { isLoading, user } = useAuthStore();
@@ -196,20 +195,22 @@ export default function Login() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-muted/30 px-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-lg bg-vj-green">
-            <Cloud className="h-6 w-6 text-vj-green-foreground" />
+    <div className="flex min-h-screen bg-white">
+      {/* Left Column: Form */}
+      <div className="w-full lg:w-1/2 flex flex-col items-center justify-center p-8 sm:p-12 lg:p-24 bg-white relative z-10">
+        <div className="w-full max-w-md space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-700">
+          <div className="text-center md:text-left">
+            <div className="mx-auto md:mx-0 mb-6 flex h-12 w-12 items-center justify-center rounded-xl bg-vj-green">
+              <Cloud className="h-6 w-6 text-zinc-950" />
+            </div>
+            <h1 className="text-3xl font-black tracking-tight mb-2">Bem-vindo de volta</h1>
+            <p className="text-zinc-500">
+              {wantsExtensionFlow ? 'Entre na sua conta para conectar a extensão ao WhatsApp.' : 'Acesse seu painel inteligente para gerenciar suas operações.'}
+            </p>
           </div>
-          <CardTitle className="font-heading text-2xl">Turis Agências</CardTitle>
-          <CardDescription>
-            {wantsExtensionFlow ? 'Entre na sua conta para conectar a extensão ao WhatsApp.' : 'Entre na sua conta para continuar.'}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+
           <form
-            className="space-y-4"
+            className="space-y-5"
             onSubmit={async (event) => {
               event.preventDefault();
               setLoading(true);
@@ -221,31 +222,59 @@ export default function Login() {
                 return;
               }
 
-              if (!wantsExtensionFlow) {
-                navigate(targetPath, { replace: true });
-              }
+              // Redirect happens after AuthProvider finishes loading the user context.
             }}
           >
             <div className="space-y-2">
-              <Label htmlFor="email">E-mail</Label>
-              <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="seu@email.com" required />
+              <Label htmlFor="email" className="font-bold text-zinc-700">E-mail Profissional</Label>
+              <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="voce@agencia.com.br" className="h-12 bg-zinc-50 border-zinc-200" required />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Senha</Label>
-              <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required />
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password" className="font-bold text-zinc-700">Senha</Label>
+                <a href="#" className="text-sm font-bold text-vj-green hover:underline">Esqueceu a senha?</a>
+              </div>
+              <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" className="h-12 bg-zinc-50 border-zinc-200" required />
             </div>
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Entrando...' : 'Entrar'}
+            <Button type="submit" className="w-full premium-button h-12 text-base mt-4" disabled={loading}>
+              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Entrar na Plataforma'}
             </Button>
           </form>
 
           {!wantsExtensionFlow && (
-            <p className="mt-4 text-center text-sm text-muted-foreground">
-              Não tem conta? <Link to="/signup" className="text-accent hover:underline">Criar conta</Link>
+            <p className="text-center text-sm font-medium text-zinc-500 pt-6 border-t border-zinc-100">
+              Ainda não tem uma conta? <Link to="/signup" className="text-vj-green hover:underline font-bold">Criar minha conta grátis</Link>
             </p>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
+
+      {/* Right Column: Animated Showcase */}
+      <div className="hidden lg:flex w-1/2 bg-zinc-950 flex-col items-center justify-center p-12 relative overflow-hidden">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-vj-green/10 blur-[120px] rounded-full pointer-events-none" />
+        
+        <div className="max-w-lg z-10 space-y-8 animate-in fade-in slide-in-from-right-8 duration-1000 delay-300">
+          <div className="p-6 rounded-3xl bg-zinc-900 border border-zinc-800 flex items-start gap-4">
+            <div className="w-12 h-12 rounded-full bg-vj-green/20 flex items-center justify-center shrink-0">
+              <Cloud className="w-6 h-6 text-vj-green" />
+            </div>
+            <div>
+              <p className="text-zinc-300 font-medium mb-2">"A extração de PDF me economiza 4 horas por dia. O que antes eu digitava a mão, a Turis AI lê o PDF da CVC e monta o link do cliente em 3 segundos."</p>
+              <span className="text-vj-green font-bold text-sm">— Consultora de Viagens</span>
+            </div>
+          </div>
+          
+          <div className="p-6 rounded-3xl bg-zinc-900 border border-zinc-800 flex items-start gap-4 opacity-80 scale-95 translate-x-4">
+            <div className="w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center shrink-0">
+              <ShieldCheck className="w-6 h-6 text-blue-400" />
+            </div>
+            <div>
+              <p className="text-zinc-300 font-medium mb-2">"Auditor de Embarque é surreal. Ele avisa meu time se falta RG ou passaporte 48h antes do voo. Zeramos os problemas de aeroporto."</p>
+              <span className="text-blue-400 font-bold text-sm">— Gestor Operacional</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

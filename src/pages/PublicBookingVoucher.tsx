@@ -58,7 +58,7 @@ export default function PublicBookingVoucher() {
   }
 
   const { booking, installments } = data;
-  const trip = booking.group_trips;
+  const trip = booking.group_trips as any;
   const voucherCode = booking.voucher_code || booking.id.slice(0, 8).toUpperCase();
   const voucherUrl = `${window.location.origin}/voucher/${booking.public_token}`;
 

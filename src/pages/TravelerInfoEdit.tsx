@@ -222,7 +222,7 @@ export function TravelerInfoEdit({ id, open, onClose, onSuccess }: TravelerInfoE
                               <Label className="text-xs text-vj-txt3 font-bold uppercase tracking-wide">Caixa de Alerta</Label>
                               <Select 
                                 value={(block.content as Record<string, any>)?.style || 'neutral'} 
-                                onValueChange={v => updateBlock(i, { ...(block.content as Record<string, any>), style: v } as Record<string, any>)}
+                                onValueChange={v => updateBlock(i, { ...(block.content as Record<string, any>), style: v } as AlertContent)}
                               >
                                 <SelectTrigger className="text-xs border-vj-border bg-vj-bg h-8 w-auto min-w-[140px]">
                                   <SelectValue />
@@ -235,7 +235,7 @@ export function TravelerInfoEdit({ id, open, onClose, onSuccess }: TravelerInfoE
                                 </SelectContent>
                               </Select>
                             </div>
-                            <Textarea value={(block.content as Record<string, any>)?.text || ''} onChange={e => updateBlock(i, { ...(block.content as Record<string, any>), text: e.target.value } as Record<string, any>)} placeholder="Texto do alerta..." className="h-20" />
+                            <Textarea value={(block.content as Record<string, any>)?.text || ''} onChange={e => updateBlock(i, { ...(block.content as Record<string, any>), text: e.target.value } as AlertContent)} placeholder="Texto do alerta..." className="h-20" />
                           </div>
                         )}
                         {block.type === 'image' && (

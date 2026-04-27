@@ -93,7 +93,7 @@ serve(async (req) => {
         body = body.replace(/{{nome_cliente}}/g, clientName);
         body = body.replace(/{{destino}}/g, trip.destination_city || "seu destino");
         
-        let sentMethod = "email_whatsapp_mock";
+        let sentMethod = "queued_no_provider_configured";
 
         logsToInsert.push({
           org_id: orgId,
@@ -112,7 +112,7 @@ serve(async (req) => {
         });
         
         countTriggered++;
-        // In reality, here we would trigger the SendGrid or WhatsApp API endpoints.
+        // Provider dispatch must be implemented by a registered email/WhatsApp adapter.
       }
     }
 

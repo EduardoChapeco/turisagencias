@@ -5,7 +5,7 @@ from langchain_openai import ChatOpenAI
 from langchain_core.prompts import PromptTemplate
 
 # ==========================================
-# 🧠 OMEGA v4.0 - MARKET INTELLIGENCE MODELS
+# 🧠 Turis AI v4.0 - MARKET INTELLIGENCE MODELS
 # ==========================================
 
 class PersonaFeedback(BaseModel):
@@ -40,7 +40,7 @@ class MarketAnalystAgent:
 
         self.system_prompt = PromptTemplate(
             input_variables=["package_stats"],
-            template="""Você é o Agente Analista de Mercado (Market Simulation) do Motor OMEGA v4.0.
+            template="""Você é o Agente Analista de Mercado (Market Simulation) do Motor Turis AI v4.0.
 Sua missão é atuar como um 'Painel de Consumidores' e prever a aceitação de um pacote de viagem.
 
 <DADOS DO PACOTE>

@@ -132,7 +132,7 @@ export function QuotationAiImportSheet({ open, onClose, onSuccess }: QuotationAi
     e.preventDefault();
     const f = e.dataTransfer.files[0];
     if (f) {
-      const fakeEvent = { target: { files: [f] } } as Record<string, any>;
+      const fakeEvent = { target: { files: [f] } } as unknown as React.ChangeEvent<HTMLInputElement>;
       handleFileSelect(fakeEvent);
     }
   };

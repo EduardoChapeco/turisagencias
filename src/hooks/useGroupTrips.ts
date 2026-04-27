@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthStore } from '@/stores/authStore';
 import { useToast } from '@/hooks/use-toast';
+import type { BusLayout } from '@/components/group-trips/BusSeatMap';
 
 export type GroupTrip = {
   id: string;
@@ -363,7 +364,10 @@ export type PublicGroupTrip = {
   excludes: string[] | null;
   important_notes: string | null;
   transport_type: string | null;
+  bus_layout_id: string | null;
   installments_count: number;
+  bus_layout: BusLayout | null;
+  occupied_seats: string[] | null;
   org_name: string;
   org_logo: string | null;
   org_whatsapp: string | null;

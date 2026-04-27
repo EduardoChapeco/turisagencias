@@ -90,7 +90,7 @@ serve(async (req) => {
         headers: {
           Authorization: `Bearer ${key.api_key}`,
           "Content-Type": "application/json",
-          "HTTP-Referer": "https://viaja.app",
+          "HTTP-Referer": "https://turis.app",
           "X-Title": "Turis Agências",
         },
         body: JSON.stringify({

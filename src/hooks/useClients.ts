@@ -3,6 +3,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuthStore } from '@/stores/authStore';
 import { useToast } from '@/hooks/use-toast';
 
+const clientsDb = supabase as any;
+
 export function useClients(search?: string) {
   const { organization } = useAuthStore();
   return useQuery({
@@ -70,7 +72,7 @@ export function useCreateClient() {
         insertData.preferences = newPreferences;
       }
 
-      const { data: client, error } = await supabase
+      const { data: client, error } = await clientsDb
         .from('clients')
         .insert(insertData)
         .select()
@@ -112,7 +114,7 @@ export function useUpdateClient() {
         updateData.preferences = preferences;
       }
 
-      const { data: client, error } = await supabase
+      const { data: client, error } = await clientsDb
         .from('clients')
         .update(updateData)
         .eq('id', id)

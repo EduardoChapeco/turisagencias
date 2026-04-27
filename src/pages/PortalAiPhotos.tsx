@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ElementType } from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -8,7 +8,8 @@ import { Image as ImageIcon, Upload, Loader2, Sparkles, Download, ArrowRight } f
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-const motion = { div: 'div' as Record<string, any> }; // framer-motion placeholder
+const motion = { div: 'div' as unknown as ElementType }; // framer-motion placeholder
+const portalDb = supabase as any;
 
 const AI_STYLES = [
   { id: 'pixel_art', name: 'Pixel Art', desc: 'Estilo retro 8-bits' },
@@ -21,7 +22,7 @@ const AI_STYLES = [
 
 export default function PortalAiPhotos() {
   const { org_slug, trip_id } = useParams<{ org_slug: string; trip_id: string }>();
-  const { user } = useAuthStore();
+  const { user, organization } = useAuthStore();
   const { toast } = useToast();
 
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
@@ -66,15 +67,15 @@ export default function PortalAiPhotos() {
         .getPublicUrl(filePath);
 
       // 2. Save generation record in `portal_ai_photos` table
-      const { data: record, error: insertError } = await supabase
+      const { data: record, error: insertError } = await portalDb
         .from('portal_ai_photos')
         .insert({
-          org_id: user.organization_id || undefined,
+          org_id: organization?.id || undefined,
           trip_id: trip_id || undefined,
           original_url: originalUrl,
           style: selectedStyle,
           status: 'pending',
-          provider: 'system_simulation'
+          provider: 'omega_v5_vision_pending'
         })
         .select()
         .single();
@@ -87,7 +88,7 @@ export default function PortalAiPhotos() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          org_id: user.organization_id,
+          org_id: organization?.id,
           trip_id: trip_id,
           original_url: originalUrl,
           style: selectedStyle
@@ -101,7 +102,7 @@ export default function PortalAiPhotos() {
       const data = await res.json();
       const realResultUrl = data.result_url;
       
-      await supabase
+      await portalDb
         .from('portal_ai_photos')
         .update({
           status: 'completed',

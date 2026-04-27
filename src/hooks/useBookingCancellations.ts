@@ -3,6 +3,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuthStore } from '@/stores/authStore';
 import { useToast } from '@/hooks/use-toast';
 
+const bookingDb = supabase as any;
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 export interface CancellationRequest {
   id: string;
@@ -46,7 +48,7 @@ export function useCancellationFinePreview(
     queryKey: ['cancellation_fine_preview', bookingId, cancellationDate],
     enabled: !!bookingId,
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await bookingDb
         .rpc('calculate_cancellation_fine', {
           _booking_id: bookingId!,
           _cancellation_date: cancellationDate ?? new Date().toISOString().split('T')[0],
@@ -72,7 +74,7 @@ export function useTripCancellations(tripId: string | undefined) {
     queryKey: ['trip_cancellations', tripId],
     enabled: !!tripId,
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await bookingDb
         .from('booking_cancellations')
         .select(`
           *,
@@ -93,7 +95,7 @@ export function useOrgPendingCancellations() {
     queryKey: ['org_pending_cancellations', organization?.id],
     enabled: !!organization?.id,
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await bookingDb
         .from('booking_cancellations')
         .select(`
           *,
@@ -129,7 +131,7 @@ export function useRequestCancellation() {
       financeResolution: 'full_refund' | 'full_credit' | 'partial_refund_partial_credit';
       requestedBy?: 'client' | 'agency';
     }) => {
-      const { data, error } = await supabase
+      const { data, error } = await bookingDb
         .from('booking_cancellations')
         .insert({
           booking_id:         payload.bookingId,
@@ -151,7 +153,7 @@ export function useRequestCancellation() {
       if (error) throw error;
 
       // Mark booking with cancellation reference
-      const { error: e2 } = await supabase
+      const { error: e2 } = await bookingDb
         .from('group_bookings')
         .update({ cancellation_id: data.id } as any)
         .eq('id', payload.bookingId);
@@ -200,7 +202,7 @@ export function useProcessCancellation() {
       const now = new Date().toISOString();
 
       // 1. Update cancellation status
-      const { error: e1 } = await supabase
+      const { error: e1 } = await bookingDb
         .from('booking_cancellations')
         .update({
           status: action === 'approved' ? 'approved' : 'rejected',
@@ -213,14 +215,14 @@ export function useProcessCancellation() {
 
       if (action === 'approved') {
         // 2. Cancel booking
-        const { error: e2 } = await supabase
+        const { error: e2 } = await bookingDb
           .from('group_bookings')
           .update({ status: 'cancelled', cancelled_at: now } as any)
           .eq('id', bookingId);
         if (e2) throw e2;
 
         // 3. Cancel pending installments
-        const { error: e3 } = await supabase
+        const { error: e3 } = await bookingDb
           .from('booking_installments')
           .update({ status: 'cancelled' } as any)
           .eq('booking_id', bookingId)
@@ -229,7 +231,7 @@ export function useProcessCancellation() {
 
         // 4. Generate credit if requested
         if (generateCredit && creditAmount && creditAmount > 0) {
-          const { error: e4 } = await supabase
+          const { error: e4 } = await bookingDb
             .from('client_travel_credits')
             .insert({
               org_id: orgId,
@@ -242,7 +244,7 @@ export function useProcessCancellation() {
         }
 
         // [FINANCIAL SYNC] — Record refund outflow in general ledger
-        const { data: cancelData } = await supabase
+        const { data: cancelData } = await bookingDb
           .from('booking_cancellations')
           .select('refund_amount, group_trip_id, booking_id')
           .eq('id', cancellationId)
@@ -250,7 +252,7 @@ export function useProcessCancellation() {
 
         if (cancelData && cancelData.refund_amount > 0) {
           // Add to Global Financial Transactions
-          await supabase.from('financial_transactions').insert({
+          await bookingDb.from('financial_transactions').insert({
             org_id: orgId,
             group_trip_id: cancelData.group_trip_id,
             booking_id: cancelData.booking_id,
@@ -263,7 +265,7 @@ export function useProcessCancellation() {
           });
 
           // Add to Group Trip Ledger
-          await supabase.from('group_trip_ledger').insert({
+          await bookingDb.from('group_trip_ledger').insert({
             org_id: orgId,
             group_trip_id: cancelData.group_trip_id,
             booking_id: cancelData.booking_id,
@@ -275,7 +277,7 @@ export function useProcessCancellation() {
         }
 
         // 5. Mark cancellation as processed
-        const { error: e5 } = await supabase
+        const { error: e5 } = await bookingDb
           .from('booking_cancellations')
           .update({ status: 'processed', refund_processed_at: now } as any)
           .eq('id', cancellationId);
@@ -300,7 +302,7 @@ export function useClientTravelCredits(email: string | null | undefined) {
     queryKey: ['travel_credits', organization?.id, email],
     enabled: !!organization?.id && !!email,
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await bookingDb
         .from('client_travel_credits')
         .select('*')
         .eq('org_id', organization!.id)

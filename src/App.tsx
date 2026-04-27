@@ -56,8 +56,11 @@ const Team = lazy(() => import('./pages/admin/Team'));
 
 const RadarPortal = lazy(() => import('./pages/RadarPortal'));
 const GlobalRadarMap = lazy(() => import('./pages/GlobalRadarMap'));
+const LandingPage = lazy(() => import('./pages/LandingPage'));
+const Pricing = lazy(() => import('./pages/Pricing'));
 
 const PublicTravelerForm = lazy(() => import('./pages/PublicTravelerForm'));
+const Analytics = lazy(() => import('./pages/Analytics'));
 const PublicQuotation = lazy(() => import('./pages/PublicQuotation'));
 const PublicChecklist = lazy(() => import('./pages/PublicChecklist'));
 const PublicGuide = lazy(() => import('./pages/PublicGuide'));
@@ -92,10 +95,17 @@ function Loading() {
 }
 
 function OnboardingGuard({ children }: { children: React.ReactNode }) {
-  const { organization, isLoading } = useAuthStore();
+  const { organization, roles, isLoading } = useAuthStore();
 
   if (isLoading) return <Loading />;
-  if (!organization) return <Navigate to="/onboarding" replace />;
+  
+  // Super Admins (Master) podem pular o onboarding mesmo que a org não esteja carregada
+  const isMaster = roles.includes('super_admin');
+  
+  if (!organization && !isMaster) {
+    return <Navigate to="/onboarding" replace />;
+  }
+  
   return <>{children}</>;
 }
 
@@ -105,6 +115,13 @@ function ProtectedWithOrg({ children }: { children: React.ReactNode }) {
       <OnboardingGuard>{children}</OnboardingGuard>
     </ProtectedRoute>
   );
+}
+
+function HomeOrApp() {
+  const { user, isLoading } = useAuthStore();
+  if (isLoading) return <Loading />;
+  if (user) return <ProtectedWithOrg><Dashboard /></ProtectedWithOrg>;
+  return <LandingPage />;
 }
 
 function TripsRole({ children }: { children: React.ReactNode }) {
@@ -127,6 +144,7 @@ const App = () => (
             <Routes>
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
+              <Route path="/pricing" element={<Pricing />} />
               <Route path="/auth/chrome-extension" element={<ExtensionAuth />} />
               <Route path="/f/:token" element={<PublicTravelerForm />} />
               <Route path="/q/:token" element={<PublicQuotation />} />
@@ -143,7 +161,7 @@ const App = () => (
 
               <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
 
-              <Route path="/" element={<ProtectedWithOrg><Dashboard /></ProtectedWithOrg>} />
+              <Route path="/" element={<HomeOrApp />} />
               <Route path="/radar" element={<ProtectedWithOrg><RadarPortal /></ProtectedWithOrg>} />
               <Route path="/radar-global" element={<ProtectedWithOrg><GlobalRadarMap /></ProtectedWithOrg>} />
 
@@ -184,6 +202,7 @@ const App = () => (
               <Route path="/group-trips" element={<ProtectedWithOrg><TripsRole><GroupTrips /></TripsRole></ProtectedWithOrg>} />
               <Route path="/group-trips/:id/finance" element={<ProtectedWithOrg><TripsRole><GroupTripFinance /></TripsRole></ProtectedWithOrg>} />
               <Route path="/destinations" element={<ProtectedWithOrg><TripsRole><Destinations /></TripsRole></ProtectedWithOrg>} />
+              <Route path="/analytics" element={<ProtectedWithOrg><TripsRole><Analytics /></TripsRole></ProtectedWithOrg>} />
 
               <Route path="*" element={<NotFound />} />
             </Routes>

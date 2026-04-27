@@ -4,7 +4,7 @@ import {
   Loader2, MapPin, CheckCircle2, Calendar, Hotel, Utensils, Activity, BrainCircuit, ShieldCheck, Share2, Info, ChevronRight, Zap, TrendingUp
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { parseInstallments } from '@/lib/utils';
+import { parseInstallments, cn } from '@/lib/utils';
 import type { PublicQuotationData } from '@/types';
 import { PublicLayout } from '@/components/layout/PublicLayout';
 import { TurisBadge } from '@/components/ui/TurisBadge';
@@ -18,6 +18,9 @@ const mealLabels: Record<string, string> = {
   bed_breakfast: 'Café da Manhã ☕',
   room_only: 'Só Hospedagem',
 };
+
+import { PdfTemplateExecutivo, PdfTemplateApresentacao, PdfTemplateExceTur } from '@/components/public-quotation/QuotationPdfLayouts';
+import { Printer } from 'lucide-react';
 
 export default function PublicQuotation() {
   const { token } = useParams<{ token: string }>();
@@ -71,8 +74,9 @@ export default function PublicQuotation() {
         const quote = row as Record<string, any>;
         const org = quote.organizations as Record<string, any> | null;
 
-        const mappedData: PublicQuotationData & Record<string, any> = {
-          ...quote,
+        const mappedData: PublicQuotationData = {
+          ...(quote as any),
+          id: quote.id,
           org_name: org?.name ?? null,
           org_logo: org?.logo_url ?? null,
           org_whatsapp: org?.whatsapp ?? null,
@@ -136,24 +140,39 @@ export default function PublicQuotation() {
   const pricingLabel = pricingMode === 'per_couple' ? 'Por casal' : pricingMode === 'per_family' ? 'Por família' : pricingMode === 'total' ? 'Total' : 'Por pessoa';
   const whatsappUrl = data.org_whatsapp ? `https://wa.me/55${data.org_whatsapp.replace(/\D/g, '')}` : null;
   const agentInitials = data.org_name ? data.org_name.split(' ').slice(0, 2).map((w: string) => w[0]).join('').toUpperCase() : 'AG';
+  const pdfTemplate = (data as Record<string, any>).pdf_template || 'executivo';
+  const daysLeft = data.valid_until ? Math.ceil((new Date(data.valid_until).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : null;
 
   return (
-    <PublicLayout
-      orgName={data.org_name}
-      orgLogo={data.org_logo}
-      ctaLabel="Confirmar Proposta"
-      onCtaClick={() => setIsConfirmOpen(true)}
-    >
-      <ConfirmationModal 
-        isOpen={isConfirmOpen} onClose={() => setIsConfirmOpen(false)}
-        confirmName={confirmName} setConfirmName={setConfirmName}
-        confirmEmail={confirmEmail} setConfirmEmail={setConfirmEmail}
-        confirmNotes={confirmNotes} setConfirmNotes={setConfirmNotes}
-        confirmLoading={confirmLoading} confirmSuccess={confirmSuccess}
-        confirmError={confirmError} handleConfirm={handleConfirm}
-      />
+    <>
+      <div className="hidden print:block">
+        {pdfTemplate === 'apresentacao' ? <PdfTemplateApresentacao data={data} /> :
+         pdfTemplate === 'exce_tur' ? <PdfTemplateExceTur data={data} /> :
+         <PdfTemplateExecutivo data={data} />}
+      </div>
 
-      {/* 🏛️ LUXURY HERO SECTION - OMEGA v4.0 */}
+      <div className="print:hidden">
+        <PublicLayout
+          orgName={data.org_name}
+          orgLogo={data.org_logo}
+          ctaLabel="Confirmar Proposta"
+          onCtaClick={() => setIsConfirmOpen(true)}
+        >
+          <ConfirmationModal 
+            isOpen={isConfirmOpen} onClose={() => setIsConfirmOpen(false)}
+            confirmName={confirmName} setConfirmName={setConfirmName}
+            confirmEmail={confirmEmail} setConfirmEmail={setConfirmEmail}
+            confirmNotes={confirmNotes} setConfirmNotes={setConfirmNotes}
+            confirmLoading={confirmLoading} confirmSuccess={confirmSuccess}
+            confirmError={confirmError} handleConfirm={handleConfirm}
+          />
+          
+          <button onClick={() => window.print()} className="fixed bottom-6 left-6 z-50 bg-white border border-vj-border rounded-full p-4 shadow-xl hover:scale-105 transition-transform flex items-center gap-2 text-sm font-bold">
+            <Printer size={20} className="text-vj-green" /> Imprimir PDF
+          </button>
+
+
+      {/* 🏛️ LUXURY HERO SECTION - Turis AI v4.0 */}
       <section className="relative h-[75vh] w-full overflow-hidden bg-vj-bg-dark border-b border-vj-border no-scrollbar">
         {coverImageUrl && (
           <img src={coverImageUrl} className="w-full h-full object-cover opacity-60 animate-in zoom-in duration-[3000ms]" alt="Cover" />
@@ -257,6 +276,8 @@ export default function PublicQuotation() {
              data={data} priceItems={[]} flights={flights} transfers={[]}
              installments={data.installments || []} pricingLabel={pricingLabel} fmt={fmt} fmtDate={fmtDate}
              whatsappUrl={whatsappUrl} onConfirmClick={() => setIsConfirmOpen(true)}
+             excludedItems={data.excluded_items || []}
+             daysLeft={daysLeft}
            />
         </div>
       </div>
@@ -272,5 +293,7 @@ export default function PublicQuotation() {
       </footer>
       <TurisBadge />
     </PublicLayout>
+    </div>
+    </>
   );
 }

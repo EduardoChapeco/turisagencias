@@ -1,6 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthStore } from '@/stores/authStore';
+
+const scenariosDb = supabase as any;
 import { useToast } from '@/hooks/use-toast';
 
 export type QuotationScenario = {
@@ -81,7 +83,7 @@ export function useScoreQuotation() {
         .single();
       if (error || !quotation) throw new Error('Cotação não encontrada');
 
-      // Chama o Motor Python OMEGA v5.0 diretamente (ZERO mock)
+      // Chama o Motor Python Turis AI v5.0 diretamente (ZERO mock)
       const pythonEngineUrl = import.meta.env.VITE_PYTHON_ENGINE_URL || 'http://localhost:8000';
       const res = await fetch(`${pythonEngineUrl}/api/v1/quotation/score`, {
         method: 'POST',
@@ -110,7 +112,7 @@ export function useScoreQuotation() {
       // Salva os cenários retornados no Supabase
       if (data.scenarios?.length) {
         for (const scenario of data.scenarios) {
-          await supabase.from('quotation_scenarios').upsert({
+          await scenariosDb.from('quotation_scenarios').upsert({
             quotation_id:            quotationId,
             org_id:                  organization.id,
             scenario_type:           scenario.scenario_type,
@@ -134,12 +136,12 @@ export function useScoreQuotation() {
     onSuccess: (data) => {
       qc.invalidateQueries({ queryKey: ['quotation_scenarios'] });
       toast({
-        title: '🧠 OMEGA GDS Completo!',
+        title: '🧠 Turis AI GDS Completo!',
         description: data.executive_summary || `${data.scenarios?.length ?? 0} cenários gerados com dados reais.`,
       });
     },
     onError: (e: Error) =>
-      toast({ title: 'Erro no Motor OMEGA', description: e.message, variant: 'destructive' }),
+      toast({ title: 'Erro no Motor Turis AI', description: e.message, variant: 'destructive' }),
   });
 }
 

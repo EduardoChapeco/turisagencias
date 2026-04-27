@@ -61,7 +61,7 @@ export function useAiInsights() {
             return {
               id: log.id,
               type,
-              title: log.agent_name || 'Agente OMEGA',
+              title: log.agent_name || 'Agente Turis AI',
               content: log.output_summary || log.input_summary || 'Análise registrada.',
               score: log.confidence_score || 85,
               icon,

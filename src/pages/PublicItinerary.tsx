@@ -16,6 +16,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 
+const publicItineraryDb = supabase as any;
+
 export default function PublicItinerary() {
   const { token } = useParams<{ token: string }>();
 
@@ -23,7 +25,7 @@ export default function PublicItinerary() {
     queryKey: ['public_itinerary', token],
     queryFn: async () => {
       // Fetch itinerary by public_token
-      const { data: itin, error: itinErr } = await supabase
+      const { data: itin, error: itinErr } = await publicItineraryDb
         .from('itineraries')
         .select('*')
         .eq('public_token', token!)
@@ -34,7 +36,7 @@ export default function PublicItinerary() {
       if (!itin) throw new Error('Roteiro não encontrado ou não está público.');
 
       // Fetch stops
-      const { data: stops } = await supabase
+      const { data: stops } = await publicItineraryDb
         .from('itinerary_stops')
         .select('*')
         .eq('itinerary_id', itin.id)
@@ -42,19 +44,25 @@ export default function PublicItinerary() {
         .order('position', { ascending: true });
 
       // Fetch org info
-      const { data: org } = await supabase
+      const { data: org } = await publicItineraryDb
         .from('organizations')
         .select('name, logo_url, whatsapp, slug')
         .eq('id', itin.org_id)
         .maybeSingle();
 
       // Increment view_count (best effort, ignore if RPC doesn't exist)
-      supabase.rpc('increment_itinerary_view' as Record<string, any>, { p_token: token! }).then(() => {});
+      publicItineraryDb.rpc('increment_itinerary_view', { p_token: token! }).then(() => {});
 
       return { ...itin, stops: stops || [], org };
     },
     enabled: !!token,
   });
+
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [isExporting, setIsExporting] = useState(false);
+  const [formData, setFormData] = useState({ name: '', email: '', whatsapp: '' });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
 
   if (isLoading) {
     return (
@@ -91,12 +99,6 @@ export default function PublicItinerary() {
     day_number: s.day_number ?? 1,
   }));
 
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [isExporting, setIsExporting] = useState(false);
-  const [formData, setFormData] = useState({ name: '', email: '', whatsapp: '' });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
-
   const handleShare = () => {
     if (navigator.share) {
       navigator.share({
@@ -119,7 +121,7 @@ export default function PublicItinerary() {
     
     setIsSubmitting(true);
     try {
-      const { error } = await supabase.from('itinerary_leads' as Record<string, any>).insert({
+      const { error } = await publicItineraryDb.from('itinerary_leads').insert({
         itinerary_id: itinerary.id,
         org_id: itinerary.org_id,
         name: formData.name,

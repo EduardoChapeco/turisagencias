@@ -6,9 +6,10 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Settings as SettingsIcon, Trash2, Users, Key, KeyRound, Brain, Database, Columns, Mail, Activity, Bus } from 'lucide-react';
+import { Building2, Plus, Trash2, Users, FileText, Database, Webhook, Activity, CreditCard, Columns, Brain, Lock, MapPin, Search, ChevronDown, Check, X, Plane, FileSearch, ShieldCheck, Cpu, Key, Mail, Bus, KeyRound, AlertCircle, Settings as SettingsIcon } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useAuthStore } from '@/stores/authStore';
 
 import { useAiKeys, useSaveAiKey, useDeleteAiKey } from '@/hooks/useAiKeys';
 import { usePolicies, useCreatePolicy, useDeletePolicy } from '@/hooks/usePoliciesAndExperiences';
@@ -21,6 +22,64 @@ import { AiLogsTab } from './settings/AiLogsTab';
 import { IntegrationsTab } from './settings/IntegrationsTab';
 import { BusLayoutTab } from './settings/BusLayoutTab';
 import { B2BTab } from './settings/B2BTab';
+
+function BillingTab() {
+  const { organization } = useAuthStore();
+  const planName = organization?.plan || 'Starter';
+  const isPro = planName.includes('Pro') || planName.includes('Enterprise');
+
+  return (
+    <div className="space-y-6">
+      <Card className={`bento-card border ${isPro ? 'bg-zinc-950 text-white border-zinc-800' : 'bg-white'}`}>
+        <CardHeader>
+          <CardTitle className={`flex items-center gap-2 ${isPro ? 'text-vj-green' : ''}`}>
+            <CreditCard className="w-5 h-5" /> Assinatura Atual: {planName}
+          </CardTitle>
+          <CardDescription className={isPro ? "text-zinc-400" : ""}>
+            Gerencie sua assinatura, limites de uso e cobranças.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className={`p-4 rounded-xl border ${isPro ? 'bg-zinc-900 border-zinc-800' : 'bg-zinc-50 border-zinc-200'} flex items-center justify-between`}>
+             <div>
+               <h4 className="font-bold mb-1">Cotações Extraídas via IA</h4>
+               <p className={`text-sm ${isPro ? 'text-zinc-400' : 'text-zinc-500'}`}>
+                 {isPro ? 'Uso ilimitado ativado no plano OMEGA.' : 'Renova no dia 1 do próximo mês.'}
+               </p>
+             </div>
+             <div className="text-right">
+                <span className="text-2xl font-black">{isPro ? '∞' : '45'}</span>
+                {!isPro && <span className={`text-sm ${isPro ? 'text-zinc-500' : 'text-zinc-400'}`}>/100</span>}
+             </div>
+          </div>
+          
+          <div className={`p-4 rounded-xl border ${isPro ? 'bg-zinc-900 border-zinc-800' : 'bg-zinc-50 border-zinc-200'} flex items-center justify-between`}>
+             <div>
+               <h4 className="font-bold mb-1">Status da Assinatura</h4>
+               <p className={`text-sm ${isPro ? 'text-zinc-400' : 'text-zinc-500'}`}>Próxima cobrança em 05/05/2026</p>
+             </div>
+             <div className="flex gap-2">
+                <span className="px-3 py-1 bg-vj-green/20 text-vj-green font-bold text-xs rounded-full flex items-center">
+                  <Check className="w-3 h-3 mr-1" /> ATIVA
+                </span>
+             </div>
+          </div>
+
+          <div className="flex gap-4 pt-4 border-t border-zinc-200/20">
+             {!isPro && (
+               <a href="/pricing" className="premium-button px-6 py-2.5 rounded-xl text-sm font-bold flex items-center justify-center">
+                 Fazer Upgrade para o Pro
+               </a>
+             )}
+             <button className={`px-6 py-2.5 rounded-xl text-sm font-bold flex items-center justify-center border ${isPro ? 'border-zinc-800 hover:bg-zinc-900' : 'border-zinc-200 hover:bg-zinc-50'}`}>
+               Portal do Cliente (Stripe)
+             </button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
 
 export default function Settings() {
   const { data: keys, isLoading } = useAiKeys();
@@ -44,7 +103,7 @@ export default function Settings() {
 
   return (
     <AppLayout>
-      <div className="space-y-8 max-w-[1400px] mx-auto pb-10 px-4 sm:px-6">
+      <div className="space-y-8 max-w-[1400px] mx-auto pb-10 px-4 sm:px-6 w-full overflow-hidden">
         <div>
           <h1 className="font-heading text-4xl font-extrabold tracking-tight">Configurações da <span className="highlight-text">Agência</span></h1>
           <p className="text-muted-foreground text-sm mt-2 flex items-center gap-2">
@@ -53,31 +112,37 @@ export default function Settings() {
         </div>
 
         <Tabs defaultValue="aikeys" className="w-full">
-          <TabsList className="bg-zinc-100/50 p-1.5 rounded-xl flex gap-1 mb-10 border border-zinc-200/50 backdrop-blur-md w-fit mx-auto overflow-x-auto">
-            {[
-              { id: 'agents',       label: 'Agentes e Equipe', icon: Users },
-              { id: 'aikeys',       label: 'Cérebro da IA',    icon: Key },
-              { id: 'knowledge',    label: 'Especialista',     icon: Brain },
-              { id: 'policies',     label: 'Operadoras',       icon: Database },
-              { id: 'kanban',       label: 'Painel de Vendas', icon: Columns },
-              { id: 'integrations', label: 'Conexões',         icon: Mail },
-              { id: 'bus',          label: 'Frotas de Ônibus', icon: Bus },
-              { id: 'b2b',          label: 'Acessos B2B',      icon: KeyRound },
-              { id: 'logs',         label: 'Histórico da IA',  icon: Activity },
-            ].map(t => (
-              <TabsTrigger 
-                key={t.id} 
-                value={t.id} 
-                className="px-8 py-3 rounded-xl text-xs font-bold uppercase tracking-widest transition-all data-[state=active]:bg-vj-txt data-[state=active]:text-white"
-              >
-                <t.icon className="w-3.5 h-3.5 mr-2 shrink-0" /> {t.label}
-              </TabsTrigger>
-            ))}
-          </TabsList>
+          <div className="relative w-full overflow-hidden mb-10">
+            <div className="overflow-x-auto no-scrollbar pb-2 w-full">
+              <TabsList className="bg-zinc-100/60 p-1.5 rounded-2xl flex w-max min-w-full justify-start md:justify-center border border-zinc-200/50 backdrop-blur-md">
+                {[
+                  { id: 'agents',       label: 'Equipe',           icon: Users },
+                  { id: 'aikeys',       label: 'Cérebro da IA',    icon: Key },
+                  { id: 'knowledge',    label: 'Especialista',     icon: Brain },
+                  { id: 'policies',     label: 'Operadoras',       icon: Database },
+                  { id: 'kanban',       label: 'Painel Vendas',    icon: Columns },
+                  { id: 'billing',      label: 'Assinatura',       icon: CreditCard },
+                  { id: 'integrations', label: 'Integrações',      icon: Mail },
+                  { id: 'bus',          label: 'Frotas',           icon: Bus },
+                  { id: 'b2b',          label: 'Acessos B2B',      icon: KeyRound },
+                  { id: 'logs',         label: 'Logs IA',          icon: Activity },
+                ].map(t => (
+                  <TabsTrigger 
+                    key={t.id} 
+                    value={t.id} 
+                    className="px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all data-[state=active]:bg-white data-[state=active]:text-vj-txt data-[state=active]:0_2px_10px_rgba(0,0,0,0.05)] text-zinc-500 hover:text-zinc-800 whitespace-nowrap flex items-center"
+                  >
+                    <t.icon className="w-3.5 h-3.5 mr-2 shrink-0" /> {t.label}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </div>
+          </div>
 
           <TabsContent value="agents" className="animate-in fade-in slide-in-from-bottom-4 duration-500"><AgentesTab /></TabsContent>
           <TabsContent value="knowledge" className="animate-in fade-in slide-in-from-bottom-4 duration-500"><KnowledgeTab /></TabsContent>
           <TabsContent value="kanban" className="animate-in fade-in slide-in-from-bottom-4 duration-500"><KanbanTab /></TabsContent>
+          <TabsContent value="billing" className="animate-in fade-in slide-in-from-bottom-4 duration-500"><BillingTab /></TabsContent>
           <TabsContent value="integrations" className="animate-in fade-in slide-in-from-bottom-4 duration-500"><IntegrationsTab /></TabsContent>
           <TabsContent value="bus" className="animate-in fade-in slide-in-from-bottom-4 duration-500"><BusLayoutTab /></TabsContent>
           <TabsContent value="b2b" className="animate-in fade-in slide-in-from-bottom-4 duration-500"><B2BTab /></TabsContent>

@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthStore } from '@/stores/authStore';
 import { useToast } from '@/hooks/use-toast';
-import type { BusLayout, SeatCell } from '@/components/group-trips/BusSeatMap';
+import type { SeatCell } from '@/components/group-trips/BusSeatMap';
 import { generateDefaultBusLayout } from '@/components/group-trips/BusSeatMap';
 
 export interface BusLayoutRecord {
@@ -72,6 +72,53 @@ export function useCreateBusLayout() {
       toast({ title: 'Layout criado!' });
     },
     onError: (e: Error) => toast({ title: 'Erro ao criar layout', description: e.message, variant: 'destructive' }),
+  });
+}
+
+// ── UPDATE ────────────────────────────────────────────────────────────────────
+export function useUpdateBusLayout() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async ({
+      id,
+      name,
+      vehicle_type,
+      rows,
+      cols,
+      seat_map,
+      notes,
+    }: {
+      id: string;
+      name: string;
+      vehicle_type: string;
+      rows: number;
+      cols: number;
+      seat_map: SeatCell[][];
+      notes?: string | null;
+    }) => {
+      const { data, error } = await supabase
+        .from('bus_layouts')
+        .update({
+          name,
+          vehicle_type,
+          rows,
+          cols,
+          seat_map: seat_map as any,
+          notes: notes ?? null,
+        })
+        .eq('id', id)
+        .select()
+        .single();
+      if (error) throw error;
+      return data as BusLayoutRecord;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['bus_layouts'] });
+      toast({ title: 'Layout atualizado' });
+    },
+    onError: (e: Error) => toast({ title: 'Erro ao atualizar layout', description: e.message, variant: 'destructive' }),
   });
 }
 

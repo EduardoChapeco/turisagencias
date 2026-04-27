@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { GripVertical, Plus } from 'lucide-react';
 import { AppLayout } from '@/components/AppLayout';
@@ -23,12 +23,14 @@ import {
   useSensors,
   type DragStartEvent,
   type DragEndEvent,
+  type DragOverEvent,
 } from '@dnd-kit/core';
 import {
   SortableContext,
   sortableKeyboardCoordinates,
   useSortable,
   verticalListSortingStrategy,
+  arrayMove,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { cn } from '@/lib/utils';
@@ -362,21 +364,66 @@ export default function KanbanBoard() {
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   );
 
+  const [localCards, setLocalCards] = useState<KanbanCardData[]>([]);
+
+  useEffect(() => {
+    if (data?.cards) setLocalCards(data.cards as KanbanCardData[]);
+  }, [data?.cards]);
+
   const groupedCards = useMemo(() => {
     const byColumn = new Map<string, KanbanCardData[]>();
     data?.columns?.forEach((col) => byColumn.set(col.id, []));
-    data?.cards?.forEach((card) => {
+    localCards.forEach((card) => {
       if (viewMode === 'me' && card.assigned_to !== user?.id) return;
       const list = byColumn.get(card.column_id) ?? [];
-      list.push(card as KanbanCardData);
+      list.push(card);
       byColumn.set(card.column_id, list);
     });
     return byColumn;
-  }, [data, viewMode, user?.id]);
+  }, [data?.columns, localCards, viewMode, user?.id]);
 
   const handleDragStart = (event: DragStartEvent) => {
     if (event.active.data.current?.type === 'Card') {
       setActiveCard(event.active.data.current.card as KanbanCardData);
+    }
+  };
+
+  const handleDragOver = (event: DragOverEvent) => {
+    const { active, over } = event;
+    if (!over) return;
+    const activeId = active.id;
+    const overId = over.id;
+    if (activeId === overId) return;
+
+    const isActiveTask = active.data.current?.type === 'Card';
+    const isOverTask = over.data.current?.type === 'Card';
+    const isOverColumn = over.data.current?.type === 'Column';
+
+    if (!isActiveTask) return;
+
+    if (isOverTask) {
+      setLocalCards((cards) => {
+        const activeIndex = cards.findIndex(t => t.id === activeId);
+        const overIndex = cards.findIndex(t => t.id === overId);
+        if (cards[activeIndex].column_id !== cards[overIndex].column_id) {
+          const newCards = [...cards];
+          newCards[activeIndex] = { ...newCards[activeIndex], column_id: cards[overIndex].column_id };
+          return arrayMove(newCards, activeIndex, overIndex);
+        }
+        return arrayMove(cards, activeIndex, overIndex);
+      });
+    }
+
+    if (isOverColumn) {
+      setLocalCards((cards) => {
+        const activeIndex = cards.findIndex(t => t.id === activeId);
+        if (cards[activeIndex].column_id !== overId) {
+          const newCards = [...cards];
+          newCards[activeIndex] = { ...newCards[activeIndex], column_id: overId as string };
+          return newCards;
+        }
+        return cards;
+      });
     }
   };
 
@@ -480,6 +527,7 @@ export default function KanbanBoard() {
             sensors={sensors}
             collisionDetection={closestCorners}
             onDragStart={handleDragStart}
+            onDragOver={handleDragOver}
             onDragEnd={handleDragEnd}
           >
             <div className="kanban-board flex-1 min-h-0">

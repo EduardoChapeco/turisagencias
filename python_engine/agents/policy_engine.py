@@ -1,5 +1,5 @@
 """
-Policy Engine v1.0 - Turis Agências OMEGA Engine
+Policy Engine v1.0 - Turis Agências Turis AI Engine
 =================================================
 Motor de conformidade corporativa: avalia resultados de voo/hotel
 contra as políticas vigentes da organização.

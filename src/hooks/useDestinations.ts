@@ -20,7 +20,13 @@ export type Destination = {
   best_season?: string[];
   avoid_season?: string[];
   is_active?: boolean;
-  created_at: string;
+  created_at: string | null;
+};
+
+const parseSeasonList = (value: unknown): string[] => {
+  if (Array.isArray(value)) return value.map(String);
+  if (typeof value === 'string') return value.split(',').map((item) => item.trim()).filter(Boolean);
+  return [];
 };
 
 export function useDestinations() {
@@ -33,7 +39,12 @@ export function useDestinations() {
         .order('country', { ascending: true })
         .order('name', { ascending: true });
       if (error) throw error;
-      return data as Destination[];
+      return (data ?? []).map((row: any) => ({
+        ...row,
+        best_season: parseSeasonList(row.best_season),
+        avoid_season: parseSeasonList(row.avoid_season),
+        is_active: row.is_active ?? true,
+      })) as Destination[];
     },
     staleTime: 5 * 60 * 1000,
   });
@@ -44,12 +55,21 @@ export function useUpsertDestination() {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async (payload: Partial<Destination> & { slug: string; name: string; country: string }) => {
-      const { id, ...rest } = payload;
+    mutationFn: async (payload: Partial<Destination> & Record<string, any>) => {
+      const { id, iata_gateway, gateway_rules, transfer_time_hours, avoid_season, is_active, ...rest } = payload;
+      void iata_gateway;
+      void gateway_rules;
+      void transfer_time_hours;
+      void avoid_season;
+      void is_active;
+      const dbPayload = {
+        ...rest,
+        best_season: Array.isArray(rest.best_season) ? rest.best_season.join(',') : rest.best_season,
+      } as any;
       if (id) {
         const { data, error } = await supabase
           .from('destinations')
-          .update(rest)
+          .update(dbPayload)
           .eq('id', id)
           .select()
           .single();
@@ -58,7 +78,7 @@ export function useUpsertDestination() {
       } else {
         const { data, error } = await supabase
           .from('destinations')
-          .insert(rest)
+          .insert(dbPayload)
           .select()
           .single();
         if (error) throw error;
@@ -95,12 +115,8 @@ export function useToggleDestinationActive() {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async ({ id, is_active }: { id: string; is_active: boolean }) => {
-      const { error } = await supabase
-        .from('destinations')
-        .update({ is_active })
-        .eq('id', id);
-      if (error) throw error;
+    mutationFn: async (_payload: { id: string; is_active: boolean }) => {
+      throw new Error('O schema atual de destinations nao possui coluna is_active.');
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['destinations'] }),
     onError: (e: Error) => toast({ title: 'Erro', description: e.message, variant: 'destructive' }),

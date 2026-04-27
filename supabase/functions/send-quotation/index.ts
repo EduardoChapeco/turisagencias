@@ -54,7 +54,7 @@ serve(async (req) => {
 
     if (updateErr || !updated) throw new Error("Falha ao atualizar cotacao");
 
-    const publicUrl = `${req.headers.get("origin") ?? Deno.env.get("SITE_URL") ?? "https://viaja.app"}/q/${publicToken}`;
+    const publicUrl = `${req.headers.get("origin") ?? Deno.env.get("SITE_URL") ?? "https://turis.app"}/q/${publicToken}`;
     const summary = quotation.destination || quotation.hotel_name || "sem destino";
 
     await sc.from("notifications").insert({

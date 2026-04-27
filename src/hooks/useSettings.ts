@@ -3,6 +3,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuthStore } from '@/stores/authStore';
 import { useToast } from '@/hooks/use-toast';
 
+const settingsDb = supabase as any;
+
 /* ─── Agents / Team Members ─────────────────── */
 
 export function useTeamMembers() {
@@ -56,7 +58,7 @@ export function useUpdateMemberRole() {
       if (role !== undefined) updates.role = role;
       if (is_active !== undefined) updates.is_active = is_active;
 
-      const { error } = await supabase.from('profiles').update(updates).eq('id', profileId);
+      const { error } = await settingsDb.from('profiles').update(updates).eq('id', profileId);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -118,9 +120,9 @@ export function useCreateKanbanColumnInBoard() {
       color?: string;
       position: number;
     }) => {
-      const { data, error } = await supabase
+      const { data, error } = await settingsDb
         .from('kanban_columns')
-        .insert({ board_id, name, color: color ?? '#6B7280', position })
+        .insert({ board_id, name, color: color ?? '#6B7280', position, org_id: organization!.id })
         .select()
         .single();
       if (error) throw error;

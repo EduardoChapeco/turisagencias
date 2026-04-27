@@ -5,7 +5,7 @@ from langchain_openai import ChatOpenAI
 from langchain_core.prompts import PromptTemplate
 
 # ==========================================
-# 🧠 OMEGA v4.0 - COGNITIVE PLANNING STRUCTURES
+# 🧠 Turis AI v4.0 - COGNITIVE PLANNING STRUCTURES
 # ==========================================
 
 class TravelScenario(BaseModel):
@@ -40,7 +40,7 @@ class TreeOfThoughtPlanner:
 
         self.system_prompt = PromptTemplate(
             input_variables=["parsed_req"],
-            template="""Você é o Agente 4 (Estrategista de Planejamento) do Motor OMEGA v4.0.
+            template="""Você é o Agente 4 (Estrategista de Planejamento) do Motor Turis AI v4.0.
 Sua missão é aplicar a técnica 'Tree of Thoughts' para gerar uma malha de cenários de viagem inteligentes.
 
 <CONTEXTO DO PEDIDO>

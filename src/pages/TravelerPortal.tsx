@@ -399,8 +399,8 @@ function CancelRequestDialog({
                             type="radio"
                             name="resolution"
                             value={opt.v}
-                            checked={resolution === opt.v as Record<string, any>}
-                            onChange={() => setResolution(opt.v as Record<string, any>)}
+                            checked={resolution === opt.v}
+                            onChange={() => setResolution(opt.v as 'full_refund' | 'full_credit')}
                             className="h-5 w-5 accent-emerald-600"
                           />
                           <div>

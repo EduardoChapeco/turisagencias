@@ -60,7 +60,7 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        // OMEGA Design System Single Source of Truth mapping
+        // Turis Design System Single Source of Truth mapping
         vj: {
           bg: "var(--vj-bg)",
           "bg-dark": "var(--vj-bg-dark)",

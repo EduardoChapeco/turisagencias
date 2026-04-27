@@ -72,6 +72,8 @@ export type HotelFormValues = Omit<
 };
 
 export interface PublicQuotationData {
+  id: string;
+  created_at?: string | null;
   destination: string | null;
   hotel_name: string | null;
   hotel_stars: number | null;
@@ -79,6 +81,8 @@ export interface PublicQuotationData {
   check_in: string | null;
   check_out: string | null;
   num_nights: number | null;
+  num_adults?: number | null;
+  num_children?: number | null;
   meal_plan: string | null;
   room_type: string | null;
   total_value: number | null;
@@ -93,6 +97,7 @@ export interface PublicQuotationData {
   cover_title?: string | null;
   pricing_mode?: string | null;
   valid_until?: string | null;
+  notes?: string | null;
   itinerary?: QuotationItineraryDay[];
   transports?: QuotationTransport[];
   excursions?: QuotationExcursion[];

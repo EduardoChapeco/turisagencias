@@ -173,7 +173,7 @@ serve(async (req) => {
             headers: {
               Authorization: `Bearer ${key.api_key}`,
               "Content-Type": "application/json",
-              ...(provider === "openrouter" ? { "HTTP-Referer": "https://viaja.app", "X-Title": "Turis Agências" } : {}),
+              ...(provider === "openrouter" ? { "HTTP-Referer": "https://turis.app", "X-Title": "Turis Agências" } : {}),
             },
             body: JSON.stringify({
               model,

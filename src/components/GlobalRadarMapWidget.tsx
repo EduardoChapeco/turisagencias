@@ -57,7 +57,7 @@ export function GlobalRadarMapWidget({ markers, interactive = true }: Props) {
       const iconHTML = `
         <div class="relative w-4 h-4 flex items-center justify-center -translate-x-1/2 -translate-y-1/2">
            <span class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style="background-color: ${mk.color};"></span>
-           <span class="relative inline-flex rounded-full h-3 w-3 border-[1.5px] border-zinc-950 z-10" style="background-color: ${mk.color}; box-shadow: 0 0 8px ${mk.color}"></span>
+           <span class="relative inline-flex rounded-full h-3 w-3 border-[2px] border-zinc-950 z-10" style="background-color: ${mk.color};"></span>
         </div>
       `;
       const icon = L.divIcon({

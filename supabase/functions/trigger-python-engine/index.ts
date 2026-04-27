@@ -17,14 +17,15 @@ serve(async (req) => {
     const PYTHON_ENGINE_URL = Deno.env.get("PYTHON_ENGINE_URL") || "http://host.docker.internal:8000";
 
     const webhookBody = {
-      client_id: payload.record?.client_id || "system_webhook",
       raw_text: payload.record?.lead_message || payload.raw_text || "Pesquisa automática disparada.",
-      lead_id: payload.record?.id
+      org_id: payload.record?.org_id || payload.org_id || payload.record?.organization_id || "system_webhook",
+      lead_id: payload.record?.id ?? payload.lead_id ?? null,
+      client_id: payload.record?.client_id ?? payload.client_id ?? null,
     };
 
-    console.log(`[Bridge] Disparando para o Motor Python FastAPI: ${PYTHON_ENGINE_URL}/api/v1/quotation/request`);
+    console.log(`[Bridge] Disparando para o Motor Python FastAPI: ${PYTHON_ENGINE_URL}/api/v1/quotation/process`);
 
-    const pyResponse = await fetch(`${PYTHON_ENGINE_URL}/api/v1/quotation/request`, {
+    const pyResponse = await fetch(`${PYTHON_ENGINE_URL}/api/v1/quotation/process`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(webhookBody)
@@ -35,7 +36,7 @@ serve(async (req) => {
     }
 
     const pyData = await pyResponse.json();
-    console.log("[Bridge] Motor Python acionado com sucesso. Job ID:", pyData.job_id);
+    console.log("[Bridge] Motor Python acionado com sucesso.");
 
     return new Response(JSON.stringify({ success: true, forward_data: pyData }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

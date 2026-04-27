@@ -109,7 +109,7 @@ export function SquadConsole({ messages, isThinking, className }: SquadConsolePr
           <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">Neural Link Active</span>
         </div>
         <div className="text-[8px] font-black text-zinc-700 uppercase tracking-tighter">
-          OMEGA ENGINE v4.1 · TURIS AGÊNCIAS
+          Turis AI ENGINE v4.1 · TURIS AGÊNCIAS
         </div>
       </div>
     </div>

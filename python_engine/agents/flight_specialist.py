@@ -5,7 +5,7 @@ from langchain_openai import ChatOpenAI
 from langchain_core.prompts import PromptTemplate
 
 # ==========================================
-# 🧠 OMEGA v4.0 - COGNITIVE FLIGHT MODELS
+# 🧠 Turis AI v4.0 - COGNITIVE FLIGHT MODELS
 # ==========================================
 
 class FlightOutbound(BaseModel):
@@ -53,7 +53,7 @@ class FlightSpecialist:
 
         self.system_prompt = PromptTemplate(
             input_variables=["flight_data", "min_price"],
-            template="""Você é o Agente 2 (Flight Specialist) do Motor OMEGA v4.0.
+            template="""Você é o Agente 2 (Flight Specialist) do Motor Turis AI v4.0.
 Sua missão é auditar uma opção de voo extraída do GDS e dar um parecer técnico de nível Staff Engineer.
 
 <DADOS DO VOO>

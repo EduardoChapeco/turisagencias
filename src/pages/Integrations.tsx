@@ -75,7 +75,7 @@ export default function Integrations() {
             <Plug className="w-6 h-6 text-vj-green" /> B2B API Gateway
           </h1>
           <p className="text-sm font-bold text-vj-txt3 mt-2">
-            Configure as credenciais reais das consolidadoras para habilitar a busca e emissão no motor OMEGA.
+            Configure as credenciais reais das consolidadoras para habilitar a busca e emissão no motor Turis AI.
             <br/><span className="text-rose-500">Atenção:</span> Sem chaves válidas, o motor Python interromperá a cotação.
           </p>
         </div>

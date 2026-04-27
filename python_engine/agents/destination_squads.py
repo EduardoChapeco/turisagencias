@@ -5,7 +5,7 @@ from langchain_openai import ChatOpenAI
 from langchain_core.prompts import PromptTemplate
 
 # ==========================================
-# 🧠 OMEGA v4.0 - DESTINATION COGNITIVE MODELS
+# 🧠 Turis AI v4.0 - DESTINATION COGNITIVE MODELS
 # ==========================================
 
 class LogisticRequirement(BaseModel):
@@ -39,7 +39,7 @@ class DestinationSpecialist:
 
         self.system_prompt = PromptTemplate(
             input_variables=["destination", "arrival_hour"],
-            template="""Você é o Agente 1 (Destination Specialist) do Motor OMEGA v4.0.
+            template="""Você é o Agente 1 (Destination Specialist) do Motor Turis AI v4.0.
 Sua especialidade é a logística de 'última milha' em destinos complexos.
 
 <DESTINO>

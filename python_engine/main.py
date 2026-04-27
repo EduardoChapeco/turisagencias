@@ -1,5 +1,5 @@
 """
-Turis Agências - OMEGA Engine v5.0
+Turis Agências - Turis AI Engine v5.0
 ====================================
 FastAPI server com:
 - POST /api/v1/quotation/process  → Orquestrador completo (debate real)
@@ -20,9 +20,13 @@ import logging
 from contextlib import asynccontextmanager
 from typing import List, Optional, Dict, Any
 
-from fastapi import FastAPI, BackgroundTasks, HTTPException
+from fastapi import FastAPI, BackgroundTasks, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+import json
+import os
+
+AIRPORTS_DB = []
 
 # ── Agentes ────────────────────────────────────────────────────
 from agents.accommodation_resolver import GapResolverAgent
@@ -32,7 +36,7 @@ from agents.email_handler import EmailHandlerAgent
 from agents.langgraph_orchestrator import orchestrator
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
-logger = logging.getLogger("omega_engine")
+logger = logging.getLogger("turis_engine")
 
 
 # ============================================================
@@ -41,28 +45,43 @@ logger = logging.getLogger("omega_engine")
 @asynccontextmanager
 async def lifespan(application: FastAPI):
     """Inicializa workers de background ao subir o servidor."""
-    logger.info("[OMEGA] Servidor iniciando...")
+    logger.info("[Turis AI] Servidor iniciando...")
     try:
         from workers.boarding_auditor import BoardingAuditor
         auditor = BoardingAuditor()
         task = asyncio.create_task(auditor.run_forever())
-        logger.info("[OMEGA] ✅ Boarding Auditor ativado (polling a cada 6h)")
+        logger.info("[Turis AI] ✅ Boarding Auditor ativado (polling a cada 6h)")
     except Exception as e:
-        logger.warning(f"[OMEGA] Boarding Auditor não iniciado: {e}")
+        logger.warning(f"[Turis AI] Boarding Auditor não iniciado: {e}")
         task = None
+
+    # Carrega base de aeroportos na memória
+    try:
+        db_path = os.path.join(os.path.dirname(__file__), "data", "airports.json")
+        if os.path.exists(db_path):
+            with open(db_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                for _, v in data.items():
+                    if v.get("iata") or v.get("icao"):
+                        AIRPORTS_DB.append(v)
+            logger.info(f"[Turis AI] ✅ Base de locais carregada ({len(AIRPORTS_DB)} aeroportos).")
+        else:
+            logger.warning("[Turis AI] ⚠️ Base de aeroportos não encontrada em data/airports.json")
+    except Exception as e:
+        logger.error(f"[Turis AI] Erro ao carregar aeroportos: {e}")
 
     yield  # ← servidor ativo
 
     if task and not task.done():
         task.cancel()
-    logger.info("[OMEGA] Servidor encerrado.")
+    logger.info("[Turis AI] Servidor encerrado.")
 
 
 # ============================================================
 # ⚡ APP
 # ============================================================
 app = FastAPI(
-    title="Turis Agências OMEGA Engine",
+    title="Turis Agências Turis AI Engine",
     description=(
         "Motor de Inteligência Real v5.0 — Arquitetura TMC Enterprise.\n"
         "GDS Gateway real (Wooba + Infotravel) | Policy Engine | Boarding Auditor | Chronos Memory."
@@ -78,6 +97,42 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# ============================================================
+# 🌍 LOCATIONS (AEROPORTOS E CIDADES)
+# ============================================================
+@app.get("/api/v1/locations/search")
+async def search_locations(q: str = Query(..., min_length=2, max_length=50)):
+    """Pesquisa rápida (in-memory) de aeroportos por IATA, nome ou cidade."""
+    query = q.lower()
+    results = []
+    
+    # Priority matches
+    for ap in AIRPORTS_DB:
+        iata = ap.get("iata", "").lower()
+        icao = ap.get("icao", "").lower()
+        city = ap.get("city", "").lower()
+        name = ap.get("name", "").lower()
+        
+        # Exact match IATA
+        if query == iata:
+            results.append((100, ap))
+            continue
+            
+        # Starts with city or name
+        if city.startswith(query) or name.startswith(query):
+            results.append((80, ap))
+            continue
+            
+        # Substring
+        if query in city or query in name:
+            results.append((50, ap))
+            
+    # Sort by score descending and limit to 10
+    results.sort(key=lambda x: x[0], reverse=True)
+    best_matches = [r[1] for r in results[:10]]
+    
+    return {"results": best_matches}
 
 
 # ============================================================
@@ -111,7 +166,7 @@ class FlightChangePayload(BaseModel):
 @app.post("/api/v1/quotation/process")
 async def process_quotation(req: QuotationRequest):
     """
-    Aciona o Cérebro OMEGA completo (Interpreter → Planner → GDS Gateway → Debate → Chronos).
+    Aciona o Cérebro Turis AI completo (Interpreter → Planner → GDS Gateway → Debate → Chronos).
     Retorna o debate squad_messages e a decisão final.
     """
     try:
@@ -276,7 +331,7 @@ async def trigger_auditor_manually(background_tasks: BackgroundTasks):
 
 @app.get("/api/v1/health")
 async def health():
-    return {"status": "online", "version": "5.0.0", "engine": "OMEGA TMC Enterprise"}
+    return {"status": "online", "version": "5.0.0", "engine": "Turis AI TMC Enterprise"}
 
 
 if __name__ == "__main__":

@@ -278,8 +278,8 @@ serve(async (req) => {
         Authorization: `Bearer ${aiConfig.key}`,
         "Content-Type": "application/json",
         ...(aiConfig.provider === 'openrouter' ? {
-          "HTTP-Referer": "https://viaja.app",
-          "X-Title": "Viaja CRM"
+          "HTTP-Referer": "https://turis.app",
+          "X-Title": "Turis Agências"
         } : {}),
       },
       body: JSON.stringify({

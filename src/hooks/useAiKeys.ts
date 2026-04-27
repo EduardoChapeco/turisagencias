@@ -38,8 +38,8 @@ export const useSaveAiKey = () => {
         .insert({
           org_id: organization.id,
           provider: payload.provider,
-          api_key: payload.api_key,
-          monthly_limit_usd: payload.monthly_limit_usd || null,
+          api_key_encrypted: payload.api_key,
+          monthly_limit: payload.monthly_limit_usd || null,
           is_active: true
         })
         .select()

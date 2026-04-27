@@ -33,11 +33,7 @@ export function WaChatPanel({ clientId, phone }: { clientId?: string | null; pho
       <EmptyState
         icon={MessageCircle}
         title="Nenhuma sessão vinculada"
-        description={<>
-          A extensão do WhatsApp ainda não rastreou conversas para este cliente.
-          <br/>
-          <strong>Tente abrir o contato no WhatsApp Web com a extensão ativa.</strong>
-        </>}
+        description="A extensao do WhatsApp ainda nao rastreou conversas para este cliente. Tente abrir o contato no WhatsApp Web com a extensao ativa."
         action={
           <Button variant="outline" size="sm" onClick={() => window.open('https://web.whatsapp.com', '_blank')}>
             <Smartphone className="h-4 w-4 mr-2"/> Abrir WhatsApp Web

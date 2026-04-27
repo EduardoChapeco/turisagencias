@@ -107,19 +107,19 @@ export default function AIChat() {
         setActiveSessionId(sessionId);
       }
 
-      const user = useAuthStore.getState().user;
+      const { organization } = useAuthStore.getState();
       const pythonEngineUrl = import.meta.env.VITE_PYTHON_ENGINE_URL || 'http://localhost:8000';
       const res = await fetch(`${pythonEngineUrl}/api/v1/quotation/process`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           raw_text: content,
-          org_id: user?.organization_id || 'default_org'
+          org_id: organization?.id || 'default_org'
         }),
       });
 
       if (!res.ok) {
-         throw new Error('Falha de conexão com o Motor OMEGA v5. Certifique-se que o motor Python está rodando.');
+         throw new Error('Falha de conexão com o Motor Turis AI v5. Certifique-se que o motor Python está rodando.');
       }
 
       const data = await res.json();
@@ -134,7 +134,7 @@ export default function AIChat() {
 
       const assistantContent = typeof data.decision === 'string' && data.decision.trim() !== ''
         ? data.decision 
-        : (data.decision?.executive_summary || data.decision?.recommendation || 'Análise OMEGA concluída. Nenhum sumário retornado pelo motor.');
+        : (data.decision?.executive_summary || data.decision?.recommendation || 'Análise Turis AI concluída. Nenhum sumário retornado pelo motor.');
 
       const assistantMsg: ChatMessage = { 
         id: (Date.now() + 1).toString(), 

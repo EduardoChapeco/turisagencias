@@ -5,7 +5,7 @@ from langchain_openai import ChatOpenAI
 from langchain_core.prompts import PromptTemplate
 
 # ==========================================
-# 🧠 OMEGA v4.0 - COGNITIVE DATA STRUCTURES
+# 🧠 Turis AI v4.0 - COGNITIVE DATA STRUCTURES
 # ==========================================
 
 class TravelIntent(BaseModel):
@@ -42,7 +42,7 @@ class AgentInterpreter:
             
         self.system_prompt = PromptTemplate(
             input_variables=["raw_text"],
-            template="""Você é a IA de Entrada (Agent 0 / Interpreter) do Motor Cognitivo OMEGA v4.0.
+            template="""Você é a IA de Entrada (Agent 0 / Interpreter) do Motor Cognitivo Turis AI v4.0.
 Sua missão é extrair a intenção semântica profunda a partir do texto do cliente.
 
 <REGRAS DE COGNIÇÃO>
@@ -61,10 +61,11 @@ Texto de Entrada do Cliente:
         
         if not self.llm:
             fallback = TravelIntent(
-                destination="Offline Mock Dest",
-                departure_date="2025-07-10",
-                preferences=["offline_test"],
-                rationale="Fallback offline ativado. Sem conexão com o cérebro OpenAI."
+                destination="",
+                preferences=[],
+                friction_detected=True,
+                friction_reason="OPENAI_API_KEY ausente. O interpretador nao pode inferir dados reais.",
+                rationale="Processamento interrompido por falta de credencial real do LLM."
             )
             return fallback.model_dump()
 

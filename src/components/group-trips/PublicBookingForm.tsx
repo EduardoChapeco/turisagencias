@@ -230,13 +230,21 @@ export function PublicBookingForm({
 
       {/* ── STEP 3: Assinatura do contrato ────────────────────────────────── */}
       {step === 'contract' && bookingId && publicToken && (
-        <ContractSignatureFlow
-          bookingId={bookingId}
-          bookingToken={publicToken}
-          tripTitle={tripTitle}
-          signerNamePrefill={form.lead_name}
-          onSigned={handleSigned}
-        />
+        <div className="space-y-3">
+          {hasBusLayout && (
+            <Button type="button" variant="outline" size="sm" onClick={() => setStep('seats')}>
+              Alterar assentos selecionados
+            </Button>
+          )}
+          <ContractSignatureFlow
+            bookingId={bookingId}
+            bookingToken={publicToken}
+            tripTitle={tripTitle}
+            signerNamePrefill={form.lead_name}
+            selectedSeats={selectedSeats}
+            onSigned={handleSigned}
+          />
+        </div>
       )}
     </div>
   );

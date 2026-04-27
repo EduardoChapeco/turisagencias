@@ -10,6 +10,7 @@ import { PageHeaderPortalContext } from '@/components/ui/PageHeader';
 import { PageInfoProvider, usePageInfo } from '@/contexts/PageInfoContext';
 import { Input } from '@/components/ui/input';
 import { SheetPage } from '@/components/ui/SheetPage';
+import { AIStatusIndicator } from '@/components/ai/AIStatusIndicator';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -162,6 +163,7 @@ export function AppLayout({ children, fullHeight }: { children: React.ReactNode;
               </main>
             </div>
           </div>
+          <AIStatusIndicator />
         </PageHeaderPortalContext.Provider>
       </SidebarProvider>
     </PageInfoProvider>

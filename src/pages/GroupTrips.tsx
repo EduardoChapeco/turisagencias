@@ -20,7 +20,7 @@ import { MediaField } from '@/components/ui/MediaField';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { Users, MapPin, Calendar, ExternalLink, Trash2, Eye } from 'lucide-react';
-
+import { LocationCombobox } from '@/components/ui/LocationCombobox';
 // ─── Tag/chip list editor ────────────────────────────────────────────────────
 function ChipListEditor({
   label, values, onChange, placeholder,
@@ -403,11 +403,19 @@ export default function GroupTrips() {
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <div>
                     <Label>Cidade de origem</Label>
-                    <Input value={form.origin_city} onChange={e => set({ origin_city: e.target.value })} placeholder="São Paulo" />
+                    <LocationCombobox 
+                      value={form.origin_city} 
+                      onChange={val => set({ origin_city: val })} 
+                      placeholder="Busque uma cidade/aeroporto..." 
+                    />
                   </div>
                   <div>
                     <Label>Destino</Label>
-                    <Input value={form.destination} onChange={e => set({ destination: e.target.value })} placeholder="Caldas Novas, GO" />
+                    <LocationCombobox 
+                      value={form.destination} 
+                      onChange={val => set({ destination: val })} 
+                      placeholder="Busque uma cidade/aeroporto..." 
+                    />
                   </div>
                 </div>
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">

@@ -6,7 +6,7 @@ from langchain_openai import ChatOpenAI
 from langchain_core.prompts import PromptTemplate
 
 # ==========================================
-# 🧠 OMEGA v4.0 - EMAIL COGNITIVE MODELS
+# 🧠 Turis AI v4.0 - EMAIL COGNITIVE MODELS
 # ==========================================
 
 class EmailCategorization(BaseModel):
@@ -37,7 +37,7 @@ class EmailHandlerAgent:
 
         self.system_prompt = PromptTemplate(
             input_variables=["subject", "body"],
-            template="""Você é o Agente de Gerenciamento de Email (Mail Manager) do Motor OMEGA v4.0.
+            template="""Você é o Agente de Gerenciamento de Email (Mail Manager) do Motor Turis AI v4.0.
 Sua missão é triar as comunicações que chegam à agência com inteligência e empatia.
 
 <EMAIL>

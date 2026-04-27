@@ -34,7 +34,8 @@ export default function PortalTripDetail() {
     );
   }
 
-  const { organization, trip, itinerary, itineraryStops } = data;
+  const { organization, trip, itineraryStops } = data;
+  const itinerary = (data as any).itinerary ?? null;
 
   // Map stops to the StopCoordinate format
   const mappedStops: StopCoordinate[] = (itineraryStops || []).map((s: any) => ({

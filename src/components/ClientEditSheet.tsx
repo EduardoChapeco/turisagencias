@@ -198,7 +198,7 @@ export function ClientEditSheet({ id, open, onClose, onSuccess }: ClientEditShee
       const res = await updateClient.mutateAsync({ id: id!, ...payload });
       onSuccess?.(res.id);
     } else {
-      const res = await createClient.mutateAsync(payload as Record<string, any>);
+      const res = await createClient.mutateAsync(payload);
       onSuccess?.(res.id);
     }
     onClose();

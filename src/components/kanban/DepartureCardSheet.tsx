@@ -83,7 +83,7 @@ function EmbarqueSection({ card }: { card: DepartureCardData }) {
       estimated_value: form.estimated_value ? Number(form.estimated_value) : null,
       meta: newMeta,
       metadata: newMeta,   // keep both columns in sync
-    } as Record<string, any>);
+    } as { id: string } & Record<string, any>);
     setDirty(false);
   };
 

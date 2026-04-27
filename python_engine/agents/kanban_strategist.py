@@ -6,7 +6,7 @@ from langchain_core.prompts import PromptTemplate
 from utils.supabase_client import get_supabase
 
 # ==========================================
-# 🧠 OMEGA v4.0 - SALES STRATEGY MODELS
+# 🧠 Turis AI v4.0 - SALES STRATEGY MODELS
 # ==========================================
 
 class SalesInsight(BaseModel):
@@ -44,7 +44,7 @@ class KanbanStrategistAgent:
 
         self.system_prompt = PromptTemplate(
             input_variables=["cards_data"],
-            template="""Você é o Agente estrategista de Vendas (Kanban Strategist) do Motor OMEGA v4.0.
+            template="""Você é o Agente estrategista de Vendas (Kanban Strategist) do Motor Turis AI v4.0.
 Sua missão é auditar o pipeline de vendas da agência e transformar leads parados em vendas fechadas.
 
 <DADOS REAIS DO FUNIL>

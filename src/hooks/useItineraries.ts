@@ -2,6 +2,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from './use-toast';
 
+const itineraryDb = supabase as any;
+
 // Full Itinerary interface matching the DB schema
 export interface Itinerary {
   id: string;
@@ -134,7 +136,7 @@ export function useItineraryStops(itineraryId: string | undefined) {
   const { data: stops, isLoading } = useQuery({
     queryKey: ['itinerary_stops', itineraryId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await itineraryDb
         .from('itinerary_stops')
         .select('*')
         .eq('itinerary_id', itineraryId!)
@@ -149,7 +151,7 @@ export function useItineraryStops(itineraryId: string | undefined) {
 
   const addStopMutation = useMutation({
     mutationFn: async (newStop: Partial<ItineraryStop>) => {
-      const { data, error } = await supabase
+      const { data, error } = await itineraryDb
         .from('itinerary_stops')
         .insert([{ ...newStop, itinerary_id: itineraryId }])
         .select()
@@ -214,7 +216,7 @@ export function useItineraryStops(itineraryId: string | undefined) {
       }
 
       if (stopsToInsert.length > 0) {
-        const { error: insErr } = await supabase.from('itinerary_stops').insert(stopsToInsert);
+        const { error: insErr } = await itineraryDb.from('itinerary_stops').insert(stopsToInsert);
         if (insErr) throw insErr;
       }
 

@@ -6,7 +6,7 @@ from langchain_openai import ChatOpenAI
 from langchain_core.prompts import PromptTemplate
 
 # ==========================================
-# 🧠 OMEGA v4.0 - CRISIS RESOLUTION STRUCTURES
+# 🧠 Turis AI v4.0 - CRISIS RESOLUTION STRUCTURES
 # ==========================================
 
 class ResolutionOption(BaseModel):
@@ -41,7 +41,7 @@ class GapResolverAgent:
 
         self.system_prompt = PromptTemplate(
             input_variables=["original_return", "new_return", "gateway_city", "lost_nights"],
-            template="""Você é o Agente Especialista em Pós-Venda do Motor OMEGA v4.0.
+            template="""Você é o Agente Especialista em Pós-Venda do Motor Turis AI v4.0.
 Houve uma alteração involuntária de malha aérea (antecipação de volta).
 
 <DADOS DA CRISE>

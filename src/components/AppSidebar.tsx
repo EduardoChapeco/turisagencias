@@ -18,6 +18,10 @@ import {
   TrendingUp,
   Activity,
   Sparkles,
+  FileSignature,
+  CreditCard,
+  Tent,
+  Briefcase,
   Plug
 } from 'lucide-react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
@@ -64,6 +68,16 @@ const navGroups: NavGroup[] = [
       { title: 'Minhas Tarefas',      url: '/kanban/tasks',     icon: Zap },
       { title: 'Gestão de Embarque',  url: '/kanban/departures',icon: Anchor },
       { title: 'Roteiros Digitais',   url: '/itineraries',      icon: Map },
+      { title: 'Experiências',        url: '/experiences',      icon: Tent },
+    ],
+  },
+  {
+    title: 'Financeiro & Admin',
+    items: [
+      { title: 'Transações',          url: '/finance/transactions', icon: CreditCard },
+      { title: 'Fornecedores',        url: '/finance/suppliers',    icon: Briefcase },
+      { title: 'Contratos',           url: '/legal/contracts',      icon: FileSignature },
+      { title: 'Equipe',              url: '/team',                 icon: Users },
     ],
   },
   {
@@ -85,7 +99,10 @@ export function AppSidebar() {
   const collapsed = state === 'collapsed';
   const navigate = useNavigate();
   const location = useLocation();
-  const { profile, organization } = useAuthStore();
+  const { profile, organization, roles } = useAuthStore();
+  const canViewMasterPanel =
+    roles.includes('super_admin') ||
+    roles.includes('org_admin');
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -142,6 +159,21 @@ export function AppSidebar() {
               </SidebarGroupContent>
             </SidebarGroup>
           ))}
+
+          {/* Master Panel Button for admins */}
+          {canViewMasterPanel && (
+            <div className="mt-8 mb-4 border-t border-vj-border/40 pt-8">
+              <SidebarMenuButton 
+                asChild 
+                className={`h-12 rounded-2xl transition-all duration-300 group/btn bg-indigo-50 text-indigo-700 hover:bg-indigo-100 hover:text-indigo-900 border border-indigo-100`}
+              >
+                <Link to="/analytics" className="flex items-center gap-4 px-4">
+                  <Activity className="h-4 w-4 text-indigo-500" />
+                  {!collapsed && <span className="font-bold text-xs tracking-tight">Painel Master</span>}
+                </Link>
+              </SidebarMenuButton>
+            </div>
+          )}
         </div>
       </SidebarContent>
 

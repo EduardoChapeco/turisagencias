@@ -21,7 +21,7 @@ export function useKnowledgeBase() {
       if (!organization?.id) return [];
       const { data, error } = await supabase
         .from('ai_knowledge_base')
-        .select('id, content, metadata, created_at')
+        .select('id, content, title, category, tags, created_at')
         .eq('org_id', organization.id)
         .order('created_at', { ascending: false });
       if (error) throw error;
@@ -44,7 +44,11 @@ export function useUpsertKnowledge() {
       const { data, error } = await supabase
         .from('ai_knowledge_base')
         .upsert({
-          ...payload,
+          id: payload.id,
+          content: payload.content,
+          title: payload.metadata?.title ?? payload.content.slice(0, 80),
+          category: payload.metadata?.category ?? 'general',
+          tags: payload.metadata?.tags ?? null,
           org_id: organization.id,
         })
         .select()

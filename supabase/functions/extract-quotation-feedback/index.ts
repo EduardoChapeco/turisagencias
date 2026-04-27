@@ -78,7 +78,7 @@ Outcome: ${status.toUpperCase()}`;
           "Authorization": `Bearer ${apiKeyData.api_key}`,
           "Content-Type": "application/json",
           ...(apiKeyData.provider === "openrouter" && {
-            "HTTP-Referer": "https://agencia-app.viaja.app",
+            "HTTP-Referer": "https://app.turis.app",
             "X-Title": "Turis Agências"
           })
         },

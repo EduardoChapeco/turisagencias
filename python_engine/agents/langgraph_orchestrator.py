@@ -11,7 +11,7 @@ from agents.flight_specialist import FlightSpecialist, FlightOption
 from agents.accommodation_resolver import GapResolverAgent
 
 # ==========================================
-# 🧠 OMEGA v4.0 - COGNITIVE STATE DEFINITION
+# 🧠 Turis AI v4.0 - COGNITIVE STATE DEFINITION
 # ==========================================
 
 class SquadMessage(BaseModel):
@@ -151,7 +151,17 @@ def adversarial_debate_node(state: TravelState):
     cycles = state.get("debate_cycles", 0) + 1
     print(f"\n[⚔️ DEBATE REAL] Ciclo {cycles}...")
     
-    flight_analysis = state["research_results"]["flight"]
+    research_results = state.get("research_results") or {}
+    flight_analysis = research_results.get("flight_analysis")
+    best_flight = research_results.get("best_flight") or {}
+    if not flight_analysis:
+        msg = "Pesquisa aerea sem resultado validado; debate encerrado para evitar decisao inventada."
+        return {
+            **state,
+            "validation_status": "rejected",
+            "errors": list(state.get("errors") or []) + [msg],
+            "squad_messages": state["squad_messages"] + [{"agent": "Moderator (Prometheus)", "text": msg}],
+        }
     
     # Lógica de "Briga" Real:
     # Se o Agente 2 der um veredito crítico, o moderador interfere.
@@ -169,7 +179,11 @@ def adversarial_debate_node(state: TravelState):
         **state, 
         "debate_cycles": cycles, 
         "validation_status": "approved",
-        "final_decision": {"chosen_flight": "LA123", "score": flight_analysis["overall_score"]},
+        "final_decision": {
+            "chosen_flight": best_flight.get("flight_number"),
+            "source": best_flight.get("source"),
+            "score": flight_analysis["overall_score"],
+        },
         "squad_messages": state["squad_messages"] + [{"agent": "Moderator (Prometheus)", "text": conclusion}]
     }
 

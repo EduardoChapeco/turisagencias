@@ -113,11 +113,12 @@ export default function Automations() {
   const missingRules = DEFAULT_EVENTS.filter(
     event => !rules?.some(r => r.event_type === event)
   );
-  const hasMissingRules = missingRules.length > 0;
+  const isTotallyEmpty = (rules?.length ?? 0) === 0;
+  const hasMissingRules = missingRules.length > 0 && !isTotallyEmpty;
 
   return (
     <AppLayout fullHeight>
-      <div className="flex flex-col h-full gap-4">
+      <div className="flex flex-col flex-1 h-full gap-4">
         <PageHeader
           title="Automações Mailbox"
           description="E-mails inteligentes que disparam nos bastidores, conectando sua agência com o passageiro na hora certa."
@@ -151,29 +152,42 @@ export default function Automations() {
           </div>
         )}
 
-        <div className="flex-1 overflow-auto min-h-0 space-y-4 pb-20">
-          {DEFAULT_EVENTS.map(event => {
-            const rule = rules?.find(r => r.event_type === event);
-            if (!rule) {
-              /* Show placeholder for missing rule */
-              const Details = EVENT_DETAILS[event];
-              const Icon = Details.icon;
-              return (
-                <div key={event} className="bento-card p-6 opacity-50 border-dashed">
-                  <div className="flex items-center gap-4">
-                    <div className="p-3 rounded-2xl bg-zinc-100">
-                      <Icon size={20} className="text-zinc-400" />
-                    </div>
-                    <div>
-                      <h2 className="font-bold text-zinc-500">{Details.title}</h2>
-                      <p className="text-xs text-zinc-400 mt-0.5">Não configurada — clique em "Criar Regras Padrão" acima</p>
+        {isTotallyEmpty && (
+          <div className="flex flex-col flex-1 items-center justify-center py-12 text-center border-2 border-dashed border-vj-border rounded-2xl">
+            <div className="p-4 bg-vj-surface rounded-full mb-4">
+              <Bot size={32} className="text-vj-txt3" />
+            </div>
+            <h2 className="text-xl font-bold mb-2">Nenhuma automação encontrada</h2>
+            <p className="text-vj-txt2 max-w-sm mb-6">
+              Sua agência ainda não possui regras de comunicação configuradas. Clique no botão acima para gerar o fluxo inteligente.
+            </p>
+          </div>
+        )}
+
+        {!isTotallyEmpty && (
+          <div className="flex-1 overflow-auto min-h-0 space-y-4 pb-20">
+            {DEFAULT_EVENTS.map(event => {
+              const rule = rules?.find(r => r.event_type === event);
+              if (!rule) {
+                /* Show placeholder for missing rule */
+                const Details = EVENT_DETAILS[event];
+                const Icon = Details.icon;
+                return (
+                  <div key={event} className="bento-card p-6 opacity-50 border-dashed">
+                    <div className="flex items-center gap-4">
+                      <div className="p-3 rounded-2xl bg-zinc-100">
+                        <Icon size={20} className="text-zinc-400" />
+                      </div>
+                      <div>
+                        <h2 className="font-bold text-zinc-500">{Details.title}</h2>
+                        <p className="text-xs text-zinc-400 mt-0.5">Não configurada — clique em "Criar Regras Padrão" acima</p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
-            }
+                );
+              }
 
-            const isEditing = editingCard === rule.id;
+              const isEditing = editingCard === rule.id;
             const Details = EVENT_DETAILS[event];
             const Icon = Details.icon;
 
@@ -267,6 +281,7 @@ export default function Automations() {
             );
           })}
         </div>
+        )}
       </div>
     </AppLayout>
   );

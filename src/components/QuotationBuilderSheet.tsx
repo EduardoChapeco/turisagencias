@@ -17,6 +17,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useQuotationForm } from './quotation-builder/useQuotationForm';
+import { LocationCombobox } from '@/components/ui/LocationCombobox';
 import { cn } from '@/lib/utils';
 
 const TRANSPORT_TYPES = [
@@ -149,6 +150,7 @@ export function QuotationBuilderSheet({ open, onClose, clientId, onCreated }: Qu
       included_items: form.included_items,
       excluded_items: form.excluded_items,
       media_urls: form.media_urls,
+      pdf_template: form.pdf_template,
     } as any);
     if (result) { onClose(); onCreated?.(result.id); }
   };
@@ -176,7 +178,7 @@ export function QuotationBuilderSheet({ open, onClose, clientId, onCreated }: Qu
               <div className="min-w-0 space-y-4">
                 <div className="space-y-1.5">
                   <Label className="font-bold text-zinc-700">Destino Principal *</Label>
-                  <Input value={form.destination} onChange={(e) => updateForm('destination', e.target.value)} placeholder="Ex: Paris, França" className="h-12 bg-zinc-50 border-zinc-200 rounded-xl" />
+                  <LocationCombobox value={form.destination} onChange={(v) => updateForm('destination', v)} placeholder="Ex: Paris, França" />
                 </div>
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <div className="space-y-1.5">
@@ -253,7 +255,7 @@ export function QuotationBuilderSheet({ open, onClose, clientId, onCreated }: Qu
                           <Input value={day.title} onChange={(e) => updateDay(day.id, { title: e.target.value })} className="font-bold text-lg border-0 px-0 h-auto focus-visible:ring-0 rounded-none border-b border-dashed border-zinc-200" placeholder="Título do dia (Ex: Chegada em Paris)"/>
                           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                             <Input type="date" value={day.date} onChange={(e) => updateDay(day.id, { date: e.target.value })} className="bg-zinc-50 rounded-xl border-zinc-200 h-9" />
-                            <Input value={day.location} onChange={(e) => updateDay(day.id, { location: e.target.value })} placeholder="Local/Cidade" className="bg-zinc-50 rounded-xl border-zinc-200 h-9" />
+                            <LocationCombobox value={day.location} onChange={(v) => updateDay(day.id, { location: v })} placeholder="Local/Cidade" />
                           </div>
                           <Textarea value={day.description} onChange={(e) => updateDay(day.id, { description: e.target.value })} rows={2} placeholder="O que vai acontecer neste dia..." className="bg-zinc-50 rounded-xl border-zinc-200 resize-none text-sm"/>
                        </div>
@@ -277,8 +279,8 @@ export function QuotationBuilderSheet({ open, onClose, clientId, onCreated }: Qu
                       <SelectTrigger className="bg-zinc-50 rounded-xl border-zinc-200"><SelectValue /></SelectTrigger>
                       <SelectContent>{TRANSPORT_TYPES.map(tt => <SelectItem key={tt.value} value={tt.value}>{tt.label}</SelectItem>)}</SelectContent>
                     </Select>
-                    <Input value={t.from} onChange={(e) => updateTransport(t.id, { from: e.target.value })} placeholder="Origem (GRU)" className="bg-zinc-50 rounded-xl border-zinc-200" />
-                    <Input value={t.to} onChange={(e) => updateTransport(t.id, { to: e.target.value })} placeholder="Destino (CDG)" className="bg-zinc-50 rounded-xl border-zinc-200" />
+                    <LocationCombobox value={t.from} onChange={(v) => updateTransport(t.id, { from: v })} placeholder="Origem (ex: GRU)" />
+                    <LocationCombobox value={t.to} onChange={(v) => updateTransport(t.id, { to: v })} placeholder="Destino (ex: CDG)" />
                     <Input value={t.operator} onChange={(e) => updateTransport(t.id, { operator: e.target.value })} placeholder="Cia Aérea / Op." className="bg-zinc-50 rounded-xl border-zinc-200" />
                     <Input type="datetime-local" value={t.departure} onChange={(e) => updateTransport(t.id, { departure: e.target.value })} className="bg-zinc-50 rounded-xl border-zinc-200 text-xs" />
                     <Input type="datetime-local" value={t.arrival} onChange={(e) => updateTransport(t.id, { arrival: e.target.value })} className="bg-zinc-50 rounded-xl border-zinc-200 text-xs" />
@@ -442,6 +444,20 @@ export function QuotationBuilderSheet({ open, onClose, clientId, onCreated }: Qu
                       ownerId={null}
                       fieldName="cover_image_url"
                     />
+                 </div>
+                 
+                 <div>
+                    <h3 className="font-bold text-lg mb-2">Formato Visual (PDF / Link Público)</h3>
+                    <Select value={form.pdf_template} onValueChange={(v) => updateForm('pdf_template', v)}>
+                      <SelectTrigger className="bg-zinc-50 border-zinc-200 rounded-xl h-12">
+                        <SelectValue placeholder="Selecione o template visual" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="executivo">Modelo Executivo (Padrão)</SelectItem>
+                        <SelectItem value="apresentacao">Modelo Apresentação (Imagens Grandes)</SelectItem>
+                        <SelectItem value="exce_tur">Modelo Exce Tur (Premium)</SelectItem>
+                      </SelectContent>
+                    </Select>
                  </div>
                </div>
                <div className="p-6 rounded-xl bg-green-50/50 border border-green-100 flex flex-col justify-center items-center text-center space-y-4">

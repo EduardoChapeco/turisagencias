@@ -3,6 +3,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuthStore } from '@/stores/authStore';
 import { toast } from 'sonner';
 
+const untypedSupabase = supabase as any;
+
 // Hook para listar credenciais B2B (senha mascarada)
 export function useB2bCredentials() {
   const { profile } = useAuthStore();
@@ -14,7 +16,7 @@ export function useB2bCredentials() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('b2b_credentials')
-        .select('id, portal_name, username, is_active, last_used_at, updated_at')
+        .select('id, portal_name, username, is_active, updated_at')
         .eq('org_id', orgId!);
       if (error) throw error;
       return data ?? [];
@@ -38,7 +40,7 @@ export function useSaveB2bCredential() {
           org_id: orgId,
           portal_name,
           username,
-          encrypted_password: password, // Em produção: usar pgsodium ou vault
+          password_hash: password,
           is_active: true,
           updated_at: new Date().toISOString(),
         }, { onConflict: 'org_id,portal_name' });
@@ -61,7 +63,7 @@ export function useEmailInbound(limit = 50) {
     queryKey: ['email_inbound', orgId],
     enabled: !!orgId,
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await untypedSupabase
         .from('email_inbound')
         .select('*')
         .eq('org_id', orgId!)

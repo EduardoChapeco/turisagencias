@@ -258,6 +258,8 @@ export default function PublicGroupTrip() {
               pricePerPax={Number(trip.price_per_pax)}
               installmentsCount={trip.installments_count || 1}
               currency={trip.currency || 'BRL'}
+              busLayout={trip.bus_layout}
+              occupiedSeats={trip.occupied_seats ?? []}
               onSuccess={(token) => {
                 setBookingOpen(false);
                 window.location.href = `/voucher/${token}`;

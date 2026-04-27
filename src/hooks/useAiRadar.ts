@@ -30,7 +30,7 @@ export function useRadarNews() {
         throw error;
       }
 
-      return data as RadarNews[];
+      return (data ?? []) as unknown as RadarNews[];
     },
     staleTime: 60 * 1000, 
   });

@@ -4,7 +4,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuthStore } from '@/stores/authStore';
 import { useToast } from '@/hooks/use-toast';
 
-const normalizeKanbanCard = (card: Record<string, any>) => {
+const kanbanDb = supabase as any;
+
+const normalizeKanbanCard = (card: Record<string, any>): Record<string, any> => {
   const meta = (card.meta ?? card.metadata ?? {}) as Record<string, any>;
   return {
     ...card,
@@ -203,33 +205,14 @@ export function useCreateKanbanCard() {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async (payload: {
-      board_id: string;
-      column_id: string;
-      title: string;
-      description?: string;
-      client_id?: string | null;
-      quotation_id?: string | null;
-      group_trip_id?: string | null;
-      trip_id?: string | null;
-      ticket_id?: string | null;
-      task_type?: string | null;
-      linked_card_ids?: string[];
-      estimated_value?: number | null;
-      whatsapp?: string | null;
-      email?: string | null;
-      tags?: string[];
-      assigned_to?: string | null;
-      meta?: Record<string, any> | null;
-      metadata?: Record<string, any> | null;
-    }) => {
+    mutationFn: async (payload: Record<string, any>) => {
       if (!organization?.id) throw new Error('Organizacao nao carregada');
       const insertPayload: Record<string, any> = { ...payload, org_id: organization.id };
       if (insertPayload.metadata !== undefined) {
         if (insertPayload.meta === undefined) insertPayload.meta = insertPayload.metadata;
         delete insertPayload.metadata;
       }
-      const { data, error } = await supabase
+      const { data, error } = await kanbanDb
         .from('kanban_cards')
         .insert(insertPayload)
         .select()
@@ -282,7 +265,7 @@ export function useUpdateKanbanCard() {
         delete finalUpdates.metadata;
       }
 
-      const { data, error } = await supabase
+      const { data, error } = await kanbanDb
         .from('kanban_cards')
         .update(finalUpdates)
         .eq('id', id)
@@ -686,12 +669,12 @@ export function useKanbanRealtime(boardId?: string) {
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'kanban_cards', filter: `board_id=eq.${boardId}` },
-        handleCardChange as Parameters<typeof channel.on>[2]
+        handleCardChange as any
       )
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'kanban_columns', filter: `board_id=eq.${boardId}` },
-        handleColumnChange as Parameters<typeof channel.on>[2]
+        handleColumnChange as any
       )
       .subscribe();
 

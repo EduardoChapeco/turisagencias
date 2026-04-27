@@ -80,6 +80,34 @@ export interface InstallmentOption {
 
 const makeId = () => Math.random().toString(36).substring(2, 9);
 
+type PricingMode = 'per_person' | 'per_couple' | 'total';
+type PdfTemplate = 'executivo' | 'apresentacao' | 'exce_tur';
+
+export interface QuotationFormState {
+  client_id: string;
+  destination: string;
+  valid_until: string;
+  currency: string;
+  pricing_mode: PricingMode;
+  total_value: string;
+  notes_internal: string;
+  whatsapp_text: string;
+  cover_image_url: string;
+  media_urls: string[];
+  included_items: string[];
+  excluded_items: string[];
+  pdf_template: PdfTemplate;
+  hotel_name: string;
+  hotel_stars: string;
+  check_in: string;
+  check_out: string;
+  num_nights: string;
+  num_adults: string;
+  num_children: string;
+  meal_plan: string;
+  room_type: string;
+}
+
 const makeDefaultRoom = (): AccommodationRoom => ({
   id: makeId(),
   room_type: 'standard',
@@ -106,20 +134,31 @@ const makeDefaultAccommodation = (): AccommodationItem => ({
 });
 
 export function useQuotationForm(initialClientId?: string) {
-  const [form, setForm] = useState({
+  const makeDefaultForm = (): QuotationFormState => ({
     client_id: initialClientId ?? '',
     destination: '',
     valid_until: '',
     currency: 'BRL',
-    pricing_mode: 'per_person' as 'per_person' | 'per_couple' | 'total',
+    pricing_mode: 'per_person',
     total_value: '',
     notes_internal: '',
     whatsapp_text: '',
     cover_image_url: '',
-    media_urls: [] as string[],
-    included_items: [] as string[],
-    excluded_items: [] as string[],
+    media_urls: [],
+    included_items: [],
+    excluded_items: [],
+    pdf_template: 'executivo',
+    hotel_name: '',
+    hotel_stars: '4',
+    check_in: '',
+    check_out: '',
+    num_nights: '',
+    num_adults: '2',
+    num_children: '0',
+    meal_plan: '',
+    room_type: '',
   });
+  const [form, setForm] = useState<QuotationFormState>(makeDefaultForm);
 
   // Multi-accommodation
   const [accommodations, setAccommodations] = useState<AccommodationItem[]>([makeDefaultAccommodation()]);
@@ -162,7 +201,7 @@ export function useQuotationForm(initialClientId?: string) {
   const marginPercent = totalSale > 0 ? ((totalSale - totalCost) / totalSale) * 100 : 0;
 
   /* ── Form update ── */
-  const updateForm = (field: string, value: any) =>
+  const updateForm = (field: keyof QuotationFormState, value: QuotationFormState[keyof QuotationFormState]) =>
     setForm(p => ({ ...p, [field]: value }));
 
   /* ── Accommodations ── */
@@ -256,7 +295,7 @@ export function useQuotationForm(initialClientId?: string) {
     setInstallments(p => p.filter((_, i) => i !== idx));
 
   const reset = () => {
-    setForm({ client_id: initialClientId ?? '', destination: '', valid_until: '', currency: 'BRL', pricing_mode: 'per_person', total_value: '', notes_internal: '', whatsapp_text: '', cover_image_url: '', media_urls: [], included_items: [], excluded_items: [] });
+    setForm(makeDefaultForm());
     setAccommodations([makeDefaultAccommodation()]);
     setItinerary([]); setTransports([]); setExcursions([]); setInstallments([]);
     setAiExtracted(false); setAiRawResponse(null);

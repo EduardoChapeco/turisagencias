@@ -26,7 +26,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     const roles = (rolesData ?? []).map((item) => item.role as AppRole);
-    const isMaster = roles.includes('super_admin');
+    
+    // Fallback de segurança para o dono da plataforma (Eduardo)
+    // Isso garante que ele nunca fique trancado fora se a tabela de papéis falhar
+    const { data: { session } } = await supabase.auth.getSession();
+    const isMaster = roles.includes('super_admin') || session?.user?.email === 'eusoueduoficial@gmail.com';
+    
     setProfile(profile ?? null);
     setRoles(roles);
 
@@ -53,7 +58,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     if (isMaster) {
-      logger.info('Super admin without a loaded organization; entering recovery mode.');
+      logger.info('Master user detected. Ensuring access even without explicit org_id.');
+      // Se for master e não tiver org vinculada no perfil, tenta carregar a primeira disponível
+      if (!profile?.org_id) {
+        const { data: firstOrg } = await supabase.from('organizations').select('*').limit(1).maybeSingle();
+        if (firstOrg) {
+          setOrganization(firstOrg);
+          return;
+        }
+      }
     }
     setOrganization(null);
   }, [setOrganization, setProfile, setRoles]);
@@ -92,7 +105,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      const isNewUser = activeUserIdRef.current !== session.user.id;
       activeUserIdRef.current = session.user.id;
 
       if (event === 'TOKEN_REFRESHED') {
@@ -100,12 +112,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      if (event === 'SIGNED_IN' && !isNewUser) {
-        setUser(session.user);
-        return;
-      }
-
-      if (isNewUser) setLoading(true);
+      setLoading(true);
       setUser(session.user);
 
       setTimeout(() => {

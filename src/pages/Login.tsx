@@ -85,6 +85,7 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [authSyncing, setAuthSyncing] = useState(false);
   const [bridgeState, setBridgeState] = useState<BridgeState>('loading');
   const [bridgeMessage, setBridgeMessage] = useState('Validando sua sessão na plataforma...');
 
@@ -95,6 +96,10 @@ export default function Login() {
   const extensionId = searchParams.get('extension_id') || '';
   const wantsExtensionFlow = Boolean(redirectUri || searchParams.get('extension_id') || searchParams.get('source'));
   const safeRedirect = useMemo(() => isValidRedirectUri(redirectUri), [redirectUri]);
+
+  useEffect(() => {
+    if (!isLoading && user) setAuthSyncing(false);
+  }, [isLoading, user]);
 
   useEffect(() => {
     if (isLoading || !user || !wantsExtensionFlow) return;
@@ -214,6 +219,7 @@ export default function Login() {
             onSubmit={async (event) => {
               event.preventDefault();
               setLoading(true);
+              setAuthSyncing(false);
               const { error } = await supabase.auth.signInWithPassword({ email, password });
               setLoading(false);
 
@@ -222,7 +228,10 @@ export default function Login() {
                 return;
               }
 
-              // Redirect happens after AuthProvider finishes loading the user context.
+              setAuthSyncing(true);
+              if (!wantsExtensionFlow) {
+                window.location.assign(targetPath);
+              }
             }}
           >
             <div className="space-y-2">
@@ -236,9 +245,14 @@ export default function Login() {
               </div>
               <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" className="h-12 bg-zinc-50 border-zinc-200" required />
             </div>
-            <Button type="submit" className="w-full premium-button h-12 text-base mt-4" disabled={loading}>
-              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Entrar na Plataforma'}
+            <Button type="submit" className="w-full premium-button h-12 text-base mt-4" disabled={loading || authSyncing}>
+              {loading || authSyncing ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Entrar na Plataforma'}
             </Button>
+            {authSyncing && (
+              <p className="text-center text-xs font-bold text-zinc-500">
+                Validando acesso e carregando organizacao...
+              </p>
+            )}
           </form>
 
           {!wantsExtensionFlow && (

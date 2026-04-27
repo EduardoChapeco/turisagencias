@@ -31,7 +31,7 @@ export function AppLayout({ children, fullHeight }: { children: React.ReactNode;
   return (
     <SidebarProvider>
       <PageHeaderPortalContext.Provider value={pageHeaderTarget}>
-      <div className="flex h-[100dvh] min-h-[100dvh] w-full overflow-hidden bg-vj-bg selection:bg-vj-green/20 no-scrollbar">
+      <div className="flex h-[100dvh] min-h-[100dvh] w-full overflow-hidden bg-background text-foreground selection:bg-vj-green/20 no-scrollbar">
         <AppSidebar />
         
         <div className="flex min-w-0 flex-1 flex-col overflow-hidden relative no-scrollbar">

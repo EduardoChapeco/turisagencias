@@ -8,36 +8,39 @@
 
 @layer base {
   :root {
-    /* 🎨 OMEGA v4.0 CORE PALETTE - SHADOWLESS & PREMIUM */
-    --bg:       #fcfcfb;
-    --white:    #ffffff;
-    
-    /* Surfaces */
+    /* 🎨 OMEGA v5.0 CORE PALETTE - SHADOWLESS & PREMIUM */
     --vj-bg: #f8f9fa;
-    --vj-bg-dark: #09090b;
+    --vj-white: #ffffff;
     --vj-surface: #ffffff;
-    
-    /* Primary / Actions */
-    --vj-green: #22c55e;
-    --vj-green-light: #f0fdf4;
-    --vj-blue: #3b82f6;
-    
-    /* Borders & Accents */
-    --vj-border: #e4e4e7;
-    --vj-border-light: rgba(228, 228, 231, 0.5);
     
     /* Typography */
     --vj-txt: #09090b;
     --vj-txt2: #52525b;
     --vj-txt3: #a1a1aa;
+
+    /* Actions & Accents */
+    --vj-green: #22c55e;
+    --vj-green-bg: #f0fdf4;
+    --vj-orange: #d4511a;
+    --vj-orange-bg: #fff4ee;
+    --vj-blue: #3b82f6;
+    --vj-blue-bg: #eff6ff;
+    --vj-red: #ef4444;
+    --vj-red-bg: #fef2f2;
+    --vj-yellow: #eab308;
+    
+    /* Borders */
+    --vj-border: #e4e4e7;
+    --vj-border2: #d4d4d8;
+    --vj-border-light: rgba(228, 228, 231, 0.5);
     
     /* Radius - Keeping the Premium OMEGA feel */
     --radius: 12px;
     --r-xl: 2rem;
     --r-2xl: 2.5rem;
 
-    /* Shadcn/UI mapping */
-    --background: 0 0% 100%;
+    /* Shadcn/UI mapping (Light) */
+    --background: 210 20% 98%;
     --foreground: 240 10% 3.9%;
     --card: 0 0% 100%;
     --card-foreground: 240 10% 3.9%;
@@ -56,6 +59,55 @@
     --border: 240 5.9% 90%;
     --input: 240 5.9% 90%;
     --ring: 142.1 76.2% 36.3%;
+  }
+
+  .dark {
+    /* 🎨 OMEGA v5.0 DARK MODE */
+    --vj-bg: #09090b;
+    --vj-white: #000000;
+    --vj-surface: #18181b;
+    
+    /* Typography */
+    --vj-txt: #fafafa;
+    --vj-txt2: #a1a1aa;
+    --vj-txt3: #52525b;
+
+    /* Actions & Accents */
+    --vj-green: #22c55e;
+    --vj-green-bg: rgba(34, 197, 94, 0.1);
+    --vj-orange: #f97316;
+    --vj-orange-bg: rgba(249, 115, 22, 0.1);
+    --vj-blue: #3b82f6;
+    --vj-blue-bg: rgba(59, 130, 246, 0.1);
+    --vj-red: #ef4444;
+    --vj-red-bg: rgba(239, 68, 68, 0.1);
+    --vj-yellow: #eab308;
+    
+    /* Borders */
+    --vj-border: #27272a;
+    --vj-border2: #3f3f46;
+    --vj-border-light: rgba(39, 39, 42, 0.5);
+
+    /* Shadcn/UI mapping (Dark) */
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 142.1 70.6% 45.3%;
+    --primary-foreground: 144.9 80.4% 10%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 142.4 71.8% 29.2%;
   }
 
   /* 🏛️ PREMIUM GLOBAL STRUCTURE - NO SHADOWS */
@@ -121,7 +173,36 @@
 
   /* 🚀 PREMIUM BUTTONS */
   .premium-button {
-    @apply relative inline-flex items-center justify-center px-6 py-3 font-bold text-white transition-all duration-300 bg-vj-green rounded-full overflow-hidden hover:scale-105 active:scale-95 ;
+    @apply relative inline-flex items-center justify-center px-6 py-3 font-bold text-white transition-all duration-300 bg-vj-green rounded-full overflow-hidden hover:scale-105 active:scale-95;
+  }
+
+  /* 🗂️ KANBAN BOARD LAYOUT - SINGLE SOURCE OF TRUTH */
+  .kanban-board {
+    @apply flex gap-4 overflow-x-auto overflow-y-hidden pb-4 px-1 min-h-[calc(100vh-200px)] w-full;
+  }
+  
+  .kanban-column {
+    @apply flex flex-col w-[320px] shrink-0 bg-zinc-50 dark:bg-zinc-900 border border-vj-border rounded-xl;
+  }
+  
+  .kanban-column-header {
+    @apply flex items-center justify-between p-3 border-b border-vj-border bg-white dark:bg-zinc-950 rounded-t-xl;
+  }
+  
+  .kanban-column-title {
+    @apply text-xs font-bold text-vj-txt uppercase tracking-wide;
+  }
+  
+  .kanban-column-count {
+    @apply h-5 w-5 flex items-center justify-center bg-vj-bg text-[10px] font-bold text-vj-txt3 rounded-md;
+  }
+  
+  .kanban-cards {
+    @apply flex-1 p-3 overflow-y-auto space-y-3 min-h-[150px];
+  }
+  
+  .kanban-quick-add {
+    @apply p-2 mt-auto border-t border-vj-border bg-white/30 dark:bg-zinc-950/30 rounded-b-xl;
   }
 }
 

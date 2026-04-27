@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, Navigate, useSearchParams, useNavigate } from 'react-router-dom';
+import { Link, Navigate, useSearchParams } from 'react-router-dom';
 import { Cloud, Loader2, ShieldCheck, TriangleAlert } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthStore } from '@/stores/authStore';
@@ -80,7 +80,6 @@ function redirectToExtension(redirectUri: string, payload?: unknown, error?: str
 
 export default function Login() {
   const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
   const { toast } = useToast();
   const { isLoading, user } = useAuthStore();
   const [email, setEmail] = useState('');
@@ -230,9 +229,8 @@ export default function Login() {
               }
 
               setAuthSyncing(true);
-              if (!wantsExtensionFlow) {
-                navigate(targetPath, { replace: true });
-              }
+              // Remoção do window.location.assign para evitar reload completo e perda de sessão.
+              // A navegação ocorrerá automaticamente via componente <Navigate /> assim que o AuthProvider atualizar o estado.
             }}
           >
             <div className="space-y-2">

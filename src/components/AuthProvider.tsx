@@ -11,58 +11,64 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const fetchUserData = useCallback(async (userId: string) => {
     logger.info('Fetching user context for:', userId);
 
-    try {
-      const [{ data: profile, error: profileError }, { data: rolesData, error: rolesError }] = await Promise.all([
-        supabase.from('profiles').select('*').eq('user_id', userId).maybeSingle(),
-        supabase.from('user_roles').select('role').eq('user_id', userId),
-      ]);
+    const [{ data: profile, error: profileError }, { data: rolesData, error: rolesError }] = await Promise.all([
+      supabase.from('profiles').select('*').eq('user_id', userId).maybeSingle(),
+      supabase.from('user_roles').select('role').eq('user_id', userId),
+    ]);
 
-      if (profileError) {
-        logger.error('Error fetching profile:', profileError);
-      }
-      if (rolesError) {
-        logger.error('Error fetching roles:', rolesError);
-      }
+    if (profileError) {
+      logger.error('Error fetching profile:', profileError);
+      throw profileError;
+    }
+    if (rolesError) {
+      logger.error('Error fetching roles:', rolesError);
+      throw rolesError;
+    }
 
-      const roles = (rolesData ?? []).map((item) => item.role as AppRole);
-      
-      const { data: { session } } = await supabase.auth.getSession();
-      const isMaster = roles.includes('super_admin') || session?.user?.email === 'eusoueduoficial@gmail.com';
-      
-      setProfile(profile ?? null);
-      setRoles(roles);
+    const roles = (rolesData ?? []).map((item) => item.role as AppRole);
+    
+    // Fallback de segurança para o dono da plataforma (Eduardo)
+    // Isso garante que ele nunca fique trancado fora se a tabela de papéis falhar
+    const { data: { session } } = await supabase.auth.getSession();
+    const isMaster = roles.includes('super_admin') || session?.user?.email === 'eusoueduoficial@gmail.com';
+    
+    setProfile(profile ?? null);
+    setRoles(roles);
 
-      if (profile?.org_id) {
-        const { data: org, error: orgError } = await supabase
-          .from('organizations')
-          .select('*')
-          .eq('id', profile.org_id)
-          .maybeSingle();
+    if (profile?.org_id) {
+      const { data: org, error: orgError } = await supabase
+        .from('organizations')
+        .select('*')
+        .eq('id', profile.org_id)
+        .maybeSingle();
 
-        if (orgError) {
-          logger.error('Error fetching organization:', orgError);
-        } else if (org) {
-          setOrganization(org);
+      if (orgError) {
+        logger.error('Error fetching organization:', orgError);
+        if (isMaster) {
+          setOrganization(null);
           return;
         }
+        throw orgError;
       }
 
-      if (isMaster) {
-        logger.info('Master user detected. Ensuring access even without explicit org_id.');
+      if (org) {
+        setOrganization(org);
+        return;
+      }
+    }
+
+    if (isMaster) {
+      logger.info('Master user detected. Ensuring access even without explicit org_id.');
+      // Se for master e não tiver org vinculada no perfil, tenta carregar a primeira disponível
+      if (!profile?.org_id) {
         const { data: firstOrg } = await supabase.from('organizations').select('*').limit(1).maybeSingle();
         if (firstOrg) {
           setOrganization(firstOrg);
           return;
         }
       }
-      
-      setOrganization(null);
-    } catch (error) {
-      logger.error('Critical error in fetchUserData, but preventing logout:', error);
-      // We do not throw here! Throwing causes the bootstrap catch block to run reset(), which logs the user out.
-      // By returning normally, the user stays logged in, even if their data is incomplete.
-      setOrganization(null);
     }
+    setOrganization(null);
   }, [setOrganization, setProfile, setRoles]);
 
   useEffect(() => {
@@ -81,8 +87,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       } catch (error) {
         logger.error('Failed to load authenticated user context', error);
-        activeUserIdRef.current = null;
-        reset();
+        // Não apagamos a sessão principal em caso de falha no perfil,
+        // para não causar um loop de logout e redirecionamento.
+        // O Dashboard ou App poderá lidar com falta de roles/org.
       } finally {
         setLoading(false);
       }
@@ -113,8 +120,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         fetchUserData(session.user.id)
           .catch((error) => {
             logger.error('Failed to sync authenticated user context', error);
-            activeUserIdRef.current = null;
-            reset();
+            // Novamente, não apagamos a sessão (reset), apenas reportamos o erro.
+            // O usuário não será deslogado por conta de falha na tabela de profiles.
           })
           .finally(() => setLoading(false));
       }, 0);

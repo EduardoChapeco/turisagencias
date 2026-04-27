@@ -27,30 +27,8 @@
 }
 
 /* ────────────────────────────────────────────────────
-   1. DESIGN TOKENS
+   1. DESIGN TOKENS (REMOVIDO: Usando Single Source of Truth do index.css)
    ──────────────────────────────────────────────────── */
-.vj-root {
-  --vj-bg:      #f7f7f5;
-  --vj-white:   #ffffff;
-  --vj-border:  #e5e4e0;
-  --vj-border2: #d0cfc9;
-  --vj-txt:     #111110;
-  --vj-txt2:    #6b6a66;
-  --vj-txt3:    #9b9a96;
-
-  --vj-green:    #22c55e;
-  --vj-green-bg: #f0fdf4;
-  --vj-orange:   #d4511a;
-  --vj-orange-bg:#fff4ee;
-  --vj-blue:     #1a5fa8;
-  --vj-blue-bg:  #f0f5ff;
-  --vj-red:      #c0392b;
-  --vj-yellow:   #a67c00;
-
-  --vj-r:    16px;
-  --vj-r-lg: 22px;
-  --vj-r-xl: 28px;
-}
 
 /* ────────────────────────────────────────────────────
    2. TOPBAR (App Shell)

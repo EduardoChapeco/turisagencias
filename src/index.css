@@ -10,6 +10,7 @@
   :root {
     /* 🎨 OMEGA v5.0 CORE PALETTE - SHADOWLESS & PREMIUM */
     --vj-bg: #f8f9fa;
+    --vj-bg-dark: #09090b;
     --vj-white: #ffffff;
     --vj-surface: #ffffff;
     
@@ -64,6 +65,7 @@
   .dark {
     /* 🎨 OMEGA v5.0 DARK MODE */
     --vj-bg: #09090b;
+    --vj-bg-dark: #09090b;
     --vj-white: #000000;
     --vj-surface: #18181b;
     

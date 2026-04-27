@@ -2,14 +2,14 @@
 /* AEGIS Policy: ZERO box-shadow, flat design only */
 
 :root {
-  --premium-border: rgba(229, 228, 224, 0.6);
+  --premium-border: var(--vj-border);
   --glass-bg: rgba(255, 255, 255, 0.7);
   --vj-green-gradient: linear-gradient(135deg, #1a7a4a 0%, #22c55e 100%);
   --vj-dark-gradient: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
 }
 
 .premium-card {
-  background: var(--white);
+  background: var(--vj-white);
   border: 1px solid var(--premium-border);
   border-radius: 24px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);

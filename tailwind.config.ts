@@ -63,6 +63,7 @@ export default {
         // OMEGA Design System Single Source of Truth mapping
         vj: {
           bg: "var(--vj-bg)",
+          "bg-dark": "var(--vj-bg-dark)",
           white: "var(--vj-white)",
           surface: "var(--vj-surface)",
           border: "var(--vj-border)",

@@ -148,7 +148,7 @@ export default function Analytics() {
                     <ChevronRight className="w-4 h-4 text-zinc-400 group-hover:text-vj-green transition-colors" />
                   </button>
                   <button className="w-full text-left px-4 py-3 rounded-xl bg-zinc-50 hover:bg-zinc-100 transition-colors text-sm font-bold border border-zinc-200 flex items-center justify-between group">
-                    Editar Plano: Pro / OMEGA (R$ 399)
+                    Editar Plano: Premium (R$ 399)
                     <ChevronRight className="w-4 h-4 text-zinc-400 group-hover:text-vj-green transition-colors" />
                   </button>
                 </div>

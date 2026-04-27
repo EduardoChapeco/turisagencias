@@ -86,7 +86,7 @@ export function PdfTemplateExecutivo({ data }: Props) {
       {/* FOOTER */}
       <div className="text-center pt-8 border-t border-zinc-200 text-xs text-zinc-500">
         <p>Proposta válida até {fmtDate(data.valid_until || new Date(Date.now() + 86400000 * 3).toISOString())}. Valores sujeitos a alteração sem aviso prévio.</p>
-        <p className="mt-2 font-bold uppercase tracking-widest">Powered by OMEGA TMC</p>
+        <p className="mt-2 font-bold uppercase tracking-widest">Powered by Turis</p>
       </div>
     </div>
   );

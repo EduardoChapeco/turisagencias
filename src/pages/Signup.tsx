@@ -25,7 +25,7 @@ export default function Signup() {
             <div className="mx-auto md:mx-0 mb-6 flex h-12 w-12 items-center justify-center rounded-xl bg-vj-green">
               <Cloud className="h-6 w-6 text-zinc-950" />
             </div>
-            <h1 className="text-3xl font-black tracking-tight mb-2">Criar sua conta OMEGA</h1>
+            <h1 className="text-3xl font-black tracking-tight mb-2">Criar sua conta Turis</h1>
             <p className="text-zinc-500">
               Junte-se às agências mais produtivas do Brasil.
             </p>
@@ -82,7 +82,7 @@ export default function Signup() {
           </form>
 
           <p className="text-center text-sm font-medium text-zinc-500 pt-6 border-t border-zinc-100">
-            Já tem uma conta OMEGA? <Link to="/login" className="text-vj-green hover:underline font-bold">Entrar agora</Link>
+            Já tem uma conta? <Link to="/login" className="text-vj-green hover:underline font-bold">Entrar agora</Link>
           </p>
         </div>
       </div>
@@ -107,7 +107,7 @@ export default function Signup() {
               <Building2 className="w-6 h-6 text-vj-green" />
             </div>
             <div>
-              <p className="text-zinc-300 font-medium mb-2">"Abandonamos 5 ferramentas diferentes. CRM, Financeiro, Emissões e Portais dos Viajantes... tudo integrado no motor OMEGA. Reduzimos custos em 40%."</p>
+              <p className="text-zinc-300 font-medium mb-2">"Abandonamos 5 ferramentas diferentes. CRM, Financeiro, Emissões e Portais dos Viajantes... tudo integrado na Turis. Reduzimos custos em 40%."</p>
               <span className="text-vj-green font-bold text-sm">— CEO da TMC Consolidadora</span>
             </div>
           </div>

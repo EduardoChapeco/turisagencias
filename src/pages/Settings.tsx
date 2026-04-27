@@ -44,7 +44,7 @@ function BillingTab() {
              <div>
                <h4 className="font-bold mb-1">Cotações Extraídas via IA</h4>
                <p className={`text-sm ${isPro ? 'text-zinc-400' : 'text-zinc-500'}`}>
-                 {isPro ? 'Uso ilimitado ativado no plano OMEGA.' : 'Renova no dia 1 do próximo mês.'}
+                {isPro ? 'Uso ilimitado ativado no plano Premium.' : 'Renova no dia 1 do próximo mês.'}
                </p>
              </div>
              <div className="text-right">

@@ -43,7 +43,7 @@ export function AIAgentsDashboard({ open, onOpenChange }: Props) {
     <SheetPage
       open={open}
       onClose={() => onOpenChange(false)}
-      title="Centro de Inteligência OMEGA"
+      title="Centro de Inteligência Turis"
       subtitle="Monitoramento em tempo real dos Agentes de IA"
       icon={Bot}
     >

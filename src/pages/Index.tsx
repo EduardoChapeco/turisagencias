@@ -1,194 +1,362 @@
 import { useNavigate } from 'react-router-dom';
 import {
-  FileText, PlaneTakeoff, Globe2, Newspaper, ArrowRight, TrendingUp, Zap, ShieldCheck, Activity, Plus, Search, LayoutDashboard
+  PlaneTakeoff, Users, FileText, TrendingUp, Zap,
+  ArrowRight, Plus, Activity, DollarSign, Clock,
+  AlertCircle, CheckCircle2, BarChart2, Headphones,
 } from 'lucide-react';
 import { AppLayout } from '@/components/AppLayout';
-import { PageHeader } from '@/components/ui/PageHeader';
 import { useAuthStore } from '@/stores/authStore';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { QuotationBuilderSheet } from '@/components/QuotationBuilderSheet';
 import { useState, useEffect } from 'react';
-import { Input } from '@/components/ui/input';
 import { useRadarNews } from '@/hooks/useAiRadar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { GlobalRadarMapWidget, RadarMarker } from '@/components/GlobalRadarMapWidget';
 import { geocodeCity } from '@/utils/geocoder';
-import { useAiInsights } from '@/hooks/useAiInsights';
+
+const fmt = (v: number) =>
+  new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
+
+function greeting(name?: string | null) {
+  const h = new Date().getHours();
+  const saudacao = h < 12 ? 'Bom dia' : h < 18 ? 'Boa tarde' : 'Boa noite';
+  return name ? `${saudacao}, ${name}` : saudacao;
+}
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { organization } = useAuthStore();
-  const [quotationBuilderOpen, setQuotationBuilderOpen] = useState(false);
-  const { data: realNews, isLoading: isNewsLoading } = useRadarNews();
-  const { insights, isLoading: isAiLoading } = useAiInsights();
+  const { organization, profile } = useAuthStore();
+  const [quotationOpen, setQuotationOpen] = useState(false);
+  const { data: news, isLoading: newsLoading } = useRadarNews();
 
-  const { data: opsStats } = useQuery({
-    queryKey: ['dashboard_ops_stats', organization?.id],
+  /* ── KPIs ── */
+  const { data: kpi } = useQuery({
+    queryKey: ['dashboard_kpi', organization?.id],
     queryFn: async () => {
-      const { data: groupTrips } = await supabase.from('group_trips').select('id, title, destination, current_pax, status, departure_date').eq('org_id', organization!.id);
-      const { data: qts } = await supabase.from('quotations').select('id, total_amount').eq('org_id', organization!.id);
+      const id = organization!.id;
+      const today = new Date().toISOString().split('T')[0];
 
-      const todayStr = new Date().toISOString().split('T')[0];
-      const todayDepartures = (groupTrips || []).filter(t => t.departure_date === todayStr).length;
-      const traveling = (groupTrips || []).filter(t => t.status === 'traveling');
-      const paxTraveling = traveling.reduce((acc, t) => acc + (t.current_pax || 1), 0);
-      const pipelineValue = (qts || []).reduce((acc, q) => acc + (Number(q.total_amount) || 0), 0);
+      const [
+        { data: trips },
+        { data: quotations },
+        { data: tickets },
+        { data: clients },
+      ] = await Promise.all([
+        supabase.from('group_trips').select('id,title,destination,current_pax,status,departure_date,return_date').eq('org_id', id),
+        supabase.from('quotations').select('id,total_amount,status,created_at').eq('org_id', id),
+        supabase.from('tickets').select('id,status').eq('org_id', id),
+        supabase.from('clients').select('id,created_at').eq('org_id', id),
+      ]);
 
-      return { todayDepartures, traveling, paxTraveling, pipelineValue };
+      const T = trips || [], Q = quotations || [], TK = tickets || [], C = clients || [];
+
+      // Em viagem: departure_date <= hoje <= return_date, status publicado/encerrado
+      // Status reais: 'draft' | 'published' | 'closed' | 'cancelled'
+      const traveling = T.filter(t => {
+        if (!t.departure_date) return false;
+        const ret = (t as any).return_date || t.departure_date;
+        return t.departure_date <= today && ret >= today && ['published', 'closed'].includes(t.status);
+      });
+      const paxNow = traveling.reduce((s, t) => s + (t.current_pax || 0), 0);
+
+      // Embarques hoje: saida = hoje, publicados
+      const embarquesHoje = T.filter(t =>
+        t.departure_date === today && ['published', 'closed'].includes(t.status)
+      ).length;
+
+      // Grupos ativos: publicados
+      const gruposAtivos = T.filter(t => t.status === 'published').length;
+
+      // Atendimentos abertos
+      const atendimentosAbertos = TK.filter(t => ['open', 'pending'].includes(t.status)).length;
+
+      // Pipeline: cotacoes nao rejeitadas/canceladas
+      const openQ = Q.filter(q => !['rejected', 'cancelled'].includes((q.status || '')));
+      const pipeline = openQ.reduce((s, q) => s + (Number(q.total_amount) || 0), 0);
+
+      // Cotacoes este mes
+      const mesInicio = new Date(); mesInicio.setDate(1); mesInicio.setHours(0, 0, 0, 0);
+      const cotacoesMes = Q.filter(q => new Date(q.created_at) >= mesInicio).length;
+
+      // Proximos embarques: publicados, partindo hoje em diante, ate 30 dias
+      const next30Str = new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0];
+      const upcoming = T
+        .filter(t =>
+          t.departure_date &&
+          t.departure_date >= today &&
+          t.departure_date <= next30Str &&
+          t.status === 'published'
+        )
+        .sort((a, b) => (a.departure_date || '').localeCompare(b.departure_date || ''))
+        .slice(0, 5);
+
+      return {
+        paxNow, embarquesHoje, gruposAtivos, atendimentosAbertos,
+        pipeline, cotacoesMes, totalClientes: C.length,
+        traveling, upcoming,
+      };
     },
-    enabled: !!organization?.id
+    enabled: !!organization?.id,
+    refetchInterval: 60_000,
   });
 
-  const [radarMarkers, setRadarMarkers] = useState<RadarMarker[]>([]);
-
+  const [markers, setMarkers] = useState<RadarMarker[]>([]);
   useEffect(() => {
-    if (!opsStats?.traveling) return;
-    const buildMarkers = async () => {
-      const markers: RadarMarker[] = [];
-      const colors = ['#10b981', '#3b82f6', '#f43f5e', '#f59e0b', '#8b5cf6'];
-      for (let i = 0; i < opsStats.traveling.length; i++) {
-        const t = opsStats.traveling[i];
-        const res = await geocodeCity(t.destination?.split(',')[0] || t.title, t.destination);
-        if (res && res.lat !== 0) {
-          markers.push({ id: t.id, lat: res.lat, lng: res.lng, name: t.destination || t.title, pax: t.current_pax || 1, color: colors[i % colors.length] });
-        }
+    if (!kpi?.traveling?.length) { setMarkers([]); return; }
+    const colors = ['#10b981', '#3b82f6', '#f43f5e', '#f59e0b', '#8b5cf6'];
+    (async () => {
+      const m: RadarMarker[] = [];
+      for (let i = 0; i < kpi.traveling.length; i++) {
+        const t = kpi.traveling[i];
+        const r = await geocodeCity(t.destination?.split(',')[0] || t.title, t.destination);
+        if (r && r.lat !== 0)
+          m.push({ id: t.id, lat: r.lat, lng: r.lng, name: t.destination || t.title, pax: t.current_pax || 1, color: colors[i % colors.length] });
       }
-      setRadarMarkers(markers);
-    };
-    buildMarkers();
-  }, [opsStats?.traveling]);
+      setMarkers(m);
+    })();
+  }, [kpi?.traveling]);
 
   return (
     <AppLayout>
-      <PageHeader
-        title="Command Cockpit"
-        description="Monitoramento da operação global e indicadores comerciais do Turis Squad."
-        icon={LayoutDashboard}
-        actions={
-          <div className="flex items-center gap-4">
-            <Button variant="outline" size="lg" className="h-12 rounded-2xl border-vj-border bg-white px-6 font-black text-xs uppercase tracking-widest hover:bg-zinc-50 transition-all" onClick={() => navigate('/group-trips')}>
-              <Activity className="h-4 w-4 mr-3 text-vj-green" /> Ver Operação
-            </Button>
-            <Button size="lg" className="h-12 rounded-full bg-vj-green hover:bg-vj-green/90 text-white px-8 font-black text-xs uppercase tracking-widest transition-all hover:scale-105 active:scale-95 " onClick={() => setQuotationBuilderOpen(true)}>
-              <Plus className="h-4 w-4 mr-3" /> Nova Cotação
-            </Button>
-          </div>
-        }
-      />
-
-      <div className="space-y-10 no-scrollbar">
-        
-        {/* DASHBOARD GRID - PREMIUM BENTO (SHADOWLESS) */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 min-h-0">
-          
-          {/* Radar Map */}
-          <div className="md:col-span-8 bento-card bg-zinc-950 h-[500px] overflow-hidden relative border-none">
-            <GlobalRadarMapWidget markers={radarMarkers} interactive={false} />
-            <div className="absolute top-6 left-6 bg-black/60 backdrop-blur-xl border border-white/10 p-6 rounded-3xl">
-               <h3 className="text-white font-black text-[10px] uppercase tracking-[0.4em] flex items-center gap-3">
-                  <div className="h-2 w-2 rounded-full bg-vj-green animate-pulse" /> Radar Global
-               </h3>
-               <p className="text-zinc-400 text-xs font-bold mt-2">{opsStats?.paxTraveling || 0} passageiros ativos em trânsito.</p>
-            </div>
-          </div>
-
-          {/* AI Insights Sidebar */}
-          <div className="md:col-span-4 flex flex-col gap-8">
-            <div className="bento-card p-8 flex-1 bg-white">
-              <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-vj-txt mb-8">Notificações Intel</h3>
-              <div className="space-y-6">
-                {isAiLoading ? [1,2,3].map(i => <Skeleton key={i} className="h-20 rounded-3xl" />) : 
-                  insights.map(insight => (
-                    <div key={insight.id} className="flex gap-4 p-4 rounded-2xl border border-zinc-50 bg-zinc-50/50 group hover:bg-white hover:border-vj-green/20 transition-all duration-300 cursor-help">
-                      <div className={insight.color + " h-10 w-10 shrink-0 rounded-xl flex items-center justify-center transition-transform group-hover:rotate-6"}>
-                        <insight.icon className="w-5 h-5" />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-[11px] font-black text-vj-txt uppercase tracking-wider truncate">{insight.title}</p>
-                        <p className="text-xs text-vj-txt3 font-bold line-clamp-2 mt-1 leading-relaxed opacity-60">{insight.content}</p>
-                      </div>
-                    </div>
-                  ))
-                }
-              </div>
-            </div>
-
-            <div className="bento-card bg-vj-bg-dark text-white p-8 border-none overflow-hidden relative group">
-               <div className="absolute -right-10 -bottom-10 p-20 opacity-[0.03] group-hover:opacity-[0.07] transition-opacity duration-700">
-                  <TrendingUp className="w-60 h-60 text-white" />
-               </div>
-               <span className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-500">Pipeline Comercial</span>
-               <p className="text-4xl font-black mt-3 tracking-tighter text-vj-green">
-                  {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(opsStats?.pipelineValue || 0)}
-               </p>
-               <p className="text-[10px] font-bold text-zinc-600 mt-4 uppercase tracking-widest flex items-center gap-2">
-                  <Zap className="w-3 h-3" /> Valor Potencial de Conversão
-               </p>
-            </div>
-          </div>
-
-          {/* Bottom Metrics */}
-          <div className="md:col-span-3 bento-card p-8 bg-white flex flex-col justify-between group hover:border-amber-500/20 transition-all">
-             <div className="h-12 w-12 rounded-2xl bg-amber-50 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                <PlaneTakeoff className="w-6 h-6 text-amber-500" />
-             </div>
-             <div>
-                <p className="text-4xl font-black tracking-tighter">{opsStats?.todayDepartures || 0}</p>
-                <p className="text-[10px] font-black uppercase text-vj-txt3 tracking-[0.2em] mt-2">Check-ins Hoje</p>
-             </div>
-          </div>
-
-          <div className="md:col-span-3 bento-card p-8 bg-vj-green text-white border-none flex flex-col justify-between group">
-             <div className="h-12 w-12 rounded-2xl bg-white/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                <ShieldCheck className="w-6 h-6 text-white" />
-             </div>
-             <div>
-                <p className="text-4xl font-black tracking-tighter">Status Ativo</p>
-                <p className="text-[10px] font-black uppercase text-white/60 tracking-[0.2em] mt-2">Monitoramento IA</p>
-             </div>
-          </div>
-
-          <div className="md:col-span-6 bento-card p-8 bg-white border-vj-border flex items-center justify-between group hover:border-vj-green/20 transition-all">
-             <div>
-                <span className="text-[9px] font-black uppercase text-vj-txt3 tracking-[0.4em]">Sincronização de Rede</span>
-                <p className="text-sm font-bold text-vj-txt mt-2 flex items-center gap-2">
-                   <div className="h-1.5 w-1.5 rounded-full bg-vj-green" /> Conectado ao GDS Global v4.0
-                </p>
-             </div>
-             <Activity className="w-8 h-8 text-vj-green/30 group-hover:text-vj-green transition-colors" />
-          </div>
-
+      {/* ── CABEÇALHO DA PÁGINA ── */}
+      <div className="flex items-start justify-between mb-8 gap-4 flex-wrap">
+        <div>
+          <p className="text-xs font-bold text-vj-txt3 uppercase tracking-[0.25em] mb-1">Visão Geral</p>
+          <h1 className="text-2xl font-black text-vj-txt tracking-tight leading-none">
+            {greeting(profile?.first_name)}
+          </h1>
+          <p className="text-sm text-vj-txt3 font-medium mt-1.5">
+            {organization?.name || 'Agência'} · Painel de Controle
+          </p>
         </div>
-
-        {/* Market News */}
-        <div className="pt-12">
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-2xl font-black text-vj-txt tracking-tighter uppercase">Radar de Mercado</h2>
-            <Button variant="ghost" className="text-[10px] font-black uppercase tracking-widest text-vj-green hover:bg-vj-green/5">Sincronizar Notícias</Button>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-             {isNewsLoading ? [1,2,3,4].map(i => <Skeleton key={i} className="h-56 rounded-[2rem]" />) : 
-               (realNews || []).slice(0, 4).map((news: any) => (
-                 <div key={news.id} className="bento-card p-8 bg-white hover:border-vj-green/40 hover:-translate-y-2 transition-all duration-500">
-                    <span className="text-[8px] font-black uppercase px-3 py-1 bg-zinc-100 text-vj-txt3 rounded-full mb-6 inline-block tracking-widest">
-                       {news.source}
-                    </span>
-                    <h4 className="font-bold text-base leading-tight line-clamp-3 mb-6 tracking-tight">{news.title}</h4>
-                    <div className="flex items-center justify-between mt-auto">
-                       <span className="text-[10px] font-bold text-vj-txt3">{new Date(news.published_at).toLocaleDateString('pt-BR')}</span>
-                       <ArrowRight className="w-4 h-4 text-vj-green opacity-0 group-hover:opacity-100 transition-opacity" />
-                    </div>
-                 </div>
-               ))
-             }
-          </div>
+        <div className="flex items-center gap-2.5">
+          <Button
+            variant="outline"
+            size="sm"
+            className="rounded-xl border-vj-border bg-white text-vj-txt font-bold text-xs h-9 px-4 hover:bg-zinc-50"
+            onClick={() => navigate('/group-trips')}
+          >
+            <Activity className="h-3.5 w-3.5 mr-2 text-vj-green" />
+            Grupos &amp; Viagens
+          </Button>
+          <Button
+            size="sm"
+            className="rounded-xl bg-vj-green hover:bg-vj-green/90 text-white font-bold text-xs h-9 px-4"
+            onClick={() => setQuotationOpen(true)}
+          >
+            <Plus className="h-3.5 w-3.5 mr-2" />
+            Nova Cotação
+          </Button>
         </div>
       </div>
 
-      <QuotationBuilderSheet open={quotationBuilderOpen} onClose={() => setQuotationBuilderOpen(false)} />
+      <div className="space-y-5">
+
+        {/* ── LINHA 1: 4 KPIs OPERACIONAIS ── */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+
+          {/* Passageiros Embarcados */}
+          <div
+            className="bento-card p-5 bg-white cursor-pointer group hover:border-vj-green/40"
+            onClick={() => navigate('/group-trips')}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div className="h-9 w-9 rounded-xl bg-vj-green/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <PlaneTakeoff className="w-4 h-4 text-vj-green" />
+              </div>
+              <span className="text-[9px] font-black uppercase tracking-widest text-vj-green bg-vj-green/10 px-2 py-0.5 rounded-full">
+                Ao Vivo
+              </span>
+            </div>
+            <p className="text-3xl font-black tracking-tighter text-vj-txt">{kpi?.paxNow ?? '–'}</p>
+            <p className="text-[11px] font-bold text-vj-txt3 mt-1 uppercase tracking-wide">Passageiros Embarcados</p>
+          </div>
+
+          {/* Embarques Hoje */}
+          <div
+            className="bento-card p-5 bg-white cursor-pointer group hover:border-amber-400/40"
+            onClick={() => navigate('/group-trips')}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div className="h-9 w-9 rounded-xl bg-amber-50 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Clock className="w-4 h-4 text-amber-500" />
+              </div>
+              <ArrowRight className="w-4 h-4 text-vj-txt3 opacity-0 group-hover:opacity-100 transition-opacity" />
+            </div>
+            <p className="text-3xl font-black tracking-tighter text-vj-txt">{kpi?.embarquesHoje ?? '–'}</p>
+            <p className="text-[11px] font-bold text-vj-txt3 mt-1 uppercase tracking-wide">Embarques Hoje</p>
+          </div>
+
+          {/* Grupos Ativos */}
+          <div
+            className="bento-card p-5 bg-white cursor-pointer group hover:border-blue-400/40"
+            onClick={() => navigate('/group-trips')}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div className="h-9 w-9 rounded-xl bg-blue-50 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Users className="w-4 h-4 text-blue-500" />
+              </div>
+              <ArrowRight className="w-4 h-4 text-vj-txt3 opacity-0 group-hover:opacity-100 transition-opacity" />
+            </div>
+            <p className="text-3xl font-black tracking-tighter text-vj-txt">{kpi?.gruposAtivos ?? '–'}</p>
+            <p className="text-[11px] font-bold text-vj-txt3 mt-1 uppercase tracking-wide">Grupos Ativos</p>
+          </div>
+
+          {/* Atendimentos Abertos */}
+          <div
+            className="bento-card p-5 bg-white cursor-pointer group hover:border-red-400/40"
+            onClick={() => navigate('/tickets')}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div className="h-9 w-9 rounded-xl bg-red-50 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Headphones className="w-4 h-4 text-red-500" />
+              </div>
+              {(kpi?.atendimentosAbertos ?? 0) > 0 && (
+                <span className="text-[9px] font-black uppercase tracking-widest text-red-500 bg-red-50 px-2 py-0.5 rounded-full">
+                  Pendente
+                </span>
+              )}
+            </div>
+            <p className="text-3xl font-black tracking-tighter text-vj-txt">{kpi?.atendimentosAbertos ?? '–'}</p>
+            <p className="text-[11px] font-bold text-vj-txt3 mt-1 uppercase tracking-wide">Atendimentos Abertos</p>
+          </div>
+        </div>
+
+        {/* ── LINHA 2: MAPA + PIPELINE + PRÓXIMOS EMBARQUES ── */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+
+          {/* Mapa ao vivo */}
+          <div className="lg:col-span-7 bento-card bg-zinc-950 h-[340px] overflow-hidden relative border-none">
+            <GlobalRadarMapWidget markers={markers} interactive={false} />
+            <div className="absolute top-4 left-4 bg-black/70 backdrop-blur-md border border-white/10 px-4 py-3 rounded-xl">
+              <div className="flex items-center gap-2">
+                <div className="h-1.5 w-1.5 rounded-full bg-vj-green animate-pulse" />
+                <span className="text-white font-black text-[10px] uppercase tracking-[0.3em]">Grupos em Viagem</span>
+              </div>
+              <p className="text-zinc-400 text-xs font-medium mt-0.5">
+                {kpi?.paxNow || 0} passageiros · {kpi?.traveling?.length || 0} destinos ativos
+              </p>
+            </div>
+          </div>
+
+          {/* Pipeline + Próximos */}
+          <div className="lg:col-span-5 flex flex-col gap-4">
+
+            {/* Pipeline Comercial */}
+            <div
+              className="bento-card p-5 bg-white cursor-pointer group relative overflow-hidden hover:border-vj-green/40"
+              onClick={() => navigate('/quotations')}
+            >
+              <div className="absolute -right-6 -bottom-6 opacity-[0.05] group-hover:opacity-[0.10] transition-opacity duration-500">
+                <BarChart2 className="w-32 h-32 text-vj-green" />
+              </div>
+              <div className="flex items-start justify-between mb-3">
+                <div className="h-9 w-9 rounded-xl bg-vj-green/10 flex items-center justify-center">
+                  <DollarSign className="w-4 h-4 text-vj-green" />
+                </div>
+                <ArrowRight className="w-4 h-4 text-vj-txt3 opacity-0 group-hover:opacity-100 transition-opacity" />
+              </div>
+              <p className="text-[10px] font-black uppercase tracking-[0.3em] text-vj-txt3 mb-1">Pipeline Comercial</p>
+              <p className="text-2xl font-black tracking-tighter text-vj-txt">
+                {fmt(kpi?.pipeline || 0)}
+              </p>
+              <p className="text-[10px] font-bold text-vj-txt3 mt-0.5 flex items-center gap-1">
+                <Zap className="w-3 h-3 text-vj-green" /> Total em cotações abertas
+              </p>
+              <div className="flex items-center gap-4 mt-4 pt-4 border-t border-vj-border">
+                <div>
+                  <p className="text-[9px] font-black uppercase text-vj-txt3 tracking-widest">Cotações este mês</p>
+                  <p className="text-lg font-black text-vj-txt mt-0.5">{kpi?.cotacoesMes ?? 0}</p>
+                </div>
+                <div>
+                  <p className="text-[9px] font-black uppercase text-vj-txt3 tracking-widest">Base de Clientes</p>
+                  <p className="text-lg font-black text-vj-txt mt-0.5">{kpi?.totalClientes ?? 0}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Próximos Embarques */}
+            <div className="bento-card bg-white p-5 flex flex-col gap-3 flex-1">
+              <div className="flex items-center justify-between">
+                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-vj-txt">
+                  Próximos Embarques <span className="text-vj-txt3 font-bold">(30 dias)</span>
+                </h3>
+                <button
+                  className="text-[10px] font-black text-vj-green hover:underline"
+                  onClick={() => navigate('/group-trips')}
+                >
+                  Ver todos
+                </button>
+              </div>
+              <div className="space-y-1.5">
+                {!kpi ? (
+                  [1, 2, 3].map(i => <Skeleton key={i} className="h-10 rounded-xl" />)
+                ) : !kpi.upcoming?.length ? (
+                  <div className="flex items-center gap-2 py-3 text-vj-txt3">
+                    <CheckCircle2 className="w-4 h-4 text-vj-green shrink-0" />
+                    <span className="text-xs font-medium">Nenhum embarque nos próximos 30 dias</span>
+                  </div>
+                ) : (
+                  kpi.upcoming.map((g: any) => (
+                    <div
+                      key={g.id}
+                      className="flex items-center justify-between px-3 py-2 rounded-xl hover:bg-zinc-50 cursor-pointer transition-colors"
+                      onClick={() => navigate('/group-trips')}
+                    >
+                      <div className="min-w-0">
+                        <p className="text-xs font-bold text-vj-txt truncate">{g.title}</p>
+                        <p className="text-[10px] text-vj-txt3 truncate">{g.destination}</p>
+                      </div>
+                      <div className="shrink-0 text-right ml-3">
+                        <p className="text-[10px] font-black text-vj-txt uppercase">
+                          {new Date(g.departure_date).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
+                        </p>
+                        <p className="text-[10px] text-vj-green font-bold">{g.current_pax || 0} pax</p>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ── LINHA 3: NOTÍCIAS DO SETOR ── */}
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <FileText className="w-4 h-4 text-vj-green" />
+              <h2 className="text-sm font-black text-vj-txt uppercase tracking-tight">Notícias do Setor</h2>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {newsLoading
+              ? [1, 2, 3, 4].map(i => <Skeleton key={i} className="h-44 rounded-[1.5rem]" />)
+              : (news || []).slice(0, 4).map((n: any) => (
+                <div
+                  key={n.id}
+                  className="bento-card p-5 bg-white hover:border-vj-green/40 hover:-translate-y-1 transition-all duration-300 flex flex-col gap-3 group cursor-pointer"
+                >
+                  <span className="text-[8px] font-black uppercase px-2 py-0.5 bg-zinc-100 text-vj-txt3 rounded-full self-start tracking-widest">
+                    {n.source}
+                  </span>
+                  <h4 className="font-bold text-sm leading-snug line-clamp-3 text-vj-txt flex-1">{n.title}</h4>
+                  <div className="flex items-center justify-between mt-auto">
+                    <span className="text-[10px] font-bold text-vj-txt3">
+                      {new Date(n.published_at).toLocaleDateString('pt-BR')}
+                    </span>
+                    <ArrowRight className="w-4 h-4 text-vj-green opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </div>
+                </div>
+              ))}
+          </div>
+        </div>
+
+      </div>
+
+      <QuotationBuilderSheet open={quotationOpen} onClose={() => setQuotationOpen(false)} />
     </AppLayout>
   );
 }

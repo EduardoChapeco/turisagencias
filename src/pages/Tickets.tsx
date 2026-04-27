@@ -295,7 +295,7 @@ function TicketCard({ ticket, onClick }: { ticket: Ticket; onClick: () => void }
   return (
     <div
       onClick={onClick}
-      className="group bg-white border border-zinc-200/80 rounded-xl p-4 hover:border-vj-green/40 hover:bg-vj-green/[0.015] transition-all cursor-pointer flex flex-col gap-3 "
+      className="kanban-card flex flex-col gap-3 group"
     >
       {/* Header Row */}
       <div className="flex items-start justify-between gap-3">
@@ -336,12 +336,11 @@ function TicketCard({ ticket, onClick }: { ticket: Ticket; onClick: () => void }
             <span className="font-medium truncate max-w-[140px]">{ticket.clients.name}</span>
           </div>
         )}
-        {(ticket.trips?.destination || ticket.group_trips?.title) && (
+        {/* A5-FIX: only show group_trips (trips join is absent from query) */}
+        {ticket.group_trips?.title && (
           <div className="flex items-center gap-1.5">
             <Tag size={11} className="text-zinc-400" />
-            <span className="font-medium truncate max-w-[140px]">
-              {ticket.trips?.destination ?? ticket.group_trips?.title}
-            </span>
+            <span className="font-medium truncate max-w-[140px]">{ticket.group_trips.title}</span>
           </div>
         )}
         <div className="ml-auto flex items-center gap-1 text-zinc-400">
@@ -356,30 +355,32 @@ function TicketCard({ ticket, onClick }: { ticket: Ticket; onClick: () => void }
 /* ── Main Page ── */
 export default function Tickets() {
   const [createOpen, setCreateOpen] = useState(false);
-  const [activeStatus, setActiveStatus] = useState('all');
   const [search, setSearch] = useState('');
   const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
 
-  const { data: tickets, isLoading } = useTickets({
-    status: activeStatus === 'all' ? undefined : activeStatus,
-    search: search || undefined,
-  });
+  // Load ALL tickets — filtering happens client-side for Kanban grouping
+  const { data: allTickets, isLoading } = useTickets();
 
-  const statusCounts = useMemo(() => {
-    if (!tickets) return { all: 0, open: 0, in_progress: 0, resolved: 0 };
-    return {
-      all: tickets.length,
-      open: tickets.filter(t => t.status === 'open').length,
-      in_progress: tickets.filter(t => t.status === 'in_progress').length,
-      resolved: tickets.filter(t => t.status === 'resolved' || t.status === 'closed').length,
-    };
-  }, [tickets]);
+  // A4-FIX: filter client-side by search term, distributed into Kanban columns
+  const tickets = useMemo(() => {
+    if (!allTickets) return [];
+    if (!search.trim()) return allTickets;
+    const q = search.toLowerCase();
+    return allTickets.filter(
+      (t) =>
+        t.title.toLowerCase().includes(q) ||
+        t.description?.toLowerCase().includes(q) ||
+        t.clients?.name?.toLowerCase().includes(q) ||
+        t.group_trips?.title?.toLowerCase().includes(q)
+    );
+  }, [allTickets, search]);
 
-  const TABS = [
-    { key: 'all', label: 'Todos', count: statusCounts.all },
-    { key: 'open', label: 'Abertos', count: statusCounts.open },
-    { key: 'in_progress', label: 'Em Andamento', count: statusCounts.in_progress },
-    { key: 'resolved', label: 'Resolvidos', count: statusCounts.resolved },
+  // A6-FIX: labels reflect support ticket workflow, not CRM sales
+  const columns = [
+    { key: 'open',        label: 'Novo Protocolo' },
+    { key: 'in_progress', label: 'Em Andamento'   },
+    { key: 'resolved',   label: 'Resolvidos'      },
+    { key: 'closed',     label: 'Encerrados'      },
   ];
 
   return (
@@ -391,95 +392,86 @@ export default function Tickets() {
           description="Protocolos, solicitações e suporte aos viajantes com linha do tempo completa."
           icon={LifeBuoy}
           actions={
-            <Button
-              onClick={() => setCreateOpen(true)}
-              className="px-6 font-bold transition-all"
-            >
-              <Plus size={16} className="mr-2" /> Novo Protocolo
-            </Button>
+            <div className="flex items-center gap-2 w-full flex-wrap">
+              <div className="flex-1" />
+              {/* Search */}
+              <div className="relative flex-1 min-w-[180px]">
+                <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
+                <Input
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                  placeholder="Buscar atendimento..."
+                  className="pl-9 h-10 rounded-xl border-vj-border"
+                />
+                {search && (
+                  <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600">
+                    <X size={14} />
+                  </button>
+                )}
+              </div>
+
+              <Button onClick={() => setCreateOpen(true)} className="premium-button shrink-0">
+                <Plus size={15} className="mr-2" /> Novo Atendimento
+              </Button>
+            </div>
           }
         />
 
-        {/* Filters Bar */}
-        <div className="flex flex-col sm:flex-row gap-3">
-          {/* Status Tabs */}
-          <div className="flex h-10 gap-1 bg-zinc-100 p-1 rounded-xl">
-            {TABS.map(tab => (
-              <button
-                key={tab.key}
-                onClick={() => setActiveStatus(tab.key)}
-                className={`px-3 h-8 rounded-lg text-sm font-semibold transition-all flex items-center gap-2 ${
-                  activeStatus === tab.key
-                    ? 'bg-white text-zinc-900 border border-zinc-200'
-                    : 'text-zinc-500 hover:text-zinc-700'
-                }`}
-              >
-                {tab.label}
-                {tab.count > 0 && (
-                  <span className={`text-[11px] px-2 py-0.5 rounded-full font-bold ${
-                    activeStatus === tab.key ? 'bg-zinc-100 text-zinc-600' : 'bg-zinc-200 text-zinc-500'
-                  }`}>
-                    {tab.count}
-                  </span>
-                )}
-              </button>
+        {/* Kanban Board */}
+        {isLoading ? (
+          <div className="kanban-board">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="kanban-column opacity-50">
+                <div className="kanban-column-header">
+                  <Skeleton className="h-4 w-24" />
+                </div>
+                <div className="kanban-cards">
+                  <Skeleton className="h-32 rounded-xl mb-2" />
+                  <Skeleton className="h-24 rounded-xl mb-2" />
+                </div>
+              </div>
             ))}
           </div>
-
-          {/* Search */}
-          <div className="relative flex-1 max-w-sm ml-auto">
-            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
-            <Input
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              placeholder="Buscar por assunto..."
-              className="pl-9 h-11"
-            />
-            {search && (
-              <button
-                onClick={() => setSearch('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600"
-              >
-                <X size={14} />
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* Content */}
-        {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-            {[1,2,3,4,5,6].map(i => <Skeleton key={i} className="h-44 rounded-xl" />)}
-          </div>
-        ) : !tickets?.length ? (
+        ) : !tickets?.length && search ? (
           <div className="flex-1 flex flex-col items-center justify-center bg-white/50 rounded-xl border border-dashed border-zinc-300 p-16 text-center">
             <div className="p-4 bg-zinc-100 rounded-full mb-4">
               <LifeBuoy className="h-8 w-8 text-zinc-400" />
             </div>
-            <h2 className="text-xl font-bold mb-2">
-              {search ? 'Nenhum protocolo encontrado' : activeStatus === 'all' ? 'Nenhum protocolo ativo' : `Nenhum protocolo ${TABS.find(t => t.key === activeStatus)?.label.toLowerCase()}`}
-            </h2>
-            <p className="text-muted-foreground max-w-sm mb-6">
-              {search ? 'Tente outros termos de busca.' : 'Clique em "Novo Protocolo" para registrar uma ocorrência.'}
-            </p>
-            {!search && (
-              <Button
-                onClick={() => setCreateOpen(true)}
-                className="rounded-full bg-vj-green hover:bg-vj-green/90 "
-              >
-                Abrir Primeiro Protocolo
-              </Button>
-            )}
+            <h2 className="text-xl font-bold mb-2">Nenhum protocolo encontrado</h2>
+            <p className="text-muted-foreground max-w-sm mb-6">Tente outros termos de busca.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-            {tickets.map(ticket => (
-              <TicketCard
-                key={ticket.id}
-                ticket={ticket}
-                onClick={() => setSelectedTicketId(ticket.id)}
-              />
-            ))}
+          <div className="kanban-board">
+            {columns.map((col) => {
+              const colTickets = tickets?.filter((t) => t.status === col.key) || [];
+              const Conf = STATUS_CONFIG[col.key] || STATUS_CONFIG.closed;
+              const Icon = Conf.icon;
+              return (
+                <div key={col.key} className="kanban-column">
+                  <div className="kanban-column-header">
+                    <div className="flex items-center gap-2">
+                      <Icon size={14} className={Conf.color} />
+                      <span className="kanban-column-title">{col.label}</span>
+                    </div>
+                    <span className="kanban-column-count">{colTickets.length}</span>
+                  </div>
+                  <div className="kanban-cards">
+                    {colTickets.map((ticket) => (
+                      <TicketCard
+                        key={ticket.id}
+                        ticket={ticket}
+                        onClick={() => setSelectedTicketId(ticket.id)}
+                      />
+                    ))}
+                    {colTickets.length === 0 && (
+                      <div className="text-center py-6 text-xs font-semibold text-vj-txt3 uppercase tracking-widest border-2 border-dashed border-zinc-200 rounded-xl">
+                        Vazio
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
       </div>

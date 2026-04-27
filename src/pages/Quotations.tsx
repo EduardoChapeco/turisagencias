@@ -54,83 +54,81 @@ export default function Quotations() {
 
   return (
     <AppLayout>
-      <div className="space-y-8 max-w-[1600px] mx-auto pb-12">
+      <div className="space-y-5 max-w-[1600px] mx-auto pb-12">
         
         <PageHeader
-          title="Engine Comercial"
-          description="Gestão de ofertas, estruturação de propostas IA e controle de pipeline financeiro."
+          title="Propostas & Cotações"
+          description="Crie e gerencie propostas comerciais, extraia com IA e acompanhe o pipeline."
           icon={FileText}
           actions={
-            <div className="flex items-center gap-3">
-              <Button variant="outline" className="glass-button border-vj-border bg-white rounded-2xl h-12 px-6" onClick={() => setAiImportOpen(true)}>
-                <Zap className="h-4 w-4 mr-2 text-vj-green" /> Extração IA
+            <div className="flex items-center gap-2 w-full flex-wrap">
+              {/* Search */}
+              <div className="relative flex-1 min-w-[180px] max-w-xs group">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-vj-txt3 group-focus-within:text-vj-green transition-colors" />
+                <Input
+                  placeholder="Buscar proposta..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="pl-9 h-10 rounded-xl border-vj-border"
+                />
+              </div>
+              {/* Status filters */}
+              <div className="flex items-center gap-2 shrink-0">
+                {(['all', 'draft', 'sent', 'confirmed'] as const).map(f => (
+                  <Button
+                    key={f}
+                    variant={statusFilter === f ? 'default' : 'outline'}
+                    className={statusFilter === f ? 'premium-button' : 'glass-button text-vj-txt3'}
+                    onClick={() => setStatusFilter(f)}
+                  >
+                    {f === 'all' ? 'Tudo' : f === 'draft' ? 'Rascunhos' : f === 'sent' ? 'Enviadas' : 'Fechadas'}
+                  </Button>
+                ))}
+              </div>
+              <Button variant="outline" className="glass-button shrink-0" onClick={() => setAiImportOpen(true)}>
+                <Zap className="h-4 w-4 mr-2 text-vj-green" /> Importar com IA
               </Button>
-              <Button className="premium-button h-12 px-8" onClick={() => setBuilderOpen(true)}>
+              <Button className="premium-button shrink-0" onClick={() => setBuilderOpen(true)}>
                 <Plus className="h-4 w-4 mr-2" /> Nova Proposta
               </Button>
             </div>
           }
         />
-
-        {/* 📊 SQUAD METRICS HUB */}
+        {/* Métricas do pipeline */}
         {!isLoading && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="bento-card bg-white p-6 border-vj-border/60">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="bento-card bg-white p-5 border-vj-border/60">
               <div className="flex items-center gap-3 mb-3">
                 <div className="p-2 bg-zinc-50 rounded-xl text-zinc-400"><FileText className="w-4 h-4" /></div>
                 <span className="text-[10px] font-black uppercase tracking-[0.2em] text-vj-txt3">Total no Funil</span>
               </div>
-              <p className="text-4xl font-black text-vj-txt tracking-tighter">{stats.total}</p>
+              <p className="text-3xl font-black text-vj-txt tracking-tighter">{stats.total}</p>
             </div>
-            <div className="bento-card bg-white p-6 border-vj-border/60">
+            <div className="bento-card bg-white p-5 border-vj-border/60">
               <div className="flex items-center gap-3 mb-3">
                 <div className="p-2 bg-blue-50 rounded-xl text-blue-600"><Navigation className="w-4 h-4" /></div>
                 <span className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-600">Em Aberto</span>
               </div>
-              <p className="text-4xl font-black text-blue-700 tracking-tighter">{stats.sent}</p>
+              <p className="text-3xl font-black text-blue-700 tracking-tighter">{stats.sent}</p>
             </div>
-            <div className="bento-card bg-white p-6 border-vj-border/60 border-vj-green/20 bg-vj-green/5">
+            <div className="bento-card p-5 border-vj-green/20 bg-vj-green/5">
               <div className="flex items-center gap-3 mb-3">
                 <div className="p-2 bg-vj-green/10 rounded-xl text-vj-green"><CheckCircle2 className="w-4 h-4" /></div>
                 <span className="text-[10px] font-black uppercase tracking-[0.2em] text-vj-green">Confirmadas</span>
               </div>
-              <p className="text-4xl font-black text-vj-green tracking-tighter">{stats.confirmed}</p>
+              <p className="text-3xl font-black text-vj-green tracking-tighter">{stats.confirmed}</p>
             </div>
-            <div className="bento-card bg-vj-bg-dark text-white p-6">
+            <div className="bento-card bg-vj-bg-dark text-white p-5">
               <div className="flex items-center gap-3 mb-3">
                 <div className="p-2 bg-white/5 rounded-xl text-white"><Activity className="w-4 h-4" /></div>
                 <span className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-500">Conversão</span>
               </div>
-              <p className="text-4xl font-black text-white tracking-tighter">
+              <p className="text-3xl font-black text-white tracking-tighter">
                 {stats.total > 0 ? Math.round((stats.confirmed / stats.total) * 100) : 0}%
               </p>
             </div>
           </div>
         )}
-
-        {/* 🔍 SMART FILTER BAR */}
-        <div className="flex flex-wrap gap-4 items-center justify-between glass-card p-4 rounded-3xl border-vj-border/40">
-          <div className="relative flex-1 max-w-md group">
-            <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-vj-txt3 group-focus-within:text-vj-green transition-colors" />
-            <Input
-              placeholder="Buscar destino, hotel ou cliente..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-12 h-12 bg-zinc-50/50 border-transparent rounded-2xl focus-visible:ring-vj-green/20 placeholder:text-vj-txt3/60 font-medium"
-            />
-          </div>
-          <div className="flex gap-2 bg-zinc-50 p-1 rounded-2xl border border-zinc-100">
-             {['all', 'draft', 'sent', 'confirmed'].map(f => (
-               <button 
-                key={f}
-                className={`h-10 rounded-xl px-5 text-[10px] font-black uppercase tracking-widest transition-all ${statusFilter === f ? 'bg-white text-vj-txt ' : 'text-vj-txt3 hover:text-vj-txt'}`}
-                onClick={() => setStatusFilter(f)}
-               >
-                 {f === 'all' ? 'Tudo' : f === 'draft' ? 'Rascunhos' : f === 'sent' ? 'Enviadas' : 'Fechadas'}
-               </button>
-             ))}
-          </div>
-        </div>
 
         {/* 🧩 QUOTATION CARDS GRID */}
         {isLoading ? (
@@ -182,10 +180,6 @@ export default function Quotations() {
                       <div className="flex items-center justify-between">
                          <div className="flex items-center gap-2 text-[10px] text-vj-txt2 font-black uppercase tracking-wider">
                            <Users className="w-3.5 h-3.5 text-vj-green" /> {clientName?.split(' ')[0] || "Avulso"}
-                         </div>
-                         <div className="flex items-center gap-1">
-                            <div className="w-1.5 h-1.5 rounded-full bg-vj-green" />
-                            <span className="text-[9px] font-black text-vj-txt3 uppercase tracking-tighter">AI Scored</span>
                          </div>
                       </div>
                       

@@ -8,13 +8,11 @@ import { EmptyState, PageSkeleton } from '@/components/ui/EmptyState';
 import { useCreateKanbanCard, useKanbanBoard, useUpdateKanbanCard, useEnsureDefaultBoards, useKanbanRealtime } from '@/hooks/useKanbanBoards';
 import { useAuthStore } from '@/stores/authStore';
 import { useNavigate } from 'react-router-dom';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { KanbanSquare, X, Eye, Users } from 'lucide-react';
 import KanbanCardPage from './KanbanCardPage';
 import { useSearchParams } from 'react-router-dom';
-
 import {
   DndContext,
   DragOverlay,
@@ -447,16 +445,22 @@ export default function KanbanBoard() {
             </StatusBadge>
           }
           actions={
-            <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as 'me' | 'all')} className="w-full sm:w-[300px]">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="me" className="flex items-center gap-2 text-xs">
-                  <Eye size={14}/> Meu Board
-                </TabsTrigger>
-                <TabsTrigger value="all" className="flex items-center gap-2 text-xs">
-                  <Users size={14}/> Geral
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
+            <div className="flex items-center gap-2">
+              <Button
+                variant={viewMode === 'me' ? 'default' : 'outline'}
+                className={viewMode === 'me' ? 'premium-button' : 'glass-button text-vj-txt3'}
+                onClick={() => setViewMode('me')}
+              >
+                <Eye size={14} className="mr-2" /> Meu Board
+              </Button>
+              <Button
+                variant={viewMode === 'all' ? 'default' : 'outline'}
+                className={viewMode === 'all' ? 'premium-button' : 'glass-button text-vj-txt3'}
+                onClick={() => setViewMode('all')}
+              >
+                <Users size={14} className="mr-2" /> Geral
+              </Button>
+            </div>
           }
         />
 

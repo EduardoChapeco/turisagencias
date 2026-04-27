@@ -33,30 +33,29 @@ export default function ClientsPage() {
     <AppLayout>
       <div className="space-y-6">
         <PageHeader
-          title="Clientes"
-          description="Gerencie sua base de clientes no CRM"
+          title="Base de Clientes"
+          description="Gerencie clientes, histórico de viagens e relacionamento comercial."
           icon={User}
-          badge={
-            <StatusBadge variant="neutral" size="sm">
-              {clients?.length ?? 0} clientes
-            </StatusBadge>
-          }
           actions={
-            <Button onClick={openNew}>
-              <Plus className="mr-2 h-4 w-4" /> Novo Cliente
-            </Button>
+            <div className="flex items-center gap-2 w-full">
+              <div className="relative flex-1 max-w-xs">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-vj-txt3" />
+                <Input
+                  placeholder="Buscar cliente..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="pl-9 h-10 rounded-xl border-vj-border bg-white"
+                />
+              </div>
+              <StatusBadge variant="neutral" size="sm" className="shrink-0">
+                {clients?.length ?? 0}
+              </StatusBadge>
+              <Button onClick={openNew} className="premium-button shrink-0">
+                <Plus className="mr-2 h-4 w-4" /> Novo Cliente
+              </Button>
+            </div>
           }
         />
-
-        <div className="relative max-w-md">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-vj-txt3" />
-          <Input
-            placeholder="Buscar por nome..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-10 border-vj-border bg-vj-bg"
-          />
-        </div>
 
         {isLoading ? (
           <PageSkeleton />
@@ -64,28 +63,28 @@ export default function ClientsPage() {
           <EmptyState
             icon={User}
             title="Nenhum cliente encontrado"
-            description="Comece cadastrando seu primeiro cliente no CRM."
-            action={<Button onClick={openNew}><Plus className="mr-2 h-4 w-4" /> Cadastrar Cliente</Button>}
+            description="Comece cadastrando seu primeiro cliente na base."
+            action={<Button onClick={openNew} className="premium-button"><Plus className="mr-2 h-4 w-4" /> Cadastrar Cliente</Button>}
           />
         ) : (
           <div className="bento-grid-premium">
             {clients.map((client) => (
               <div
                 key={client.id}
-                className="premium-card group relative hover:border-vj-green/30 cursor-pointer p-5 flex flex-col gap-4 min-h-[140px]"
+                className="premium-card group relative hover:border-vj-green/40 cursor-pointer p-5 flex flex-col gap-4 min-h-[140px]"
                 onClick={() => openQuickView(client.id)}
               >
                 {/* Header */}
                 <div className="flex items-start gap-4">
-                  <div className="h-14 w-14 shrink-0 rounded-xl bg-zinc-100 border border-zinc-200 overflow-hidden flex items-center justify-center ">
+                  <div className="h-12 w-12 shrink-0 rounded-xl bg-zinc-100 border border-zinc-200 overflow-hidden flex items-center justify-center">
                     {client.photo_url ? (
                       <img src={client.photo_url} alt={client.name} className="h-full w-full object-cover" />
                     ) : (
-                      <span className="text-zinc-400 font-bold text-xl">{client.name[0]?.toUpperCase()}</span>
+                      <span className="text-zinc-400 font-bold text-lg">{client.name[0]?.toUpperCase()}</span>
                     )}
                   </div>
                   <div className="flex-1 min-w-0 pt-1">
-                    <p className="font-heading font-extrabold text-lg text-vj-txt truncate">{client.name}</p>
+                    <p className="font-heading font-extrabold text-base text-vj-txt truncate">{client.name}</p>
                     {client.email && (
                       <p className="text-xs text-vj-txt3 flex items-center gap-1.5 truncate mt-1">
                         <Mail className="h-3 w-3 shrink-0" /> {client.email}
@@ -99,24 +98,21 @@ export default function ClientsPage() {
                   </div>
 
                   {/* Action Buttons — aparecem no hover */}
-                  <div className="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-white/50 backdrop-blur-sm rounded-xl p-1" onClick={(e) => e.stopPropagation()}>
-                    {/* Quick View */}
+                  <div className="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
                     <Button
-                      variant="ghost" size="icon" className="h-7 w-7 hover:bg-white hover:text-vj-green hover: rounded-lg"
-                      title="Visualização rápida"
+                      variant="ghost" size="icon" className="h-7 w-7 hover:bg-vj-green/10 hover:text-vj-green rounded-lg"
+                      title="Visualizar"
                       onClick={() => openQuickView(client.id)}
                     >
                       <Eye className="h-3.5 w-3.5" />
                     </Button>
-                    {/* Edit */}
                     <Button
-                      variant="ghost" size="icon" className="h-7 w-7 hover:bg-white hover: rounded-lg"
-                      title="Editar cliente"
+                      variant="ghost" size="icon" className="h-7 w-7 hover:bg-zinc-100 rounded-lg"
+                      title="Editar"
                       onClick={() => openEdit(client.id)}
                     >
                       <Edit className="h-3.5 w-3.5" />
                     </Button>
-                    {/* Delete */}
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Button variant="ghost" size="icon" className="h-7 w-7 hover:bg-red-50 hover:text-red-500 rounded-lg">
@@ -147,7 +143,6 @@ export default function ClientsPage() {
                 <div className="flex-1" />
 
                 <div className="flex items-center justify-between pt-3 border-t border-zinc-100/80">
-                  {/* Tags */}
                   <div className="flex flex-wrap gap-1.5">
                     {client.tags && client.tags.length > 0 ? (
                       <>
@@ -166,11 +161,9 @@ export default function ClientsPage() {
                       <span className="text-[10px] text-zinc-300 font-medium italic">Sem tags</span>
                     )}
                   </div>
-
-                  {/* Portal badge */}
                   {client.portal_access_enabled && (
-                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-100 text-[10px] font-black uppercase tracking-wider text-emerald-600  shrink-0">
-                      <Shield className="h-3 w-3" /> Vip
+                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-100 text-[10px] font-black uppercase tracking-wider text-emerald-600 shrink-0">
+                      <Shield className="h-3 w-3" /> VIP
                     </div>
                   )}
                 </div>

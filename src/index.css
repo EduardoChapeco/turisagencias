@@ -8,20 +8,22 @@
 
 @layer base {
   :root {
-    /* 🎨 OMEGA v5.0 CORE PALETTE - SHADOWLESS & PREMIUM */
+    /* ── OMEGA v5.0 CORE PALETTE ── */
     --vj-bg: #f8f9fa;
     --vj-bg-dark: #09090b;
     --vj-white: #ffffff;
     --vj-surface: #ffffff;
-    
+
     /* Typography */
     --vj-txt: #09090b;
     --vj-txt2: #52525b;
     --vj-txt3: #a1a1aa;
 
-    /* Actions & Accents */
+    /* Accent colors */
     --vj-green: #22c55e;
     --vj-green-bg: #f0fdf4;
+    --vj-primary: #22c55e;
+    --vj-primary-bg: #f0fdf4;
     --vj-orange: #d4511a;
     --vj-orange-bg: #fff4ee;
     --vj-blue: #3b82f6;
@@ -29,18 +31,18 @@
     --vj-red: #ef4444;
     --vj-red-bg: #fef2f2;
     --vj-yellow: #eab308;
-    
+
     /* Borders */
     --vj-border: #e4e4e7;
     --vj-border2: #d4d4d8;
     --vj-border-light: rgba(228, 228, 231, 0.5);
-    
-    /* Radius - Keeping the Premium OMEGA feel */
-    --radius: 12px;
-    --r-xl: 2rem;
-    --r-2xl: 2.5rem;
 
-    /* Shadcn/UI mapping (Light) */
+    /* Radius */
+    --radius: 12px;
+    --r-xl: 1.5rem;
+    --r-2xl: 2rem;
+
+    /* shadcn/ui tokens */
     --background: 210 20% 98%;
     --foreground: 240 10% 3.9%;
     --card: 0 0% 100%;
@@ -63,20 +65,17 @@
   }
 
   .dark {
-    /* 🎨 OMEGA v5.0 DARK MODE */
     --vj-bg: #09090b;
     --vj-bg-dark: #09090b;
     --vj-white: #000000;
     --vj-surface: #18181b;
-    
-    /* Typography */
     --vj-txt: #fafafa;
     --vj-txt2: #a1a1aa;
     --vj-txt3: #52525b;
-
-    /* Actions & Accents */
     --vj-green: #22c55e;
     --vj-green-bg: rgba(34, 197, 94, 0.1);
+    --vj-primary: #22c55e;
+    --vj-primary-bg: rgba(34, 197, 94, 0.1);
     --vj-orange: #f97316;
     --vj-orange-bg: rgba(249, 115, 22, 0.1);
     --vj-blue: #3b82f6;
@@ -84,13 +83,9 @@
     --vj-red: #ef4444;
     --vj-red-bg: rgba(239, 68, 68, 0.1);
     --vj-yellow: #eab308;
-    
-    /* Borders */
     --vj-border: #27272a;
     --vj-border2: #3f3f46;
     --vj-border-light: rgba(39, 39, 42, 0.5);
-
-    /* Shadcn/UI mapping (Dark) */
     --background: 240 10% 3.9%;
     --foreground: 0 0% 98%;
     --card: 240 10% 3.9%;
@@ -112,17 +107,24 @@
     --ring: 142.4 71.8% 29.2%;
   }
 
-  /* 🏛️ PREMIUM GLOBAL STRUCTURE - NO SHADOWS */
-  *, *::before, *::after { 
-    border-color: var(--vj-border); 
-    box-sizing: border-box; 
-    margin: 0; 
-    padding: 0; 
-    box-shadow: none !important; /* The ONLY  rule */
-    -webkit-transform: translateZ(0); /* Safari hardware acceleration fix */
-    transition: background-color 0.2s, border-color 0.2s, transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  /* ── GLOBAL RESET ── */
+  *, *::before, *::after {
+    border-color: var(--vj-border);
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
   }
-  
+
+  /* Permite box-shadow apenas em overlays/dropdowns */
+  [data-radix-popper-content-wrapper],
+  [role="dialog"],
+  [role="tooltip"],
+  [role="listbox"],
+  .leaflet-popup-content-wrapper,
+  .kanban-card-dragging {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12) !important;
+  }
+
   html, body {
     height: 100%;
     background-color: var(--vj-bg);
@@ -133,78 +135,212 @@
     line-height: 1.6;
     overflow: hidden;
   }
-  
+
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Outfit', sans-serif;
     font-weight: 800;
     letter-spacing: -0.02em;
   }
 
-  /* 🕵️ HIDDEN SCROLLBARS (CLEAN UI) */
-  ::-webkit-scrollbar {
-    display: none !important;
-  }
-  
-  * {
-    scrollbar-width: none !important;
-    -ms-overflow-style: none !important;
-  }
+  ::-webkit-scrollbar { display: none !important; }
+  * { scrollbar-width: none !important; -ms-overflow-style: none !important; }
 }
 
 @layer components {
-  /* 💎 PREMIUM GLASS (WITHOUT SHADOWS) */
+
+  /* ════════════════════════════════════════════
+     PAGE HEADER — INLINE, PADRÃO ÚNICO
+     Sem título no conteúdo — só ⓘ + badge + botões
+  ════════════════════════════════════════════ */
+  .page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+    flex-wrap: wrap;
+    min-height: 36px;
+  }
+
+  .page-header-left {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+    flex: 1;
+  }
+
+  .page-header-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--vj-txt3);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    opacity: 0.6;
+  }
+
+  /* Botões de ação: nunca cortam, sempre visíveis */
+  .page-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+  }
+
+  /* ════════════════════════════════════════════
+     GLASS CARD & GLASS BUTTON
+  ════════════════════════════════════════════ */
   .glass-card {
     background: rgba(255, 255, 255, 0.7);
     backdrop-filter: blur(12px);
     border: 1px solid rgba(255, 255, 255, 0.3);
   }
 
-  /* 📦 BENTO GRID V4 - PREMIUM RADIUS, NO SHADOWS */
+  .glass-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 2.5rem;
+    padding: 0 1rem;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    font-size: 0.875rem;
+    border: 1px solid var(--vj-border);
+    background-color: white;
+    color: var(--vj-txt);
+    transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+    cursor: pointer;
+  }
+  .glass-button:hover {
+    border-color: var(--vj-green);
+    background-color: rgba(34, 197, 94, 0.05);
+    color: var(--vj-green);
+  }
+
+  /* ════════════════════════════════════════════
+     PREMIUM BUTTON — CTA principal
+  ════════════════════════════════════════════ */
+  .premium-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 2.5rem;
+    padding: 0 1.25rem;
+    border-radius: 0.75rem;
+    font-weight: 700;
+    font-size: 0.875rem;
+    color: white;
+    background-color: var(--vj-green);
+    transition: background-color 0.2s ease, transform 0.1s ease;
+    cursor: pointer;
+    border: none;
+  }
+  .premium-button:hover {
+    background-color: rgba(34, 197, 94, 0.9);
+  }
+  .premium-button:active {
+    transform: scale(0.95);
+  }
+
+  /* ════════════════════════════════════════════
+     BENTO CARD — cards de dashboard e KPIs
+  ════════════════════════════════════════════ */
   .bento-card {
     position: relative;
     border-radius: var(--r-xl);
     border: 1px solid var(--vj-border);
     background: white;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: border-color 0.25s ease, transform 0.25s ease;
   }
   .bento-card:hover {
-    transform: translateY(-4px) scale(1.01);
+    transform: translateY(-2px);
     border-color: var(--vj-green);
-    background: var(--vj-bg);
+    background: white;
   }
 
-  /* 🚀 PREMIUM BUTTONS */
-  .premium-button {
-    @apply relative inline-flex items-center justify-center px-6 py-3 font-bold text-white transition-all duration-300 bg-vj-green rounded-full overflow-hidden hover:scale-105 active:scale-95;
+  /* ════════════════════════════════════════════
+     PREMIUM CARD — CRM / listas de itens
+  ════════════════════════════════════════════ */
+  .premium-card {
+    position: relative;
+    border-radius: var(--r-xl);
+    border: 1px solid var(--vj-border);
+    background: white;
+    transition: border-color 0.25s ease, transform 0.2s ease;
+  }
+  .premium-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--vj-green);
   }
 
-  /* 🗂️ KANBAN BOARD LAYOUT - SINGLE SOURCE OF TRUTH */
+  /* ════════════════════════════════════════════
+     BENTO GRID — layout de cards auto-fill
+  ════════════════════════════════════════════ */
+  .bento-grid-premium {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.25rem;
+  }
+
+  /* ════════════════════════════════════════════
+     KANBAN — board, colunas e cards
+  ════════════════════════════════════════════ */
   .kanban-board {
-    @apply flex gap-4 overflow-x-auto overflow-y-hidden pb-4 px-1 min-h-[calc(100vh-200px)] w-full;
+    @apply flex gap-4 overflow-x-auto overflow-y-hidden pb-4 px-1 w-full;
+    min-height: calc(100vh - 140px);
   }
-  
+
   .kanban-column {
-    @apply flex flex-col w-[320px] shrink-0 bg-zinc-50 dark:bg-zinc-900 border border-vj-border rounded-xl;
+    @apply flex flex-col w-[290px] shrink-0 bg-zinc-50/80 border border-vj-border rounded-2xl;
   }
-  
+
   .kanban-column-header {
-    @apply flex items-center justify-between p-3 border-b border-vj-border bg-white dark:bg-zinc-950 rounded-t-xl;
+    @apply flex items-center justify-between px-4 py-3 border-b border-vj-border bg-white rounded-t-2xl;
   }
-  
+
   .kanban-column-title {
-    @apply text-xs font-bold text-vj-txt uppercase tracking-wide;
+    @apply text-xs font-bold text-vj-txt uppercase tracking-wider;
   }
-  
+
   .kanban-column-count {
-    @apply h-5 w-5 flex items-center justify-center bg-vj-bg text-[10px] font-bold text-vj-txt3 rounded-md;
+    @apply h-5 min-w-[20px] px-1.5 flex items-center justify-center bg-zinc-100 text-[10px] font-bold text-vj-txt3 rounded-md;
   }
-  
+
   .kanban-cards {
-    @apply flex-1 p-3 overflow-y-auto space-y-3 min-h-[150px];
+    @apply flex-1 p-3 overflow-y-auto space-y-2 min-h-[80px];
   }
-  
+
   .kanban-quick-add {
-    @apply p-2 mt-auto border-t border-vj-border bg-white/30 dark:bg-zinc-950/30 rounded-b-xl;
+    padding: 0.5rem;
+    margin-top: auto;
+    border-top: 1px solid rgba(228, 228, 231, 0.6);
+    border-bottom-left-radius: 1rem;
+    border-bottom-right-radius: 1rem;
+  }
+
+  /* Card individual do Kanban */
+  .kanban-card {
+    position: relative;
+    background: white;
+    border: 1px solid var(--vj-border);
+    border-radius: 12px;
+    padding: 12px 12px 12px 24px;
+    cursor: pointer;
+    transition: border-color 0.2s ease, transform 0.15s ease;
+    min-height: 60px;
+  }
+  .kanban-card:hover {
+    border-color: var(--vj-green);
+    transform: translateY(-1px);
+  }
+  .kanban-card-dragging {
+    opacity: 0.85;
+    transform: rotate(1.5deg) scale(1.02);
+    z-index: 9999;
   }
 }
 
@@ -213,7 +349,10 @@
     scrollbar-width: none !important;
     -ms-overflow-style: none !important;
   }
-  .no-scrollbar::-webkit-scrollbar {
-    display: none !important;
-  }
+  .no-scrollbar::-webkit-scrollbar { display: none !important; }
+
+  /* Tokens de cor para uso direto com Tailwind */
+  .text-vj-primary   { color: var(--vj-primary); }
+  .bg-vj-primary     { background-color: var(--vj-primary); }
+  .border-vj-primary { border-color: var(--vj-primary); }
 }

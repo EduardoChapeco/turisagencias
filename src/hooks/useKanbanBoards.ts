@@ -274,7 +274,7 @@ export function useUpdateKanbanCard() {
       meta?: Record<string, any> | null;
       metadata?: Record<string, any> | null;
     }) => {
-      const finalUpdates: any = { ...updates };
+      const finalUpdates: Record<string, unknown> = { ...updates };
       if (finalUpdates.metadata !== undefined) {
         if (finalUpdates.meta === undefined) {
           finalUpdates.meta = finalUpdates.metadata;
@@ -291,12 +291,30 @@ export function useUpdateKanbanCard() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    // ── OPTIMISTIC: card moves instantly, no waiting for server ──
+    onMutate: async (variables) => {
+      await queryClient.cancelQueries({ queryKey: ['kanban-board'] });
+      const previousData = queryClient.getQueriesData<{
+        board: unknown; columns: unknown[]; cards: Record<string, unknown>[];
+      }>({ queryKey: ['kanban-board'] });
+      queryClient.setQueriesData(
+        { queryKey: ['kanban-board'] },
+        (old: { board: unknown; columns: unknown[]; cards: Record<string, unknown>[] } | undefined) => {
+          if (!old?.cards) return old;
+          return { ...old, cards: old.cards.map((c) => c.id === variables.id ? { ...c, ...variables } : c) };
+        }
+      );
+      return { previousData };
+    },
+    onError: (err: Error, _vars, context) => {
+      if (context?.previousData) {
+        for (const [qk, d] of context.previousData) queryClient.setQueryData(qk, d);
+      }
+      toast({ title: 'Erro ao mover card', description: err.message, variant: 'destructive' });
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['kanban-board'] });
       queryClient.invalidateQueries({ queryKey: ['kanban-card'] });
-    },
-    onError: (err: Error) => {
-      toast({ title: 'Erro ao atualizar card', description: err.message, variant: 'destructive' });
     },
   });
 }

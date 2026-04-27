@@ -10,8 +10,15 @@ export function useHotels(search?: string) {
   return useQuery({
     queryKey: ['hotels', organization?.id, search],
     queryFn: async () => {
-      let query = supabase.from('hotels_bank').select('*').eq('org_id', organization!.id).order('name');
-      if (search) query = query.ilike('name', `%${search}%`);
+      let query = supabase
+        .from('hotels_bank')
+        .select('*')
+        .eq('org_id', organization!.id)
+        .eq('is_active', true)
+        .order('name');
+      if (search) {
+        query = query.or(`name.ilike.%${search}%,city.ilike.%${search}%,state.ilike.%${search}%`);
+      }
       const { data, error } = await query;
       if (error) throw error;
       return data;

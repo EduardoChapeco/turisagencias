@@ -41,40 +41,40 @@ type NavGroup = { title: string; items: { title: string; url: string; icon: Reac
 
 const navGroups: NavGroup[] = [
   {
-    title: 'Command Center',
+    title: 'Painel',
     items: [
-      { title: 'Painel Inicial',     url: '/',             icon: LayoutDashboard },
-      { title: 'Mapa de Viajantes',  url: '/radar-global', icon: Globe2 },
-      { title: 'Radar do Mercado',   url: '/radar',        icon: Newspaper },
-      { title: 'Atendimento',        url: '/tickets',      icon: Activity },
+      { title: 'Painel Inicial',      url: '/',             icon: LayoutDashboard },
+      { title: 'Mapa de Viajantes',   url: '/radar-global', icon: Globe2 },
+      { title: 'Radar do Mercado',    url: '/radar',        icon: Newspaper },
+      { title: 'Atendimento',         url: '/tickets',      icon: Activity },
     ],
   },
   {
-    title: 'Engine de Vendas',
+    title: 'Vendas',
     items: [
-      { title: 'Funil de Vendas',    url: '/kanban/sales', icon: KanbanSquare },
-      { title: 'Propostas IA',       url: '/quotations',   icon: FileText },
-      { title: 'Base de Clientes',   url: '/clients',      icon: Users },
-      { title: 'Pacotes e Grupos',   url: '/group-trips',  icon: TrendingUp },
+      { title: 'Funil de Vendas',     url: '/kanban/sales', icon: KanbanSquare },
+      { title: 'Propostas & Cotações',url: '/quotations',   icon: FileText },
+      { title: 'Base de Clientes',    url: '/clients',      icon: Users },
+      { title: 'Pacotes & Grupos',    url: '/group-trips',  icon: TrendingUp },
     ],
   },
   {
-    title: 'Execução & Logs',
+    title: 'Operação',
     items: [
-      { title: 'Minhas Tarefas',     url: '/kanban/tasks',     icon: Zap },
-      { title: 'Gestão de Embarque', url: '/kanban/departures',icon: Anchor },
-      { title: 'Roteiros Digitais',  url: '/itineraries',      icon: Map },
+      { title: 'Minhas Tarefas',      url: '/kanban/tasks',     icon: Zap },
+      { title: 'Gestão de Embarque',  url: '/kanban/departures',icon: Anchor },
+      { title: 'Roteiros Digitais',   url: '/itineraries',      icon: Map },
     ],
   },
   {
-    title: 'Intelligence Lab',
+    title: 'Ferramentas',
     items: [
-      { title: 'Especialistas',      url: '/guides',       icon: Book },
-      { title: 'Hotéis e Resorts',   url: '/hotels',          icon: Building2 },
-      { title: 'Destinos VIP',       url: '/destinations',    icon: MapPin },
-      { title: 'IA Squads',          url: '/automations',          icon: Bot },
-      { title: 'Turis Intel',        url: '/ai-chat',              icon: Sparkles },
-      { title: 'Integrações B2B',    url: '/integrations',         icon: Plug },
+      { title: 'Especialistas',       url: '/guides',       icon: Book },
+      { title: 'Hotéis e Resorts',    url: '/hotels',          icon: Building2 },
+      { title: 'Destinos',            url: '/destinations',    icon: MapPin },
+      { title: 'Automações IA',       url: '/automations',          icon: Bot },
+      { title: 'Assistente IA',       url: '/ai-chat',              icon: Sparkles },
+      { title: 'Integrações',         url: '/integrations',         icon: Plug },
     ],
   },
 ];
@@ -96,18 +96,18 @@ export function AppSidebar() {
     <Sidebar collapsible="icon" className="border-r border-vj-border/60 bg-white no-scrollbar">
       <SidebarContent className="no-scrollbar flex flex-col h-full">
         
-        {/* ✈️ OMEGA V4 LOGO SECTION - SHADOWLESS */}
-        <div className="flex shrink-0 items-center gap-4 px-8 py-10">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[20px] bg-vj-bg-dark border border-white/10 transition-transform hover:rotate-6">
-            <Zap className="h-6 w-6 text-vj-green fill-vj-green" />
+        {/* Logo alinhado com o header global (60px) */}
+        <div className="flex h-[60px] shrink-0 items-center gap-3 px-4 border-b border-vj-border/60">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-vj-bg-dark border border-white/10">
+            <Zap className="h-4 w-4 text-vj-green fill-vj-green" />
           </div>
           {!collapsed && (
             <div className="flex flex-col min-w-0">
-              <span className="truncate text-sm font-black text-vj-txt tracking-tighter uppercase leading-none">
+              <span className="truncate text-sm font-black text-vj-txt tracking-tight leading-none">
                 Turis Agências
               </span>
-              <span className="text-[10px] font-bold text-vj-green uppercase tracking-[0.2em] mt-1.5">
-                Elite Squad
+              <span className="text-[10px] font-medium text-vj-txt3 mt-0.5 truncate">
+                {organization?.name || 'Painel de Controle'}
               </span>
             </div>
           )}

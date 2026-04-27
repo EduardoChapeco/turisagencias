@@ -342,6 +342,47 @@
     transform: rotate(1.5deg) scale(1.02);
     z-index: 9999;
   }
+
+  /* ════════════════════════════════════════════
+     ALERT BANNER — fonte de verdade para banners de aviso
+     Usar com: .alert-banner.warning | .danger | .info | .success
+  ════════════════════════════════════════════ */
+  .alert-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    border-radius: var(--r-xl);
+    border: 1px solid var(--vj-border);
+    background: var(--vj-bg);
+  }
+  .alert-banner.warning {
+    background-color: var(--vj-orange-bg);
+    border-color: var(--vj-orange);
+  }
+  .alert-banner.danger {
+    background-color: var(--vj-red-bg);
+    border-color: var(--vj-red);
+  }
+  .alert-banner.info {
+    background-color: var(--vj-blue-bg);
+    border-color: var(--vj-blue);
+  }
+  .alert-banner.success {
+    background-color: var(--vj-green-bg);
+    border-color: var(--vj-green);
+  }
+  .alert-banner-title {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--vj-txt);
+  }
+  .alert-banner-desc {
+    font-size: 0.75rem;
+    color: var(--vj-txt2);
+    margin-top: 0.125rem;
+  }
 }
 
 @layer utilities {

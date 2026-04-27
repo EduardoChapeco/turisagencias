@@ -130,19 +130,20 @@ export default function Automations() {
           }
         />
 
-        {/* Seed missing rules warning */}
+        {/* Seed missing rules warning — using alert-banner design system class */}
         {hasMissingRules && (
-          <div className="bento-card p-4 bg-amber-50 border-amber-200 flex items-center justify-between gap-4">
+          <div className="alert-banner warning">
             <div>
-              <p className="font-bold text-amber-800 text-sm">Regras padrão não configuradas</p>
-              <p className="text-xs text-amber-700 mt-0.5">
+              <p className="alert-banner-title">Regras padrão não configuradas</p>
+              <p className="alert-banner-desc">
                 {missingRules.length} automação(ões) ainda não foram criadas para esta organização.
               </p>
             </div>
             <Button
               onClick={handleSeed}
               disabled={seeding}
-              className="shrink-0 bg-amber-600 hover:bg-amber-700 text-white rounded-xl"
+              className="shrink-0 text-white rounded-xl font-bold"
+              style={{ backgroundColor: 'var(--vj-orange)' }}
             >
               {seeding ? <Loader2 size={14} className="animate-spin mr-2" /> : null}
               Criar Regras Padrão

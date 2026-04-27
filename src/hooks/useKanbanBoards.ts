@@ -615,23 +615,83 @@ export function useKanbanRealtime(boardId?: string) {
   useEffect(() => {
     if (!boardId) return;
 
-    // Listen to changes on kanban_cards table for this board
+    type CardPayload = {
+      eventType: 'INSERT' | 'UPDATE' | 'DELETE';
+      new: Record<string, unknown>;
+      old: Record<string, unknown>;
+    };
+
+    type ColumnPayload = {
+      eventType: 'INSERT' | 'UPDATE' | 'DELETE';
+      new: Record<string, unknown>;
+      old: Record<string, unknown>;
+    };
+
+    // ── Granular card update — avoids full board reload ──
+    const handleCardChange = (payload: CardPayload) => {
+      const boardQueryKey = ['kanban-board', undefined, undefined];
+
+      // Try to update the cache surgically
+      const updated = queryClient.setQueriesData(
+        { queryKey: ['kanban-board'] },
+        (old: { board: unknown; columns: unknown[]; cards: Record<string, unknown>[] } | undefined) => {
+          if (!old?.cards) return old;
+
+          if (payload.eventType === 'DELETE') {
+            // Remove the deleted card from cache
+            return {
+              ...old,
+              cards: old.cards.filter((c) => c.id !== payload.old.id),
+            };
+          }
+
+          if (payload.eventType === 'INSERT') {
+            // Add new card only if it belongs to this board and not already present
+            const incoming = payload.new;
+            if (incoming.board_id !== boardId) return old;
+            const alreadyExists = old.cards.some((c) => c.id === incoming.id);
+            if (alreadyExists) return old;
+            return { ...old, cards: [...old.cards, normalizeKanbanCard(incoming)] };
+          }
+
+          if (payload.eventType === 'UPDATE') {
+            // Merge updated fields into existing card
+            return {
+              ...old,
+              cards: old.cards.map((c) =>
+                c.id === payload.new.id
+                  ? normalizeKanbanCard({ ...c, ...payload.new })
+                  : c
+              ),
+            };
+          }
+
+          return old;
+        }
+      );
+
+      // Fallback: if no cache was found to update, do a full refetch
+      if (!updated || updated.length === 0) {
+        queryClient.invalidateQueries({ queryKey: ['kanban-board'] });
+      }
+    };
+
+    // ── Column changes require full board reload (structure changed) ──
+    const handleColumnChange = (_payload: ColumnPayload) => {
+      queryClient.invalidateQueries({ queryKey: ['kanban-board'] });
+    };
+
     const channel = supabase
       .channel(`kanban_realtime_${boardId}`)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'kanban_cards', filter: `board_id=eq.${boardId}` },
-        () => {
-          // Invalidate the specific board query
-          queryClient.invalidateQueries({ queryKey: ['kanban-board'] });
-        }
+        handleCardChange as Parameters<typeof channel.on>[2]
       )
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'kanban_columns', filter: `board_id=eq.${boardId}` },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ['kanban-board'] });
-        }
+        handleColumnChange as Parameters<typeof channel.on>[2]
       )
       .subscribe();
 

@@ -1,72 +1,17 @@
-/* Premium Design Tokens & Utilities - Turis Agências */
+/* Premium Design Extras — Turis Agências */
 /* AEGIS Policy: ZERO box-shadow, flat design only */
+/* NOTA: As classes .premium-card, .premium-button, .glass-button, .bento-card
+   são definidas EXCLUSIVAMENTE em index.css (@layer components).
+   Este arquivo contém APENAS gradientes decorativos e utilidades extras. */
 
 :root {
-  --premium-border: var(--vj-border);
   --glass-bg: rgba(255, 255, 255, 0.7);
   --vj-green-gradient: linear-gradient(135deg, #1a7a4a 0%, #22c55e 100%);
   --vj-dark-gradient: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  --vj-orange-gradient: linear-gradient(135deg, #c2410c 0%, #d4511a 100%);
 }
 
-.premium-card {
-  background: var(--vj-white);
-  border: 1px solid var(--premium-border);
-  border-radius: 24px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.premium-card:hover {
-  transform: translateY(-2px);
-  border-color: var(--vj-green);
-}
-
-.glass-card {
-  background: var(--glass-bg);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.4);
-}
-
-.bento-grid-premium {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  grid-auto-rows: minmax(140px, auto);
-  gap: 16px;
-}
-
-@media (max-width: 1024px) {
-  .bento-grid-premium {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (max-width: 640px) {
-  .bento-grid-premium {
-    grid-template-columns: 1fr;
-  }
-}
-
-.highlight-text {
-  background: var(--vj-green-gradient);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  font-weight: 800;
-}
-
-.stat-value {
-  font-family: 'Instrument Serif', serif;
-  font-size: 3.5rem;
-  line-height: 1;
-  letter-spacing: -0.02em;
-}
-
-.premium-button {
-  border-radius: 14px;
-  font-weight: 600;
-  transition: all 0.2s ease;
-}
-
+/* ── Gradientes decorativos de card ── */
 .card-gradient-green {
   background: linear-gradient(135deg, rgba(26, 122, 74, 0.05) 0%, rgba(34, 197, 94, 0.02) 100%);
 }
@@ -79,12 +24,57 @@
   background: linear-gradient(135deg, rgba(139, 92, 246, 0.05) 0%, rgba(167, 139, 250, 0.02) 100%);
 }
 
-/* Sophisticated animations */
+.card-gradient-blue {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(99, 102, 241, 0.02) 100%);
+}
+
+/* ── Texto com gradiente ── */
+.highlight-text {
+  background: var(--vj-green-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 800;
+}
+
+.highlight-text-orange {
+  background: var(--vj-orange-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 800;
+}
+
+/* ── Tipografia de estatísticas ── */
+.stat-value {
+  font-family: 'Instrument Serif', serif;
+  font-size: 3.5rem;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.stat-value-sm {
+  font-family: 'Instrument Serif', serif;
+  font-size: 2rem;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+/* ── Animações de interação ── */
 .hover-reveal {
   opacity: 0;
   transition: opacity 0.3s ease;
 }
 
-.premium-card:hover .hover-reveal {
+.premium-card:hover .hover-reveal,
+.bento-card:hover .hover-reveal {
   opacity: 1;
+}
+
+/* ── Glass card extra ── */
+.glass-card-premium {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
 }

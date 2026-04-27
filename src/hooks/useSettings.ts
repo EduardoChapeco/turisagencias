@@ -19,7 +19,21 @@ export function useTeamMembers() {
         .eq('org_id', organization!.id)
         .order('created_at');
       if (error) throw error;
-      return data ?? [];
+      
+      const profiles = data ?? [];
+      if (profiles.length === 0) return profiles;
+      
+      const { data: rolesData, error: rolesError } = await supabase
+        .from('user_roles')
+        .select('user_id, role')
+        .in('user_id', profiles.map(p => p.user_id));
+        
+      if (rolesError) throw rolesError;
+      
+      return profiles.map(p => {
+        const userRole = rolesData?.find(r => r.user_id === p.user_id);
+        return { ...p, role: userRole?.role ?? 'agent' };
+      });
     },
     enabled: !!organization?.id,
   });
@@ -53,13 +67,19 @@ export function useUpdateMemberRole() {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async ({ profileId, role, is_active }: { profileId: string; role?: string; is_active?: boolean }) => {
-      const updates: Record<string, any> = {};
-      if (role !== undefined) updates.role = role;
-      if (is_active !== undefined) updates.is_active = is_active;
+    mutationFn: async ({ profileId, userId, role, is_active }: { profileId: string; userId?: string; role?: string; is_active?: boolean }) => {
+      if (role !== undefined && userId) {
+        const { error: delError } = await supabase.from('user_roles').delete().eq('user_id', userId);
+        if (delError) throw delError;
+        
+        const { error: insError } = await supabase.from('user_roles').insert({ user_id: userId, role });
+        if (insError) throw insError;
+      }
 
-      const { error } = await settingsDb.from('profiles').update(updates).eq('id', profileId);
-      if (error) throw error;
+      if (is_active !== undefined) {
+        const { error } = await settingsDb.from('profiles').update({ is_active }).eq('id', profileId);
+        if (error) throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['team-members', organization?.id] });

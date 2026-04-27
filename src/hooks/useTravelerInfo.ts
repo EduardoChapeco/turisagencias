@@ -108,9 +108,10 @@ export const useSaveTravelerInfoPage = () => {
       if (!currentOrg?.id) throw new Error('No organization selected');
 
       const isUpdate = !!pageData.id;
+      const { trip_id, ...cleanData } = pageData;
 
       if (isUpdate) {
-        const { id, ...updateData } = pageData;
+        const { id, ...updateData } = cleanData;
         const { data, error } = await travelerInfoPages()
           .update(updateData)
           .eq('id', id)
@@ -123,8 +124,8 @@ export const useSaveTravelerInfoPage = () => {
         }
         return data as TravelerInfoPage;
       } else {
-        const insertPayload: TravelerInfoPageInsert = {
-          ...pageData,
+        const insertPayload: Omit<TravelerInfoPageInsert, 'trip_id'> = {
+          ...cleanData,
           org_id: currentOrg.id,
           author_id: session?.user?.id ?? null,
         };

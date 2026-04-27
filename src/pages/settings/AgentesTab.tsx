@@ -84,7 +84,7 @@ export function AgentesTab() {
                   <p className="text-[10px] text-muted-foreground uppercase tracking-widest">{roleLabel(m.role)}</p>
                 </div>
                 {profile?.id !== m.id && (
-                   <Button variant="ghost" size="icon" className="h-8 w-8 text-zinc-400" onClick={() => updateRole.mutate({ profileId: m.id, is_active: !m.is_active })}>
+                   <Button variant="ghost" size="icon" className="h-8 w-8 text-zinc-400" onClick={() => updateRole.mutate({ profileId: m.id, userId: m.user_id, is_active: !m.is_active })}>
                      {m.is_active ? <UserX size={14} /> : <UserCheck size={14} className="text-vj-green" />}
                    </Button>
                 )}

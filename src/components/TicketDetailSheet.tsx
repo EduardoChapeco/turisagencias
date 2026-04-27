@@ -69,7 +69,7 @@ export function TicketDetailSheet({ id, open, onClose }: { id: string | null; op
                 </Button>
             )}
           </div>
-          <Button variant="outline" onClick={onClose}>Fechar</Button>
+          <Button variant="outline" onClick={onClose} className="px-8">Fechar</Button>
         </div>
       }
     >

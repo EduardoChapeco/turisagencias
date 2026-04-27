@@ -47,10 +47,16 @@ export function AppLayout({ children, fullHeight }: { children: React.ReactNode;
 
             <div className="flex shrink-0 items-center gap-4">
               {/* Global Search Bar - Premium Style */}
-              <div className="hidden md:flex items-center gap-3 bg-zinc-100/80 border border-transparent focus-within:border-vj-green/30 focus-within:bg-white px-4 py-2 rounded-2xl w-64 lg:w-80 transition-all duration-300">
-                <Search className="w-4 h-4 text-vj-txt3" />
-                <Input placeholder="Buscar no Turis Agências..." className="bg-transparent border-none text-xs h-6 p-0 focus-visible:ring-0 placeholder:text-vj-txt3/60 font-medium" />
-                <span className="text-[10px] font-black bg-white border border-zinc-200 px-2 py-0.5 rounded-lg text-vj-txt3 ">⌘K</span>
+              <div className="hidden md:flex items-center relative w-64 lg:w-80 group">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-vj-txt3 group-focus-within:text-vj-green transition-colors z-10" />
+                <Input 
+                  placeholder="Buscar no Turis Agências..." 
+                  className="pl-11 pr-12 h-11 bg-zinc-100/80 border-transparent focus:bg-white focus:border-vj-green/30 rounded-2xl transition-all duration-300" 
+                />
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1 bg-white border border-vj-border px-1.5 py-0.5 rounded-lg text-[9px] font-black text-vj-txt3 pointer-events-none">
+                  <span className="opacity-50 font-sans">⌘</span>
+                  <span>K</span>
+                </div>
               </div>
 
               <div className="h-6 w-px bg-vj-border mx-2 hidden md:block" />

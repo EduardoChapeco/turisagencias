@@ -5,24 +5,24 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-[100px] font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-45 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-45 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 active:scale-95",
   {
     variants: {
       variant: {
-        default: "bg-[var(--green)] text-white hover:bg-[var(--green)]/90 border-none ",
-        destructive: "bg-[var(--red)] text-white hover:bg-[var(--red)]/90 ",
-        outline: "border border-[var(--border2)] bg-transparent text-[var(--txt)] hover:bg-[var(--bg)]",
-        secondary: "bg-[var(--bg)] text-[var(--txt)] hover:bg-[var(--border)]",
-        ghost: "bg-transparent text-[var(--green)] hover:underline ",
-        link: "text-[var(--blue)] underline-offset-4 hover:underline ",
-        dark: "bg-[var(--txt)] text-white hover:bg-black border-none",
-        dangerGhost: "bg-transparent border border-[var(--red)] text-[var(--red)] hover:bg-[var(--red-bg)]",
+        default: "bg-vj-green text-white hover:bg-vj-green/90 border-none shadow-none",
+        destructive: "bg-vj-red text-white hover:bg-vj-red/90 border-none shadow-none",
+        outline: "border border-vj-border bg-white text-vj-txt hover:bg-zinc-50 shadow-none",
+        secondary: "bg-zinc-100 text-vj-txt hover:bg-zinc-200 border-none shadow-none",
+        ghost: "bg-transparent text-vj-green hover:bg-vj-green/5 border-none shadow-none",
+        link: "text-vj-blue underline-offset-4 hover:underline border-none shadow-none",
+        dark: "bg-vj-bg-dark text-white hover:bg-black border-none shadow-none",
+        dangerGhost: "bg-transparent border border-vj-red text-vj-red hover:bg-vj-red-bg shadow-none",
       },
       size: {
-        default: "px-[16px] py-[7px] text-[12px]",
-        sm: "px-[10px] py-[4px] text-[11px]",
-        lg: "px-[20px] py-[10px] text-[13px]",
-        icon: "h-9 w-9",
+        default: "h-11 px-6 text-[12px] uppercase tracking-widest font-black",
+        sm: "h-9 px-4 text-[11px] uppercase tracking-wider font-bold",
+        lg: "h-12 px-8 text-[13px] uppercase tracking-widest font-black",
+        icon: "h-11 w-11",
       },
     },
     defaultVariants: {

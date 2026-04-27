@@ -69,7 +69,7 @@ export default function Itineraries() {
           <Button
             onClick={() => setShowSheet(true)}
             disabled={isCreating}
-            className="rounded-full px-6 gap-2"
+            className="px-6 gap-2"
           >
             <Plus className="w-4 h-4" />
             {isCreating ? 'Criando...' : 'Criar Roteiro'}
@@ -91,7 +91,7 @@ export default function Itineraries() {
             <p className="text-vj-txt3 mb-8 max-w-md">
               Crie seu primeiro roteiro. Use nossa IA para gerar rotas completas com mapas e dicas.
             </p>
-            <Button onClick={() => setShowSheet(true)} disabled={isCreating} size="lg" className="rounded-full px-8 gap-2">
+            <Button onClick={() => setShowSheet(true)} disabled={isCreating} className="px-8 gap-2">
               <Plus className="w-5 h-5" /> Começar a Criar
             </Button>
           </div>

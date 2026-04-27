@@ -153,15 +153,15 @@ export function QuotationDetailSheet({ id, open, onClose }: { id: string | null;
         { id: 'proposta', label: 'Pitch' },
       ]}
       footer={
-        <div className="flex items-center gap-2 w-full justify-end">
-          <Button variant="outline" className="rounded-lg font-bold h-9 text-xs" onClick={onClose}>Fechar</Button>
+        <div className="flex items-center gap-3 w-full justify-end">
+          <Button variant="outline" className="font-bold px-8" onClick={onClose}>Fechar</Button>
           {quotation?.status === 'draft' && (
             <Button
               onClick={() => sendQuotation.mutate(id!)}
               disabled={sendQuotation.isPending}
-              className="bg-vj-green hover:bg-vj-green/90 text-white rounded-lg h-9 px-6 text-xs font-bold "
+              className="px-8 font-bold"
             >
-              <Send className="mr-2 h-3.5 w-3.5" /> Enviar Proposta
+              <Send className="mr-2 h-4 w-4" /> Enviar Proposta
             </Button>
           )}
         </div>

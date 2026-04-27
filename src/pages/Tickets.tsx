@@ -391,12 +391,12 @@ export default function Tickets() {
           description="Protocolos, solicitações e suporte aos viajantes com linha do tempo completa."
           icon={LifeBuoy}
           actions={
-          <Button
-            onClick={() => setCreateOpen(true)}
-            className="rounded-full px-5 h-10 bg-vj-green hover:bg-vj-green/90  font-bold transition-all active:scale-95"
-          >
-            <Plus size={16} className="mr-2" /> Novo Protocolo
-          </Button>
+            <Button
+              onClick={() => setCreateOpen(true)}
+              className="px-6 font-bold transition-all"
+            >
+              <Plus size={16} className="mr-2" /> Novo Protocolo
+            </Button>
           }
         />
 
@@ -433,7 +433,7 @@ export default function Tickets() {
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Buscar por assunto..."
-              className="pl-9 h-10 rounded-xl bg-white border-zinc-200"
+              className="pl-9 h-11"
             />
             {search && (
               <button

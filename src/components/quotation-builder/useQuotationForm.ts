@@ -81,7 +81,7 @@ export interface InstallmentOption {
 const makeId = () => Math.random().toString(36).substring(2, 9);
 
 type PricingMode = 'per_person' | 'per_couple' | 'total';
-type PdfTemplate = 'executivo' | 'apresentacao' | 'exce_tur';
+type LayoutMode = 'classico' | 'presentation' | 'template_excetur';
 
 export interface QuotationFormState {
   client_id: string;
@@ -96,7 +96,7 @@ export interface QuotationFormState {
   media_urls: string[];
   included_items: string[];
   excluded_items: string[];
-  pdf_template: PdfTemplate;
+  layout_mode: LayoutMode;
   hotel_name: string;
   hotel_stars: string;
   check_in: string;
@@ -147,7 +147,7 @@ export function useQuotationForm(initialClientId?: string) {
     media_urls: [],
     included_items: [],
     excluded_items: [],
-    pdf_template: 'executivo',
+    layout_mode: 'classico',
     hotel_name: '',
     hotel_stars: '4',
     check_in: '',

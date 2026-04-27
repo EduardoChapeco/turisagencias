@@ -35,7 +35,7 @@ export default function Onboarding() {
     if (!user || loading) return;
 
     const agencyName = form.name.trim();
-    const slug = agencyName
+    let slug = agencyName
       .toLowerCase()
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '')
@@ -51,14 +51,24 @@ export default function Onboarding() {
     setLoading(true);
     const orgId = crypto.randomUUID();
 
-    const { error: orgError } = await supabase.from('organizations').insert({
-      id: orgId,
-      name: agencyName,
-      slug,
-      whatsapp: form.whatsapp || null,
-      email: form.email || null,
-      phone: form.phone || null,
-    });
+    // Try inserting with the base slug. If it collides (unique constraint), append a short random suffix.
+    let orgError: any = null;
+    for (let attempt = 0; attempt < 5; attempt++) {
+      const candidateSlug = attempt === 0 ? slug : `${slug}-${Math.random().toString(36).slice(2, 7)}`;
+      const { error } = await supabase.from('organizations').insert({
+        id: orgId,
+        name: agencyName,
+        slug: candidateSlug,
+        whatsapp: form.whatsapp || null,
+        email: form.email || null,
+        phone: form.phone || null,
+        primary_color: form.primaryColor || '#00D37B',
+      });
+      orgError = error;
+      if (!error) break;
+      // Only retry on unique constraint violations
+      if (!error.message?.includes('unique') && !error.message?.includes('duplicate')) break;
+    }
 
     if (orgError) {
       toast({ title: 'Erro ao criar agência', description: orgError.message, variant: 'destructive' });

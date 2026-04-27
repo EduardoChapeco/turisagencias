@@ -140,14 +140,14 @@ export default function PublicQuotation() {
   const pricingLabel = pricingMode === 'per_couple' ? 'Por casal' : pricingMode === 'per_family' ? 'Por família' : pricingMode === 'total' ? 'Total' : 'Por pessoa';
   const whatsappUrl = data.org_whatsapp ? `https://wa.me/55${data.org_whatsapp.replace(/\D/g, '')}` : null;
   const agentInitials = data.org_name ? data.org_name.split(' ').slice(0, 2).map((w: string) => w[0]).join('').toUpperCase() : 'AG';
-  const pdfTemplate = (data as Record<string, any>).pdf_template || 'executivo';
+  const layoutMode = (data as Record<string, any>).layout_mode || 'classico';
   const daysLeft = data.valid_until ? Math.ceil((new Date(data.valid_until).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : null;
 
   return (
     <>
       <div className="hidden print:block">
-        {pdfTemplate === 'apresentacao' ? <PdfTemplateApresentacao data={data} /> :
-         pdfTemplate === 'exce_tur' ? <PdfTemplateExceTur data={data} /> :
+        {layoutMode === 'presentation' ? <PdfTemplateApresentacao data={data} /> :
+         layoutMode === 'template_excetur' ? <PdfTemplateExceTur data={data} /> :
          <PdfTemplateExecutivo data={data} />}
       </div>
 

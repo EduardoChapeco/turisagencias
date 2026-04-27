@@ -150,7 +150,7 @@ export function QuotationBuilderSheet({ open, onClose, clientId, onCreated }: Qu
       included_items: form.included_items,
       excluded_items: form.excluded_items,
       media_urls: form.media_urls,
-      pdf_template: form.pdf_template,
+      layout_mode: form.layout_mode,
     } as any);
     if (result) { onClose(); onCreated?.(result.id); }
   };
@@ -448,14 +448,14 @@ export function QuotationBuilderSheet({ open, onClose, clientId, onCreated }: Qu
                  
                  <div>
                     <h3 className="font-bold text-lg mb-2">Formato Visual (PDF / Link Público)</h3>
-                    <Select value={form.pdf_template} onValueChange={(v) => updateForm('pdf_template', v)}>
+                    <Select value={form.layout_mode || 'classico'} onValueChange={(v) => updateForm('layout_mode', v)}>
                       <SelectTrigger className="bg-zinc-50 border-zinc-200 rounded-xl h-12">
                         <SelectValue placeholder="Selecione o template visual" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="executivo">Modelo Executivo (Padrão)</SelectItem>
-                        <SelectItem value="apresentacao">Modelo Apresentação (Imagens Grandes)</SelectItem>
-                        <SelectItem value="exce_tur">Modelo Exce Tur (Premium)</SelectItem>
+                        <SelectItem value="classico">Modelo Executivo (Padrão)</SelectItem>
+                        <SelectItem value="presentation">Modelo Apresentação (Imagens Grandes)</SelectItem>
+                        <SelectItem value="template_excetur">Modelo Exce Tur (Premium)</SelectItem>
                       </SelectContent>
                     </Select>
                  </div>

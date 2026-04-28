@@ -6,9 +6,10 @@ from pydantic import BaseModel
 from langchain_groq import ChatGroq
 from langchain_core.messages import HumanMessage, SystemMessage
 from langgraph.graph import StateGraph, END
-from utils.supabase_client import supabase
+from utils.supabase_client import get_supabase
 
 logger = logging.getLogger(__name__)
+supabase = get_supabase()
 
 class AgentState(BaseModel):
     org_id: str

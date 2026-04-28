@@ -1,285 +1,264 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { AppLayout } from '@/components/AppLayout';
 import { PageHeader } from '@/components/ui/PageHeader';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { SheetPage } from '@/components/ui/SheetPage';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, UserPlus, Users, MoreVertical, Edit2, Trash2, MailIcon, Shield, Percent } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Mail, Search, UserCheck, UserPlus, UserX, Users } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
-import { useTeamMembers, useCreateTeamMember, useUpdateTeamMember, useDeleteTeamMember, TeamMember } from '@/hooks/useTeam';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { PageSkeleton } from '@/components/ui/EmptyState';
+import { useInviteAgent, useTeamMembers, useUpdateMemberRole } from '@/hooks/useSettings';
+import type { AppRole } from '@/types';
 
-const TEAM_SECTIONS = [
-  { id: 'dados', label: 'Dados do Agente', icon: UserPlus },
-  { id: 'acesso', label: 'Acesso e Comissão', icon: Shield },
-];
+const INVITABLE_ROLES: AppRole[] = ['agent', 'support', 'org_admin'];
+const MANAGEABLE_ROLES: AppRole[] = ['agent', 'support', 'org_admin', 'client'];
+
+const ROLE_LABEL: Record<AppRole, string> = {
+  super_admin: 'Super Admin',
+  org_admin: 'Administrador',
+  agent: 'Agente',
+  support: 'Suporte',
+  client: 'Cliente',
+};
+
+function roleBadge(role: AppRole) {
+  const variant =
+    role === 'super_admin'
+      ? 'bg-red-100 text-red-700'
+      : role === 'org_admin'
+        ? 'bg-purple-100 text-purple-700'
+        : role === 'support'
+          ? 'bg-cyan-100 text-cyan-700'
+          : role === 'client'
+            ? 'bg-zinc-100 text-zinc-700'
+            : 'bg-blue-100 text-blue-700';
+
+  return <span className={`rounded px-2 py-1 text-xs font-bold uppercase tracking-wider ${variant}`}>{ROLE_LABEL[role]}</span>;
+}
 
 export default function Team() {
   const { profile } = useAuthStore();
-  const { data: members, isLoading } = useTeamMembers(profile?.org_id);
-  const createMember = useCreateTeamMember();
-  const updateMember = useUpdateTeamMember();
-  const deleteMember = useDeleteTeamMember();
+  const { data: members, isLoading } = useTeamMembers();
+  const inviteAgent = useInviteAgent();
+  const updateMember = useUpdateMemberRole();
 
   const [search, setSearch] = useState('');
-  const [isSheetOpen, setIsSheetOpen] = useState(false);
-  const [editingMember, setEditingMember] = useState<TeamMember | null>(null);
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteRole, setInviteRole] = useState<AppRole>('agent');
 
-  const [formData, setFormData] = useState({
-    full_name: '',
-    email: '',
-    role: 'agent' as TeamMember['role'],
-    commission_rate: 0,
-    status: 'active' as TeamMember['status']
-  });
+  const filteredMembers = useMemo(() => {
+    const term = search.trim().toLowerCase();
+    if (!term) return members ?? [];
 
-  const handleOpenNew = () => {
-    setEditingMember(null);
-    setFormData({ full_name: '', email: '', role: 'agent', commission_rate: 0, status: 'pending' });
-    setIsSheetOpen(true);
-  };
-
-  const handleOpenEdit = (m: TeamMember) => {
-    setEditingMember(m);
-    setFormData({
-      full_name: m.full_name,
-      email: m.email,
-      role: m.role,
-      commission_rate: m.commission_rate,
-      status: m.status
+    return (members ?? []).filter((member: any) => {
+      const fullName = `${member.first_name ?? ''} ${member.last_name ?? ''}`.trim().toLowerCase();
+      const email = (member.email ?? '').toLowerCase();
+      return fullName.includes(term) || email.includes(term);
     });
-    setIsSheetOpen(true);
+  }, [members, search]);
+
+  const handleInvite = async () => {
+    const email = inviteEmail.trim().toLowerCase();
+    if (!email) return;
+    await inviteAgent.mutateAsync({ email, role: inviteRole });
+    setInviteEmail('');
+    setInviteRole('agent');
   };
 
-  const handleSubmit = async () => {
-    if (!formData.full_name || !formData.email) return;
-    if (editingMember) {
-      await updateMember.mutateAsync({ id: editingMember.id, ...formData });
-    } else {
-      await createMember.mutateAsync({ org_id: profile!.org_id!, ...formData });
-    }
-    setIsSheetOpen(false);
+  const handleRoleChange = async (member: any, role: AppRole) => {
+    await updateMember.mutateAsync({ profileId: member.id, userId: member.user_id, role });
   };
 
-  const isPending = createMember.isPending || updateMember.isPending;
-
-  const filtered = members?.filter(m => m.full_name.toLowerCase().includes(search.toLowerCase()) || m.email.toLowerCase().includes(search.toLowerCase())) || [];
-
-  if (isLoading) return <AppLayout><PageSkeleton /></AppLayout>;
+  const handleToggleActive = async (member: any) => {
+    await updateMember.mutateAsync({
+      profileId: member.id,
+      userId: member.user_id,
+      is_active: !member.is_active,
+    });
+  };
 
   return (
     <AppLayout fullHeight>
-      <div className="flex flex-col h-full gap-4">
-        <PageHeader 
-          title="Equipe & Comissionamento" 
-          description="Controle de acesso, papéis e taxas de comissionamento de rede."
+      <div className="flex h-full min-h-0 flex-col gap-4">
+        <PageHeader
+          title="Equipe"
+          description="Convites, acessos e perfis conectados ao auth real da organizacao."
           icon={Users}
-          actions={
-            <Button onClick={handleOpenNew} className="rounded-full gap-2 px-6">
-              <UserPlus size={16}/> Convidar Membro
-            </Button>
-
-          }
         />
 
-        <div className="bg-white dark:bg-zinc-900 rounded-3xl p-6 border  flex-1 flex flex-col min-h-0">
-          <div className="relative mb-6 max-w-sm">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-4 h-4" />
-            <Input 
-              placeholder="Buscar por nome ou email..." 
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              className="pl-10 rounded-xl"
-            />
-          </div>
+        <div className="grid min-h-0 flex-1 gap-4 lg:grid-cols-[360px_minmax(0,1fr)]">
+          <Card className="rounded-3xl border">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <UserPlus className="h-4 w-4 text-vj-green" />
+                Convidar membro
+              </CardTitle>
+              <CardDescription>Cria convite real via Supabase Auth e vincula a organizacao.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-zinc-700">E-mail</label>
+                <Input
+                  type="email"
+                  placeholder="agente@agencia.com.br"
+                  value={inviteEmail}
+                  onChange={(event) => setInviteEmail(event.target.value)}
+                  className="h-11 rounded-xl"
+                />
+              </div>
 
-          <div className="flex-1 overflow-auto rounded-xl border">
-            <table className="w-full text-sm text-left">
-              <thead className="bg-muted sticky top-0 z-10 text-xs uppercase text-muted-foreground">
-                <tr>
-                  <th className="px-4 py-3 font-medium">Funcionário / Agente</th>
-                  <th className="px-4 py-3 font-medium">Acesso</th>
-                  <th className="px-4 py-3 font-medium">Status</th>
-                  <th className="px-4 py-3 font-medium">Taxa de Comissão</th>
-                  <th className="px-4 py-3 font-medium text-right">Ações</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.length === 0 ? (
-                  <tr>
-                    <td colSpan={5} className="py-16 text-center">
-                      <div className="flex flex-col items-center gap-3">
-                        <div className="p-4 bg-zinc-100 rounded-full">
-                          <Users className="h-8 w-8 text-zinc-400" />
-                        </div>
-                        <div>
-                          <p className="font-semibold text-zinc-700">Nenhum membro na equipe</p>
-                          <p className="text-sm text-zinc-500 mt-1">Convide agentes para colaborar e gerenciar vendas.</p>
-                        </div>
-                        <Button onClick={handleOpenNew} className="rounded-full mt-2 gap-2 bg-vj-green hover:bg-vj-green/90">
-                          <UserPlus size={14} /> Convidar Primeiro Membro
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                ) : (
-                  filtered.map(m => (
-                    <tr key={m.id} className="border-b last:border-0 hover:bg-muted/50 transition-colors">
-                      <td className="px-4 py-3">
-                        <div className="flex flex-col">
-                           <span className="font-bold">{m.full_name}</span>
-                           <span className="text-xs text-muted-foreground flex items-center gap-1"><MailIcon size={10}/>{m.email}</span>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3">
-                         {{
-                           admin: <span className="px-2 py-1 rounded text-xs uppercase font-bold tracking-wider bg-purple-100 text-purple-700">Administrador</span>,
-                           agent: <span className="px-2 py-1 rounded text-xs uppercase font-bold tracking-wider bg-blue-100 text-blue-700">Agente</span>,
-                           viewer: <span className="px-2 py-1 rounded text-xs uppercase font-bold tracking-wider bg-zinc-100 text-zinc-600">Visualizador</span>,
-                           org_admin: <span className="px-2 py-1 rounded text-xs uppercase font-bold tracking-wider bg-purple-100 text-purple-700">Org. Admin</span>,
-                           super_admin: <span className="px-2 py-1 rounded text-xs uppercase font-bold tracking-wider bg-red-100 text-red-700">Super Admin</span>,
-                           support: <span className="px-2 py-1 rounded text-xs uppercase font-bold tracking-wider bg-cyan-100 text-cyan-700">Suporte</span>,
-                         }[m.role as string] ?? <span className="px-2 py-1 rounded text-xs uppercase font-bold tracking-wider bg-zinc-100 text-zinc-600">{m.role}</span>}
-                      </td>
-                      <td className="px-4 py-3">
-                         <Badge variant={m.status === 'active' ? 'default' : m.status === 'pending' ? 'secondary' : 'destructive'} 
-                                className={m.status === 'active' ? 'bg-green-500' : m.status === 'pending' ? 'bg-amber-500 hover:bg-amber-600' : ''}>
-                           {m.status === 'pending' ? 'Aguardando Login' : m.status === 'active' ? 'Ativo' : 'Suspenso'}
-                         </Badge>
-                      </td>
-                      <td className="px-4 py-3 font-semibold">{m.commission_rate}%</td>
-                      <td className="px-4 py-3 text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
-                              <MoreVertical size={14} />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="rounded-xl">
-                            <DropdownMenuItem onClick={() => handleOpenEdit(m)} className="gap-2 cursor-pointer">
-                              <Edit2 size={14}/> Editar Permissões
-                            </DropdownMenuItem>
-                            <DropdownMenuItem 
-                              onClick={() => { if(confirm('Remover o acesso deste membro?')) deleteMember.mutateAsync(m.id); }} 
-                              className="gap-2 cursor-pointer text-red-600 focus:text-red-700"
-                            >
-                              <Trash2 size={14}/> Revogar Acesso
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-zinc-700">Perfil de acesso</label>
+                <Select value={inviteRole} onValueChange={(value) => setInviteRole(value as AppRole)}>
+                  <SelectTrigger className="h-11 rounded-xl">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {INVITABLE_ROLES.map((role) => (
+                      <SelectItem key={role} value={role}>
+                        {ROLE_LABEL[role]}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <Button
+                onClick={() => void handleInvite()}
+                disabled={!inviteEmail.trim() || inviteAgent.isPending}
+                className="h-11 w-full rounded-xl bg-vj-green hover:bg-vj-green/90"
+              >
+                {inviteAgent.isPending ? 'Enviando convite...' : 'Enviar convite'}
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="flex min-h-0 flex-col rounded-3xl border">
+            <CardHeader className="pb-4">
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                <div>
+                  <CardTitle className="text-lg">Membros ativos</CardTitle>
+                  <CardDescription>{members?.length ?? 0} perfis vinculados a esta organizacao.</CardDescription>
+                </div>
+                <div className="relative w-full lg:w-72">
+                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    placeholder="Buscar nome ou email..."
+                    value={search}
+                    onChange={(event) => setSearch(event.target.value)}
+                    className="h-10 rounded-xl pl-10"
+                  />
+                </div>
+              </div>
+            </CardHeader>
+
+            <CardContent className="min-h-0 flex-1">
+              {isLoading ? (
+                <div className="space-y-3">
+                  <Skeleton className="h-16 w-full rounded-2xl" />
+                  <Skeleton className="h-16 w-full rounded-2xl" />
+                  <Skeleton className="h-16 w-full rounded-2xl" />
+                </div>
+              ) : filteredMembers.length === 0 ? (
+                <div className="flex h-full min-h-[260px] flex-col items-center justify-center gap-3 rounded-2xl border border-dashed text-center">
+                  <Users className="h-8 w-8 text-zinc-400" />
+                  <div>
+                    <p className="font-semibold text-zinc-700">Nenhum membro encontrado</p>
+                    <p className="text-sm text-zinc-500">Ajuste o filtro ou envie um novo convite.</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="overflow-auto rounded-2xl border">
+                  <table className="w-full text-left text-sm">
+                    <thead className="sticky top-0 z-10 bg-muted text-xs uppercase text-muted-foreground">
+                      <tr>
+                        <th className="px-4 py-3 font-medium">Membro</th>
+                        <th className="px-4 py-3 font-medium">Perfil</th>
+                        <th className="px-4 py-3 font-medium">Status</th>
+                        <th className="px-4 py-3 font-medium text-right">Acoes</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredMembers.map((member: any) => {
+                        const memberRole = (member.role ?? 'agent') as AppRole;
+                        const fullName = `${member.first_name ?? ''} ${member.last_name ?? ''}`.trim() || member.email || 'Sem nome';
+                        const isSelf = profile?.id === member.id;
+
+                        return (
+                          <tr key={member.id} className="border-b last:border-0 hover:bg-muted/40">
+                            <td className="px-4 py-3">
+                              <div className="flex flex-col">
+                                <span className="font-bold text-zinc-900">{fullName}</span>
+                                <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                                  <Mail className="h-3 w-3" />
+                                  {member.email || 'Sem email'}
+                                </span>
+                              </div>
+                            </td>
+                            <td className="px-4 py-3">
+                              {isSelf || memberRole === 'super_admin' ? (
+                                roleBadge(memberRole)
+                              ) : (
+                                <Select value={memberRole} onValueChange={(value) => void handleRoleChange(member, value as AppRole)}>
+                                  <SelectTrigger className="h-9 w-[180px] rounded-xl">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {MANAGEABLE_ROLES.map((role) => (
+                                      <SelectItem key={role} value={role}>
+                                        {ROLE_LABEL[role]}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              )}
+                            </td>
+                            <td className="px-4 py-3">
+                              <Badge
+                                variant={member.is_active ? 'default' : 'secondary'}
+                                className={member.is_active ? 'bg-green-600 text-white' : ''}
+                              >
+                                {member.is_active ? 'Ativo' : 'Inativo'}
+                              </Badge>
+                            </td>
+                            <td className="px-4 py-3 text-right">
+                              {isSelf || memberRole === 'super_admin' ? (
+                                <span className="text-xs font-medium text-muted-foreground">Protegido</span>
+                              ) : (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="rounded-xl"
+                                  disabled={updateMember.isPending}
+                                  onClick={() => void handleToggleActive(member)}
+                                >
+                                  {member.is_active ? (
+                                    <>
+                                      <UserX className="mr-2 h-4 w-4" />
+                                      Desativar
+                                    </>
+                                  ) : (
+                                    <>
+                                      <UserCheck className="mr-2 h-4 w-4" />
+                                      Ativar
+                                    </>
+                                  )}
+                                </Button>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
       </div>
-
-      <SheetPage
-        open={isSheetOpen}
-        onClose={() => setIsSheetOpen(false)}
-        title={editingMember ? 'Editar Perfil de Acesso' : 'Convidar Novo Membro'}
-        subtitle="Gerencie os acessos e comissões da sua equipe"
-        icon={Users}
-        sections={TEAM_SECTIONS}
-        defaultSection="dados"
-        footer={
-          <div className="flex items-center gap-3 w-full justify-end">
-            <Button variant="ghost" onClick={() => setIsSheetOpen(false)}>Cancelar</Button>
-            <Button
-              onClick={handleSubmit}
-              disabled={!formData.full_name || !formData.email || isPending}
-              className="rounded-full px-8 bg-vj-green hover:bg-vj-green/90"
-            >
-              {isPending ? 'Salvando...' : editingMember ? 'Salvar Alterações' : 'Enviar Convite'}
-            </Button>
-          </div>
-        }
-      >
-        {(activeSection) => (
-          <>
-            {activeSection === 'dados' && (
-              <div className="space-y-5">
-                <div className="space-y-1.5">
-                  <Label className="font-semibold">Nome Completo *</Label>
-                  <Input
-                    value={formData.full_name}
-                    onChange={e => setFormData({...formData, full_name: e.target.value})}
-                    placeholder="Ex: Maria Santos"
-                    className="h-12 rounded-xl bg-zinc-50 border-zinc-200"
-                    autoFocus
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="font-semibold flex items-center gap-2"><MailIcon size={14} /> E-mail Corporativo *</Label>
-                  <Input
-                    type="email"
-                    disabled={!!editingMember}
-                    value={formData.email}
-                    onChange={e => setFormData({...formData, email: e.target.value})}
-                    placeholder="agente@agencia.com.br"
-                    className="h-12 rounded-xl bg-zinc-50 border-zinc-200"
-                  />
-                  {!!editingMember && <p className="text-xs text-zinc-500">O e-mail de acesso não pode ser alterado após o convite.</p>}
-                </div>
-                {!editingMember && (
-                  <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 text-sm text-amber-700">
-                    ℹ️ Peça ao usuário para acessar o portal de login com este e-mail. O primeiro acesso será configurado por ele.
-                  </div>
-                )}
-              </div>
-            )}
-
-            {activeSection === 'acesso' && (
-              <div className="space-y-5">
-                <div className="space-y-1.5">
-                  <Label className="font-semibold flex items-center gap-2"><Shield size={14} /> Nível de Acesso</Label>
-                  <Select value={formData.role} onValueChange={(v: any) => setFormData({...formData, role: v})}>
-                    <SelectTrigger className="h-12 rounded-xl bg-zinc-50 border-zinc-200"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="admin">👑 Administrador (Acesso Total)</SelectItem>
-                      <SelectItem value="agent">🧳 Agente (Somente Vendas)</SelectItem>
-                      <SelectItem value="viewer">👁️ Visualizador (Somente Leitura)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-1.5">
-                  <Label className="font-semibold flex items-center gap-2"><Percent size={14} /> Taxa de Comissão (%)</Label>
-                  <Input
-                    type="number"
-                    min="0"
-                    max="100"
-                    step="0.5"
-                    value={formData.commission_rate}
-                    onChange={e => setFormData({...formData, commission_rate: Number(e.target.value)})}
-                    className="h-12 rounded-xl bg-zinc-50 border-zinc-200"
-                  />
-                </div>
-
-                {editingMember && (
-                  <div className="space-y-1.5">
-                    <Label className="font-semibold">Status da Conta</Label>
-                    <Select value={formData.status} onValueChange={(v: any) => setFormData({...formData, status: v})}>
-                      <SelectTrigger className="h-12 rounded-xl bg-zinc-50 border-zinc-200"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="active">✅ Ativo (Acesso Liberado)</SelectItem>
-                        <SelectItem value="suspended">🔒 Suspenso (Acesso Bloqueado)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
-              </div>
-            )}
-          </>
-        )}
-      </SheetPage>
     </AppLayout>
   );
 }

@@ -134,6 +134,14 @@ function TripsRole({ children }: { children: React.ReactNode }) {
   );
 }
 
+function AdminRole({ children }: { children: React.ReactNode }) {
+  return (
+    <RoleGuard allow={['org_admin', 'super_admin', 'support']}>
+      {children}
+    </RoleGuard>
+  );
+}
+
 const App = () => (
   <ErrorBoundary>
   <QueryClientProvider client={queryClient}>
@@ -184,13 +192,13 @@ const App = () => (
               <Route path="/integrations" element={<ProtectedWithOrg><TripsRole><Integrations /></TripsRole></ProtectedWithOrg>} />
               
               {/* ERP v3 Financeiro & Jurídico */}
-              <Route path="/finance/payments" element={<ProtectedRoute><Payments /></ProtectedRoute>} />
-              <Route path="/finance/suppliers" element={<ProtectedRoute><Suppliers /></ProtectedRoute>} />
-              <Route path="/finance/transactions" element={<ProtectedRoute><Transactions /></ProtectedRoute>} />
-              <Route path="/finance/cancellations" element={<ProtectedRoute><PendingCancellations /></ProtectedRoute>} />
-              <Route path="/legal/contracts" element={<ProtectedRoute><ContractTemplates /></ProtectedRoute>} />
-              <Route path="/automations" element={<ProtectedRoute><Automations /></ProtectedRoute>} />
-              <Route path="/team" element={<ProtectedRoute><Team /></ProtectedRoute>} />
+              <Route path="/finance/payments" element={<ProtectedWithOrg><AdminRole><Payments /></AdminRole></ProtectedWithOrg>} />
+              <Route path="/finance/suppliers" element={<ProtectedWithOrg><AdminRole><Suppliers /></AdminRole></ProtectedWithOrg>} />
+              <Route path="/finance/transactions" element={<ProtectedWithOrg><AdminRole><Transactions /></AdminRole></ProtectedWithOrg>} />
+              <Route path="/finance/cancellations" element={<ProtectedWithOrg><AdminRole><PendingCancellations /></AdminRole></ProtectedWithOrg>} />
+              <Route path="/legal/contracts" element={<ProtectedWithOrg><AdminRole><ContractTemplates /></AdminRole></ProtectedWithOrg>} />
+              <Route path="/automations" element={<ProtectedWithOrg><AdminRole><Automations /></AdminRole></ProtectedWithOrg>} />
+              <Route path="/team" element={<ProtectedWithOrg><AdminRole><Team /></AdminRole></ProtectedWithOrg>} />
 
               {/* CRM */}
               <Route path="/guides" element={<ProtectedWithOrg><TripsRole><Guides /></TripsRole></ProtectedWithOrg>} />

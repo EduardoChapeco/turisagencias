@@ -29,8 +29,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     
     // Fallback de segurança para o dono da plataforma (Eduardo)
     // Isso garante que ele nunca fique trancado fora se a tabela de papéis falhar
-    const { data: { session } } = await supabase.auth.getSession();
-    const isMaster = roles.includes('super_admin') || session?.user?.email === 'eusoueduoficial@gmail.com';
+    const isMaster = roles.includes('super_admin');
     
     setProfile(profile ?? null);
     setRoles(roles);
@@ -58,15 +57,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     if (isMaster) {
-      logger.info('Master user detected. Ensuring access even without explicit org_id.');
+      logger.info('Super admin loaded without organization context. Recovery mode enabled.');
       // Se for master e não tiver org vinculada no perfil, tenta carregar a primeira disponível
-      if (!profile?.org_id) {
-        const { data: firstOrg } = await supabase.from('organizations').select('*').limit(1).maybeSingle();
-        if (firstOrg) {
-          setOrganization(firstOrg);
-          return;
-        }
-      }
     }
     setOrganization(null);
   }, [setOrganization, setProfile, setRoles]);

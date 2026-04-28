@@ -36,6 +36,8 @@ export default function Onboarding() {
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [activationEvents, setActivationEvents] = useState<string[]>([]);
   const [squadCompleted, setSquadCompleted] = useState(false);
+  // Idempotency guard: prevents double-submission
+  const submittingRef = useRef(false);
   
   const [form, setForm] = useState({
     name: '',
@@ -72,7 +74,9 @@ export default function Onboarding() {
   };
 
   const handleComplete = async () => {
-    if (!user || loading) return;
+    // Idempotency: block duplicate submissions
+    if (submittingRef.current || !user || loading) return;
+    submittingRef.current = true;
 
     const agencyName = form.name.trim();
     const slug = agencyName
@@ -144,18 +148,28 @@ export default function Onboarding() {
       return;
     }
 
-    const { data: profile, error: profileError } = await supabase
+    // Step 2: Vincular perfil ao org — WITHOUT .select() to prevent RLS recursion
+    // The UPDATE+RETURNING(*) forces Postgres to evaluate profiles_select
+    // which previously triggered the infinite recursion chain.
+    // We fetch the profile separately after the update.
+    const { error: profileError } = await supabase
       .from('profiles')
       .update({ org_id: orgId })
-      .eq('user_id', user.id)
-      .select('*')
-      .maybeSingle();
+      .eq('user_id', user.id);
 
-    if (profileError || !profile) {
-      toast({ title: 'Erro ao vincular', description: profileError?.message, variant: 'destructive' });
+    if (profileError) {
+      toast({ title: 'Erro ao vincular perfil', description: profileError.message, variant: 'destructive' });
+      submittingRef.current = false;
       setLoading(false);
       return;
     }
+
+    // Fetch profile separately (safe: SELECT with own user_id never recurses)
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('user_id', user.id)
+      .maybeSingle();
 
     setActivationEvents((prev) => [...prev, 'Aplicando permissoes e quadros padrao']);
     await Promise.all([
@@ -184,6 +198,7 @@ export default function Onboarding() {
     }
 
     toast({ title: '🎉 Agência criada!', description: `${agencyName} está pronta para uso.` });
+    submittingRef.current = false;
     setLoading(false);
     navigate('/');
   };

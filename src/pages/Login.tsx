@@ -86,6 +86,9 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [authSyncing, setAuthSyncing] = useState(false);
+  const [resetLoading, setResetLoading] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [bridgeState, setBridgeState] = useState<BridgeState>('loading');
   const [bridgeMessage, setBridgeMessage] = useState('Validando sua sessão na plataforma...');
 
@@ -96,6 +99,8 @@ export default function Login() {
   const extensionId = searchParams.get('extension_id') || '';
   const wantsExtensionFlow = Boolean(redirectUri || searchParams.get('extension_id') || searchParams.get('source'));
   const safeRedirect = useMemo(() => isValidRedirectUri(redirectUri), [redirectUri]);
+  const hashParams = useMemo(() => new URLSearchParams(window.location.hash.replace(/^#/, '')), []);
+  const isRecoveryMode = hashParams.get('type') === 'recovery';
 
   useEffect(() => {
     if (!isLoading && user) setAuthSyncing(false);
@@ -162,7 +167,7 @@ export default function Login() {
     };
   }, [extensionId, isLoading, redirectUri, safeRedirect, source, user, wantsExtensionFlow]);
 
-  if (!isLoading && user && !wantsExtensionFlow) {
+  if (!isLoading && user && !wantsExtensionFlow && !isRecoveryMode) {
     return <Navigate to={targetPath} replace />;
   }
 

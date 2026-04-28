@@ -328,6 +328,26 @@ async def trigger_auditor_manually(background_tasks: BackgroundTasks):
     background_tasks.add_task(_run)
     return {"status": "Auditoria de embarques disparada em background."}
 
+class BrandSquadRequest(BaseModel):
+    org_id: str
+    instagram_url: Optional[str] = None
+    website_url: Optional[str] = None
+
+@app.post("/api/v1/onboarding/brand-squad")
+async def trigger_brand_squad(req: BrandSquadRequest, background_tasks: BackgroundTasks):
+    """Dispara a extração de Brand DNA em background."""
+    from agents.onboarding_brand_squad import run_brand_squad
+
+    def _run():
+        run_brand_squad(
+            org_id=req.org_id,
+            instagram_url=req.instagram_url,
+            website_url=req.website_url
+        )
+
+    background_tasks.add_task(_run)
+    return {"status": "Squad de extração de marca iniciado em background."}
+
 
 @app.get("/api/v1/health")
 async def health():

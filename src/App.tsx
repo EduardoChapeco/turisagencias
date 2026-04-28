@@ -13,6 +13,7 @@ import { useAuthStore } from '@/stores/authStore';
 
 const Dashboard = lazy(() => import('./pages/Index'));
 const Login = lazy(() => import('./pages/Login'));
+const AdminLogin = lazy(() => import('./pages/AdminLogin'));
 const Signup = lazy(() => import('./pages/Signup'));
 const ExtensionAuth = lazy(() => import('./pages/ExtensionAuth'));
 const Onboarding = lazy(() => import('./pages/Onboarding'));
@@ -144,6 +145,7 @@ const App = () => (
           <Suspense fallback={<Loading />}>
             <Routes>
               <Route path="/login" element={<Login />} />
+              <Route path="/admin/login" element={<AdminLogin />} />
               <Route path="/signup" element={<Signup />} />
               <Route path="/pricing" element={<Pricing />} />
               <Route path="/auth/chrome-extension" element={<ExtensionAuth />} />

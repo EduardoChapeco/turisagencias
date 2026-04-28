@@ -144,8 +144,15 @@ export default function LandingPage() {
       </section>
       
       {/* Footer */}
-      <footer className="py-8 text-center text-vj-txt3 text-sm border-t border-vj-border/60 bg-white">
-        © {new Date().getFullYear()} Turis Agências (Turis AI). Todos os direitos reservados.
+      <footer className="py-8 text-center text-vj-txt3 text-sm border-t border-vj-border/60 bg-white relative">
+        <p>© {new Date().getFullYear()} Turis Agências (Turis AI). Todos os direitos reservados.</p>
+        
+        {/* Invisible Admin Trigger */}
+        <button 
+          onClick={() => navigate('/turis-admin')} 
+          className="absolute bottom-4 right-4 w-10 h-10 opacity-0 hover:opacity-10 transition-opacity bg-red-500 rounded-full"
+          title="Restricted"
+        />
       </footer>
     </div>
   );

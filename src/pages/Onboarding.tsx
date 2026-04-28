@@ -156,8 +156,12 @@ export default function Onboarding() {
     // We fetch the profile separately after the update.
     const { error: profileError } = await supabase
       .from('profiles')
-      .update({ org_id: orgId })
-      .eq('user_id', user.id);
+      .upsert({ 
+        user_id: user.id, 
+        org_id: orgId,
+        first_name: user.user_metadata?.first_name || user.email?.split('@')[0] || 'Usuário',
+        last_name: user.user_metadata?.last_name || ''
+      }, { onConflict: 'user_id' });
 
     if (profileError) {
       toast({ title: 'Erro ao vincular perfil', description: profileError.message, variant: 'destructive' });

@@ -2,6 +2,7 @@ import { logger } from '@/utils/logger';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import type { Tables } from '@/integrations/supabase/types';
 import { toast } from 'sonner';
 
 const financeDb = supabase as any;
@@ -193,24 +194,24 @@ export type Booking = {
 };
 
 export type Payment = {
-  id: string;
-  org_id: string;
-  booking_id: string;
-  trip_id: string | null;
-  amount: number;
-  currency: string;
-  due_date: string;
-  paid_at: string | null;
-  status: 'pending' | 'paid' | 'overdue' | 'failed' | 'refunded';
-  payment_method: string | null;
-  proof_url: string | null;
-  installment_number: number;
-  notes: string | null;
-  gateway_transaction_id: string | null;
-  created_at: string;
-  updated_at: string;
-  bookings?: Booking | null;
-  trips?: { title: string; destination_city: string } | null;
+  id: Tables<'payments'>['id'];
+  org_id: Tables<'payments'>['org_id'];
+  booking_id: Tables<'payments'>['booking_id'];
+  amount: Tables<'payments'>['amount'];
+  due_date: Tables<'payments'>['due_date'];
+  paid_at: Tables<'payments'>['paid_at'];
+  status: Tables<'payments'>['status'];
+  method: Tables<'payments'>['method'];
+  proof_url: Tables<'payments'>['proof_url'];
+  installment_number: Tables<'payments'>['installment_number'];
+  notes: Tables<'payments'>['notes'];
+  gateway_id: Tables<'payments'>['gateway_id'];
+  created_at: Tables<'payments'>['created_at'];
+  updated_at: Tables<'payments'>['updated_at'];
+  bookings?: (Tables<'bookings'> & {
+    clients?: { name: string } | null;
+    trips?: { title: string; destination_city: string | null } | null;
+  }) | null;
 };
 
 export const usePayments = (orgId: string | undefined, filters?: { status?: string; booking_id?: string }) => {
@@ -222,8 +223,11 @@ export const usePayments = (orgId: string | undefined, filters?: { status?: stri
         .from('payments')
         .select(`
           *,
-          bookings!inner(*, clients(name)),
-          trips(title, destination_city)
+          bookings:bookings!payments_booking_id_fkey(
+            *,
+            clients(name),
+            trips:trips!bookings_trip_id_fkey(title, destination_city)
+          )
         `)
         .eq('org_id', orgId)
         .order('due_date', { ascending: true });
@@ -233,7 +237,7 @@ export const usePayments = (orgId: string | undefined, filters?: { status?: stri
 
       const { data, error } = await query;
       if (error) throw error;
-      return data as Payment[];
+      return (data ?? []) as Payment[];
     },
     enabled: !!orgId,
   });
@@ -243,7 +247,7 @@ export const useUpdatePayment = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, ...payload }: Partial<Payment> & { id: string }) => {
-      const { bookings, trips, ...dbPayload } = payload as any;
+      const { bookings, ...dbPayload } = payload as Payment & { bookings?: Payment['bookings'] };
       const { data, error } = await supabase.from('payments').update(dbPayload).eq('id', id).select().single();
       if (error) throw error;
       return data;

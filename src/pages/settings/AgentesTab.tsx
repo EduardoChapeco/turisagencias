@@ -7,6 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuthStore } from '@/stores/authStore';
 import { useTeamMembers, useInviteAgent, useUpdateMemberRole } from '@/hooks/useSettings';
+import type { AppRole } from '@/types';
 
 export function AgentesTab() {
   const { data: members, isLoading } = useTeamMembers();
@@ -15,7 +16,7 @@ export function AgentesTab() {
   const { profile } = useAuthStore();
 
   const [inviteEmail, setInviteEmail] = useState('');
-  const [inviteRole, setInviteRole] = useState('agent');
+  const [inviteRole, setInviteRole] = useState<AppRole>('agent');
 
   const handleInvite = async () => {
     if (!inviteEmail.trim()) return;
@@ -24,7 +25,7 @@ export function AgentesTab() {
   };
 
   const roleLabel = (role: string) => {
-    const map: Record<string, string> = { admin: 'Admin', manager: 'Gerente', agent: 'Agente' };
+    const map: Record<string, string> = { super_admin: 'Super Admin', org_admin: 'Administrador', agent: 'Agente', support: 'Suporte', client: 'Cliente' };
     return map[role] ?? role;
   };
 
@@ -45,14 +46,14 @@ export function AgentesTab() {
             onChange={e => setInviteEmail(e.target.value)}
             className="rounded-xl border-zinc-200"
           />
-          <Select value={inviteRole} onValueChange={setInviteRole}>
+          <Select value={inviteRole} onValueChange={(value) => setInviteRole(value as AppRole)}>
             <SelectTrigger className="h-10 rounded-xl border-zinc-200">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="agent">Agente de Viagens</SelectItem>
-              <SelectItem value="manager">Gerente</SelectItem>
-              <SelectItem value="admin">Administrador</SelectItem>
+              <SelectItem value="support">Suporte</SelectItem>
+              <SelectItem value="org_admin">Administrador</SelectItem>
             </SelectContent>
           </Select>
           <Button

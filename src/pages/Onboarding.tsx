@@ -1,12 +1,15 @@
 import { useState, useRef } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
-import { Cloud, ArrowRight, Check, Building2, Palette, Phone, Mail, Upload, Instagram, Globe, MapPin } from 'lucide-react';
+import { Cloud, ArrowRight, Check, Building2, Palette, Phone, Mail, Upload, Camera, Globe, MapPin } from 'lucide-react';
+import type { PostgrestError } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthStore } from '@/stores/authStore';
 import { useToast } from '@/hooks/use-toast';
+import { logger } from '@/utils/logger';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { BrandSquadLive } from '@/components/onboarding/BrandSquadLive';
 
 const FOCUS_OPTIONS = [
   { value: 'Lazer', icon: '🏖️' },
@@ -31,6 +34,8 @@ export default function Onboarding() {
   const [step, setStep] = useState(1);
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [activationEvents, setActivationEvents] = useState<string[]>([]);
+  const [squadCompleted, setSquadCompleted] = useState(false);
   
   const [form, setForm] = useState({
     name: '',
@@ -70,7 +75,7 @@ export default function Onboarding() {
     if (!user || loading) return;
 
     const agencyName = form.name.trim();
-    let slug = agencyName
+    const slug = agencyName
       .toLowerCase()
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '')
@@ -84,11 +89,13 @@ export default function Onboarding() {
     }
 
     setLoading(true);
+    setActivationEvents(['Validando dados da agencia']);
     const orgId = crypto.randomUUID();
 
     // 1. Handle Logo Upload if present
     let finalLogoUrl = null;
     if (logoFile) {
+      setActivationEvents((prev) => [...prev, 'Enviando logotipo']);
       const fileExt = logoFile.name.split('.').pop();
       const fileName = `${orgId}/logo-${Date.now()}.${fileExt}`;
       const { data: uploadData, error: uploadError } = await supabase.storage
@@ -96,16 +103,18 @@ export default function Onboarding() {
         .upload(fileName, logoFile);
 
       if (uploadError) {
-        console.error('Logo upload error:', uploadError);
+        logger.error('Logo upload error:', uploadError);
         toast({ title: 'Erro ao subir logo', description: uploadError.message, variant: 'destructive' });
-        // continue anyway, logo can be uploaded later
+        setLoading(false);
+        return;
       } else if (uploadData) {
         const { data: { publicUrl } } = supabase.storage.from('org-assets').getPublicUrl(fileName);
         finalLogoUrl = publicUrl;
       }
     }
 
-    let orgError: any = null;
+    let orgError: PostgrestError | null = null;
+    setActivationEvents((prev) => [...prev, 'Criando registro da organizacao']);
     for (let attempt = 0; attempt < 5; attempt++) {
       const candidateSlug = attempt === 0 ? slug : `${slug}-${Math.random().toString(36).slice(2, 7)}`;
       const { error } = await supabase.from('organizations').insert({
@@ -148,6 +157,7 @@ export default function Onboarding() {
       return;
     }
 
+    setActivationEvents((prev) => [...prev, 'Aplicando permissoes e quadros padrao']);
     await Promise.all([
       supabase.rpc('assign_org_admin_role', { _user_id: user.id }),
       supabase.rpc('ensure_default_kanban_boards', { _org_id: orgId }),
@@ -162,16 +172,15 @@ export default function Onboarding() {
     setProfile(profile);
     setRoles((rolesData ?? []).map((item) => item.role));
     
-    // 3. Trigger AI Squad if there are URLs provided
     if (form.instagram_url || form.website_url) {
-      // Fire and forget (runs in background)
+      setActivationEvents((prev) => [...prev, 'Iniciando enriquecimento de marca por IA']);
       supabase.functions.invoke('trigger-brand-squad', {
         body: {
           org_id: orgId,
           instagram_url: form.instagram_url,
           website_url: form.website_url,
         }
-      }).catch(err => console.error("Falha ao iniciar Squad:", err));
+      }).catch(err => logger.error('Falha ao iniciar Squad:', err));
     }
 
     toast({ title: '🎉 Agência criada!', description: `${agencyName} está pronta para uso.` });
@@ -467,7 +476,7 @@ export default function Onboarding() {
                 <div className="space-y-2">
                   <Label className="text-zinc-300 text-sm">Instagram da Agência</Label>
                   <div className="relative">
-                    <Instagram className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-pink-500" />
+                    <Camera className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-pink-500" />
                     <Input
                       value={form.instagram_url}
                       onChange={(e) => update('instagram_url', e.target.value)}
@@ -529,46 +538,28 @@ export default function Onboarding() {
             </div>
           )}
 
-          {/* Step 4 — Activation */}
+          {/* Step 4 — IA Activation */}
           {step === 4 && (
-            <div className="space-y-6 animate-in slide-in-from-right-4 fade-in duration-300 text-center">
-              <div
-                className="mx-auto w-24 h-24 rounded-2xl flex items-center justify-center relative"
-                style={{ backgroundColor: `${form.primaryColor}20` }}
-              >
-                <Cloud className="w-10 h-10 animate-pulse" style={{ color: form.primaryColor }} />
-                
-                {/* Decorative scanning rings */}
-                <div className="absolute inset-0 border border-vj-green/30 rounded-2xl animate-ping opacity-75" style={{ animationDuration: '3000ms' }} />
-              </div>
-
-              <div>
-                <h2 className="text-2xl font-black mb-2">Treinando a OMEGA...</h2>
+            <div className="space-y-6 animate-in slide-in-from-right-4 fade-in duration-300">
+              <div className="text-center">
+                <h2 className="text-2xl font-black mb-2">Squad de IA em Ação</h2>
                 <p className="text-zinc-400 text-sm max-w-xs mx-auto">
-                  Estamos configurando <span className="text-white font-semibold">{form.name}</span>, criando o banco de dados e preparando os agentes de IA.
+                  Nossos agentes estão escaneando a presença digital de{' '}
+                  <span className="text-white font-semibold">{form.name}</span>.
                 </p>
               </div>
 
-              {/* Fake AI Progress (will be real in phase 2) */}
-              <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 text-left space-y-3">
-                 <div className="flex items-center gap-2 text-xs">
-                    <div className="w-2 h-2 rounded-full bg-vj-green animate-pulse" />
-                    <span className="text-zinc-300">Banco de dados provisionado</span>
-                 </div>
-                 <div className="flex items-center gap-2 text-xs">
-                    <div className="w-2 h-2 rounded-full bg-vj-green animate-pulse delay-75" />
-                    <span className="text-zinc-300">Políticas de segurança aplicadas</span>
-                 </div>
-                 {form.instagram_url && (
-                   <div className="flex items-center gap-2 text-xs">
-                      <div className="w-2 h-2 rounded-full bg-vj-green/50 animate-pulse delay-150" />
-                      <span className="text-zinc-400">Agent_Scout visitando o Instagram...</span>
-                   </div>
-                 )}
-              </div>
+              {/* BrandSquadLive visualization */}
+              <BrandSquadLive
+                instagramUrl={form.instagram_url}
+                websiteUrl={form.website_url}
+                primaryColor={form.primaryColor}
+                isProcessing={!!form.instagram_url || !!form.website_url}
+                onComplete={() => setSquadCompleted(true)}
+              />
 
               <Button
-                className="w-full h-12 premium-button font-bold text-base gap-2 mt-4"
+                className="w-full h-12 premium-button font-bold text-base gap-2"
                 onClick={handleComplete}
                 disabled={loading}
               >
@@ -581,12 +572,12 @@ export default function Onboarding() {
                   <>Completar Configuração <Check size={16} /></>
                 )}
               </Button>
-              
+
               {!loading && (
                 <button
                   type="button"
                   onClick={() => setStep(3)}
-                  className="text-xs text-zinc-600 hover:text-zinc-400 transition-colors"
+                  className="w-full text-xs text-zinc-600 hover:text-zinc-400 transition-colors"
                 >
                   Voltar e ajustar
                 </button>
@@ -598,4 +589,3 @@ export default function Onboarding() {
     </div>
   );
 }
-

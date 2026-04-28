@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthStore } from '@/stores/authStore';
 import { useToast } from '@/hooks/use-toast';
+import type { AppRole } from '@/types';
 
 const settingsDb = supabase as any;
 
@@ -44,7 +45,7 @@ export function useInviteAgent() {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async ({ email, role }: { email: string; role: string }) => {
+    mutationFn: async ({ email, role }: { email: string; role: AppRole }) => {
       // Calls a Supabase edge function that uses admin.inviteUserByEmail
       const { data, error } = await supabase.functions.invoke('invite-agent', {
         body: { email, role, org_id: organization!.id },
@@ -67,7 +68,7 @@ export function useUpdateMemberRole() {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async ({ profileId, userId, role, is_active }: { profileId: string; userId?: string; role?: string; is_active?: boolean }) => {
+    mutationFn: async ({ profileId, userId, role, is_active }: { profileId: string; userId?: string; role?: AppRole; is_active?: boolean }) => {
       if (role !== undefined && userId) {
         const { error: delError } = await supabase.from('user_roles').delete().eq('user_id', userId);
         if (delError) throw delError;

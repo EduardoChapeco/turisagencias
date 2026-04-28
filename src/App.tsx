@@ -97,14 +97,20 @@ function Loading() {
 }
 
 function OnboardingGuard({ children }: { children: React.ReactNode }) {
-  const { organization, roles, isLoading } = useAuthStore();
+  const { organization, profile, roles, isLoading } = useAuthStore();
 
   if (isLoading) return <Loading />;
   
   // Super Admins (Master) podem pular o onboarding mesmo que a org não esteja carregada
   const isMaster = roles.includes('super_admin');
   
-  if (!organization && !isMaster) {
+  // O usuário não precisa de onboarding se:
+  // 1. A organização já foi carregada
+  // 2. O perfil já tem um org_id (a org pode estar falhando por RLS race condition)
+  // 3. For super admin
+  const hasOrg = !!organization || !!profile?.org_id || isMaster;
+  
+  if (!hasOrg) {
     return <Navigate to="/onboarding" replace />;
   }
   

@@ -88,6 +88,7 @@ const navGroups: NavGroup[] = [
       { title: 'Hotéis e Resorts',    url: '/hotels',          icon: Building2 },
       { title: 'Destinos',            url: '/destinations',    icon: MapPin },
       { title: 'Automações IA',       url: '/automations',          icon: Bot },
+      { title: 'Central de IA',       url: '/ai-dashboard',         icon: Bot },
       { title: 'Assistente IA',       url: '/ai-chat',              icon: Sparkles },
       { title: 'Integrações',         url: '/integrations',         icon: Plug },
     ],

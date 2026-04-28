@@ -179,18 +179,18 @@ export const useUpdateTransaction = () => {
 export type Booking = {
   id: string;
   org_id: string;
-  trip_id: string | null;
+  quotation_id: string | null;
   client_id: string | null;
   agent_id: string | null;
-  status: 'pending_payment' | 'confirmed' | 'cancelled' | 'refunded';
-  total_amount: number;
-  currency: string;
+  status: string;
+  total_value: number;
+  paid_value: number;
+  pending_value: number | null;
   installment_config: any;
-  notes: string | null;
   created_at: string;
   updated_at: string;
   clients?: { name: string } | null;
-  trips?: { title: string; destination_city: string } | null;
+  quotations?: { code: string; title: string | null } | null;
 };
 
 export type Payment = {
@@ -210,7 +210,7 @@ export type Payment = {
   updated_at: Tables<'payments'>['updated_at'];
   bookings?: (Tables<'bookings'> & {
     clients?: { name: string } | null;
-    trips?: { title: string; destination_city: string | null } | null;
+    quotations?: { code: string; title: string | null } | null;
   }) | null;
 };
 
@@ -226,7 +226,7 @@ export const usePayments = (orgId: string | undefined, filters?: { status?: stri
           bookings:bookings!payments_booking_id_fkey(
             *,
             clients(name),
-            trips:trips!bookings_trip_id_fkey(title, destination_city)
+            quotations(code, title)
           )
         `)
         .eq('org_id', orgId)

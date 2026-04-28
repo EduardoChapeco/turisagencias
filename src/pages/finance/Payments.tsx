@@ -109,7 +109,7 @@ export default function Payments() {
                          }[p.status] ?? <Badge variant="secondary">{p.status}</Badge>}
                       </td>
                       <td className="px-4 py-3 font-medium truncate max-w-[200px]">
-                         {p.bookings?.trips?.title || '-'}
+                         {p.bookings?.quotations?.title || p.bookings?.quotations?.code || '-'}
                       </td>
                       <td className="px-4 py-3 text-muted-foreground">
                          {p.bookings?.clients?.name || '-'}

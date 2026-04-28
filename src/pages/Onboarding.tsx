@@ -109,6 +109,7 @@ export default function Onboarding() {
       if (uploadError) {
         logger.error('Logo upload error:', uploadError);
         toast({ title: 'Erro ao subir logo', description: uploadError.message, variant: 'destructive' });
+        submittingRef.current = false;
         setLoading(false);
         return;
       } else if (uploadData) {
@@ -144,6 +145,7 @@ export default function Onboarding() {
 
     if (orgError) {
       toast({ title: 'Erro ao criar agência', description: orgError.message, variant: 'destructive' });
+      submittingRef.current = false;
       setLoading(false);
       return;
     }
@@ -200,7 +202,11 @@ export default function Onboarding() {
     toast({ title: '🎉 Agência criada!', description: `${agencyName} está pronta para uso.` });
     submittingRef.current = false;
     setLoading(false);
-    navigate('/');
+    // Hard redirect: forces AuthProvider to re-bootstrap from DB with fresh org context.
+    // navigate('/') causes a race condition: OnboardingGuard reads organization=null from
+    // the store before the new org is committed to the Supabase connection pool,
+    // sending the user back to /onboarding even though creation succeeded.
+    window.location.replace('/');
   };
 
   const inputCls =

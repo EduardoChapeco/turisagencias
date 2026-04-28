@@ -7,29 +7,43 @@ const db = supabase as any;
 export type AiTask = {
   id: string;
   org_id: string;
-  agent_id: string | null;
+  ai_agent_id: string;          // correct column name per schema
   task_type: string;
-  payload: Record<string, any>;
+  task_payload: Record<string, any>;
   result: Record<string, any> | null;
-  status: 'queued' | 'running' | 'completed' | 'failed' | 'awaiting_approval';
+  status: 'queued' | 'running' | 'completed' | 'failed' | 'awaiting_approval' | 'cancelled';
   requires_approval: boolean;
   approved_by: string | null;
   approved_at: string | null;
+  rejected_at: string | null;
   error_message: string | null;
+  execution_log: Record<string, any>[];
+  entity_type: string | null;
+  entity_id: string | null;
+  triggered_by: string | null;
+  triggered_source: string | null;
+  queued_at: string;
+  started_at: string | null;
+  completed_at: string | null;
   created_at: string;
   updated_at: string;
-  ai_agents?: { agent_type: string; status: string } | null;
+  ai_agents?: { agent_type: string; status: string; name: string } | null;
 };
 
 export type AiAgent = {
   id: string;
   org_id: string;
   agent_type: string;
-  status: 'idle' | 'running' | 'completed' | 'failed';
+  name: string;
+  status: 'idle' | 'running' | 'error' | 'paused' | 'disabled';
   memory_store: Record<string, any>;
   rules_config: Record<string, any>;
-  last_run_at: string | null;
+  last_action_at: string | null;
+  total_tasks_run: number;
+  success_rate: number;
+  error_count: number;
   created_at: string;
+  updated_at: string;
 };
 
 export const useAiTasks = (orgId: string | undefined, limit = 50) => {
@@ -41,16 +55,16 @@ export const useAiTasks = (orgId: string | undefined, limit = 50) => {
         .from('ai_tasks')
         .select(`
           *,
-          ai_agents:agent_id(agent_type, status)
+          ai_agents:ai_agent_id(agent_type, status, name)
         `)
         .eq('org_id', orgId)
-        .order('created_at', { ascending: false })
+        .order('queued_at', { ascending: false })
         .limit(limit);
       if (error) throw error;
       return (data ?? []) as AiTask[];
     },
     enabled: !!orgId,
-    refetchInterval: 5000, // Poll every 5s for live updates
+    refetchInterval: 5000,
   });
 };
 

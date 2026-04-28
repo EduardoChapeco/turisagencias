@@ -180,7 +180,7 @@ export default function Onboarding() {
   };
 
   const inputCls =
-    'bg-zinc-900 border-zinc-700 h-12 text-white placeholder:text-zinc-500 focus:border-vj-green focus:ring-vj-green rounded-xl';
+    'bg-zinc-900 border-zinc-700 h-12 !text-white placeholder:text-zinc-500 focus:border-vj-green focus:ring-vj-green rounded-xl';
 
   return (
     <div className="flex min-h-screen bg-zinc-950 text-white overflow-hidden">

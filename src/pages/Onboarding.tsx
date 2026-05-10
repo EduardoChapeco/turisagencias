@@ -32,6 +32,7 @@ export default function Onboarding() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [step, setStep] = useState(1);
+  const [createdOrgId, setCreatedOrgId] = useState<string | null>(null);
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [activationEvents, setActivationEvents] = useState<string[]>([]);
@@ -191,7 +192,6 @@ export default function Onboarding() {
     setOrganization(org ?? null);
     setProfile(profile);
     setRoles((rolesData ?? []).map((item) => item.role));
-    
     if (form.instagram_url || form.website_url) {
       setActivationEvents((prev) => [...prev, 'Iniciando enriquecimento de marca por IA']);
       supabase.functions.invoke('trigger-brand-squad', {
@@ -200,17 +200,13 @@ export default function Onboarding() {
           instagram_url: form.instagram_url,
           website_url: form.website_url,
         }
-      }).catch(err => logger.error('Falha ao iniciar Squad:', err));
+      }).catch(err => logger.error('Falha ao iniciar Central:', err));
     }
 
-    toast({ title: '🎉 Agência criada!', description: `${agencyName} está pronta para uso.` });
+    setCreatedOrgId(orgId);
+    setStep(4);
     submittingRef.current = false;
     setLoading(false);
-    // Hard redirect: forces AuthProvider to re-bootstrap from DB with fresh org context.
-    // navigate('/') causes a race condition: OnboardingGuard reads organization=null from
-    // the store before the new org is committed to the Supabase connection pool,
-    // sending the user back to /onboarding even though creation succeeded.
-    window.location.replace('/');
   };
 
   const inputCls =
@@ -555,58 +551,39 @@ export default function Onboarding() {
                 </Button>
                 <Button
                   className="flex-1 h-12 premium-button font-bold text-sm gap-2"
-                  onClick={() => setStep(4)}
+                  onClick={handleComplete}
+                  disabled={loading}
                 >
-                  Iniciar IA <ArrowRight size={16} />
+                  {loading ? 'Criando agência...' : 'Finalizar & Iniciar IA'} <ArrowRight size={16} />
                 </Button>
               </div>
             </div>
           )}
 
-          {/* Step 4 — IA Activation */}
+          {/* Step 4 — AI Activation */}
           {step === 4 && (
             <div className="space-y-6 animate-in slide-in-from-right-4 fade-in duration-300">
               <div className="text-center">
-                <h2 className="text-2xl font-black mb-2">Squad de IA em Ação</h2>
+                <h2 className="text-2xl font-black mb-2">Central de IA Trabalhando</h2>
                 <p className="text-zinc-400 text-sm max-w-xs mx-auto">
-                  Nossos agentes estão escaneando a presença digital de{' '}
+                  Monitoramento em tempo real do processamento da{' '}
                   <span className="text-white font-semibold">{form.name}</span>.
                 </p>
               </div>
 
               {/* BrandSquadLive visualization */}
               <BrandSquadLive
-                instagramUrl={form.instagram_url}
-                websiteUrl={form.website_url}
+                orgId={createdOrgId || ''}
                 primaryColor={form.primaryColor}
-                isProcessing={!!form.instagram_url || !!form.website_url}
                 onComplete={() => setSquadCompleted(true)}
               />
 
               <Button
                 className="w-full h-12 premium-button font-bold text-base gap-2"
-                onClick={handleComplete}
-                disabled={loading}
+                onClick={() => window.location.replace('/')}
               >
-                {loading ? (
-                  <>
-                    <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
-                    Aguarde...
-                  </>
-                ) : (
-                  <>Completar Configuração <Check size={16} /></>
-                )}
+                Acessar Painel <ArrowRight size={16} />
               </Button>
-
-              {!loading && (
-                <button
-                  type="button"
-                  onClick={() => setStep(3)}
-                  className="w-full text-xs text-zinc-600 hover:text-zinc-400 transition-colors"
-                >
-                  Voltar e ajustar
-                </button>
-              )}
             </div>
           )}
         </div>

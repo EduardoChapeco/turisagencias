@@ -377,6 +377,17 @@ export function QuotationBuilderSheet({ open, onClose, clientId, onCreated }: Qu
                   <Label>Validade da Cotação</Label>
                   <Input type="date" value={form.valid_until} onChange={(e) => updateForm('valid_until', e.target.value)} className="bg-white border-zinc-200 rounded-xl" />
                 </div>
+                <div className="space-y-1.5 mt-4 pt-4 border-t border-zinc-200">
+                  <Label>Layout da Proposta</Label>
+                  <Select value={form.layout_mode} onValueChange={(v) => updateForm('layout_mode', v)}>
+                    <SelectTrigger className="bg-white border-zinc-200 rounded-xl"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="classico">Clássico (Padrão)</SelectItem>
+                      <SelectItem value="executivo">Executivo (Tabela/Dados)</SelectItem>
+                      <SelectItem value="apresentacao">Apresentação (Imersivo)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
 
               <div className="space-y-4 rounded-xl border border-zinc-200 bg-white p-5 xl:col-span-2">

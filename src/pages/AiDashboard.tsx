@@ -30,7 +30,7 @@ export default function AiDashboard() {
     <AppLayout fullHeight>
       <div className="flex h-full min-h-0 flex-col gap-4">
         <PageHeader
-          title="Central de IA (Cérebro OMEGA)"
+          title="Central de IA"
           description="Monitore os agentes, veja a fila de tarefas e aprove execuções críticas."
           icon={Bot}
         />

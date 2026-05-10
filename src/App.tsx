@@ -56,6 +56,8 @@ const PendingCancellations = lazy(() => import('./pages/finance/PendingCancellat
 const ContractTemplates = lazy(() => import('./pages/legal/ContractTemplates'));
 const Automations = lazy(() => import('./pages/automations/Automations'));
 const Team = lazy(() => import('./pages/admin/Team'));
+const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
+const AdminAgencyDetail = lazy(() => import('./pages/admin/AdminAgencyDetail'));
 
 const RadarPortal = lazy(() => import('./pages/RadarPortal'));
 const GlobalRadarMap = lazy(() => import('./pages/GlobalRadarMap'));
@@ -207,6 +209,8 @@ const App = () => (
               <Route path="/legal/contracts" element={<ProtectedWithOrg><AdminRole><ContractTemplates /></AdminRole></ProtectedWithOrg>} />
               <Route path="/automations" element={<ProtectedWithOrg><AdminRole><Automations /></AdminRole></ProtectedWithOrg>} />
               <Route path="/team" element={<ProtectedWithOrg><AdminRole><Team /></AdminRole></ProtectedWithOrg>} />
+              <Route path="/admin/dashboard" element={<ProtectedWithOrg><AdminRole><AdminDashboard /></AdminRole></ProtectedWithOrg>} />
+              <Route path="/admin/agencies/:id" element={<ProtectedWithOrg><AdminRole><AdminAgencyDetail /></AdminRole></ProtectedWithOrg>} />
 
               {/* CRM */}
               <Route path="/guides" element={<ProtectedWithOrg><TripsRole><Guides /></TripsRole></ProtectedWithOrg>} />

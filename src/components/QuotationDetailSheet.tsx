@@ -176,6 +176,9 @@ export function QuotationDetailSheet({ id, open, onClose }: { id: string | null;
             {activeSection === 'resumo' && (
               <div className="space-y-8">
                 <div className="flex items-center gap-2">
+                   <div className="text-[10px] font-mono font-bold text-zinc-600 bg-zinc-100 px-2 py-1 rounded border">
+                     {quotation.code || 'COT-PENDENTE'}
+                   </div>
                    <Badge className={cn('px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ', statusColors[quotation.status])}>
                      {statusLabels[quotation.status] || quotation.status}
                    </Badge>

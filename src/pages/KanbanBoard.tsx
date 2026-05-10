@@ -347,7 +347,7 @@ export default function KanbanBoard() {
       ? 'Acompanhe o status dos embarques em andamento.'
       : 'Gerencie o pipeline de vendas e prospecções.';
 
-  const { data, isLoading } = useKanbanBoard(slug);
+  const { data, isLoading, error } = useKanbanBoard(slug);
   const updateCard = useUpdateKanbanCard();
   const ensureBoards = useEnsureDefaultBoards();
   useKanbanRealtime(data?.board?.id);
@@ -462,13 +462,13 @@ export default function KanbanBoard() {
     );
   }
 
-  if (!data) {
+  if (error || !data) {
     return (
       <AppLayout>
         <EmptyState
           icon={KanbanSquare}
           title="Erro ao carregar quadro"
-          description="Não foi possível carregar os dados deste quadro. Verifique sua conexão ou permissões."
+          description={error ? (error as any).message || JSON.stringify(error) : "Não foi possível carregar os dados deste quadro. Verifique sua conexão ou permissões."}
           action={<Button onClick={() => window.location.reload()}>Recarregar página</Button>}
         />
       </AppLayout>

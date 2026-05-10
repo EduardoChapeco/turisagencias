@@ -35,7 +35,7 @@ export function AiLogsTab() {
           Fila de Tarefas IA
         </CardTitle>
         <CardDescription>
-          Registro em tempo real de todas as tarefas executadas pelos agentes OMEGA.
+          Registro em tempo real de todas as tarefas executadas pelos agentes autônomos.
           Atualiza automaticamente a cada 5 segundos.
         </CardDescription>
       </CardHeader>

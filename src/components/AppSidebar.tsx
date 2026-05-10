@@ -22,7 +22,8 @@ import {
   CreditCard,
   Tent,
   Briefcase,
-  Plug
+  Plug,
+  Shield
 } from 'lucide-react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -102,9 +103,7 @@ export function AppSidebar() {
   const navigate = useNavigate();
   const location = useLocation();
   const { profile, organization, roles } = useAuthStore();
-  const canViewMasterPanel =
-    roles.includes('super_admin') ||
-    roles.includes('org_admin');
+  const canViewMasterPanel = roles.includes('super_admin');
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -169,9 +168,9 @@ export function AppSidebar() {
                 asChild 
                 className={`h-12 rounded-2xl transition-all duration-300 group/btn bg-indigo-50 text-indigo-700 hover:bg-indigo-100 hover:text-indigo-900 border border-indigo-100`}
               >
-                <Link to="/analytics" className="flex items-center gap-4 px-4">
-                  <Activity className="h-4 w-4 text-indigo-500" />
-                  {!collapsed && <span className="font-bold text-xs tracking-tight">Painel Master</span>}
+                <Link to="/admin/dashboard" className="flex items-center gap-4 px-4">
+                  <Shield className="h-4 w-4 text-indigo-500" />
+                  {!collapsed && <span className="font-bold text-xs tracking-tight">Painel Master SaaS</span>}
                 </Link>
               </SidebarMenuButton>
             </div>

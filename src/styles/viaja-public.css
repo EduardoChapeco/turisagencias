@@ -579,12 +579,12 @@
   overflow: hidden;
   margin-bottom: 12px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  /* box-shadow removido pela Lei Pétrea OMEGA */
+  box-shadow: 0 4px 20px rgba(0,0,0,0.03);
 }
 
 .vj-flight-card:hover {
   transform: translateY(-2px);
-  /* box-shadow removido pela Lei Pétrea OMEGA */
+  box-shadow: 0 8px 30px rgba(0,0,0,0.08);
   border-color: var(--vj-green);
 }
 
@@ -714,12 +714,12 @@
   padding: 18px;
   flex-shrink: 0;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  /* box-shadow removido pela Lei Pétrea OMEGA */
+  box-shadow: 0 4px 20px rgba(0,0,0,0.03);
 }
 
 .vj-itin-card:hover {
   transform: translateY(-2px);
-  /* box-shadow removido pela Lei Pétrea OMEGA */
+  box-shadow: 0 8px 30px rgba(0,0,0,0.08);
   border-color: var(--vj-green);
 }
 
@@ -787,12 +787,12 @@
   overflow: hidden;
   flex-shrink: 0;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  /* box-shadow removido — Lei Pétrea OMEGA AEGIS Policy */
+  box-shadow: 0 4px 20px rgba(0,0,0,0.03);
 }
 
 .vj-hotel-card:hover {
   transform: translateY(-2px);
-  /* box-shadow removido — Lei Pétrea OMEGA AEGIS Policy */
+  box-shadow: 0 8px 30px rgba(0,0,0,0.08);
   border-color: var(--vj-green);
 }
 

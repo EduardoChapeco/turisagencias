@@ -1,64 +1,69 @@
 import React, { useState, useEffect } from 'react';
-import { Cloud, Search, Camera, Cpu, Database, CheckCircle2 } from 'lucide-react';
+import { Cloud, CheckCircle2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
 
 interface BrandSquadLiveProps {
-  instagramUrl: string;
-  websiteUrl: string;
+  orgId: string;
   primaryColor: string;
-  isProcessing: boolean;
   onComplete: () => void;
 }
 
-const steps = [
-  { id: 'scout', label: 'Agent Scout: Rastreando Presença Digital', icon: Search, duration: 2000 },
-  { id: 'vision', label: 'Agent Vision: Analisando Identidade Visual', icon: Camera, duration: 3000 },
-  { id: 'writer', label: 'Agent Writer: Extraindo Tom de Voz', icon: Cpu, duration: 2500 },
-  { id: 'db', label: 'Knowledge Base: Salvando Brand DNA', icon: Database, duration: 1500 },
-];
-
-export function BrandSquadLive({ instagramUrl, websiteUrl, primaryColor, isProcessing, onComplete }: BrandSquadLiveProps) {
-  const [currentStepIndex, setCurrentStepIndex] = useState(0);
+export function BrandSquadLive({ orgId, primaryColor, onComplete }: BrandSquadLiveProps) {
   const [logs, setLogs] = useState<string[]>([]);
   const [completed, setCompleted] = useState(false);
 
   useEffect(() => {
-    if (!isProcessing || completed) return;
+    if (!orgId) return;
 
-    let timeout: NodeJS.Timeout;
-    const runStep = (index: number) => {
-      if (index >= steps.length) {
-        setCompleted(true);
-        setLogs(prev => [...prev, '[Sistema] Brand DNA extraído com sucesso.']);
-        setTimeout(() => {
-          onComplete();
-        }, 1500);
-        return;
-      }
-
-      const step = steps[index];
-      setLogs(prev => [...prev, `[${step.id.toUpperCase()}] Iniciando: ${step.label}`]);
+    // Fetch initial logs if the task started quickly
+    const fetchInitial = async () => {
+      const { data } = await supabase
+        .from('ai_tasks')
+        .select('execution_log, status')
+        .eq('org_id', orgId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
       
-      // Add fake sub-logs for realism
-      if (step.id === 'scout') {
-        setTimeout(() => setLogs(prev => [...prev, `[SCOUT] Acessando ${instagramUrl || 'redes sociais'}...`]), 800);
-      } else if (step.id === 'vision') {
-        setTimeout(() => setLogs(prev => [...prev, `[VISION] Capturando grid e mapeando paleta de cores...`]), 1000);
-      } else if (step.id === 'writer') {
-        setTimeout(() => setLogs(prev => [...prev, `[WRITER] Sintetizando manifesto da marca...`]), 1200);
+      if (data?.execution_log && Array.isArray(data.execution_log)) {
+        setLogs(data.execution_log);
       }
-
-      timeout = setTimeout(() => {
-        setLogs(prev => [...prev, `[${step.id.toUpperCase()}] Concluído.`]);
-        setCurrentStepIndex(index + 1);
-        runStep(index + 1);
-      }, step.duration);
+      if (data?.status === 'completed' || data?.status === 'failed') {
+        setCompleted(true);
+      }
     };
+    
+    fetchInitial();
 
-    runStep(0);
+    // Subscribe to changes in ai_tasks for this organization
+    const channel = supabase.channel(`ai_tasks_${orgId}`)
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'ai_tasks',
+        filter: `org_id=eq.${orgId}`
+      }, (payload) => {
+        const row = payload.new as any;
+        if (row.execution_log && Array.isArray(row.execution_log)) {
+          setLogs(row.execution_log);
+        }
+        if (row.status === 'completed' || row.status === 'failed') {
+          setCompleted(true);
+        }
+      })
+      .subscribe();
 
-    return () => clearTimeout(timeout);
-  }, [isProcessing, completed]);
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [orgId]);
+
+  useEffect(() => {
+    if (completed) {
+      onComplete();
+    }
+  }, [completed, onComplete]);
 
   return (
     <div className="w-full bg-zinc-950 border border-zinc-800 rounded-2xl p-6 relative overflow-hidden">
@@ -74,52 +79,45 @@ export function BrandSquadLive({ instagramUrl, websiteUrl, primaryColor, isProce
             <Cloud className="w-5 h-5 text-zinc-300" />
           </div>
           <div>
-            <h3 className="font-black text-white">OMEGA Brand Squad</h3>
-            <p className="text-xs text-zinc-500">Inteligência Artificial em Execução</p>
+            <h3 className="font-black text-white">Central de Inteligência</h3>
+            <p className="text-xs text-zinc-500">Agentes Autônomos em Execução</p>
           </div>
         </div>
 
         {/* Status Tracker */}
-        <div className="space-y-4 mb-8">
-          {steps.map((step, index) => {
-            const Icon = step.icon;
-            const isActive = index === currentStepIndex;
-            const isDone = index < currentStepIndex;
-            
-            return (
-              <div key={step.id} className={cn(
-                "flex items-center gap-3 transition-opacity duration-300",
-                isActive ? "opacity-100" : isDone ? "opacity-60" : "opacity-30"
-              )}>
-                <div className={cn(
-                  "w-8 h-8 rounded-full flex items-center justify-center border transition-colors",
-                  isDone ? "bg-vj-green/20 border-vj-green/50 text-vj-green" : 
-                  isActive ? "bg-blue-500/20 border-blue-500/50 text-blue-400" : "bg-zinc-900 border-zinc-800 text-zinc-600"
-                )}>
-                  {isDone ? <CheckCircle2 className="w-4 h-4" /> : <Icon className={cn("w-4 h-4", isActive && "animate-pulse")} />}
-                </div>
-                <span className={cn(
-                  "text-sm font-medium",
-                  isDone ? "text-vj-green" : isActive ? "text-white" : "text-zinc-500"
-                )}>
-                  {step.label}
-                </span>
-              </div>
-            );
-          })}
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-3">
+            <div className={cn(
+              "w-8 h-8 rounded-full flex items-center justify-center border transition-colors",
+              completed ? "bg-vj-green/20 border-vj-green/50 text-vj-green" : "bg-blue-500/20 border-blue-500/50 text-blue-400 animate-pulse"
+            )}>
+              {completed ? <CheckCircle2 className="w-4 h-4" /> : <div className="w-2 h-2 rounded-full bg-blue-400 animate-ping" />}
+            </div>
+            <span className={cn(
+              "text-sm font-medium",
+              completed ? "text-vj-green" : "text-white"
+            )}>
+              {completed ? "Análise Concluída" : "Processando informações em tempo real..."}
+            </span>
+          </div>
         </div>
 
         {/* Terminal Logs */}
-        <div className="bg-black border border-zinc-800 rounded-xl p-4 h-48 overflow-y-auto font-mono text-[10px] leading-relaxed">
-          {logs.map((log, i) => (
-            <div key={i} className="text-zinc-400 mb-1">
-              <span className="text-zinc-600 mr-2">{'>'}</span>
-              <span dangerouslySetInnerHTML={{ __html: log.replace(/\[(.*?)\]/g, '<span class="text-blue-400">[$1]</span>') }} />
-            </div>
-          ))}
-          {isProcessing && !completed && (
-            <div className="text-zinc-500 animate-pulse mt-2">_</div>
-          )}
+        <div className="bg-black border border-zinc-800 rounded-xl p-4 h-64 overflow-y-auto font-mono text-[10px] leading-relaxed flex flex-col flex-col-reverse">
+          <div>
+            {logs.map((log, i) => (
+              <div key={i} className="text-zinc-400 mb-1 break-words">
+                <span className="text-zinc-600 mr-2">{'>'}</span>
+                <span>{typeof log === 'string' ? log : JSON.stringify(log)}</span>
+              </div>
+            ))}
+            {!completed && (
+              <div className="text-zinc-500 animate-pulse mt-2">_</div>
+            )}
+            {logs.length === 0 && !completed && (
+              <div className="text-zinc-600 italic">Aguardando logs do motor Python...</div>
+            )}
+          </div>
         </div>
       </div>
     </div>

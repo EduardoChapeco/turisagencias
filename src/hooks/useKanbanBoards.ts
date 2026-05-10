@@ -91,9 +91,28 @@ export function useKanbanBoard(slug: string) {
           .from('kanban_boards')
           .insert({ org_id: organization.id, name: boardName, slug, board_type: slug })
           .select()
-          .single();
-        if (createErr) throw createErr;
+          .maybeSingle();
+
+        if (createErr && createErr.code !== '23505') {
+          console.error('[useKanbanBoard] Erro ao criar board:', createErr);
+          throw createErr;
+        }
+
         board = newBoard;
+
+        if (!board) {
+          const { data: existingBoard } = await supabase
+            .from('kanban_boards')
+            .select('*')
+            .eq('org_id', organization.id)
+            .eq('slug', slug)
+            .maybeSingle();
+          board = existingBoard;
+        }
+
+        if (!board) {
+           throw new Error('Falha crítica ao carregar ou criar o quadro (verifique as permissões de RLS).');
+        }
 
         // Seed default columns
         const defaultColumns =
@@ -125,7 +144,9 @@ export function useKanbanBoard(slug: string) {
           .from('kanban_columns')
           .insert(defaultColumns.map((c) => ({ ...c, board_id: board!.id, org_id: organization.id })));
         
-        if (colsInsertErr) throw colsInsertErr;
+        if (colsInsertErr && colsInsertErr.code !== '23505') {
+           console.error('[useKanbanBoard] Erro colunas:', colsInsertErr);
+        }
       }
 
       // Step 4: Fetch columns + cards

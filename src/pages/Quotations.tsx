@@ -181,6 +181,9 @@ export default function Quotations() {
                          <div className="flex items-center gap-2 text-[10px] text-vj-txt2 font-black uppercase tracking-wider">
                            <Users className="w-3.5 h-3.5 text-vj-green" /> {clientName?.split(' ')[0] || "Avulso"}
                          </div>
+                         <div className="text-[10px] font-mono font-bold text-zinc-500 bg-zinc-100 px-2 py-0.5 rounded border">
+                           {q.code || 'COT-PENDENTE'}
+                         </div>
                       </div>
                       
                       {q.hotel_name && (

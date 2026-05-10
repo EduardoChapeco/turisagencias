@@ -1,21 +1,46 @@
 const { createClient } = require('@supabase/supabase-js');
-require('dotenv').config({ path: '.env.local' });
 
-const supabase = createClient(process.env.VITE_SUPABASE_URL, process.env.VITE_SUPABASE_ANON_KEY);
+const supabase = createClient(
+  process.env.VITE_SUPABASE_URL,
+  process.env.VITE_SUPABASE_PUBLISHABLE_KEY
+);
 
 async function test() {
-  const { data: boards, error: boardsErr } = await supabase.from('kanban_boards').select('*').limit(1);
-  console.log('Boards:', boardsErr || 'OK');
+  const { data: auth, error: authErr } = await supabase.auth.signInWithPassword({
+    email: 'eusoueduoficial@gmail.com',
+    password: 'admin123'
+  });
+  if (authErr) return console.error('Auth err', authErr);
 
-  const { data: cards, error: cardsErr } = await supabase.from('kanban_cards').select(`
-            id, board_id, column_id, title, description, client_id, quotation_id, 
-            trip_id, group_trip_id, position, meta, assigned_to, whatsapp, email, 
-            tags, estimated_value, created_at, updated_at, 
-            clients(name, phone), 
-            quotations(destination), 
-            group_trips(title)
-          `).limit(1);
-  console.log('Cards:', cardsErr || 'OK');
+  console.log('Logged in as', auth.user.id);
+  
+  const { data: profile } = await supabase.from('profiles').select('org_id').eq('user_id', auth.user.id).single();
+  console.log('Org:', profile?.org_id);
+  
+  const org_id = profile?.org_id;
+
+  const { data: board, error: boardError } = await supabase
+    .from('kanban_boards')
+    .select('*')
+    .eq('org_id', org_id)
+    .eq('slug', 'sales')
+    .maybeSingle();
+
+  console.log('Board:', board);
+  console.log('Board err:', boardError);
+
+  if (!board) {
+    console.log('Trying RPC ensure_default_kanban_boards');
+    const { error: rpcErr } = await supabase.rpc('ensure_default_kanban_boards', { _org_id: org_id });
+    console.log('RPC err:', rpcErr);
+
+    const { data: newBoard, error: createErr } = await supabase
+      .from('kanban_boards')
+      .insert({ org_id: org_id, name: 'Test', slug: 'sales', board_type: 'sales' })
+      .select()
+      .maybeSingle();
+      
+    console.log('Create board res:', newBoard, 'err:', createErr);
+  }
 }
-
 test();

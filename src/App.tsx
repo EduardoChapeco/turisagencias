@@ -54,6 +54,8 @@ const Suppliers = lazy(() => import('./pages/finance/Suppliers'));
 const Transactions = lazy(() => import('./pages/finance/Transactions'));
 const PendingCancellations = lazy(() => import('./pages/finance/PendingCancellations'));
 const ContractTemplates = lazy(() => import('./pages/legal/ContractTemplates'));
+const ContractRecords  = lazy(() => import('./pages/ContractRecords'));
+const Vouchers         = lazy(() => import('./pages/Vouchers'));
 const Automations = lazy(() => import('./pages/automations/Automations'));
 const Team = lazy(() => import('./pages/admin/Team'));
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
@@ -207,6 +209,9 @@ const App = () => (
               <Route path="/finance/transactions" element={<ProtectedWithOrg><AdminRole><Transactions /></AdminRole></ProtectedWithOrg>} />
               <Route path="/finance/cancellations" element={<ProtectedWithOrg><AdminRole><PendingCancellations /></AdminRole></ProtectedWithOrg>} />
               <Route path="/legal/contracts" element={<ProtectedWithOrg><AdminRole><ContractTemplates /></AdminRole></ProtectedWithOrg>} />
+              {/* Fusion: contratos gerados + vouchers */}
+              <Route path="/contracts" element={<ProtectedWithOrg><TripsRole><ContractRecords /></TripsRole></ProtectedWithOrg>} />
+              <Route path="/vouchers"  element={<ProtectedWithOrg><TripsRole><Vouchers /></TripsRole></ProtectedWithOrg>} />
               <Route path="/automations" element={<ProtectedWithOrg><AdminRole><Automations /></AdminRole></ProtectedWithOrg>} />
               <Route path="/team" element={<ProtectedWithOrg><AdminRole><Team /></AdminRole></ProtectedWithOrg>} />
               <Route path="/admin/dashboard" element={<ProtectedWithOrg><AdminRole><AdminDashboard /></AdminRole></ProtectedWithOrg>} />

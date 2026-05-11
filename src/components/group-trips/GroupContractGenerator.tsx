@@ -3,7 +3,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useGroupClients } from '@/hooks/useGroupClients';
 import { useGroupTrips } from '@/hooks/useGroupTrips';
-import { useOrganization } from '@/hooks/useOrganization';
+import { useAuthStore } from '@/stores/authStore';
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
 import { FileSignature, Download, Printer, Users } from 'lucide-react';
@@ -16,7 +16,7 @@ interface GroupContractGeneratorProps {
 export function GroupContractGenerator({ groupTripId }: GroupContractGeneratorProps) {
   const { data: clients, isLoading } = useGroupClients(groupTripId);
   const { data: trips } = useGroupTrips();
-  const { organization } = useOrganization();
+  const { organization } = useAuthStore();
   const trip = trips?.find(t => t.id === groupTripId);
 
   const [selectedClientId, setSelectedClientId] = useState<string>('');

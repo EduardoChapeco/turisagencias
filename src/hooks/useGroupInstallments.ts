@@ -6,7 +6,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { useOrganization } from '@/hooks/useOrganization';
+import { useAuthStore } from '@/stores/authStore';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -78,7 +78,7 @@ export const useGroupInstallmentsByClient = (groupClientId: string | undefined) 
 
 export const useCreateGroupInstallment = () => {
   const qc = useQueryClient();
-  const { organization } = useOrganization();
+  const { organization } = useAuthStore();
 
   return useMutation({
     mutationFn: async (

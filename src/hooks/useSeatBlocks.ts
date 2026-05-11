@@ -7,7 +7,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { useOrganization } from '@/hooks/useOrganization';
+import { useAuthStore } from '@/stores/authStore';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -66,7 +66,7 @@ const QK = (orgId: string | undefined) => ['seat_blocks', orgId] as const;
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const useSeatBlocks = (groupTripId?: string) => {
-  const { organization } = useOrganization();
+  const { organization } = useAuthStore();
   const orgId = organization?.id;
 
   return useQuery({
@@ -103,7 +103,7 @@ export const useSeatBlocks = (groupTripId?: string) => {
 
 export const useCreateSeatBlock = () => {
   const qc = useQueryClient();
-  const { organization } = useOrganization();
+  const { organization } = useAuthStore();
 
   return useMutation({
     mutationFn: async (payload: Omit<Partial<SeatBlock>, 'id' | 'org_id' | 'created_at' | 'updated_at'>) => {
@@ -127,7 +127,7 @@ export const useCreateSeatBlock = () => {
 
 export const useUpdateSeatBlock = () => {
   const qc = useQueryClient();
-  const { organization } = useOrganization();
+  const { organization } = useAuthStore();
 
   return useMutation({
     mutationFn: async ({ id, ...payload }: Partial<SeatBlock> & { id: string }) => {
@@ -154,7 +154,7 @@ export const useUpdateSeatBlock = () => {
 
 export const useDeleteSeatBlock = () => {
   const qc = useQueryClient();
-  const { organization } = useOrganization();
+  const { organization } = useAuthStore();
 
   return useMutation({
     mutationFn: async (id: string) => {

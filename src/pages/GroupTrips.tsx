@@ -281,8 +281,8 @@ export default function GroupTrips() {
                     <Button variant="outline" size="sm"
                       className="premium-button border-vj-green/30 text-vj-green hover:bg-vj-green/10 "
                       title="Painel financeiro"
-                      onClick={() => navigate(`/group-trips/${t.id}/finance`)}>
-                      <BarChart2 size={14} className="mr-1" /> Financeiro
+                      onClick={() => navigate(`/group-trips/${t.id}`)}>
+                      <BarChart2 size={14} className="mr-1" /> Dashboard
                     </Button>
                     <Button variant="outline" size="sm" className="premium-button bg-zinc-900 border-zinc-900 text-white hover:bg-zinc-800 " title="Editar" onClick={() => openEdit(t.id)}>
                       <Eye size={14} className="mr-1.5" /> Abrir

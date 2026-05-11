@@ -231,3 +231,40 @@ Retorne APENAS o JSON:
   "emergencia": ""
 }
 `;
+
+/**
+ * Prompt de OCR para propostas de bloqueio de assentos de cias aéreas.
+ * Extrai dados de propostas da GOL, LATAM ou AZUL para criar bloqueios de grupo.
+ */
+export const SEAT_BLOCK_PROMPT = `
+Você é especialista em leitura de propostas comerciais de bloqueio de assentos de companhias aéreas brasileiras (GOL, LATAM, AZUL).
+
+Analise este documento (PDF ou imagem) e extraia TODOS os dados relevantes.
+Retorne APENAS o JSON válido (sem markdown, sem texto extra):
+
+{
+  "companhia": "GOL" | "LATAM" | "AZUL" | "OUTROS",
+  "codigo_voo": "",
+  "origem": "",
+  "destino": "",
+  "data_ida": "YYYY-MM-DD",
+  "data_volta": "YYYY-MM-DD",
+  "classe": "Y",
+  "total_assentos": 0,
+  "custo_passagem_unit": 0.00,
+  "prazo_nominacao": "YYYY-MM-DD",
+  "prazo_pagamento": "YYYY-MM-DD",
+  "localizador_bloco": "",
+  "condicoes_bloco": "",
+  "taxa_embarque": 0.00,
+  "bagagem": "",
+  "observacoes": ""
+}
+
+REGRAS:
+- Se a data estiver em formato brasileiro (DD/MM/AAAA), converta para ISO (YYYY-MM-DD)
+- Se não encontrar um campo, use null (não 0 e não "")
+- custo_passagem_unit é o custo POR assento individual (custo da agência, não o preço final)
+- total_assentos é a quantidade de assentos bloqueados no documento
+- Extraia o código IATA de 3 letras para origem e destino (ex: XAP, GRU, REC)
+`;

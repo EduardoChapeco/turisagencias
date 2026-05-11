@@ -74,7 +74,7 @@ const PublicGuide = lazy(() => import('./pages/PublicGuide'));
 const PublicTravelerInfo = lazy(() => import('./pages/PublicTravelerInfo'));
 
 const GroupTrips       = lazy(() => import('./pages/GroupTrips'));
-const GroupTripFinance = lazy(() => import('./pages/GroupTripFinance'));
+const GroupDashboard   = lazy(() => import('./pages/group-trips/GroupDashboard'));
 const PublicGroupTrip  = lazy(() => import('./pages/PublicGroupTrip'));
 const PublicBookingVoucher = lazy(() => import('./pages/PublicBookingVoucher'));
 const TravelerPortal   = lazy(() => import('./pages/TravelerPortal'));
@@ -229,7 +229,7 @@ const App = () => (
               <Route path="/experiences" element={<ProtectedWithOrg><TripsRole><Experiences /></TripsRole></ProtectedWithOrg>} />
 
               <Route path="/group-trips" element={<ProtectedWithOrg><TripsRole><GroupTrips /></TripsRole></ProtectedWithOrg>} />
-              <Route path="/group-trips/:id/finance" element={<ProtectedWithOrg><TripsRole><GroupTripFinance /></TripsRole></ProtectedWithOrg>} />
+              <Route path="/group-trips/:id" element={<ProtectedWithOrg><TripsRole><GroupDashboard /></TripsRole></ProtectedWithOrg>} />
               <Route path="/destinations" element={<ProtectedWithOrg><TripsRole><Destinations /></TripsRole></ProtectedWithOrg>} />
               <Route path="/analytics" element={<ProtectedWithOrg><TripsRole><Analytics /></TripsRole></ProtectedWithOrg>} />
 

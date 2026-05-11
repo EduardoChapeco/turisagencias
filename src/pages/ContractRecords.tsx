@@ -165,7 +165,7 @@ export default function ContractRecords() {
 
   return (
     <div className="h-full flex flex-col overflow-hidden w-full">
-      <PageHeader title="Contratos Jurídicos" subtitle="Gerador automático via OCR de recibos e faturas" />
+      <PageHeader title="Contratos Jurídicos" description="Gerador automático via OCR de recibos e faturas" />
 
       <div className="flex-1 overflow-y-auto p-6 space-y-6 max-w-7xl mx-auto w-full pb-12">
 

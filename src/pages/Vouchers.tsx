@@ -137,7 +137,7 @@ export default function Vouchers() {
 
   return (
     <div className="h-full flex flex-col overflow-hidden w-full">
-      <PageHeader title="Vouchers & Boarding" subtitle="Cards de embarque e resumos de viagem para o passageiro" />
+      <PageHeader title="Vouchers & Boarding" description="Cards de embarque e resumos de viagem para o passageiro" />
 
       <div className="flex-1 overflow-y-auto p-6 space-y-6 max-w-7xl mx-auto w-full pb-12">
 

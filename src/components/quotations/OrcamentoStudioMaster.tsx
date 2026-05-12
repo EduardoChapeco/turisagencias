@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { 
-  Camera, ChevronLeft, ChevronRight, FilePdf, Image as ImageIcon, Map, MapPin, 
+  Camera, ChevronLeft, ChevronRight, FileText, Image as ImageIcon, Map, MapPin, 
   Plus, Sparkles, Trash2, X, Plane, Bed, Calendar, CheckSquare, Coins
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -72,7 +72,7 @@ export function OrcamentoStudioMaster() {
           </Button>
 
           <Button onClick={handleGerarPDF} className="bg-slate-900 hover:bg-black text-white h-10 px-6 rounded-xl font-bold">
-            <FilePdf className="mr-2 h-4 w-4 text-red-400" /> Exportar PDF
+            <FileText className="mr-2 h-4 w-4 text-red-400" /> Exportar PDF
           </Button>
         </div>
       </header>
@@ -81,7 +81,7 @@ export function OrcamentoStudioMaster() {
       <main className="flex-1 flex overflow-hidden">
         
         {/* SIDEBAR CMS (FLAT DESIGN) */}
-        <aside className={\`transition-all duration-300 bg-white border-r border-slate-200 flex flex-col z-10 \${isSidebarOpen ? 'w-[450px]' : 'w-0 opacity-0 overflow-hidden'}\`}>
+        <aside className={`transition-all duration-300 bg-white border-r border-slate-200 flex flex-col z-10 ${isSidebarOpen ? 'w-[450px]' : 'w-0 opacity-0 overflow-hidden'}`}>
           
           {/* OCR Box */}
           <div className="p-5 border-b border-slate-200 bg-slate-50">
@@ -99,7 +99,7 @@ export function OrcamentoStudioMaster() {
               <button 
                 key={t.id} 
                 onClick={() => setActiveTab(t.id)}
-                className={\`flex items-center gap-2 px-4 py-3 text-[11px] font-bold uppercase tracking-widest border-b-2 transition-colors whitespace-nowrap \${activeTab === t.id ? 'border-indigo-500 text-indigo-700 bg-indigo-50/30' : 'border-transparent text-slate-500 hover:bg-slate-50'}\`}
+                className={`flex items-center gap-2 px-4 py-3 text-[11px] font-bold uppercase tracking-widest border-b-2 transition-colors whitespace-nowrap ${activeTab === t.id ? 'border-indigo-500 text-indigo-700 bg-indigo-50/30' : 'border-transparent text-slate-500 hover:bg-slate-50'}`}
               >
                 {t.icon} {t.label}
               </button>
@@ -184,7 +184,7 @@ export function OrcamentoStudioMaster() {
         {/* PREVIEW PANE A4 */}
         <section className="flex-1 bg-slate-200 overflow-y-auto p-10 flex flex-col items-center gap-10 print:p-0 print:bg-white">
              {/* A4 Page Layout (Editorial Flat) */}
-             <div className="w-[800px] min-h-[1131px] bg-white shadow-xl flex flex-col relative print:shadow-none print:m-0" style={{borderTop: \`8px solid \${geral.cor}\`}}>
+             <div className="w-[800px] min-h-[1131px] bg-white shadow-xl flex flex-col relative print:shadow-none print:m-0" style={{borderTop: `8px solid ${geral.cor}`}}>
                 <div className="p-16 flex-1 flex flex-col">
                    <div className="flex justify-between items-start mb-16">
                      <div>
@@ -248,13 +248,13 @@ export function OrcamentoStudioMaster() {
         </section>
       </main>
 
-      <style dangerouslySetInnerHTML={{__html: \`
+      <style dangerouslySetInnerHTML={{__html: `
         @media print {
           body * { visibility: hidden; }
-          .print\\\\:m-0, .print\\\\:m-0 * { visibility: visible; }
-          .print\\\\:m-0 { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none; border: none; page-break-after: always; }
+          .print:m-0, .print:m-0 * { visibility: visible; }
+          .print:m-0 { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none; border: none; page-break-after: always; }
         }
-      \`}} />
+      `}} />
     </div>
   );
 }

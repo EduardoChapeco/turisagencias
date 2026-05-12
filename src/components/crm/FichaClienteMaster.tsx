@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Bot, Camera, CheckCircle2, ChevronLeft, ChevronRight, FilePdf, Plus, Trash2, XCircle } from 'lucide-react';
+import { Bot, Camera, CheckCircle2, ChevronLeft, ChevronRight, FileText, Plus, Trash2, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
@@ -90,7 +90,7 @@ export function FichaClienteMaster() {
       // Roteamento para a Edge Function de IA (Mockado para UI fluida até a edge estar 100%)
       const res = await fetch(`${supabase.supabaseUrl}/functions/v1/ocr-extractor`, {
         method: 'POST',
-        headers: { Authorization: \`Bearer \${session.access_token}\` },
+        headers: { Authorization: `Bearer ${session.access_token}` },
         body: formData
       });
 
@@ -147,7 +147,7 @@ export function FichaClienteMaster() {
           </label>
 
           <Button onClick={handleGerarPDF} className="bg-slate-900 hover:bg-black text-white h-10 px-6 rounded-xl font-bold shadow-sm">
-            <FilePdf className="mr-2 h-4 w-4 text-red-400" /> BAIXAR PDF A4
+            <FileText className="mr-2 h-4 w-4 text-red-400" /> BAIXAR PDF A4
           </Button>
         </div>
       </header>
@@ -156,7 +156,7 @@ export function FichaClienteMaster() {
       <main className="flex-1 flex overflow-hidden relative">
         
         {/* SIDEBAR CMS (FLAT DESIGN) */}
-        <aside className={\`transition-all duration-300 bg-white border-r border-slate-200 flex flex-col z-10 \${isSidebarOpen ? 'w-[480px]' : 'w-0 opacity-0 overflow-hidden'}\`}>
+        <aside className={`transition-all duration-300 bg-white border-r border-slate-200 flex flex-col z-10 ${isSidebarOpen ? 'w-[480px]' : 'w-0 opacity-0 overflow-hidden'}`}>
           
           <div className="p-4 bg-slate-50 border-b border-slate-200 flex gap-3">
             <label className="flex-1 flex items-center justify-center gap-2 bg-white border border-slate-200 p-2 cursor-pointer rounded-xl hover:bg-slate-50 transition-colors">
@@ -259,7 +259,7 @@ export function FichaClienteMaster() {
         {/* PREVIEW PANE */}
         <section className="flex-1 bg-slate-200 overflow-y-auto p-10 flex flex-col items-center gap-10">
            {pagantes.filter(p => p.nome || p.cpf).map((pag, i) => (
-             <div key={\`pag-\${i}\`} className="bg-white w-[800px] h-[1131px] p-16 shadow-xl shrink-0 flex flex-col border border-slate-200 relative print:m-0 print:border-none print:shadow-none">
+             <div key={`pag-${i}`} className="bg-white w-[800px] h-[1131px] p-16 shadow-xl shrink-0 flex flex-col border border-slate-200 relative print:m-0 print:border-none print:shadow-none">
                 <div className="border-b-2 border-black pb-4 mb-8 flex justify-between items-end">
                   <div>
                     <h1 className="text-[26px] font-black uppercase text-black leading-none tracking-tighter">Excelência Tour</h1>
@@ -325,13 +325,13 @@ export function FichaClienteMaster() {
         </section>
       </main>
 
-      <style dangerouslySetInnerHTML={{__html: \`
+      <style dangerouslySetInnerHTML={{__html: `
         @media print {
           body * { visibility: hidden; }
-          .print\\\\:m-0, .print\\\\:m-0 * { visibility: visible; }
-          .print\\\\:m-0 { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none; border: none; page-break-after: always; }
+          .print:m-0, .print:m-0 * { visibility: visible; }
+          .print:m-0 { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none; border: none; page-break-after: always; }
         }
-      \`}} />
+      `}} />
     </div>
   );
 }

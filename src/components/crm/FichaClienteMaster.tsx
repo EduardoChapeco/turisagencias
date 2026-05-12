@@ -1,9 +1,12 @@
 import React, { useState, useRef } from 'react';
-import { Bot, Camera, CheckCircle2, ChevronLeft, ChevronRight, FileText, Plus, Trash2, XCircle } from 'lucide-react';
+import { Bot, Camera, CheckCircle2, ChevronLeft, ChevronRight, FileText, Plus, Save, Trash2, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuthStore } from '@/stores/authStore';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 // ==========================================
 // TYPES & INITIAL STATE
@@ -31,13 +34,16 @@ Retorne ESTRITAMENTE o JSON: { "pagantes": [...], "viajantes": [...] }`;
 
 export function FichaClienteMaster() {
   const { toast } = useToast();
+  const { organization, user } = useAuthStore();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [viagemState, setViagemState] = useState({ destino: '', data: '', loc: '', fotoB64: DEFAULT_AVATAR });
   const [pagantes, setPagantes] = useState<Pagante[]>([
     { nome: '', cpf: '', nascimento: '', telefone: '', email: '', endereco: '', cep: '', profissao: '', rg: '', passaporte: '' }
   ]);
   const [viajantes, setViajantes] = useState<Viajante[]>([]);
+  const previewRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   // ── FUNÇÕES DE ESTADO ──
@@ -115,13 +121,126 @@ export function FichaClienteMaster() {
     }
   };
 
-  // ── RENDERIZAÇÃO A4 NATIVA ──
-  const handleGerarPDF = () => {
-    toast({ title: 'Gerando PDF', description: 'Renderizando arquivo A4...' });
-    // TODO: html2canvas + jsPDF implementado abaixo
-    setTimeout(() => {
-      window.print();
-    }, 500);
+  // ── SALVAR NO SUPABASE ──
+  const handleSalvarFicha = async () => {
+    const validos = pagantes.filter(p => p.nome.trim());
+    if (validos.length === 0) {
+      toast({ title: 'Nenhum pagante', description: 'Preencha pelo menos um nome de pagante.', variant: 'destructive' });
+      return;
+    }
+    if (!organization?.id) {
+      toast({ title: 'Sem organização', description: 'Faça login novamente.', variant: 'destructive' });
+      return;
+    }
+
+    setIsSaving(true);
+    let savedCount = 0;
+
+    try {
+      // Busca o board de vendas para criar cards
+      const { data: board } = await supabase
+        .from('kanban_boards')
+        .select('id, kanban_columns(id, name, position)')
+        .eq('org_id', organization.id)
+        .eq('slug', 'sales')
+        .single();
+
+      const firstColumn = board?.kanban_columns
+        ?.sort((a: any, b: any) => a.position - b.position)?.[0];
+
+      for (const pag of validos) {
+        // Verifica se já existe cliente com esse CPF
+        const cpfClean = pag.cpf.replace(/\D/g, '');
+        let clientId: string | null = null;
+
+        if (cpfClean) {
+          const { data: existing } = await supabase
+            .from('clients')
+            .select('id')
+            .eq('org_id', organization.id)
+            .eq('cpf', pag.cpf)
+            .maybeSingle();
+          if (existing) clientId = existing.id;
+        }
+
+        if (!clientId) {
+          const { data: newClient, error: clientErr } = await supabase
+            .from('clients')
+            .insert({
+              org_id: organization.id,
+              name: pag.nome,
+              cpf: pag.cpf || null,
+              phone: pag.telefone || null,
+              email: pag.email || null,
+              birth_date: pag.nascimento || null,
+              rg: pag.rg || null,
+              passport: pag.passaporte || null,
+              address: pag.endereco || null,
+              zip_code: pag.cep || null,
+              profession: pag.profissao || null,
+              tags: viagemState.destino ? [viagemState.destino] : [],
+            })
+            .select('id')
+            .single();
+
+          if (clientErr) throw new Error(`Erro ao salvar ${pag.nome}: ${clientErr.message}`);
+          clientId = newClient.id;
+        }
+
+        // Cria card no Kanban se tiver board
+        if (board?.id && firstColumn?.id) {
+          await supabase.from('kanban_cards').insert({
+            board_id: board.id,
+            column_id: firstColumn.id,
+            org_id: organization.id,
+            title: pag.nome,
+            description: viagemState.destino ? `Viagem: ${viagemState.destino} | ${viagemState.data}` : null,
+            client_id: clientId,
+            meta: {
+              whatsapp: pag.telefone || null,
+              email: pag.email || null,
+              origin: 'ficha_master_ocr',
+            },
+          });
+        }
+
+        savedCount++;
+      }
+
+      toast({
+        title: `${savedCount} cliente(s) salvos!`,
+        description: board ? 'Fichas salvas e cards criados no Funil de Vendas.' : 'Fichas salvas na base de clientes.',
+      });
+    } catch (err: any) {
+      toast({ title: 'Erro ao salvar', description: err.message, variant: 'destructive' });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // ── PDF A4 via html2canvas + jsPDF ──
+  const handleGerarPDF = async () => {
+    if (!previewRef.current) return;
+    toast({ title: 'Gerando PDF', description: 'Renderizando A4...' });
+    try {
+      const pages = previewRef.current.querySelectorAll<HTMLElement>('.a4-ficha-page');
+      if (pages.length === 0) { window.print(); return; }
+
+      const pdf = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
+      const pdfW = pdf.internal.pageSize.getWidth();
+
+      for (let i = 0; i < pages.length; i++) {
+        if (i > 0) pdf.addPage();
+        const canvas = await html2canvas(pages[i], { scale: 2, useCORS: true, backgroundColor: '#fff' });
+        const imgH = (canvas.height * pdfW) / canvas.width;
+        pdf.addImage(canvas.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, pdfW, imgH);
+      }
+
+      pdf.save(`FichaCliente_${pagantes[0]?.nome || 'Excelencia'}.pdf`);
+      toast({ title: 'PDF Gerado!', description: 'Arquivo baixado com sucesso.' });
+    } catch (e: any) {
+      toast({ title: 'Erro no PDF', description: e.message, variant: 'destructive' });
+    }
   };
 
   return (
@@ -145,6 +264,14 @@ export function FichaClienteMaster() {
             <input type="file" className="hidden" multiple accept="application/pdf,image/*" onChange={handleProcessarOCR} disabled={isProcessing} />
             {isProcessing ? <span className="animate-pulse">Processando IA...</span> : <><Bot className="mr-2 h-4 w-4" /> LER DOCUMENTOS OCR</>}
           </label>
+
+          <Button
+            onClick={handleSalvarFicha}
+            disabled={isSaving}
+            className="bg-emerald-600 hover:bg-emerald-700 text-white h-10 px-5 rounded-xl font-bold shadow-sm"
+          >
+            {isSaving ? <span className="animate-pulse">Salvando...</span> : <><Save className="mr-2 h-4 w-4" /> SALVAR FICHA</>}
+          </Button>
 
           <Button onClick={handleGerarPDF} className="bg-slate-900 hover:bg-black text-white h-10 px-6 rounded-xl font-bold shadow-sm">
             <FileText className="mr-2 h-4 w-4 text-red-400" /> BAIXAR PDF A4
@@ -258,8 +385,9 @@ export function FichaClienteMaster() {
 
         {/* PREVIEW PANE */}
         <section className="flex-1 bg-slate-200 overflow-y-auto p-10 flex flex-col items-center gap-10">
+           <div ref={previewRef} className="flex flex-col items-center gap-10 w-full">
            {pagantes.filter(p => p.nome || p.cpf).map((pag, i) => (
-             <div key={`pag-${i}`} className="bg-white w-[800px] h-[1131px] p-16 shadow-xl shrink-0 flex flex-col border border-slate-200 relative print:m-0 print:border-none print:shadow-none">
+             <div key={`pag-${i}`} className="a4-ficha-page bg-white w-[800px] h-[1131px] p-16 shadow-xl shrink-0 flex flex-col border border-slate-200 relative">
                 <div className="border-b-2 border-black pb-4 mb-8 flex justify-between items-end">
                   <div>
                     <h1 className="text-[26px] font-black uppercase text-black leading-none tracking-tighter">Excelência Tour</h1>
@@ -293,7 +421,7 @@ export function FichaClienteMaster() {
            ))}
 
            {viajantes.filter(v => v.nome || v.cpf).length > 0 && (
-             <div className="bg-white w-[800px] h-[1131px] p-16 shadow-xl shrink-0 flex flex-col border border-slate-200 relative print:m-0 print:border-none print:shadow-none">
+             <div className="a4-ficha-page bg-white w-[800px] h-[1131px] p-16 shadow-xl shrink-0 flex flex-col border border-slate-200 relative">
                 <div className="border-b-2 border-black pb-4 mb-8 flex justify-between items-end">
                   <div>
                     <h1 className="text-[26px] font-black uppercase text-black leading-none tracking-tighter">Excelência Tour</h1>
@@ -322,16 +450,9 @@ export function FichaClienteMaster() {
                 </div>
              </div>
            )}
+           </div>
         </section>
       </main>
-
-      <style dangerouslySetInnerHTML={{__html: `
-        @media print {
-          body * { visibility: hidden; }
-          .print:m-0, .print:m-0 * { visibility: visible; }
-          .print:m-0 { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none; border: none; page-break-after: always; }
-        }
-      `}} />
     </div>
   );
 }

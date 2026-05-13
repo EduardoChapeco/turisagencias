@@ -1,4 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useCreateVoucher, useUpdateVoucher } from '@/hooks/useVouchers';
+import { toast } from 'sonner';
 import {
     FileUp, Loader2, AlertCircle, Plane, MapPin, Building,
     Car, MessageCircle, Download, Copy, CheckCircle, Sparkles,
@@ -26,7 +29,9 @@ const INITIAL_DATA = {
     observacoes: ""
 };
 
-export default function App() {
+export default function VoucherMasterPipeline({ onClose, initialData }: { onClose?: () => void, initialData?: any }) {
+    const createVoucher = useCreateVoucher();
+    const updateVoucher = useUpdateVoucher();
     const [loading, setLoading] = useState(false);
     const [data, setData] = useState(INITIAL_DATA);
     const [hasData, setHasData] = useState(false);
@@ -70,6 +75,20 @@ export default function App() {
         };
     }, []);
 
+    useEffect(() => {
+        if (initialData && initialData.ocr_raw_text) {
+            try {
+                const parsed = JSON.parse(initialData.ocr_raw_text);
+                if (parsed && parsed.destino) {
+                    setData(parsed);
+                    setHasData(true);
+                }
+            } catch (e) {
+                console.error("Erro ao fazer parse do initialData", e);
+            }
+        }
+    }, [initialData]);
+
     const handleFileUpload = (e) => {
         const selectedFiles = Array.from(e.target.files);
         if (selectedFiles.length > 0) processMultipleFiles(selectedFiles);
@@ -97,37 +116,74 @@ export default function App() {
         setError(null);
         setValidationWarnings([]);
         setLoading(true);
-        setLoadingMessage(`Analisando ${files.length} documento(s)...`);
-
-        let accumulatedData = hasData ? { ...data } : { ...INITIAL_DATA };
+        setLoadingMessage(`Analisando ${files.length} documento(s) via IA Oficial...`);
 
         try {
-            for (let i = 0; i < files.length; i++) {
-                setLoadingMessage(`Extraindo dados do arquivo ${i + 1}/${files.length}...`);
-                const file = files[i];
-                const base64 = await convertToBase64(file);
-                const mimeType = file.type || "application/pdf";
+            const formData = new FormData();
+            files.forEach(f => formData.append('files', f));
+            
+            const systemPrompt = `
+      Você é a inteligência artificial central da Excelência Tour. Seu papel é atuar como Motor OCR e Analista de Dados de pacotes de viagem.
+      Analise o documento do passageiro (FRT, Orinter, CVC) e extraia um JSON canônico perfeito.
 
-                const extracted = await extractVoucherData(base64, mimeType);
-                accumulatedData = mergeData(accumulatedData, extracted);
-                setData(accumulatedData);
-            }
+      REGRAS PÉTREAS (INTRANSÍVEIS):
+      1. NÃO INVENTE DADOS. Extraia com precisão cirúrgica o que está escrito no documento.
+      2. NUNCA omita IDs, Localizadores, Reservas ou Códigos de Confirmação.
+      3. CENSURA B2B: É EXPRESSAMENTE PROIBIDO extrair telefones de Operadoras B2B (FRT, Orinter, CVC) ou Companhias Aéreas (Azul, Latam, Gol) para o array contatosEmergencia.
+      4. CONTATOS DE EMERGÊNCIA OBRIGATÓRIOS: Você DEVE obrigatóriamente extrair os telefones do HOTEL/HOSPEDAGEM e do RECEPTIVO LOCAL (Transporte/Passeios) e listá-los no array 'contatosEmergencia'.
+      5. SANITIZAÇÃO COMERCIAL: Ignore e censure textos sobre multas, cancelamento, caução, "valorize seu agente", ADMs ou resort fee.
+      6. SEGREGAÇÃO CLARA: Hospedagem é diferente de Transporte (Transfer), que é diferente de Passeios (Tours). Alinhe corretamente as tabelas quebradas.
+      7. SEGURO: Procure apólices de Seguro Viagem (GTA, Assist Card, Coris, Universal Assistance) e extraia os dados 24h.
+      
+      Retorne APENAS um JSON válido e estruturado conforme as seções: destino (string), passageiros (array of strings), voos, hospedagem, transporte, passeios, seguro, contatosEmergencia, localizadorGeral, observacoes.
+    `;
+            formData.append('prompt', systemPrompt);
 
+            const { data: { session } } = await supabase.auth.getSession();
+            const response = await fetch(`${supabase.supabaseUrl}/functions/v1/ocr-extractor`, {
+                method: 'POST',
+                headers: { Authorization: `Bearer ${session?.access_token}` },
+                body: formData
+            });
+
+            if (!response.ok) throw new Error("Erro na comunicação com a IA");
+            const result = await response.json();
+            
+            // Adaptar resultado do OCR-Extractor para o formato do VoucherMasterPipeline
+            let extractedJson = result;
+            
+            const extracted = {
+                destino: extractedJson.destino || "",
+                passageiros: Array.isArray(extractedJson.passageiros) ? extractedJson.passageiros : [],
+                voos: Array.isArray(extractedJson.voos) ? extractedJson.voos : [],
+                hospedagem: Array.isArray(extractedJson.hospedagem) ? extractedJson.hospedagem : [],
+                transporte: Array.isArray(extractedJson.transporte) ? extractedJson.transporte : [],
+                passeios: Array.isArray(extractedJson.passeios) ? extractedJson.passeios : [],
+                seguro: Array.isArray(extractedJson.seguro) ? extractedJson.seguro : [],
+                contatosEmergencia: Array.isArray(extractedJson.contatosEmergencia) ? extractedJson.contatosEmergencia : [],
+                localizadorGeral: extractedJson.localizadorGeral || "",
+                observacoes: sanitizeObservations(extractedJson.observacoes)
+            };
+
+            const accumulatedData = mergeData(hasData ? data : INITIAL_DATA, extracted);
+            setData(accumulatedData);
             setHasData(true);
             runValidationChecks(accumulatedData);
 
             if (accumulatedData.destino && !bgImage) {
-                // Usa a data do primeiro voo para dar contexto à imagem, se existir
                 const periodoContexto = accumulatedData.voos.length > 0 ? accumulatedData.voos[0].data : "";
                 generateDestinationBg(accumulatedData.destino, periodoContexto);
             }
+            toast.success("Dados extraídos com sucesso!");
         } catch (err) {
             console.error("Erro:", err);
             setError("Falha ao processar os arquivos. Verifique se os PDFs estão corrompidos.");
+            toast.error("Falha ao processar OCR.");
         } finally {
             setLoading(false);
             setLoadingMessage("");
-            document.getElementById('file-upload-input').value = '';
+            const fileInput = document.getElementById('file-upload-input') as HTMLInputElement;
+            if (fileInput) fileInput.value = '';
         }
     };
 
@@ -228,159 +284,34 @@ export default function App() {
         return filteredSentences.join(" ").trim();
     };
 
-    const extractVoucherData = async (base64, mimeType, retries = 0) => {
-        const systemPrompt = `
-      Você é a inteligência artificial central da Excelência Tour. Seu papel é atuar como Motor OCR e Analista de Dados de pacotes de viagem.
-      Analise o documento do passageiro (FRT, Orinter, CVC) e extraia um JSON canônico perfeito.
+    const handleSave = async () => {
+        setLoading(true);
+        setLoadingMessage("Salvando no sistema...");
+        try {
+            const payload = {
+                destino: data.destino,
+                localizador: data.localizadorGeral,
+                passageiros: data.passageiros.join(', '),
+                data_checkin: data.hospedagem[0]?.checkin || null,
+                data_checkout: data.hospedagem[0]?.checkout || null,
+                hotel: JSON.stringify(data.hospedagem),
+                voos: JSON.stringify(data.voos),
+                transfer: JSON.stringify(data.transporte),
+                emergencia: JSON.stringify(data.contatosEmergencia),
+                ocr_raw_text: JSON.stringify(data)
+            };
 
-      REGRAS PÉTREAS (INTRANSÍVEIS):
-      1. NÃO INVENTE DADOS. Extraia com precisão cirúrgica o que está escrito no documento.
-      2. NUNCA omita IDs, Localizadores, Reservas ou Códigos de Confirmação.
-      3. CENSURA B2B: É EXPRESSAMENTE PROIBIDO extrair telefones de Operadoras B2B (FRT, Orinter, CVC) ou Companhias Aéreas (Azul, Latam, Gol) para o array contatosEmergencia.
-      4. CONTATOS DE EMERGÊNCIA OBRIGATÓRIOS: Você DEVE obrigatóriamente extrair os telefones do HOTEL/HOSPEDAGEM e do RECEPTIVO LOCAL (Transporte/Passeios) e listá-los no array 'contatosEmergencia'.
-      5. SANITIZAÇÃO COMERCIAL: Ignore e censure textos sobre multas, cancelamento, caução, "valorize seu agente", ADMs ou resort fee.
-      6. SEGREGAÇÃO CLARA: Hospedagem é diferente de Transporte (Transfer), que é diferente de Passeios (Tours). Alinhe corretamente as tabelas quebradas.
-      7. SEGURO: Procure apólices de Seguro Viagem (GTA, Assist Card, Coris, Universal Assistance) e extraia os dados 24h.
-    `;
-
-        const jsonSchema = {
-            type: "OBJECT",
-            properties: {
-                _raciocinio: { type: "STRING", description: "Mapeie os passageiros, voos e identifique fornecedores locais permitidos antes de preencher os arrays." },
-                destino: { type: "STRING", description: "Cidade e País Principal da Viagem" },
-                passageiros: { type: "ARRAY", items: { type: "STRING" } },
-                voos: {
-                    type: "ARRAY",
-                    items: {
-                        type: "OBJECT",
-                        properties: {
-                            tipo: { type: "STRING", description: "Ex: Ida, Volta, Trecho Interno" },
-                            data: { type: "STRING" },
-                            trecho: { type: "STRING" },
-                            cia: { type: "STRING" },
-                            voo: { type: "STRING" },
-                            horario: { type: "STRING" },
-                            localizador: { type: "STRING" }
-                        }
-                    }
-                },
-                hospedagem: {
-                    type: "ARRAY",
-                    items: {
-                        type: "OBJECT",
-                        properties: {
-                            nome: { type: "STRING", description: "Nome do Hotel/Pousada/Resort" },
-                            checkin: { type: "STRING" },
-                            checkout: { type: "STRING" },
-                            regime: { type: "STRING", description: "Ex: Café da Manhã, All Inclusive" },
-                            localizador: { type: "STRING", description: "ID, Reserva ou Localizador exclusivo deste hotel" }
-                        }
-                    }
-                },
-                transporte: {
-                    type: "ARRAY",
-                    items: {
-                        type: "OBJECT",
-                        properties: {
-                            detalhes: { type: "STRING", description: "Ex: Transfer IN/OUT Aeroporto Hotel" },
-                            fornecedor: { type: "STRING", description: "Ex: Luck Receptivo" },
-                            pontoEncontro: { type: "STRING", description: "Endereço, instruções ou local onde o receptivo aguardará." },
-                            telefone: { type: "STRING", description: "Apenas números de telefone ou WhatsApp de emergência locais." },
-                            localizador: { type: "STRING" }
-                        }
-                    }
-                },
-                passeios: {
-                    type: "ARRAY",
-                    items: {
-                        type: "OBJECT",
-                        properties: {
-                            nome: { type: "STRING", description: "Nome da Atividade/Tour" },
-                            data: { type: "STRING" },
-                            fornecedor: { type: "STRING" },
-                            pontoEncontro: { type: "STRING", description: "Local de partida e horário." },
-                            telefone: { type: "STRING" },
-                            localizador: { type: "STRING" }
-                        }
-                    }
-                },
-                seguro: {
-                    type: "ARRAY",
-                    items: {
-                        type: "OBJECT",
-                        properties: {
-                            seguradora: { type: "STRING", description: "Nome da seguradora (ex: Assist Card, Coris)" },
-                            apolice: { type: "STRING", description: "Número da apólice ou bilhete" },
-                            cobertura: { type: "STRING", description: "Plano ou principais coberturas" },
-                            telefone: { type: "STRING", description: "Telefone de acionamento em emergência" }
-                        }
-                    }
-                },
-                contatosEmergencia: {
-                    type: "ARRAY",
-                    items: {
-                        type: "OBJECT",
-                        properties: {
-                            nome: { type: "STRING", description: "Nome do Hotel, Receptivo Local, Guia ou Seguro. NUNCA Operadoras B2B ou Cias Aéreas." },
-                            categoria: { type: "STRING", description: "Ex: Hotel, Fornecedor Local, Assistência Médica" },
-                            telefone: { type: "STRING" }
-                        }
-                    }
-                },
-                localizadorGeral: { type: "STRING", description: "Voucher ou Localizador Geral do documento" },
-                observacoes: { type: "STRING", description: "Dicas úteis de viagem. Nenhuma multa." }
-            },
-            required: ["_raciocinio", "passageiros", "voos", "hospedagem", "transporte", "contatosEmergencia"]
-        };
-
-        const payload = {
-            contents: [{ parts: [{ text: "Extraia os dados focando no passageiro final. É OBRIGATÓRIO mapear os contatos telefônicos do Hotel e do Transfer/Passeios para dentro da seção contatosEmergencia. CENSURE (NÃO EXTRAIA) contatos de companhias aéreas ou operadoras emissoras." }, { inlineData: { mimeType: mimeType, data: base64 } }] }],
-            systemInstruction: { parts: [{ text: systemPrompt }] },
-            generationConfig: {
-                temperature: 0.1,
-                responseMimeType: "application/json",
-                responseSchema: jsonSchema
+            if (initialData?.id) {
+                await updateVoucher.mutateAsync({ id: initialData.id, ...payload });
+            } else {
+                await createVoucher.mutateAsync(payload);
             }
-        };
-
-        for (let i = 0; i <= 5; i++) {
-            try {
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-
-                if (!response.ok) {
-                    if (i < 5) {
-                        await new Promise(res => setTimeout(res, Math.pow(2, i) * 1000));
-                        continue;
-                    }
-                    throw new Error("Erro de comunicação com a IA.");
-                }
-
-                const result = await response.json();
-                const textResponse = result.candidates?.[0]?.content?.parts?.[0]?.text;
-                const extractedJson = JSON.parse(textResponse);
-
-                return {
-                    destino: extractedJson.destino || "",
-                    passageiros: Array.isArray(extractedJson.passageiros) ? extractedJson.passageiros : [],
-                    voos: Array.isArray(extractedJson.voos) ? extractedJson.voos : [],
-                    hospedagem: Array.isArray(extractedJson.hospedagem) ? extractedJson.hospedagem : [],
-                    transporte: Array.isArray(extractedJson.transporte) ? extractedJson.transporte : [],
-                    passeios: Array.isArray(extractedJson.passeios) ? extractedJson.passeios : [],
-                    seguro: Array.isArray(extractedJson.seguro) ? extractedJson.seguro : [],
-                    contatosEmergencia: Array.isArray(extractedJson.contatosEmergencia) ? extractedJson.contatosEmergencia : [],
-                    localizadorGeral: extractedJson.localizadorGeral || "",
-                    observacoes: sanitizeObservations(extractedJson.observacoes)
-                };
-
-            } catch (err) {
-                if (i >= 5) {
-                    return { destino: "", passageiros: [], voos: [], hospedagem: [], transporte: [], passeios: [], seguro: [], contatosEmergencia: [], localizadorGeral: "", observacoes: "" };
-                }
-            }
+            if (onClose) onClose();
+        } catch (err) {
+            console.error(err);
+            toast.error("Erro ao salvar o voucher.");
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -659,11 +590,16 @@ const SectionIdBadge = ({ id }) => {
 
 return (
     // CONTÊINER PRINCIPAL RESTRITO: Mantém as barras de scroll independentes e o layout flat.
-    <div className= "h-screen w-full bg-[#FDFDFD] font-sans text-slate-800 flex flex-col overflow-hidden" >
+    <div className= "h-full w-full bg-[#FDFDFD] font-sans text-slate-800 flex flex-col overflow-hidden" >
 
     {/* HEADER FIXO DO APP - MINIMALISTA CLAUDE STYLE */ }
     < header className = "bg-white px-6 py-3 flex items-center justify-between shrink-0 z-20 border-b border-slate-200" >
         <div className="flex items-center gap-4" >
+            {onClose && (
+                <button onClick={onClose} className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition font-bold text-xs mr-2">
+                    Fechar
+                </button>
+            )}
             <button onClick={ () => setSidebarOpen(!sidebarOpen) } className = "p-2 text-slate-400 hover:bg-slate-50 hover:text-slate-700 rounded-lg transition" title = "Menu CMS" >
                 { sidebarOpen?<ChevronLeft size = { 20 }/> : <ChevronRight size={ 20 }/>}
 </button>
@@ -787,10 +723,15 @@ title = "Visualizar em Tela Cheia / Nova Aba"
 
 {
     hasData && (
-        <button onClick={ clearData } className = "mt-4 w-full py-2 bg-white border border-red-100 text-red-500 rounded-lg text-xs font-semibold hover:bg-red-50 transition relative z-10" >
-            Limpar Todos os Dados
-                </button>
-                )
+        <div className="mt-4 flex flex-col gap-2 relative z-10">
+            <button onClick={ handleSave } className = "w-full py-3 bg-vj-green text-white rounded-lg text-sm font-bold hover:bg-vj-green/90 transition shadow-sm" >
+                {initialData?.id ? 'Salvar Alterações' : 'Salvar Voucher Oficial'}
+            </button>
+            <button onClick={ clearData } className = "w-full py-2 bg-white border border-red-100 text-red-500 rounded-lg text-xs font-semibold hover:bg-red-50 transition" >
+                Limpar Todos os Dados
+            </button>
+        </div>
+    )
 }
 </div>
 

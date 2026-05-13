@@ -108,6 +108,7 @@ serve(async (req) => {
     // Recebe FormData com os arquivos
     const formData = await req.formData();
     const files = formData.getAll('files') as File[];
+    const customPrompt = formData.get('prompt') as string | null;
 
     if (!files || files.length === 0) {
       return new Response(JSON.stringify({ error: "Nenhum arquivo enviado." }), { status: 400, headers: corsHeaders });
@@ -147,7 +148,7 @@ serve(async (req) => {
       body: JSON.stringify({
         model: aiConfig.model,
         messages: [
-          { role: "system", content: SYSTEM_PROMPT },
+          { role: "system", content: customPrompt || SYSTEM_PROMPT },
           { role: "user", content: contentParts }
         ],
         max_tokens: 4096,
@@ -175,16 +176,18 @@ serve(async (req) => {
       else throw new Error("IA não retornou JSON válido. Tente com uma imagem mais nítida.");
     }
 
-    // Sanitização final — garante arrays e remove strings nulas
-    const sanitizeStr = (v: any) => (!v || v === 'null' || v === 'undefined' ? '' : String(v).trim());
-    const sanitizeObj = (obj: Record<string, any>) => Object.fromEntries(Object.entries(obj).map(([k, v]) => [k, sanitizeStr(v)]));
+    let result: any = extracted;
+    if (!customPrompt) {
+        const sanitizeStr = (v: any) => (!v || v === 'null' || v === 'undefined' ? '' : String(v).trim());
+        const sanitizeObj = (obj: Record<string, any>) => Object.fromEntries(Object.entries(obj).map(([k, v]) => [k, sanitizeStr(v)]));
 
-    const result = {
-      pagantes: (extracted.pagantes || []).map(sanitizeObj),
-      viajantes: (extracted.viajantes || []).map(sanitizeObj),
-    };
+        result = {
+          pagantes: (extracted.pagantes || []).map(sanitizeObj),
+          viajantes: (extracted.viajantes || []).map(sanitizeObj),
+        };
+    }
 
-    console.log(`[ocr-extractor] Extracted: ${result.pagantes.length} pagantes, ${result.viajantes.length} viajantes`);
+    console.log(`[ocr-extractor] Success.`);
 
     return new Response(JSON.stringify(result), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

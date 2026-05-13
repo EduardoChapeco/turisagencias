@@ -899,7 +899,7 @@ title = "Visualizar em Tela Cheia / Nova Aba"
             <Phone size={ 14 } />} title="Contatos Locais do Passageiro" / >
                 <button onClick={ () => addArrayItem('contatosEmergencia', { nome: '', categoria: '', telefone: '' }) } className = "text-slate-400 hover:text-slate-800 p-1 rounded flex items-center text-xs font-semibold gap-1" > <Plus size={ 14 } /> Adicionar</button >
                     </div>
-                    < p className = "text-xs text-slate-500 mb-2" > Estes contatos formarão o seu < strong > Terceiro Documento(Guia de Emergência) < /strong>.</p >
+                    <p className="text-xs text-slate-500 mb-2"> Estes contatos formarão o seu <strong> Terceiro Documento(Guia de Emergência) </strong>.</p>
                     {
                         data.contatosEmergencia.map((c, idx) => (
                             <div key= { idx } className = "p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3 relative group" >
@@ -1310,7 +1310,7 @@ placeholder = "Regras, dicas ou avisos úteis..."
                                             <h3 className="font-bold text-base text-white" > Documentação </h3>
                                                 </div>
                                                 < p className = "text-sm text-white/80 leading-snug" >
-                                                    Para embarcar, entrar no hotel e realizar os passeios, é necessário apresentar um < strong > documento oficial com foto(RG ou CNH original) < /strong>. São aceitos também título de eleitor e carteira de trabalho (se contiverem foto). Para voos internacionais (fora Mercosul), <strong>Passaporte válido</strong > é obrigatório.
+                                                    Para embarcar, entrar no hotel e realizar os passeios, é necessário apresentar um <strong> documento oficial com foto(RG ou CNH original) </strong>. São aceitos também título de eleitor e carteira de trabalho (se contiverem foto). Para voos internacionais (fora Mercosul), <strong>Passaporte válido</strong> é obrigatório.
                                </p>
                                                         </div>
 
@@ -1396,7 +1396,7 @@ placeholder = "Regras, dicas ou avisos úteis..."
             <h3 className="font-bold text-base text-white" > Posso levar Chimarrão ? </h3>
                 </div>
                 < p className = "text-sm text-white/80 leading-snug" >
-                    <strong>Sim! < /strong> É permitido levar cuia, bomba e erva-mate no avião. A erva deve pesar até 1kg por bagagem e estar lacrada/bem embalada. < strong > A garrafa térmica deve estar completamente VAZIA </strong> ao passar pelo raio-x de segurança.
+                    <strong>Sim! </strong> É permitido levar cuia, bomba e erva-mate no avião. A erva deve pesar até 1kg por bagagem e estar lacrada/bem embalada. <strong> A garrafa térmica deve estar completamente VAZIA </strong> ao passar pelo raio-x de segurança.
                         </p>
                         </div>
 
@@ -1538,7 +1538,7 @@ placeholder = "Regras, dicas ou avisos úteis..."
                 <h3 className="font-bold text-[#1A2B47] flex items-center gap-2" > <MessageCircle className="text-[#2D7A47]" /> Texto para o Cliente </h3>
                     < button onClick = { copyWhatsApp } className = {`px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition ${copied ? 'bg-[#E0F4E8] text-[#2D7A47]' : 'bg-[#2D7A47] text-white hover:bg-[#1B5E32]'}`
 }>
-    { copied?<>< CheckCircle size = { 16} /> Copiado! < /> : <><Copy size={16}/ > Copiar Texto </>}
+    { copied ? <><CheckCircle size={16} /> Copiado! </> : <><Copy size={16}/> Copiar Texto </>}
 </button>
     </div>
     < div className = "bg-[#E8F2FA] p-5 rounded-xl text-[#1A2B47] text-[14px] leading-relaxed whitespace-pre-wrap font-sans" >

@@ -22,7 +22,6 @@ import {
   useDeleteVoucher,
   type VoucherRecord,
 } from '@/hooks/useVouchers';
-} from '@/hooks/useVouchers';
 import VoucherMasterPipeline from '@/components/crm/VoucherMasterPipeline';
 
 export default function Vouchers() {

@@ -205,7 +205,7 @@ export default function AdminAgencyDetail() {
                 <Button 
                   onClick={handleSave} 
                   disabled={updateMutation.isPending}
-                  className="bg-indigo-600 hover:bg-indigo-700 text-white gap-2"
+                  className="bg-vj-green hover:bg-green-600 text-white gap-2"
                 >
                   <Save className="w-4 h-4" />
                   {updateMutation.isPending ? 'Salvando...' : 'Salvar Alterações'}

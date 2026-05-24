@@ -52,10 +52,20 @@ export function useCreateHotel() {
 
   return useMutation({
     mutationFn: async (payload: HotelFormValues) => {
-      const { gallery_urls, ...dbPayload } = payload;
+      const { gallery_urls, photo_url, ...dbPayload } = payload as any;
+      const gallery = gallery_urls || [];
+      const cover = photo_url || null;
+
       const { data, error } = await supabase
         .from('hotels_bank')
-        .insert({ ...dbPayload, photos: gallery_urls || [], org_id: organization!.id })
+        .insert({ 
+          ...dbPayload, 
+          photos: gallery,
+          gallery_urls: gallery,
+          cover_image_url: cover,
+          cover_photo_url: cover,
+          org_id: organization!.id 
+        })
         .select()
         .single();
       if (error) throw error;
@@ -77,9 +87,19 @@ export function useUpdateHotel() {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async ({ id, gallery_urls, ...dbPayload }: any) => {
+    mutationFn: async ({ id, gallery_urls, photo_url, ...dbPayload }: any) => {
       if (!organization?.id) throw new Error('Organização não encontrada');
-      const payloadToUpdate = gallery_urls !== undefined ? { ...dbPayload, photos: gallery_urls } : dbPayload;
+      
+      const payloadToUpdate: any = { ...dbPayload };
+      if (gallery_urls !== undefined) {
+        payloadToUpdate.photos = gallery_urls;
+        payloadToUpdate.gallery_urls = gallery_urls;
+      }
+      if (photo_url !== undefined) {
+        payloadToUpdate.cover_image_url = photo_url;
+        payloadToUpdate.cover_photo_url = photo_url;
+      }
+
       const { data, error } = await supabase
         .from('hotels_bank')
         .update(payloadToUpdate)

@@ -175,7 +175,7 @@ export default function AdminDashboard() {
                           <td className="px-4 py-3 text-right">
                             <Link 
                               to={`/admin/agencies/${org.id}`}
-                              className="inline-flex items-center gap-1 text-indigo-600 hover:text-indigo-800 font-medium text-xs bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg transition-colors"
+                              className="inline-flex items-center gap-1 text-vj-primary hover:text-green-700 font-semibold text-xs bg-vj-primary-bg hover:bg-green-100/70 px-3 py-1.5 rounded-lg transition-colors"
                             >
                               Gerenciar <ArrowRight className="w-3 h-3" />
                             </Link>
@@ -237,7 +237,7 @@ export default function AdminDashboard() {
               <Card className="premium-card shadow-sm border border-zinc-100">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-md font-bold flex items-center gap-2">
-                    <Key className="w-4 h-4 text-indigo-500" /> Chaves Ativas na Plataforma
+                    <Key className="w-4 h-4 text-vj-green" /> Chaves Ativas na Plataforma
                   </CardTitle>
                 </CardHeader>
                 <CardContent>

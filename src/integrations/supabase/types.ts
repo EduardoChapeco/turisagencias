@@ -9089,6 +9089,30 @@ export type Database = {
         Returns: undefined
       }
       send_magic_guide_reminders: { Args: never; Returns: undefined }
+      get_traveler_by_token: {
+        Args: {
+          _token: string
+        }
+        Returns: {
+          birth_date: string | null
+          cpf: string | null
+          email: string | null
+          emergency_contact_name: string | null
+          emergency_contact_phone: string | null
+          form_completed_at: string | null
+          full_name: string
+          gender: string | null
+          id: string
+          nationality: string | null
+          passport_expiry: string | null
+          passport_number: string | null
+          phone: string | null
+          special_needs: string | null
+          seat_preference: string | null
+          meal_preference: string | null
+          loyalty_programs: string | null
+        }[]
+      }
       submit_traveler_form: {
         Args: {
           _birth_date?: string

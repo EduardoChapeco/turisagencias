@@ -59,7 +59,8 @@ export function HotelEdit({ id, open, onClose, onSuccess }: HotelEditProps) {
               tags: data.tags ? data.tags.join(', ') : '',
               regime_options: data.regime_options ? data.regime_options.join(', ') : '',
               amenities: data.amenities ? data.amenities.join(', ') : '',
-              gallery_urls: data.gallery_urls || [],
+              photo_url: data.photo_url || data.cover_image_url || data.cover_photo_url || '',
+              gallery_urls: data.gallery_urls || data.photos || [],
               sections: data.sections || [],
             });
           }
@@ -67,10 +68,23 @@ export function HotelEdit({ id, open, onClose, onSuccess }: HotelEditProps) {
         .finally(() => setLoading(false));
     } else if (open && !isUpdate) {
       setForm({
-        name: '', category: '', description: '', city: '', state: '', country: 'Brasil',
-        zip_code: '', phone: '', website: '', email: '', photo_url: '',
-        gallery_urls: [], sections: [], video_url: '',
-        tags: '', regime_options: '', amenities: ''
+        name: '',
+        category: '',
+        description: '',
+        city: '',
+        state: '',
+        country: 'Brasil',
+        zip_code: '',
+        phone: '',
+        website: '',
+        email: '',
+        photo_url: '',
+        gallery_urls: [],
+        sections: [],
+        video_url: '',
+        tags: '',
+        regime_options: '',
+        amenities: '',
       });
     }
   }, [open, isUpdate, id]);

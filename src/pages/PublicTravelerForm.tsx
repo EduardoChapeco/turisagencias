@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { AlertCircle, CheckCircle2, Loader2, Plane, Globe, FileText, Phone } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -15,8 +15,10 @@ export default function PublicTravelerForm() {
   const { token } = useParams<{ token: string }>();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [validating, setValidating] = useState(true);
   const [submitted, setSubmitted] = useState(false);
   const [invalidToken, setInvalidToken] = useState(false);
+  const [alreadyCompleted, setAlreadyCompleted] = useState(false);
   const [step, setStep] = useState(1);
 
   const [form, setForm] = useState({
@@ -42,6 +44,62 @@ export default function PublicTravelerForm() {
     loyalty_programs: '',
   });
 
+  useEffect(() => {
+    async function checkToken() {
+      if (!token) {
+        setInvalidToken(true);
+        setValidating(false);
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase.rpc('get_traveler_by_token', {
+          _token: token
+        });
+
+        if (error || !data || data.length === 0) {
+          console.error("Token validation error:", error);
+          setInvalidToken(true);
+          setValidating(false);
+          return;
+        }
+
+        const traveler = data[0];
+        
+        if (traveler.form_completed_at) {
+          setAlreadyCompleted(true);
+        }
+
+        setForm({
+          full_name: traveler.full_name || '',
+          cpf: traveler.cpf || '',
+          birth_date: traveler.birth_date || '',
+          gender: traveler.gender || '',
+          nationality: traveler.nationality || 'Brasileira',
+          passport_number: traveler.passport_number || '',
+          passport_expiry: traveler.passport_expiry || '',
+          rg: traveler.rg || '',
+          phone: traveler.phone || '',
+          email: traveler.email || '',
+          emergency_contact_name: traveler.emergency_contact_name || '',
+          emergency_contact_phone: traveler.emergency_contact_phone || '',
+          seat_preference: traveler.seat_preference || '',
+          meal_preference: traveler.meal_preference || '',
+          special_needs: traveler.special_needs || '',
+          loyalty_programs: traveler.loyalty_programs || '',
+        });
+
+      } catch (err) {
+        console.error("Token checking exception:", err);
+        setInvalidToken(true);
+      } finally {
+        setValidating(false);
+      }
+    }
+
+    checkToken();
+  }, [token]);
+
   const update = (field: string, value: string) => setForm((prev) => ({ ...prev, [field]: value }));
 
   const totalSteps = 4;
@@ -54,16 +112,53 @@ export default function PublicTravelerForm() {
     'Preferências de Bordo',
   ];
 
+  if (validating) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50 dark:from-zinc-950 dark:to-blue-950/20">
+        <div className="text-center space-y-4">
+          <Loader2 className="h-12 w-12 animate-spin text-vj-green mx-auto" />
+          <p className="text-sm text-muted-foreground animate-pulse font-medium">Validando link de acesso...</p>
+        </div>
+      </div>
+    );
+  }
+
   if (invalidToken) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50 dark:from-zinc-950 dark:to-blue-950/20 px-4">
-        <Card className="w-full max-w-md text-center  rounded-3xl border-vj-border">
+        <Card className="w-full max-w-md text-center rounded-3xl border-vj-border shadow-xl">
           <CardContent className="py-12">
             <div className="w-16 h-16 bg-destructive/10 rounded-full flex items-center justify-center mx-auto mb-4">
               <AlertCircle className="h-8 w-8 text-destructive" />
             </div>
             <h2 className="font-heading text-xl font-bold">Link Inválido ou Expirado</h2>
             <p className="text-sm text-muted-foreground mt-2">Este formulário não foi encontrado. Solicite um novo link à sua agência de viagens.</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (alreadyCompleted) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50 dark:from-zinc-950 dark:to-blue-950/20 px-4">
+        <Card className="w-full max-w-md text-center rounded-3xl border-vj-border shadow-xl">
+          <CardContent className="py-12 space-y-4">
+            <div className="w-20 h-20 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto">
+              <CheckCircle2 className="h-10 w-10 text-blue-600 dark:text-blue-400" />
+            </div>
+            <h2 className="font-heading text-2xl font-bold">Ficha Já Preenchida!</h2>
+            <p className="text-muted-foreground text-sm">
+              Olá, <strong className="text-foreground">{form.full_name}</strong>. Identificamos que você já enviou as suas informações de viagem anteriormente.
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Se você precisa atualizar algum dado ou enviar novamente, clique no botão abaixo para reabrir o formulário.
+            </p>
+            <div className="pt-2">
+              <Button onClick={() => setAlreadyCompleted(false)} className="w-full">
+                Atualizar Meus Dados
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>

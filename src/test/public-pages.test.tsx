@@ -37,20 +37,73 @@ function renderWithRoute(ui: React.ReactElement, path: string, route: string) {
 }
 
 describe('Public Traveler Form', () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockRpc.mockImplementation((rpcName) => {
+      if (rpcName === 'get_traveler_by_token') {
+        return Promise.resolve({
+          data: [{
+            id: 'traveler-123',
+            full_name: 'Fulano de Tal',
+            email: 'fulano@example.com',
+            phone: '48999999999',
+            nationality: 'Brasileira',
+            form_completed_at: null,
+          }],
+          error: null
+        });
+      }
+      return Promise.resolve({ data: null, error: null });
+    });
+  });
 
-  it('renders traveler form with required fields', () => {
+  it('renders traveler form with required fields', async () => {
     renderWithRoute(<PublicTravelerForm />, '/f/:token', '/f/test-token');
-    expect(screen.getByText(/ficha do viajante/i)).toBeInTheDocument();
-    expect(screen.getByText(/nome completo/i)).toBeInTheDocument();
+    expect(await screen.findByText(/ficha do viajante/i)).toBeInTheDocument();
+    expect(await screen.findByText(/nome completo/i)).toBeInTheDocument();
     expect(screen.getByText(/cpf/i)).toBeInTheDocument();
     expect(screen.getByText(/data de nascimento/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /próxima etapa/i })).toBeInTheDocument();
   });
 
-  it('has nationality field with default value', () => {
+  it('has nationality field with default value', async () => {
     renderWithRoute(<PublicTravelerForm />, '/f/:token', '/f/test-token');
-    expect(screen.getByDisplayValue('Brasileira')).toBeInTheDocument();
+    expect(await screen.findByDisplayValue('Brasileira')).toBeInTheDocument();
+  });
+
+  it('shows error state when token is invalid', async () => {
+    mockRpc.mockResolvedValue({ data: null, error: { message: 'Invalid token' } });
+    renderWithRoute(<PublicTravelerForm />, '/f/:token', '/f/invalid-token');
+    expect(await screen.findByText(/link inválido ou expirado/i)).toBeInTheDocument();
+  });
+
+  it('shows friendly already completed message with update option', async () => {
+    mockRpc.mockImplementation((rpcName) => {
+      if (rpcName === 'get_traveler_by_token') {
+        return Promise.resolve({
+          data: [{
+            id: 'traveler-123',
+            full_name: 'Fulano de Tal',
+            email: 'fulano@example.com',
+            phone: '48999999999',
+            nationality: 'Brasileira',
+            form_completed_at: '2026-05-24T18:00:00Z',
+          }],
+          error: null
+        });
+      }
+      return Promise.resolve({ data: null, error: null });
+    });
+
+    renderWithRoute(<PublicTravelerForm />, '/f/:token', '/f/completed-token');
+    expect(await screen.findByText(/ficha já preenchida!/i)).toBeInTheDocument();
+    expect(screen.getByText(/fulano de tal/i)).toBeInTheDocument();
+    
+    // Clicking update button should reveal the form
+    const updateButton = screen.getByRole('button', { name: /atualizar meus dados/i });
+    updateButton.click();
+    
+    expect(await screen.findByText(/ficha do viajante/i)).toBeInTheDocument();
   });
 });
 

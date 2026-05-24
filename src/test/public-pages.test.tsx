@@ -68,7 +68,7 @@ describe('Public Quotation Page', () => {
       then: (cb: (value: unknown) => void) => cb({ data: null, error: null }),
     });
     renderWithRoute(<PublicQuotation />, '/q/:token', '/q/invalid-token');
-    expect(await screen.findByText(/cotação não encontrada/i)).toBeInTheDocument();
+    expect(await screen.findByText(/proposta indisponível/i)).toBeInTheDocument();
   });
 
   it('renders quotation data when found', async () => {
@@ -107,6 +107,6 @@ describe('Public Quotation Page', () => {
     renderWithRoute(<PublicQuotation />, '/q/:token', '/q/valid-token');
     expect((await screen.findAllByText('Cancún')).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/grand oasis/i).length).toBeGreaterThan(0);
-    expect(screen.getAllByRole('button', { name: /confirmar reserva/i }).length).toBeGreaterThan(0);
+    expect(screen.getAllByRole('button', { name: /confirmar proposta/i }).length).toBeGreaterThan(0);
   });
 });

@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import { resolveExtensionContext } from "../_shared/extension.ts";
 
 const corsHeaders = {
@@ -7,8 +7,97 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-extension-session, x-extension-id",
 };
 
+interface FlightSegment {
+  origem_iata?: string;
+  origem_cidade?: string;
+  destino_iata?: string;
+  destino_cidade?: string;
+  numero_voo?: string;
+  partida_datetime?: string;
+  chegada_datetime?: string;
+  duracao_minutos?: number;
+}
+
+interface Flight {
+  direction: "outbound" | "return";
+  airline_name?: string;
+  cabin_class?: "economy" | "premium_economy" | "business" | "first";
+  inclui_bagagem?: boolean;
+  total_price?: number;
+  segments?: FlightSegment[];
+}
+
+interface Transfer {
+  tipo?: "in" | "out" | "round" | "privativo" | "regular";
+  nome?: string;
+  fornecedor?: string;
+  data_inicio?: string;
+  data_fim?: string;
+  instrucoes?: string;
+  ponto_encontro?: string;
+  limite_bagagem_kg?: number;
+  adultos?: number;
+  criancas?: number;
+}
+
+interface ItineraryDay {
+  day_number: number;
+  city?: string;
+  label?: string;
+  description?: string;
+}
+
+interface Installment {
+  type: string;
+  value: number;
+  installment_count: number;
+}
+
+interface ExtractedQuotationData {
+  id?: string;
+  id_operadora?: string;
+  operadora?: string;
+  confianca_operadora?: "HIGH" | "MEDIUM" | "LOW";
+  agencia_nome?: string;
+  agencia_agente?: string;
+  destination: string;
+  hotel_name: string;
+  hotel_stars?: number;
+  check_in?: string;
+  check_out?: string;
+  num_nights?: number;
+  meal_plan?: "all_inclusive" | "half_board" | "bed_breakfast" | "room_only" | "ultra_all_inclusive" | "full_board";
+  room_type?: string;
+  tarifa_base?: number;
+  taxas?: number;
+  impostos?: number;
+  total_value: number;
+  currency?: string;
+  pax_adultos?: number;
+  pax_criancas?: number;
+  pax_infantil?: number;
+  pax_seniores?: number;
+  cancelamento_data_limite?: string;
+  cancelamento_valor_multa?: number;
+  cancelamento_texto_raw?: string;
+  installments?: Installment[];
+  flights?: Flight[];
+  transfers?: Transfer[];
+  itinerary?: ItineraryDay[];
+  condicoes_pagamento_texto?: string;
+  taxas_locais_aviso?: string;
+  whatsapp_text: string;
+  confianca_geral?: "HIGH" | "MEDIUM" | "LOW";
+  campos_ambiguos?: string[];
+}
+
+type ChatMessage = {
+  role: "system" | "user" | "assistant";
+  content: string | unknown[];
+};
+
 // ─── Orchestrador de chaves por round-robin ────────────────────────────────
-async function getAiKey(supabaseClient: any, orgId: string): Promise<{ key: string; provider: string; baseUrl: string; model: string } | null> {
+async function getAiKey(supabaseClient: SupabaseClient, orgId: string): Promise<{ key: string; provider: string; baseUrl: string; model: string } | null> {
   // 1. Prioridade: chaves cadastradas no pool da organização
   const { data: keys } = await supabaseClient
     .from('ai_keys_pool')
@@ -209,7 +298,7 @@ serve(async (req) => {
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-    let supabaseClient: any;
+    let supabaseClient: SupabaseClient;
     let userId = '';
 
     if (authHeader?.startsWith("Bearer ")) {
@@ -245,7 +334,7 @@ serve(async (req) => {
     console.log(`[extract-quotation] Using provider: ${aiConfig.provider} | model: ${aiConfig.model}`);
 
     // 2. Monta mensagens para a API
-    const messages: any[] = [{ role: "system", content: SYSTEM_PROMPT }];
+    const messages: ChatMessage[] = [{ role: "system", content: SYSTEM_PROMPT }];
 
     if (imageBase64) {
       // Detect MIME type: use provided mimeType, or infer from base64 header
@@ -327,7 +416,7 @@ serve(async (req) => {
       throw new Error("IA não retornou dados estruturados. Tente com uma imagem mais nítida ou cole o texto manualmente.");
     }
 
-    const extracted = JSON.parse(toolCall.function.arguments);
+    const extracted = JSON.parse(toolCall.function.arguments) as ExtractedQuotationData;
 
     // 4. Persiste no banco se org_id disponível (MODELO RELACIONAL - ZERO TEATRO)
     if (org_id) {
@@ -350,6 +439,10 @@ serve(async (req) => {
           num_nights: extracted.num_nights || null,
           num_adults: extracted.pax_adultos || 2,
           num_children: extracted.pax_criancas || 0,
+          pax_adultos: extracted.pax_adultos || 2,
+          pax_criancas: extracted.pax_criancas || 0,
+          pax_infantil: extracted.pax_infantil || 0,
+          pax_seniores: extracted.pax_seniores || 0,
           meal_plan: extracted.meal_plan || null,
           room_type: extracted.room_type || null,
           total_value: extracted.total_value,
@@ -390,7 +483,7 @@ serve(async (req) => {
             .single();
           
           if (!fError && fData && flight.segments && Array.isArray(flight.segments)) {
-             const segments = flight.segments.map((s: any, idx: number) => ({
+             const segments = flight.segments.map((s: FlightSegment, idx: number) => ({
                 flight_id: fData.id,
                 departure_airport_code: s.origem_iata,
                 departure_airport_city: s.origem_cidade,
@@ -432,7 +525,7 @@ serve(async (req) => {
 
       // 4.3 Persiste Transfers
       if (extracted.transfers && Array.isArray(extracted.transfers)) {
-         const transfers = extracted.transfers.map((t: any, idx: number) => ({
+         const transfers = extracted.transfers.map((t: Transfer, idx: number) => ({
             quote_id: quoteId,
             tipo: t.tipo,
             nome: t.nome,

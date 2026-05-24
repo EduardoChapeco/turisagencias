@@ -15,6 +15,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { useQuery } from "@tanstack/react-query"
+import { PYTHON_ENGINE_URL } from "@/config/api"
 
 export interface LocationData {
   iata: string;
@@ -41,7 +42,7 @@ export function LocationCombobox({
     queryKey: ['locations', search],
     queryFn: async () => {
       if (search.length < 2) return [];
-      const res = await fetch(`${import.meta.env.VITE_PYTHON_ENGINE_URL}/api/v1/locations/search?q=${encodeURIComponent(search)}`);
+      const res = await fetch(`${PYTHON_ENGINE_URL}/api/v1/locations/search?q=${encodeURIComponent(search)}`);
       if (!res.ok) return [];
       const json = await res.json();
       return json.results as LocationData[];

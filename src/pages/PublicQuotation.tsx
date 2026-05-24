@@ -139,7 +139,7 @@ export default function PublicQuotation() {
   const pricingMode = (data as Record<string, any>).pricing_mode || 'per_person';
   const pricingLabel = pricingMode === 'per_couple' ? 'Por casal' : pricingMode === 'per_family' ? 'Por família' : pricingMode === 'total' ? 'Total' : 'Por pessoa';
   const whatsappUrl = data.org_whatsapp ? `https://wa.me/55${data.org_whatsapp.replace(/\D/g, '')}` : null;
-  const agentInitials = data.org_name ? data.org_name.split(' ').slice(0, 2).map((w: string) => w[0]).join('').toUpperCase() : 'AG';
+  const agentInitials = data?.org_name ? data.org_name.split(' ').filter(Boolean).slice(0, 2).map((w: string) => w[0]).join('').toUpperCase() : 'AG';
   const layoutMode = (data as Record<string, any>).layout_mode || 'classico';
   const daysLeft = data.valid_until ? Math.ceil((new Date(data.valid_until).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : null;
 
@@ -288,7 +288,7 @@ export default function PublicQuotation() {
                {agentInitials}
             </div>
             <p className="text-sm font-black text-vj-green uppercase tracking-[0.3em] mb-4">{data.org_name}</p>
-            <p className="text-[10px] text-zinc-500 uppercase tracking-[0.4em] font-bold">Safe Transaction · Protocolo {data.id.slice(0,8).toUpperCase()}</p>
+            <p className="text-[10px] text-zinc-500 uppercase tracking-[0.4em] font-bold">Safe Transaction · Protocolo {data?.id?.slice(0,8).toUpperCase() || 'N/A'}</p>
          </div>
       </footer>
       <TurisBadge />

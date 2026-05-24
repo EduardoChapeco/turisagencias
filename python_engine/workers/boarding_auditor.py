@@ -69,6 +69,30 @@ class BoardingAuditor:
 
         logger.info("[BoardingAuditor] ✅ Ciclo concluído.")
 
+    async def _audit_trip(self, trip: Dict):
+        """Busca os voos da trip na tabela trip_flights e audita cada um."""
+        try:
+            result = (
+                self.sb.table("trip_flights")
+                .select("id, org_id, flight_number, origin_airport, destination_airport, departure_datetime, status, trip_id")
+                .eq("trip_id", trip["id"])
+                .execute()
+            )
+            flights = result.data or []
+            for f in flights:
+                ticket = {
+                    "id": f["id"],
+                    "org_id": f["org_id"],
+                    "flight_number": f["flight_number"],
+                    "origin_iata": f["origin_airport"] or "GRU",
+                    "destination_iata": f["destination_airport"] or "N/A",
+                    "departure_at": f["departure_datetime"] or "",
+                    "total_price": trip.get("total_price") or 0
+                }
+                await self._audit_ticket(ticket)
+        except Exception as e:
+            logger.error(f"[BoardingAuditor] Erro buscando voos da trip {trip.get('id')}: {e}")
+
     async def _audit_ticket(self, ticket: Dict):
         """Audita um ticket individual contra o GDS."""
         try:
@@ -120,9 +144,12 @@ class BoardingAuditor:
             "org_id":          ticket["org_id"],
             "agent_name":      "boarding_auditor",
             "decision_type":   "flight_cancellation_alert",
+            "action_type":     "flight_cancellation_alert",
             "input_summary":   f"Voo {ticket.get('flight_number')} não localizado no GDS {self.AUDIT_WINDOW_DAYS}d antes do embarque.",
             "output_summary":  report.recommended_path[:300] if report.recommended_path else "Plano de crise gerado.",
             "confidence_score": 0.9,
+            "target_id":       str(ticket.get("id")),
+            "target_type":     "trip_flight",
             "metadata": {
                 "ticket_id":       ticket.get("id"),
                 "flight_number":   ticket.get("flight_number"),

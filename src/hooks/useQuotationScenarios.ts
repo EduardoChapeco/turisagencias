@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { PYTHON_ENGINE_URL } from '@/config/api';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthStore } from '@/stores/authStore';
 
@@ -84,7 +85,7 @@ export function useScoreQuotation() {
       if (error || !quotation) throw new Error('Cotação não encontrada');
 
       // Chama o Motor Python Turis AI v5.0 diretamente (ZERO mock)
-      const pythonEngineUrl = import.meta.env.VITE_PYTHON_ENGINE_URL || 'http://localhost:8000';
+      const pythonEngineUrl = PYTHON_ENGINE_URL;
       const res = await fetch(`${pythonEngineUrl}/api/v1/quotation/score`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

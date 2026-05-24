@@ -4,13 +4,21 @@ import {
   resolveExtensionContext,
   verifyExtensionRequestSession,
 } from '../_shared/extension.ts';
+import { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
 type ChatMessage = {
   role: string;
   content: string;
 };
 
-async function getAiConfig(supabaseClient: any, orgId: string) {
+interface AiConfig {
+  key: string;
+  provider: string;
+  baseUrl: string;
+  model: string;
+}
+
+async function getAiConfig(supabaseClient: SupabaseClient, orgId: string): Promise<AiConfig | null> {
   const { data: keys } = await supabaseClient
     .from('ai_keys_pool')
     .select('id, provider, api_key, model')
@@ -94,7 +102,7 @@ Suas capacidades:
 Tom: profissional, direto, prestativo.${context}`;
 }
 
-async function buildKnowledgeContext(supabaseClient: any, orgId: string, message: string, aiConfig: any) {
+async function buildKnowledgeContext(supabaseClient: SupabaseClient, orgId: string, message: string, aiConfig: AiConfig): Promise<string> {
   let context = '';
 
   try {
@@ -135,7 +143,7 @@ async function buildKnowledgeContext(supabaseClient: any, orgId: string, message
     if (kbData && kbData.length > 0) {
       context =
         '\n\nCONHECIMENTO DA AGENCIA (use como base para suas respostas):\n' +
-        kbData.map((d: any) => d.content).join('\n---\n');
+        (kbData as Array<{ content: string }>).map((d) => d.content).join('\n---\n');
     }
   } catch (ragError) {
     console.error('[ai-chat-agent] Erro no RAG (nao critico):', ragError);
@@ -144,7 +152,7 @@ async function buildKnowledgeContext(supabaseClient: any, orgId: string, message
   return context;
 }
 
-async function callProvider(aiConfig: any, messages: ChatMessage[]) {
+async function callProvider(aiConfig: AiConfig, messages: ChatMessage[]): Promise<string> {
   const response = await fetch(`${aiConfig.baseUrl}/chat/completions`, {
     method: 'POST',
     headers: {
@@ -202,8 +210,8 @@ Deno.serve(async (req) => {
     const knowledgeContext = await buildKnowledgeContext(supabaseClient, orgId, message, aiConfig);
     const systemPrompt = buildSystemPrompt(knowledgeContext);
     const safeHistory = Array.isArray(conversation_history)
-      ? conversation_history
-          .filter((item: any) => item && typeof item.role === 'string' && typeof item.content === 'string')
+      ? (conversation_history as ChatMessage[])
+          .filter((item) => item && typeof item.role === 'string' && typeof item.content === 'string')
           .slice(-8)
       : [];
 

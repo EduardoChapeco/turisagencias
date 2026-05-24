@@ -25,8 +25,8 @@ CREATE OR REPLACE FUNCTION monitor_airline_crisis()
 RETURNS void AS $$
 BEGIN
   -- Insere um log de alerta para o Motor Python ler e processar a crise
-  INSERT INTO public.ai_decision_logs (org_id, trip_id, agent_role, action, decision_reason, confidence, metadata)
-  SELECT org_id, id, 'AURA', 'flight_crisis_check', 'Verificação automática de malha aérea iniciada via pg_cron', 1.0, '{"source": "pg_cron", "type": "crisis_monitoring"}'::jsonb
+  INSERT INTO public.ai_decision_logs (org_id, target_id, target_type, agent_name, action_type, output_summary, confidence_score, metadata)
+  SELECT org_id, id::text, 'trip', 'AURA', 'flight_crisis_check', 'Verificação automática de malha aérea iniciada via pg_cron', 1.0, '{"source": "pg_cron", "type": "crisis_monitoring"}'::jsonb
   FROM public.group_trips
   WHERE status = 'published' AND departure_date > CURRENT_DATE;
 END;

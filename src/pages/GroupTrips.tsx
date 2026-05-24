@@ -9,6 +9,8 @@ import { Switch } from '@/components/ui/switch';
 import { slugifyGroupTrip, useGroupTrips, useCreateGroupTrip, useDeleteGroupTrip, useUpdateGroupTrip } from '@/hooks/useGroupTrips';
 import type { GroupTrip } from '@/hooks/useGroupTrips';
 import { useBusLayouts } from '@/hooks/useBusLayouts';
+import { useContracts } from '@/hooks/useContracts';
+import { useAuthStore } from '@/stores/authStore';
 import { AppLayout } from '@/components/AppLayout';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { SheetPage } from '@/components/ui/SheetPage';
@@ -19,7 +21,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { MediaField } from '@/components/ui/MediaField';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
-import { Users, MapPin, Calendar, ExternalLink, Trash2, Eye } from 'lucide-react';
+import { Users, MapPin, Calendar, ExternalLink, Trash2, Eye, FileSignature } from 'lucide-react';
 import { LocationCombobox } from '@/components/ui/LocationCombobox';
 // ─── Tag/chip list editor ────────────────────────────────────────────────────
 function ChipListEditor({
@@ -71,6 +73,7 @@ type FormState = {
   includes: string[]; excludes: string[]; important_notes: string;
   gallery_urls: string[]; transport_type: string; bus_layout_id: string;
   is_public: boolean; status: 'draft' | 'published' | 'closed' | 'cancelled';
+  contract_template_id: string;
 };
 
 const defaultForm = (): FormState => ({
@@ -81,12 +84,15 @@ const defaultForm = (): FormState => ({
   includes: [], excludes: [], important_notes: '',
   gallery_urls: [], transport_type: 'bus', bus_layout_id: 'none',
   is_public: false, status: 'draft',
+  contract_template_id: '',
 });
 
 export default function GroupTrips() {
   const navigate = useNavigate();
   const { data: trips, isLoading } = useGroupTrips();
   const { data: busLayouts } = useBusLayouts();
+  const { organization } = useAuthStore();
+  const { data: contractTemplates } = useContracts(organization?.id);
   const create = useCreateGroupTrip();
   const update = useUpdateGroupTrip();
   const remove = useDeleteGroupTrip();
@@ -150,6 +156,7 @@ export default function GroupTrips() {
       bus_layout_id: t.bus_layout_id || 'none',
       is_public: t.is_public || false,
       status: t.status || 'draft',
+      contract_template_id: t.contract_template_id || '',
     });
   };
 
@@ -166,6 +173,7 @@ export default function GroupTrips() {
       excludes: form.excludes.length > 0 ? form.excludes : null,
       important_notes: form.important_notes || null,
       bus_layout_id: form.bus_layout_id === 'none' ? null : form.bus_layout_id,
+      contract_template_id: form.contract_template_id || null,
     };
     if (!payload.departure_date) delete payload.departure_date;
     if (!payload.return_date) delete payload.return_date;
@@ -191,10 +199,11 @@ export default function GroupTrips() {
   const sections = [
     { id: 'basic',     label: 'Básico',     icon: MapPin },
     { id: 'details',   label: 'Datas',      icon: Calendar },
-    { id: 'content',   label: 'Conteúdo',   icon: Package },
+    { id: 'content',   label: 'Conteúdo',   icon: FileSignature },
     { id: 'gallery',   label: 'Galeria',    icon: ImageIcon },
     { id: 'transport', label: 'Ônibus',     icon: Bus },
     { id: 'commercial',label: 'Comercial',  icon: Users },
+    { id: 'contrato',  label: 'Contrato',   icon: FileSignature },
     ...(editing && editing !== 'new' ? [{ id: 'days', label: 'Dia a dia', icon: Calendar }] : []),
   ];
 
@@ -555,12 +564,25 @@ export default function GroupTrips() {
                       <strong>{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(form.price_per_pax / form.installments_count)}</strong>
                       {' '}por passageiro
                     </p>
+                  {!contractTemplates?.length && (
+                    <p className="text-xs text-zinc-400 mt-1">
+                      Nenhum template cadastrado. Acesse <strong>Configurações &rsaquo; Contratos</strong> para criar um.
+                    </p>
+                  )}
+                </div>
+
+                {form.contract_template_id && (
+                  <div className="p-4 rounded-xl bg-vj-green/5 border border-vj-green/20 text-sm">
+                    <p className="font-semibold text-vj-green">✅ Template vinculado</p>
+                    <p className="text-vj-txt2 mt-1 text-xs">
+                      Ao aprovar uma reserva, o sistema vai gerar e enviar o contrato digital automaticamente para assinatura.
+                    </p>
                   </div>
                 )}
               </div>
             )}
 
-            {/* ── DIA A DIA ───────────────────────────────────────────── */}
+            {/* ── DIA A DIA ──────────────────────────────────────── */}
             {section === 'days' && editing && editing !== 'new' && (
               <GroupTripDaysEditor tripId={editing} />
             )}

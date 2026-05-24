@@ -167,6 +167,13 @@ export function useCreateTicket() {
       client_id?: string | null;
       assigned_to?: string | null;
     }) => {
+      const assignedTo = payload.assigned_to ?? user?.id ?? null;
+      // Gera ticket_code no formato TKT-YYYYMMDD-XXXX
+      const now = new Date();
+      const datePart = now.toISOString().slice(0, 10).replace(/-/g, '');
+      const randPart = Math.random().toString(36).substring(2, 6).toUpperCase();
+      const ticketCode = `TKT-${datePart}-${randPart}`;
+
       const { data, error } = await supabase
         .from('tickets')
         .insert({
@@ -176,9 +183,18 @@ export function useCreateTicket() {
           priority: payload.priority ?? 'medium',
           channel: payload.channel ?? 'manual',
           sla_hours: payload.sla_hours ?? 24,
-          org_id: organization!.id,
+          // subject_line = title se não passado explicitamente
+          subject_line: payload.subject_line ?? payload.title,
+          // ticket_code gerado no frontend
+          ticket_code: ticketCode,
+          // audit fields
+          created_by_id: user?.id ?? null,
+          created_by_type: 'agent',
           created_by: user?.id ?? null,
-          assigned_to: payload.assigned_to ?? user?.id ?? null,
+          // assigned
+          assigned_to: assignedTo,
+          assigned_agent_id: assignedTo,
+          org_id: organization!.id,
           status: 'open',
         })
         .select()

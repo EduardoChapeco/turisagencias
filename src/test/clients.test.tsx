@@ -34,6 +34,11 @@ vi.mock('@/integrations/supabase/client', () => ({
       }),
     }),
     rpc: vi.fn(),
+    channel: vi.fn().mockReturnValue({
+      on: vi.fn().mockReturnThis(),
+      subscribe: vi.fn(),
+    }),
+    removeChannel: vi.fn().mockResolvedValue(null),
   },
 }));
 
@@ -62,15 +67,15 @@ describe('Clients Page', () => {
 
   it('renders clients list page with title and new button', async () => {
     renderWithProviders(<ClientsPage />);
-    expect(screen.getByRole('heading', { name: /clientes/i })).toBeInTheDocument();
-    expect(screen.getByPlaceholderText(/buscar por nome/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/Base de Clientes/i).length).toBeGreaterThan(0);
+    expect(screen.getByPlaceholderText(/buscar cliente/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /novo cliente/i })).toBeInTheDocument();
   });
 
   it('opens client creation in a SheetPage instead of a route page', () => {
     renderWithProviders(<ClientsPage />);
     fireEvent.click(screen.getByRole('button', { name: /novo cliente/i }));
-    expect(screen.getByRole('dialog')).toHaveTextContent(/novo cliente/i);
-    expect(screen.getByText(/identidade e fotos/i)).toBeInTheDocument();
+    expect(screen.getByRole('dialog')).toHaveTextContent(/Ficha de Clientes/i);
+    expect(screen.getByText(/Viajantes Adicionais/i)).toBeInTheDocument();
   });
 });

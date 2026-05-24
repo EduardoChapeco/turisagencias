@@ -292,10 +292,11 @@ export default function Onboarding() {
 
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label className="text-zinc-300 text-sm">Nome da Agência *</Label>
+                  <Label htmlFor="agencyName" className="text-zinc-300 text-sm">Nome da Agência *</Label>
                   <div className="relative">
                     <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
                     <Input
+                      id="agencyName"
                       value={form.name}
                       onChange={(e) => update('name', e.target.value)}
                       placeholder="Ex: Viagens Premium"

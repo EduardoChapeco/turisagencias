@@ -122,6 +122,10 @@ export function QuotationBuilderSheet({ open, onClose, clientId, onCreated }: Qu
   const SECTION_STEP: Record<string,number> = { hospedagem:0, itinerario:1, transportes:2, passeios:3, valores:4, fechamento:5 };
 
   const handleSave = async () => {
+    const numAdults = form.num_adults ? parseInt(form.num_adults) : 1;
+    const numChildren = form.num_children ? parseInt(form.num_children) : 0;
+    const numSeniores = form.num_seniores ? parseInt(form.num_seniores) : 0;
+    const numInfantil = form.num_infantil ? parseInt(form.num_infantil) : 0;
     const result = await createQuotation.mutateAsync({
       destination: form.destination || undefined,
       hotel_name: form.hotel_name || undefined,
@@ -129,8 +133,17 @@ export function QuotationBuilderSheet({ open, onClose, clientId, onCreated }: Qu
       check_in: form.check_in || undefined,
       check_out: form.check_out || undefined,
       num_nights: form.num_nights ? parseInt(form.num_nights) : undefined,
-      num_adults: form.num_adults ? parseInt(form.num_adults) : 1,
-      num_children: form.num_children ? parseInt(form.num_children) : 0,
+      // Colunas canônicas de PAX
+      pax_adultos: numAdults,
+      pax_seniores: numSeniores,
+      pax_criancas: numChildren,
+      pax_infantil: numInfantil,
+      // Retrocompatibilidade com colunas legadas
+      num_adults: numAdults,
+      num_children: numChildren,
+      adults: numAdults,
+      children: numChildren,
+      total_pax: numAdults + numSeniores + numChildren + numInfantil,
       meal_plan: form.meal_plan || undefined,
       room_type: form.room_type || undefined,
       total_value: form.total_value ? parseFloat(form.total_value) : undefined,
@@ -190,14 +203,22 @@ export function QuotationBuilderSheet({ open, onClose, clientId, onCreated }: Qu
                     <Input type="date" value={form.check_out} onChange={(e) => updateForm('check_out', e.target.value)} className="h-12 bg-zinc-50 border-zinc-200 rounded-xl" />
                   </div>
                 </div>
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                   <div className="space-y-1.5">
-                    <Label className="font-bold text-zinc-700">Adultos</Label>
-                    <Input type="number" min="1" value={form.num_adults} onChange={(e) => updateForm('num_adults', e.target.value)} className="h-12 bg-zinc-50 border-zinc-200 rounded-xl" />
+                    <Label className="font-bold text-zinc-700">Adultos (ADT)</Label>
+                    <Input type="number" min="0" value={form.num_adults} onChange={(e) => updateForm('num_adults', e.target.value)} className="h-12 bg-zinc-50 border-zinc-200 rounded-xl" />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="font-bold text-zinc-700">Crianças</Label>
+                    <Label className="font-bold text-zinc-700">Seniores (SNR)</Label>
+                    <Input type="number" min="0" value={form.num_seniores ?? '0'} onChange={(e) => updateForm('num_seniores', e.target.value)} className="h-12 bg-zinc-50 border-zinc-200 rounded-xl" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="font-bold text-zinc-700">Crianças (CHD)</Label>
                     <Input type="number" min="0" value={form.num_children} onChange={(e) => updateForm('num_children', e.target.value)} className="h-12 bg-zinc-50 border-zinc-200 rounded-xl" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="font-bold text-zinc-700">Infantis (INF)</Label>
+                    <Input type="number" min="0" value={form.num_infantil ?? '0'} onChange={(e) => updateForm('num_infantil', e.target.value)} className="h-12 bg-zinc-50 border-zinc-200 rounded-xl" />
                   </div>
                 </div>
               </div>

@@ -2,6 +2,7 @@ import { useState, type ElementType } from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { PYTHON_ENGINE_URL } from '@/config/api';
 import { useAuthStore } from '@/stores/authStore';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Image as ImageIcon, Upload, Loader2, Sparkles, Download, ArrowRight } from 'lucide-react';
@@ -83,7 +84,7 @@ export default function PortalAiPhotos() {
       if (insertError) throw insertError;
       
       // 3. Chamada real para o motor Python para gerar a imagem
-      const pythonEngineUrl = import.meta.env.VITE_PYTHON_ENGINE_URL || 'http://localhost:8000';
+      const pythonEngineUrl = PYTHON_ENGINE_URL;
       const res = await fetch(`${pythonEngineUrl}/api/v1/ai-photos/generate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

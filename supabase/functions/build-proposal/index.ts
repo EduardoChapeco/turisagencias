@@ -31,6 +31,26 @@ REGRAS:
 - Se algum campo estiver null, omita essa seção elegantemente
 - Máximo 800 palavras`;
 
+interface Client {
+  name: string | null;
+  email: string | null;
+  phone: string | null;
+}
+
+interface QuotationScenario {
+  id: string;
+  quotation_id: string;
+  scenario_type?: string | null;
+  scenario_label?: string | null;
+  title?: string | null;
+  description?: string | null;
+  score?: number | null;
+  agent_rationale?: string | null;
+  ai_reasoning?: string | null;
+  suggested_changes?: string | null;
+  estimated_savings_brl?: number | null;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
@@ -59,14 +79,14 @@ serve(async (req) => {
     if (qErr || !quotation) throw new Error("Cotação não encontrada");
 
     // 2. Buscar cenário selecionado (melhor ou o especificado)
-    let selectedScenario: any = null;
+    let selectedScenario: QuotationScenario | null = null;
     if (scenario_id) {
       const { data } = await supabaseClient
         .from("quotation_scenarios")
         .select("*")
         .eq("id", scenario_id)
         .single();
-      selectedScenario = data;
+      selectedScenario = data as unknown as QuotationScenario;
     } else {
       // Pega o recomendado ou o de maior score
       const { data: scenarios } = await supabaseClient
@@ -75,7 +95,7 @@ serve(async (req) => {
         .eq("quotation_id", quotation_id)
         .order("score", { ascending: false })
         .limit(1);
-      selectedScenario = scenarios?.[0] ?? null;
+      selectedScenario = (scenarios?.[0] as unknown as QuotationScenario) ?? null;
     }
 
     // 3. Buscar chave de IA
@@ -107,7 +127,7 @@ serve(async (req) => {
         currency: quotation.currency ?? "BRL",
         installments: quotation.installments,
         whatsapp_text: quotation.whatsapp_text,
-        client_name: (quotation.clients as any)?.name ?? null,
+        client_name: (quotation.clients as unknown as Client)?.name ?? null,
       },
       selected_scenario: selectedScenario ? {
         title: selectedScenario.title ?? selectedScenario.scenario_label,

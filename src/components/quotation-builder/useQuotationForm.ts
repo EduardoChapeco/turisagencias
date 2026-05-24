@@ -103,7 +103,9 @@ export interface QuotationFormState {
   check_out: string;
   num_nights: string;
   num_adults: string;
+  num_seniores: string;
   num_children: string;
+  num_infantil: string;
   meal_plan: string;
   room_type: string;
 }
@@ -154,7 +156,9 @@ export function useQuotationForm(initialClientId?: string) {
     check_out: '',
     num_nights: '',
     num_adults: '2',
+    num_seniores: '0',
     num_children: '0',
+    num_infantil: '0',
     meal_plan: '',
     room_type: '',
   });

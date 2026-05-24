@@ -8,6 +8,7 @@ import {
   Cpu, Terminal, Command, Filter, Loader2, Zap, X, ChevronRight
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { PYTHON_ENGINE_URL } from '@/config/api';
 import { useToast } from '@/hooks/use-toast';
 import { useAuthStore } from '@/stores/authStore';
 import { 
@@ -108,7 +109,7 @@ export default function AIChat() {
       }
 
       const { organization } = useAuthStore.getState();
-      const pythonEngineUrl = import.meta.env.VITE_PYTHON_ENGINE_URL || 'http://localhost:8000';
+      const pythonEngineUrl = PYTHON_ENGINE_URL;
       const res = await fetch(`${pythonEngineUrl}/api/v1/quotation/process`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

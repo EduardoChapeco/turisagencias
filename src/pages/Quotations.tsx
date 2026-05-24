@@ -7,8 +7,6 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { QuotationBuilderSheet } from '@/components/QuotationBuilderSheet';
 import { QuotationAiImportSheet } from '@/components/QuotationAiImportSheet';
 import { QuotationDetailSheet } from '@/components/QuotationDetailSheet';
-import { Sheet, SheetContent } from '@/components/ui/sheet';
-import { OrcamentoStudioMaster } from '@/components/quotations/OrcamentoStudioMaster';
 import { 
   Plus, Search, FileText, MapPin, Hotel, Calendar, Users, Sparkles, 
   ArrowRight, ArrowUpRight, CheckCircle2, Navigation, FileSignature,
@@ -31,7 +29,6 @@ export default function Quotations() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [builderOpen, setBuilderOpen] = useState(false);
   const [aiImportOpen, setAiImportOpen] = useState(false);
-  const [masterSheetOpen, setMasterSheetOpen] = useState(false);
   const [detailSheet, setDetailSheet] = useState<{ open: boolean; id: string | null }>({ open: false, id: null });
   const { data: allQuotations, isLoading } = useQuotations();
 
@@ -91,7 +88,7 @@ export default function Quotations() {
               <Button variant="outline" className="glass-button shrink-0" onClick={() => setAiImportOpen(true)}>
                 <Zap className="h-4 w-4 mr-2 text-vj-green" /> Importar com IA
               </Button>
-              <Button className="premium-button shrink-0" onClick={() => setMasterSheetOpen(true)}>
+              <Button className="premium-button shrink-0" onClick={() => setBuilderOpen(true)}>
                 <Plus className="h-4 w-4 mr-2" /> Nova Proposta
               </Button>
             </div>
@@ -222,11 +219,6 @@ export default function Quotations() {
         )}
       </div>
 
-      <Sheet open={masterSheetOpen} onOpenChange={setMasterSheetOpen}>
-        <SheetContent side="bottom" className="h-[95vh] p-0 sm:max-w-none w-full rounded-t-3xl overflow-hidden bg-slate-100">
-          <OrcamentoStudioMaster />
-        </SheetContent>
-      </Sheet>
 
       <QuotationBuilderSheet
         open={builderOpen} onClose={() => setBuilderOpen(false)}

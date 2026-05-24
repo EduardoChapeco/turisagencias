@@ -23,19 +23,50 @@ serve(async (req) => {
     }
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
 
-    // 1. Get quotation data
-    const { data: quotation, error: qError } = await supabase
+    // Instanciar cliente autenticado do usuário para validação de RLS
+    const userSupabase = createClient(supabaseUrl, supabaseAnonKey, {
+      global: {
+        headers: {
+          Authorization: authHeader,
+        },
+      },
+    });
+
+    // Validar o token do usuário
+    const { data: { user }, error: userError } = await userSupabase.auth.getUser();
+    if (userError || !user) {
+      return new Response(JSON.stringify({ error: "Invalid token or expired session" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
+    }
+
+    // 1. Get quotation data using user authenticated client (RLS)
+    const { data: quotation, error: qError } = await userSupabase
       .from("quotations")
       .select("*, clients(name, profile_tags), quotation_scenarios(*)")
       .eq("id", quotation_id)
       .single();
 
     if (qError || !quotation) {
-      throw new Error(`Quotation not found: ${qError?.message}`);
+      return new Response(JSON.stringify({ error: "Quotation not found or access denied" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
     }
+
+    // Verificar se o org_id da cotação bate com o informado
+    if (quotation.org_id !== org_id) {
+      return new Response(JSON.stringify({ error: "Organization ID mismatch" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
+    }
+
+    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
 
     // 2. Get active AI Key
     const { data: keys } = await supabase
@@ -201,9 +232,10 @@ Outcome: ${status.toUpperCase()}`;
       headers: { ...corsHeaders, "Content-Type": "application/json" }
     });
 
-  } catch (error: any) {
-    console.error("Feedback Extract Error:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
+  } catch (error: unknown) {
+    const errMessage = error instanceof Error ? error.message : String(error);
+    console.error("Feedback Extract Error:", errMessage);
+    return new Response(JSON.stringify({ error: errMessage }), {
       status: 400,
       headers: { ...corsHeaders, "Content-Type": "application/json" }
     });

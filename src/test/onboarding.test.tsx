@@ -60,9 +60,9 @@ describe('Onboarding Page', () => {
 
   it('renders onboarding form', () => {
     renderOnboarding();
-    expect(screen.getByText(/configure sua agência/i)).toBeInTheDocument();
+    expect(screen.getByText(/como devemos chamar/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/nome da agência/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /criar agência/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /continuar/i })).toBeInTheDocument();
   });
 
   it('redirects if organization exists', () => {

@@ -1,13 +1,43 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+interface Pagante {
+  nome: string;
+  cpf: string;
+  nascimento: string;
+  telefone: string;
+  email: string;
+  endereco: string;
+  cep: string;
+  rg: string;
+  passaporte: string;
+  profissao: string;
+}
+
+interface Viajante {
+  nome: string;
+  cpf: string;
+  nascimento: string;
+  rg: string;
+  passaporte: string;
+}
+
+interface OcrExtractedData {
+  pagantes: Pagante[];
+  viajantes: Viajante[];
+}
+
+type ContentPart =
+  | { type: "text"; text: string }
+  | { type: "image_url"; image_url: { url: string; detail?: string } };
+
 // ── Obtém chave de IA da org ──────────────────────────────────────────────────
-async function getAiKey(supabaseClient: any, orgId: string): Promise<{ key: string; provider: string; baseUrl: string; model: string } | null> {
+async function getAiKey(supabaseClient: SupabaseClient, orgId: string): Promise<{ key: string; provider: string; baseUrl: string; model: string } | null> {
   const { data: keys } = await supabaseClient
     .from('ai_keys_pool')
     .select('id, provider, api_key')
@@ -102,7 +132,7 @@ serve(async (req) => {
     const { data: profile } = await supabaseClient
       .from('profiles')
       .select('org_id')
-      .eq('id', userData.user.id)
+      .eq('user_id', userData.user.id)
       .single();
 
     // Recebe FormData com os arquivos
@@ -123,7 +153,7 @@ serve(async (req) => {
     console.log(`[ocr-extractor] Provider: ${aiConfig.provider} | Files: ${files.length}`);
 
     // Converte todos os arquivos para base64 e monta partes da mensagem
-    const contentParts: any[] = [{ type: "text", text: "Analise os documentos a seguir e extraia os dados dos clientes conforme as instruções. Pode haver múltiplos arquivos que fazem parte do mesmo pacote de viagem." }];
+    const contentParts: ContentPart[] = [{ type: "text", text: "Analise os documentos a seguir e extraia os dados dos clientes conforme as instruções. Pode haver múltiplos arquivos que fazem parte do mesmo pacote de viagem." }];
 
     for (const file of files) {
       const arrayBuffer = await file.arrayBuffer();
@@ -166,24 +196,25 @@ serve(async (req) => {
     const aiResult = await response.json();
     const rawText = aiResult.choices?.[0]?.message?.content || "{}";
 
-    let extracted: any = {};
+    let extracted: Partial<OcrExtractedData> = {};
     try {
-      extracted = JSON.parse(rawText);
+      extracted = JSON.parse(rawText) as Partial<OcrExtractedData>;
     } catch {
       // Tenta extrair JSON de dentro de blocos de código
       const match = rawText.match(/```json?\s*([\s\S]*?)```/);
-      if (match) extracted = JSON.parse(match[1]);
+      if (match) extracted = JSON.parse(match[1]) as Partial<OcrExtractedData>;
       else throw new Error("IA não retornou JSON válido. Tente com uma imagem mais nítida.");
     }
 
-    let result: any = extracted;
+    let result: Partial<OcrExtractedData> | OcrExtractedData = extracted;
     if (!customPrompt) {
-        const sanitizeStr = (v: any) => (!v || v === 'null' || v === 'undefined' ? '' : String(v).trim());
-        const sanitizeObj = (obj: Record<string, any>) => Object.fromEntries(Object.entries(obj).map(([k, v]) => [k, sanitizeStr(v)]));
+        const sanitizeStr = (v: unknown): string => (!v || v === 'null' || v === 'undefined' ? '' : String(v).trim());
+        const sanitizeObj = (obj: Record<string, unknown>): Record<string, string> => 
+          Object.fromEntries(Object.entries(obj).map(([k, v]) => [k, sanitizeStr(v)]));
 
         result = {
-          pagantes: (extracted.pagantes || []).map(sanitizeObj),
-          viajantes: (extracted.viajantes || []).map(sanitizeObj),
+          pagantes: (extracted.pagantes || []).map((p) => sanitizeObj(p as Record<string, unknown>) as unknown as Pagante),
+          viajantes: (extracted.viajantes || []).map((v) => sanitizeObj(v as Record<string, unknown>) as unknown as Viajante),
         };
     }
 

@@ -52,22 +52,22 @@ export function useCreateClient() {
 
   return useMutation({
     mutationFn: async (data: {
-      name: string; email?: string; phone?: string; cpf?: string; birth_date?: string;
-      address?: string; city?: string; state?: string; zip_code?: string; country?: string;
-      origin?: string; tags?: string[]; notes?: string; documents?: any[]; photo_url?: string;
-      passport_url?: string; portal_access_enabled?: boolean; preferences?: any;
-      passport_number?: string; passport_expiry?: string;
+      name: string; email?: string | null; phone?: string | null; cpf?: string | null; birth_date?: string | null;
+      address?: string | null; city?: string | null; state?: string | null; zip_code?: string | null; country?: string | null;
+      origin?: string | null; tags?: string[]; notes?: string | null; documents?: any[]; photo_url?: string | null;
+      cover_url?: string | null;
+      // Passaporte — colunas flat
+      passport_number?: string | null; passport_expiry?: string | null; passport_url?: string | null;
+      // Fidelidade — colunas flat
+      is_member?: boolean; loyalty_points?: number; member_tier?: string | null;
+      portal_access_enabled?: boolean; preferences?: any;
     }) => {
-      const { documents, passport_url, preferences, ...restData } = data;
+      const { documents, preferences, ...restData } = data;
       const insertData: Record<string, unknown> = { ...restData, org_id: organization!.id, created_by: user!.id };
-      
-      // Address columns are FLAT on `clients` table — write directly
-      // (address, city, state, zip_code, country are individual text columns)
-      
+
       const newPreferences = { ...(preferences || {}) };
       if (documents && documents.length > 0) newPreferences.documents = documents;
-      if (passport_url) newPreferences.passport_url = passport_url;
-      
+
       if (Object.keys(newPreferences).length > 0) {
         insertData.preferences = newPreferences;
       }
@@ -98,18 +98,22 @@ export function useUpdateClient() {
     mutationFn: async ({ id, ...data }: { id: string } & Partial<{
       name: string; email: string; phone: string; cpf: string; birth_date: string;
       address: string; city: string; state: string; zip_code: string; country: string;
-      origin: string; tags: string[]; notes: string; documents: any[]; photo_url: string; 
-      passport_number: string; passport_expiry: string;
-      cover_url: string; passport_url: string; preferences: any;
+      origin: string; tags: string[]; notes: string; documents: any[]; photo_url: string;
+      cover_url: string;
+      // Passaporte — colunas flat
+      passport_number: string; passport_expiry: string; passport_url: string;
+      // Fidelidade — colunas flat
+      is_member: boolean; loyalty_points: number; member_tier: string;
+      preferences: any;
     }>) => {
-      const { documents, passport_url, preferences, ...restData } = data;
-      // Address columns are FLAT on `clients` table — spread them directly (address, city, state, zip_code, country)
+      const { documents, preferences, ...restData } = data;
+      // Todas as colunas flat são espalhadas diretamente (address, city, state, zip_code, country,
+      // passport_number, passport_expiry, passport_url, is_member, loyalty_points, member_tier, cover_url)
       const updateData: Record<string, unknown> = { ...restData };
 
-      if (documents !== undefined || passport_url !== undefined) {
+      if (documents !== undefined) {
         updateData.preferences = { ...(preferences || {}) };
-        if (documents !== undefined) (updateData.preferences as any).documents = documents;
-        if (passport_url !== undefined) (updateData.preferences as any).passport_url = passport_url;
+        (updateData.preferences as any).documents = documents;
       } else if (preferences !== undefined) {
         updateData.preferences = preferences;
       }

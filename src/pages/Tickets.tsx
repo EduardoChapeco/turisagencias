@@ -91,6 +91,7 @@ function TicketCreateSheet({ open, onClose, onCreated }: { open: boolean; onClos
     sla_hours: '24',
     client_id: '',
     group_trip_id: '',
+    trip_id: '',
     assigned_to: '',
   });
 
@@ -108,6 +109,7 @@ function TicketCreateSheet({ open, onClose, onCreated }: { open: boolean; onClos
       sla_hours: parseInt(form.sla_hours) || 24,
       client_id: form.client_id || null,
       group_trip_id: form.group_trip_id || null,
+      trip_id: form.trip_id || null,
       assigned_to: form.assigned_to || user?.id || null,
     });
     onClose();
@@ -261,7 +263,7 @@ function TicketCreateSheet({ open, onClose, onCreated }: { open: boolean; onClos
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-zinc-700 font-bold">Vincular Excursão / Pacote</Label>
+                <Label className="text-zinc-700 font-bold">Vincular Excursão / Pacote em Grupo</Label>
                 <Select value={form.group_trip_id || '_none'} onValueChange={v => update('group_trip_id', v === '_none' ? '' : v)}>
                   <SelectTrigger className="h-11 rounded-xl bg-zinc-50 border-zinc-200">
                     <SelectValue placeholder="Selecionar excursão..." />
@@ -275,6 +277,17 @@ function TicketCreateSheet({ open, onClose, onCreated }: { open: boolean; onClos
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-zinc-700 font-bold">Código da Viagem Individual (trip_id)</Label>
+                <p className="text-xs text-zinc-400">Cole o ID de uma viagem individual (pacote sob medida) para vincular este protocolo.</p>
+                <Input
+                  value={form.trip_id}
+                  onChange={e => update('trip_id', e.target.value)}
+                  placeholder="UUID da viagem (ex: 6d9f2...)"
+                  className="h-11 rounded-xl bg-zinc-50 border-zinc-200 font-mono text-sm"
+                />
               </div>
             </div>
           )}

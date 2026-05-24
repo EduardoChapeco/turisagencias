@@ -36,6 +36,11 @@ vi.mock('@/integrations/supabase/client', () => ({
     }),
     rpc: vi.fn(),
     functions: { invoke: vi.fn() },
+    channel: vi.fn().mockReturnValue({
+      on: vi.fn().mockReturnThis(),
+      subscribe: vi.fn(),
+    }),
+    removeChannel: vi.fn().mockResolvedValue(null),
   },
 }));
 
@@ -64,13 +69,14 @@ describe('Quotations Page', () => {
 
   it('renders quotations list with title', () => {
     renderWithProviders(<Quotations />);
-    expect(screen.getByRole('heading', { name: /propostas/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /nova cotação/i })).toBeInTheDocument();
+    expect(screen.getAllByText(/Propostas & Cotações/i).length).toBeGreaterThan(0);
+    expect(screen.getByRole('button', { name: /nova proposta/i })).toBeInTheDocument();
   });
 
-  it('opens quotation creation in a SheetPage instead of a route page', () => {
+  it('opens quotation creation in a SheetPage instead of a route page', async () => {
     renderWithProviders(<Quotations />);
-    fireEvent.click(screen.getByRole('button', { name: /nova cotação/i }));
+    const button = await screen.findByRole('button', { name: /criar proposta/i });
+    fireEvent.click(button);
     const dialog = screen.getByRole('dialog');
     expect(dialog).toHaveTextContent(/construtor de cota/i);
     expect(dialog).toHaveClass('fixed', 'inset-0', 'overflow-hidden');

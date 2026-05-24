@@ -48,7 +48,7 @@ describe('Tickets', () => {
   it('renders and opens the create SheetPage without ClientSearchSelect reference errors', () => {
     render(<Tickets />);
 
-    fireEvent.click(screen.getByRole('button', { name: /novo protocolo/i }));
+    fireEvent.click(screen.getByRole('button', { name: /novo atendimento/i }));
 
     expect(screen.getByRole('dialog')).toHaveTextContent(/novo protocolo/i);
     expect(screen.getByRole('button', { name: /v.nculo/i })).toBeInTheDocument();
@@ -57,7 +57,7 @@ describe('Tickets', () => {
   it('saves client_id when a ticket is created with a linked client', async () => {
     render(<Tickets />);
 
-    fireEvent.click(screen.getByRole('button', { name: /novo protocolo/i }));
+    fireEvent.click(screen.getByRole('button', { name: /novo atendimento/i }));
     fireEvent.change(screen.getByPlaceholderText(/cancelamento de voo/i), {
       target: { value: 'Atendimento com cliente vinculado' },
     });

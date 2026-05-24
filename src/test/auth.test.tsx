@@ -59,7 +59,7 @@ describe('Login Page', () => {
 
   it('renders link to signup page', () => {
     renderWithProviders(<Login />);
-    expect(screen.getByText(/criar conta/i)).toBeInTheDocument();
+    expect(screen.getByText(/criar minha conta/i)).toBeInTheDocument();
   });
 
   it('calls signInWithPassword on form submit', async () => {
@@ -110,7 +110,7 @@ describe('Signup Page', () => {
     fireEvent.change(screen.getByLabelText('Sobrenome'), { target: { value: 'Silva' } });
     fireEvent.change(screen.getByLabelText(/e-mail/i), { target: { value: 'joao@test.com' } });
     fireEvent.change(screen.getByLabelText(/senha/i), { target: { value: 'securepass' } });
-    fireEvent.click(screen.getByRole('button', { name: /cadastrar/i }));
+    fireEvent.click(screen.getByRole('button', { name: /criar minha agência/i }));
 
     await waitFor(() => {
       expect(mockSignUp).toHaveBeenCalledWith(

@@ -32,6 +32,11 @@ vi.mock('@/integrations/supabase/client', () => ({
     from: vi.fn(() => createQueryMock()),
     rpc: vi.fn(() => createQueryMock()),
     functions: { invoke: vi.fn() },
+    channel: vi.fn().mockReturnValue({
+      on: vi.fn().mockReturnThis(),
+      subscribe: vi.fn(),
+    }),
+    removeChannel: vi.fn().mockResolvedValue(null),
   },
 }));
 
@@ -84,7 +89,7 @@ describe('Route Guards', () => {
   it('Login page renders correctly', () => {
     useAuthStore.setState({ user: null, isLoading: false, profile: null, organization: null, roles: [] });
     renderInRouter(<Login />, '/login');
-    expect(screen.getByText(/turis agências/i)).toBeInTheDocument();
+    expect(screen.getByText(/Bem-vindo de volta/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/e-mail/i)).toBeInTheDocument();
   });
 
@@ -104,7 +109,7 @@ describe('Route Guards', () => {
     useAuthStore.setState({ user: null, isLoading: false, profile: null, organization: null, roles: [] });
     renderInRouter(<Signup />, '/signup');
     expect(screen.getByRole('heading', { name: /criar sua conta/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /cadastrar/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /criar minha agência grátis/i })).toBeInTheDocument();
   });
 
   it('NotFound page shows 404', () => {
@@ -134,8 +139,8 @@ describe('Route Guards', () => {
       isLoading: false,
     });
     renderInRouter(<Dashboard />, '/');
-    expect(screen.getByText(/test org/i)).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: /painel inicial/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /sobre painel inicial/i })).toBeInTheDocument();
+    expect(screen.getAllByText(/test org/i).length).toBeGreaterThan(0);
+    expect(screen.getByRole('heading', { name: /boa tarde, test/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /próximos embarques/i })).toBeInTheDocument();
   });
 });

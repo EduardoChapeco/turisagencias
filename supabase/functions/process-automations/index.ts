@@ -6,6 +6,38 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+interface TripClient {
+  name: string | null;
+  email: string | null;
+  phone: string | null;
+}
+
+interface TripData {
+  id: string;
+  title: string | null;
+  destination_city: string | null;
+  departure_date?: string | null;
+  return_date?: string | null;
+  primary_client_id: string | null;
+  clients: TripClient | null;
+}
+
+interface DecisionLog {
+  org_id: string;
+  agent_name: string;
+  action_type: string;
+  target_type: string;
+  target_id: string;
+  confidence_score: number;
+  metadata: {
+    event_type: string;
+    client_name: string;
+    sent_method: string;
+    subject?: string;
+    body_preview: string;
+  };
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -38,13 +70,13 @@ serve(async (req) => {
     minus2Days.setUTCDate(today.getUTCDate() - 2);
     const minus2DaysStr = minus2Days.toISOString().split("T")[0];
 
-    const logsToInsert: any[] = [];
+    const logsToInsert: DecisionLog[] = [];
     let countTriggered = 0;
 
     for (const rule of rules) {
       const orgId = rule.org_id;
 
-      let matchingTrips: any[] = [];
+      let matchingTrips: TripData[] = [];
 
       if (rule.event_type === "1_week_before_travel") {
         // departure_date == in7DaysStr
@@ -54,7 +86,7 @@ serve(async (req) => {
           .eq("org_id", orgId)
           .eq("departure_date", in7DaysStr)
           .neq("status", "cancelled");
-        matchingTrips = trips || [];
+        matchingTrips = (trips || []) as unknown as TripData[];
       } else if (rule.event_type === "welcome_back") {
         // check_out/return_date == minus2DaysStr
         const { data: trips } = await supabase
@@ -63,7 +95,7 @@ serve(async (req) => {
           .eq("org_id", orgId)
           .eq("return_date", minus2DaysStr)
           .neq("status", "cancelled");
-        matchingTrips = trips || [];
+        matchingTrips = (trips || []) as unknown as TripData[];
       } else if (rule.event_type === "trip_created") {
         // We'd ideally hook this up directly on row insert, but skipping for cron processing
       } else if (rule.event_type === "payment_due") {
@@ -124,9 +156,10 @@ serve(async (req) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" }
     });
 
-  } catch (error: any) {
-    console.error("Process Automations Error:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error("Process Automations Error:", message);
+    return new Response(JSON.stringify({ error: message }), {
       status: 400,
       headers: { ...corsHeaders, "Content-Type": "application/json" }
     });

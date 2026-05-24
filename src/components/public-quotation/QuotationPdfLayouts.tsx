@@ -30,7 +30,7 @@ export function PdfTemplateExecutivo({ data }: Props) {
         </div>
         <div className="text-right">
           <p className="text-sm font-bold">{fmtDate(data.created_at)}</p>
-          <p className="text-xs text-zinc-500 mt-1">Ref: {data.id.slice(0, 8).toUpperCase()}</p>
+          <p className="text-xs text-zinc-500 mt-1">Ref: {data?.id?.slice(0, 8).toUpperCase() || 'N/A'}</p>
         </div>
       </div>
 

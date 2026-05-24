@@ -267,6 +267,24 @@ export function useUpdateQuotation() {
       if (excluded_items !== undefined) payload.excluded_items = excluded_items;
       if (media_urls !== undefined) payload.media_urls = media_urls;
 
+      // Normaliza colunas PAX quando qualquer uma é enviada
+      if (payload.pax_adultos !== undefined || payload.num_adults !== undefined || payload.adults !== undefined) {
+        const v = payload.pax_adultos ?? payload.num_adults ?? payload.adults;
+        payload.pax_adultos = v; payload.num_adults = v; payload.adults = v;
+      }
+      if (payload.pax_seniores !== undefined) {
+        // sem legacy — só canonica
+      }
+      if (payload.pax_criancas !== undefined || payload.num_children !== undefined || payload.children !== undefined) {
+        const v = payload.pax_criancas ?? payload.num_children ?? payload.children;
+        payload.pax_criancas = v; payload.num_children = v; payload.children = v;
+      }
+      if (payload.markup_percent !== undefined && payload.markup_pct === undefined) {
+        payload.markup_pct = payload.markup_percent;
+      } else if (payload.markup_pct !== undefined && payload.markup_percent === undefined) {
+        payload.markup_percent = payload.markup_pct;
+      }
+
       const { data: quotation, error } = await supabase
         .from('quotations')
         .update(payload)

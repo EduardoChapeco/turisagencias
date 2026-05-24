@@ -9,7 +9,7 @@ import { Switch } from '@/components/ui/switch';
 import { slugifyGroupTrip, useGroupTrips, useCreateGroupTrip, useDeleteGroupTrip, useUpdateGroupTrip } from '@/hooks/useGroupTrips';
 import type { GroupTrip } from '@/hooks/useGroupTrips';
 import { useBusLayouts } from '@/hooks/useBusLayouts';
-import { useContracts } from '@/hooks/useContracts';
+import { useContractTemplates } from '@/hooks/useContracts';
 import { useAuthStore } from '@/stores/authStore';
 import { AppLayout } from '@/components/AppLayout';
 import { PageHeader } from '@/components/ui/PageHeader';
@@ -92,7 +92,7 @@ export default function GroupTrips() {
   const { data: trips, isLoading } = useGroupTrips();
   const { data: busLayouts } = useBusLayouts();
   const { organization } = useAuthStore();
-  const { data: contractTemplates } = useContracts(organization?.id);
+  const { data: contractTemplates } = useContractTemplates(organization?.id);
   const create = useCreateGroupTrip();
   const update = useUpdateGroupTrip();
   const remove = useDeleteGroupTrip();
@@ -564,9 +564,46 @@ export default function GroupTrips() {
                       <strong>{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(form.price_per_pax / form.installments_count)}</strong>
                       {' '}por passageiro
                     </p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* ── CONTRATO ─────────────────────────────────────────────── */}
+            {section === 'contrato' && (
+              <div className="space-y-5 max-w-2xl">
+                <div className="p-4 rounded-xl bg-amber-50/60 border border-amber-100">
+                  <p className="text-sm font-semibold text-amber-900 flex items-center gap-2 mb-1">
+                    <FileSignature size={15} className="text-amber-500" /> Template de Contrato Padrão
+                  </p>
+                  <p className="text-xs text-amber-700">
+                    Quando um passageiro finalizar a inscrição, este template será usado para gerar o contrato digital automaticamente.
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Selecionar Template de Contrato</Label>
+                  <Select
+                    value={form.contract_template_id || '_none'}
+                    onValueChange={v => set({ contract_template_id: v === '_none' ? '' : v })}
+                  >
+                    <SelectTrigger className="h-11">
+                      <SelectValue placeholder="Nenhum template vinculado" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="_none" className="text-zinc-400 italic">
+                        Sem contrato automático
+                      </SelectItem>
+                      {contractTemplates?.map((ct: any) => (
+                        <SelectItem key={ct.id} value={ct.id}>
+                          {ct.name || ct.title || `Template ${ct.id.slice(0, 8)}`}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   {!contractTemplates?.length && (
                     <p className="text-xs text-zinc-400 mt-1">
-                      Nenhum template cadastrado. Acesse <strong>Configurações &rsaquo; Contratos</strong> para criar um.
+                      Nenhum template cadastrado. Acesse <strong>Configurações › Contratos</strong> para criar um.
                     </p>
                   )}
                 </div>

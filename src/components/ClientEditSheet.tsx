@@ -1,7 +1,7 @@
 import { logger } from '@/utils/logger';
 
 import { useState, useEffect } from 'react';
-import { UserPlus, Save, Globe, Shield, Tag, X, Camera, FileText, Plane, MapPin, Plus, Trash2 } from 'lucide-react';
+import { UserPlus, Save, Globe, Shield, Tag, X, Camera, FileText, Plane, MapPin, Plus, Trash2, Star } from 'lucide-react';
 import { SheetPage } from '@/components/ui/SheetPage';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,6 +17,7 @@ import { useToast } from '@/hooks/use-toast';
 
 const ORIGIN_OPTIONS = ['Instagram', 'Indicação', 'Google', 'Facebook', 'WhatsApp', 'Site', 'Evento', 'Outro'];
 const DOC_TYPES = ['Passaporte', 'RG', 'CNH', 'CPF', 'CRM (Médico)', 'OAB (Advogado)', 'Visto', 'Outro'];
+const MEMBER_TIERS = ['bronze', 'silver', 'gold', 'platinum', 'diamond'];
 
 export interface ClientEditSheetProps {
   id?: string | null;
@@ -36,9 +37,18 @@ export function ClientEditSheet({ id, open, onClose, onSuccess }: ClientEditShee
     address: '', city: '', state: '', zip_code: '', country: 'Brasil',
     origin: '', notes: '',
     photo_url: '',
+    cover_url: '',
     gallery_urls: [],
-    documents: [], 
+    documents: [],
     proof_of_address_url: '',
+    // Passaporte — colunas flat (NÃO preferences JSONB)
+    passport_number: '',
+    passport_expiry: '',
+    passport_url: '',
+    // Fidelidade — colunas flat
+    is_member: false,
+    loyalty_points: 0,
+    member_tier: '',
     portal_access_enabled: false,
     preferred_destinations: '',
     preferred_airlines: '',
@@ -56,21 +66,31 @@ export function ClientEditSheet({ id, open, onClose, onSuccess }: ClientEditShee
   useEffect(() => {
     if (open && isUpdate && existingClient) {
       const prefs = (existingClient.preferences as Record<string, any>) || {};
-      
+
       // Migrate legacy unstructured documents to structured blocks if needed
       let docs = prefs.documents || [];
       if (docs.length > 0 && typeof docs[0] === 'string') {
-         docs = docs.map((url: string) => ({ type: 'Outro', url }));
+        docs = docs.map((url: string) => ({ type: 'Outro', url }));
       }
 
       setForm({
         ...existingClient,
-        // clients.address/city/state/zip_code/country are FLAT text columns — read directly
+        // Colunas flat de endereço
         address: (existingClient.address as string) || '',
         city: (existingClient.city as string) || '',
         state: (existingClient.state as string) || '',
         zip_code: (existingClient.zip_code as string) || '',
         country: (existingClient.country as string) || 'Brasil',
+        // Passaporte — colunas flat (lê direto, não do JSONB)
+        passport_number: (existingClient.passport_number as string) || '',
+        passport_expiry: (existingClient.passport_expiry as string) || '',
+        passport_url: (existingClient.passport_url as string) || '',
+        // Fidelidade — colunas flat
+        is_member: (existingClient.is_member as boolean) || false,
+        loyalty_points: (existingClient.loyalty_points as number) || 0,
+        member_tier: (existingClient.member_tier as string) || '',
+        cover_url: (existingClient.cover_url as string) || '',
+        // Preferências (JSONB)
         preferred_destinations: prefs.destinations || '',
         preferred_airlines: prefs.airlines || '',
         seat_preference: prefs.seat || '',
@@ -86,7 +106,9 @@ export function ClientEditSheet({ id, open, onClose, onSuccess }: ClientEditShee
         name: '', email: '', phone: '', cpf: '', birth_date: '',
         address: '', city: '', state: '', zip_code: '', country: 'Brasil',
         origin: '', notes: '',
-        documents: [], photo_url: '', gallery_urls: [], proof_of_address_url: '',
+        documents: [], photo_url: '', cover_url: '', gallery_urls: [], proof_of_address_url: '',
+        passport_number: '', passport_expiry: '', passport_url: '',
+        is_member: false, loyalty_points: 0, member_tier: '',
         portal_access_enabled: false,
         preferred_destinations: '', preferred_airlines: '',
         seat_preference: '', meal_preference: '', loyalty_programs: '',
@@ -109,7 +131,7 @@ export function ClientEditSheet({ id, open, onClose, onSuccess }: ClientEditShee
   const fetchCep = async (cep: string) => {
     const cleanCep = cep.replace(/\D/g, '');
     if (cleanCep.length !== 8) return;
-    
+
     setCepLoading(true);
     try {
       const res = await fetch(`https://viacep.com.br/ws/${cleanCep}/json/`);
@@ -159,9 +181,9 @@ export function ClientEditSheet({ id, open, onClose, onSuccess }: ClientEditShee
   const handleSave = async () => {
     if (!form.name?.trim()) return;
 
-    const basePreferences = isUpdate && existingClient && typeof existingClient.preferences === 'object' 
-        ? existingClient.preferences 
-        : {};
+    const basePreferences = isUpdate && existingClient && typeof existingClient.preferences === 'object'
+      ? existingClient.preferences
+      : {};
 
     const preferences = {
       ...basePreferences,
@@ -189,6 +211,15 @@ export function ClientEditSheet({ id, open, onClose, onSuccess }: ClientEditShee
       origin: form.origin || null,
       notes: form.notes || null,
       photo_url: form.photo_url || null,
+      cover_url: form.cover_url || null,
+      // Passaporte — colunas flat (nunca vai para JSONB)
+      passport_number: form.passport_number || null,
+      passport_expiry: form.passport_expiry || null,
+      passport_url: form.passport_url || null,
+      // Fidelidade — colunas flat
+      is_member: form.is_member || false,
+      loyalty_points: form.loyalty_points ? Number(form.loyalty_points) : 0,
+      member_tier: form.member_tier || null,
       portal_access_enabled: form.portal_access_enabled,
       tags: form.tags,
       preferences: Object.keys(preferences).length > 0 ? preferences : null,
@@ -215,9 +246,10 @@ export function ClientEditSheet({ id, open, onClose, onSuccess }: ClientEditShee
       icon={UserPlus}
       sections={[
         { id: 'identidade', label: 'Identidade e Fotos' },
-        { id: 'documentos', label: 'Documentos e Anuências' },
+        { id: 'documentos', label: 'Documentos e Passaporte' },
         { id: 'preferencias', label: 'Preferências (IA)' },
         { id: 'endereco', label: 'Endereço Completo' },
+        { id: 'fidelidade', label: 'Fidelidade & Membro' },
         { id: 'portal', label: 'Acesso & Tags' },
       ]}
       footer={
@@ -309,9 +341,42 @@ export function ClientEditSheet({ id, open, onClose, onSuccess }: ClientEditShee
 
             {activeSection === 'documentos' && (
               <div className="space-y-6">
+                {/* Passaporte — colunas flat dedicadas */}
+                <div className="p-4 rounded-vj-lg bg-blue-50/50 border border-blue-100 space-y-4">
+                  <Label className="text-base font-semibold text-blue-900 flex items-center gap-2">
+                    <Plane className="h-4 w-4 text-blue-500" /> Passaporte Principal
+                  </Label>
+                  <p className="text-xs text-blue-600">Campos indexáveis — armazenados em colunas dedicadas para busca e alerta de vencimento.</p>
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <Label>Número do Passaporte</Label>
+                      <Input value={form.passport_number} onChange={(e) => update('passport_number', e.target.value)} placeholder="Ex: AB123456" className="border-vj-border bg-vj-bg" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label>Validade</Label>
+                      <Input type="date" value={form.passport_expiry} onChange={(e) => update('passport_expiry', e.target.value)} className="border-vj-border bg-vj-bg" />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs text-vj-txt3">Scan do Passaporte (.pdf, .jpg)</Label>
+                    <MediaUploader
+                      multiple={false}
+                      accept="image/*,application/pdf"
+                      existingUrls={form.passport_url ? [form.passport_url] : []}
+                      onUploadComplete={(urls) => update('passport_url', urls[0])}
+                      bucket="client-media"
+                      folder="clients/passports"
+                      ownerType="client"
+                      ownerId={id ?? null}
+                      fieldName="passport_url"
+                    />
+                  </div>
+                </div>
+
+                {/* Outros documentos (estruturado em JSONB) */}
                 <div className="flex items-center justify-between pb-2 border-b border-vj-border">
                   <Label className="text-base font-semibold text-vj-txt flex items-center gap-2">
-                    <FileText className="h-5 w-5 text-vj-green" /> Gestão de Documentos
+                    <FileText className="h-5 w-5 text-vj-green" /> Outros Documentos
                   </Label>
                   <Button onClick={addDocumentBlock} size="sm" variant="outline" className="border-vj-green text-vj-green hover:bg-vj-green hover:text-white transition-colors">
                     <Plus className="w-4 h-4 mr-1" /> Adicionar Mídia/Documento
@@ -320,21 +385,21 @@ export function ClientEditSheet({ id, open, onClose, onSuccess }: ClientEditShee
 
                 {form.documents?.length === 0 && (
                   <div className="text-center py-8 text-vj-txt3 text-sm bg-vj-surface rounded-vj-lg border border-dashed border-vj-border">
-                    Nenhum documento cadastrado. Adicione passaportes, RGs ou registros profissionais.
+                    Nenhum documento adicional. Adicione RGs, vistos ou registros profissionais.
                   </div>
                 )}
 
                 <div className="space-y-6">
                   {form.documents?.map((doc: any, index: number) => (
                     <div key={doc.id || index} className="p-4 rounded-vj-lg border border-vj-border bg-vj-surface relative space-y-4">
-                      <button 
+                      <button
                         onClick={() => removeDocumentBlock(index)}
                         className="absolute right-3 top-3 text-vj-txt3 hover:text-red-500 transition-colors"
                         title="Remover documento"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
-                      
+
                       <div className="grid sm:grid-cols-2 gap-4">
                         <div className="space-y-1.5">
                           <Label>Tipo de Documento</Label>
@@ -354,7 +419,7 @@ export function ClientEditSheet({ id, open, onClose, onSuccess }: ClientEditShee
                           <Input type="date" value={doc.expiry || ''} onChange={e => updateDocumentBlock(index, 'expiry', e.target.value)} className="border-vj-border bg-vj-bg" />
                         </div>
                       </div>
-                      
+
                       <div className="space-y-2 pt-2 border-t border-vj-border/50">
                         <Label className="text-xs text-vj-txt3">Anexo Oficial (.pdf, .jpg)</Label>
                         <MediaUploader
@@ -436,27 +501,69 @@ export function ClientEditSheet({ id, open, onClose, onSuccess }: ClientEditShee
                   </div>
                 </div>
                 <div className="space-y-1.5">
-                    <Label>País</Label>
-                    <Input value={form.country} onChange={(e) => update('country', e.target.value)} className="border-vj-border bg-vj-bg" />
+                  <Label>País</Label>
+                  <Input value={form.country} onChange={(e) => update('country', e.target.value)} className="border-vj-border bg-vj-bg" />
                 </div>
-                
+
                 <div className="pt-4 border-t border-vj-border space-y-3">
                   <Label className="text-base font-semibold text-vj-txt flex items-center gap-2">
-                    <MapPin className="w-4 h-4 text-vj-green" /> Comprovante de Resistência
+                    <MapPin className="w-4 h-4 text-vj-green" /> Comprovante de Residência
                   </Label>
                   <p className="text-xs text-vj-txt3">Luz, Água, Internet. Pode subir PDF ou Imagem.</p>
                   <MediaUploader
-                      multiple={false}
-                      accept="image/*,application/pdf"
-                      existingUrls={form.proof_of_address_url ? [form.proof_of_address_url] : []}
-                      onUploadComplete={(urls) => update('proof_of_address_url', urls[0])}
-                      bucket="client-media"
-                      folder="clients/documents"
-                      ownerType="client"
-                      ownerId={id ?? null}
-                      fieldName="preferences.proof_of_address_url"
-                    />
+                    multiple={false}
+                    accept="image/*,application/pdf"
+                    existingUrls={form.proof_of_address_url ? [form.proof_of_address_url] : []}
+                    onUploadComplete={(urls) => update('proof_of_address_url', urls[0])}
+                    bucket="client-media"
+                    folder="clients/documents"
+                    ownerType="client"
+                    ownerId={id ?? null}
+                    fieldName="preferences.proof_of_address_url"
+                  />
                 </div>
+              </div>
+            )}
+
+            {activeSection === 'fidelidade' && (
+              <div className="space-y-6">
+                <div className="p-5 rounded-vj-lg bg-amber-50/50 border border-amber-100 flex items-center justify-between">
+                  <div className="space-y-1">
+                    <h3 className="font-bold text-amber-900 flex items-center gap-2">
+                      <Star className="h-4 w-4 text-amber-500" /> Membro do Clube
+                    </h3>
+                    <p className="text-xs text-amber-700">Cliente faz parte do programa de fidelidade da agência.</p>
+                  </div>
+                  <Switch
+                    checked={form.is_member}
+                    onCheckedChange={(c) => update('is_member', c)}
+                  />
+                </div>
+
+                {form.is_member && (
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <Label>Tier / Nível</Label>
+                      <Select value={form.member_tier || ''} onValueChange={(v) => update('member_tier', v)}>
+                        <SelectTrigger className="border-vj-border bg-vj-bg"><SelectValue placeholder="Selecione o nível" /></SelectTrigger>
+                        <SelectContent>
+                          {MEMBER_TIERS.map(t => <SelectItem key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label>Pontos Acumulados</Label>
+                      <Input
+                        type="number"
+                        min="0"
+                        value={form.loyalty_points}
+                        onChange={(e) => update('loyalty_points', e.target.value)}
+                        placeholder="0"
+                        className="border-vj-border bg-vj-bg"
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 

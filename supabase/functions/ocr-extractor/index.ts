@@ -38,22 +38,48 @@ type ContentPart =
 
 // ── Obtém chave de IA da org ──────────────────────────────────────────────────
 async function getAiKey(supabaseClient: SupabaseClient, orgId: string): Promise<{ key: string; provider: string; baseUrl: string; model: string } | null> {
-  const { data: keys } = await supabaseClient
-    .from('ai_keys_pool')
-    .select('id, provider, api_key')
-    .eq('org_id', orgId)
-    .eq('is_active', true)
-    .order('created_at', { ascending: true });
+  if (orgId) {
+    const { data: keys } = await supabaseClient
+      .from('ai_keys_pool')
+      .select('id, provider, api_key')
+      .eq('org_id', orgId)
+      .eq('is_active', true)
+      .order('created_at', { ascending: true });
 
-  if (keys && keys.length > 0) {
-    const idx = Math.floor(Date.now() / 1000) % keys.length;
-    const keyEntry = keys[idx];
-    const provider = keyEntry.provider?.toLowerCase();
-    if (provider === 'openrouter') return { key: keyEntry.api_key, provider: 'openrouter', baseUrl: 'https://openrouter.ai/api/v1', model: 'google/gemini-2.5-flash' };
-    if (provider === 'gemini' || provider === 'google') return { key: keyEntry.api_key, provider: 'gemini', baseUrl: 'https://generativelanguage.googleapis.com/v1beta/openai', model: 'gemini-2.5-flash' };
-    if (provider === 'groq') return { key: keyEntry.api_key, provider: 'groq', baseUrl: 'https://api.groq.com/openai/v1', model: 'llama3-70b-8192' };
-    if (provider === 'openai') return { key: keyEntry.api_key, provider: 'openai', baseUrl: 'https://api.openai.com/v1', model: 'gpt-4o' };
-    return { key: keyEntry.api_key, provider: 'openrouter', baseUrl: 'https://openrouter.ai/api/v1', model: 'google/gemini-2.5-flash' };
+    if (keys && keys.length > 0) {
+      const idx = Math.floor(Date.now() / 1000) % keys.length;
+      const keyEntry = keys[idx];
+      const provider = keyEntry.provider?.toLowerCase();
+      if (provider === 'openrouter') return { key: keyEntry.api_key, provider: 'openrouter', baseUrl: 'https://openrouter.ai/api/v1', model: 'google/gemini-2.5-flash' };
+      if (provider === 'gemini' || provider === 'google') return { key: keyEntry.api_key, provider: 'gemini', baseUrl: 'https://generativelanguage.googleapis.com/v1beta/openai', model: 'gemini-2.5-flash' };
+      if (provider === 'groq') return { key: keyEntry.api_key, provider: 'groq', baseUrl: 'https://api.groq.com/openai/v1', model: 'llama3-70b-8192' };
+      if (provider === 'openai') return { key: keyEntry.api_key, provider: 'openai', baseUrl: 'https://api.openai.com/v1', model: 'gpt-4o' };
+      return { key: keyEntry.api_key, provider: 'openrouter', baseUrl: 'https://openrouter.ai/api/v1', model: 'google/gemini-2.5-flash' };
+    }
+  }
+
+  // Fallback: Chaves globais (usando service role client)
+  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+  const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  if (supabaseUrl && supabaseServiceKey) {
+    const { createClient } = await import("https://esm.sh/@supabase/supabase-js@2.39.3");
+    const serviceClient = createClient(supabaseUrl, supabaseServiceKey);
+    const { data: globalKeys } = await serviceClient
+      .from('global_keys')
+      .select('id, provider, api_key')
+      .eq('is_active', true)
+      .order('created_at', { ascending: true });
+
+    if (globalKeys && globalKeys.length > 0) {
+      const idx = Math.floor(Date.now() / 1000) % globalKeys.length;
+      const keyEntry = globalKeys[idx];
+      const provider = keyEntry.provider?.toLowerCase();
+      if (provider === 'openrouter') return { key: keyEntry.api_key, provider: 'openrouter', baseUrl: 'https://openrouter.ai/api/v1', model: 'google/gemini-2.5-flash' };
+      if (provider === 'gemini' || provider === 'google') return { key: keyEntry.api_key, provider: 'gemini', baseUrl: 'https://generativelanguage.googleapis.com/v1beta/openai', model: 'gemini-2.5-flash' };
+      if (provider === 'groq') return { key: keyEntry.api_key, provider: 'groq', baseUrl: 'https://api.groq.com/openai/v1', model: 'llama3-70b-8192' };
+      if (provider === 'openai') return { key: keyEntry.api_key, provider: 'openai', baseUrl: 'https://api.openai.com/v1', model: 'gpt-4o' };
+      return { key: keyEntry.api_key, provider: 'openrouter', baseUrl: 'https://openrouter.ai/api/v1', model: 'google/gemini-2.5-flash' };
+    }
   }
 
   const lovableKey = Deno.env.get("LOVABLE_API_KEY");

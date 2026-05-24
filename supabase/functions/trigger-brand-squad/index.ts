@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.6";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -9,8 +10,30 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ error: "Falta cabeçalho de autorização ou formato inválido" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
+    }
+
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const userSupabase = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } }
+    });
+
+    const { data: { user }, error: userError } = await userSupabase.auth.getUser();
+    if (userError || !user) {
+      return new Response(JSON.stringify({ error: "Sessão inválida ou expirada" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
+    }
+
     const payload = await req.json();
-    console.log("[Bridge] Trigger Brand Squad recebido do Frontend:", payload);
+    console.log("[Bridge] Trigger Brand Squad recebido do Frontend para org:", payload.org_id);
     
     // Na nuvem real, apontaria para a URL do Railway/Render (ex: https://turis-engine.up.railway.app)
     const PYTHON_ENGINE_URL = Deno.env.get("PYTHON_ENGINE_URL") || "http://host.docker.internal:8000";

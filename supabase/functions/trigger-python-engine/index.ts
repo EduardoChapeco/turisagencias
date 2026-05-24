@@ -1,14 +1,49 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.6";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-engine-secret",
 };
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
+    const incomingSecret = req.headers.get("x-engine-secret") || req.headers.get("Authorization")?.replace("Bearer ", "");
+    const engineSecret = Deno.env.get("ENGINE_SECRET") || Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+
+    let isAuthorized = false;
+
+    // 1. Verificar se coincide com o segredo interno do motor
+    if (incomingSecret && incomingSecret === engineSecret) {
+      isAuthorized = true;
+    }
+
+    // 2. Se não, verificar se é um JWT válido de usuário logado
+    if (!isAuthorized && incomingSecret) {
+      try {
+        const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+        const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+        const userSupabase = createClient(supabaseUrl, supabaseAnonKey, {
+          global: { headers: { Authorization: `Bearer ${incomingSecret}` } }
+        });
+        const { data: { user } } = await userSupabase.auth.getUser();
+        if (user) {
+          isAuthorized = true;
+        }
+      } catch {
+        // Ignora falha de parse e segue para barrar
+      }
+    }
+
+    if (!isAuthorized) {
+      return new Response(JSON.stringify({ error: "Unauthorized: Invalid Engine Secret or JWT" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
+    }
+
     const payload = await req.json();
     console.log("[Bridge] Trigger recebido do Supabase DB:", payload);
     

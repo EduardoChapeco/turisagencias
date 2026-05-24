@@ -75,12 +75,23 @@ export default function AdminLogin() {
       // we can do a direct DB check via an RPC function to avoid frontend exposure.
       // For now, since we created the Edge function `admin-auth`, let's invoke it.
       
+      // O cabeçalho Authorization com JWT é inserido automaticamente pelo cliente do Supabase
       const { data, error } = await supabase.functions.invoke('admin-auth', {
-        body: { userId: user.id, pin }
+        body: { pin }
       });
 
-      if (error || !data?.success) {
-        toast({ title: 'Acesso Negado', description: error?.message || 'PIN incorreto ou usuário não autorizado.', variant: 'destructive' });
+      if (error) {
+        // Obter mensagem de erro detalhada se houver
+        let errorMsg = 'PIN incorreto ou usuário não autorizado.';
+        try {
+          const errData = JSON.parse(await error.response.text());
+          if (errData?.error) errorMsg = errData.error;
+        } catch {
+          if (error.message) errorMsg = error.message;
+        }
+        toast({ title: 'Acesso Negado', description: errorMsg, variant: 'destructive' });
+      } else if (!data?.success) {
+        toast({ title: 'Acesso Negado', description: 'PIN incorreto ou usuário não autorizado.', variant: 'destructive' });
       } else {
         setIsAuthenticated(true);
         toast({ title: 'Acesso Liberado', description: 'Bem-vindo ao Centro de Comando.' });

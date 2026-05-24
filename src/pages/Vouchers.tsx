@@ -33,11 +33,7 @@ export default function Vouchers() {
   const [searchTerm, setSearchTerm]     = useState('');
   const [isSheetOpen, setIsSheetOpen]   = useState(false);
   const [editingVoucher, setEditingVoucher] = useState<Partial<VoucherRecord> | null>(null);
-  const a4Ref = useRef<HTMLDivElement>(null);
 
-  const isEditing = !!formData.id;
-
-  // Removed old OCR and Save logic as VoucherMasterPipeline will handle it
 
   // ── Filter ────────────────────────────────────────────────────────────────
 

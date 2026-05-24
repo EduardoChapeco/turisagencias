@@ -13,12 +13,34 @@ serve(async (req) => {
   }
 
   try {
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    );
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: 'Falta cabeçalho de autorização' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
-    const resend = new Resend(Deno.env.get('RESEND_API_KEY')!);
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
+
+    // Instanciar cliente autenticado do usuário para validação de RLS
+    const userSupabase = createClient(supabaseUrl, supabaseAnonKey, {
+      global: {
+        headers: {
+          Authorization: authHeader,
+        },
+      },
+    });
+
+    // Validar o token do usuário
+    const { data: { user }, error: userError } = await userSupabase.auth.getUser();
+    if (userError || !user) {
+      return new Response(
+        JSON.stringify({ error: 'Token inválido ou expirado' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     const body = await req.json();
     const { ticket_id, to_email, to_name, subject, body: emailBody } = body;
@@ -30,12 +52,26 @@ serve(async (req) => {
       );
     }
 
-    // Buscar dados do ticket para contextualizar o email
-    const { data: ticket } = await supabase
+    // Buscar dados do ticket para verificar permissão do usuário via RLS
+    const { data: ticket, error: ticketError } = await userSupabase
       .from('tickets')
       .select('id, org_id, title')
       .eq('id', ticket_id)
       .single();
+
+    if (ticketError || !ticket) {
+      return new Response(
+        JSON.stringify({ error: 'Ticket não encontrado ou acesso negado' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const supabase = createClient(
+      supabaseUrl,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    );
+
+    const resend = new Resend(Deno.env.get('RESEND_API_KEY')!);
 
     const ticketCode = ticket_id.split('-')[0].toUpperCase();
     const emailSubject = subject.includes(ticketCode)

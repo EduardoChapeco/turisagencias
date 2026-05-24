@@ -140,7 +140,7 @@ describe('Route Guards', () => {
     });
     renderInRouter(<Dashboard />, '/');
     expect(screen.getAllByText(/test org/i).length).toBeGreaterThan(0);
-    expect(screen.getByRole('heading', { name: /boa tarde, test/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /(boa tarde|bom dia|boa noite), test/i })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: /próximos embarques/i })).toBeInTheDocument();
   });
 });

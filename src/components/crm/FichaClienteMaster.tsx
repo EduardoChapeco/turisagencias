@@ -187,6 +187,30 @@ export function FichaClienteMaster() {
           clientId = newClient.id;
         }
 
+        // Salva os viajantes adicionais associados a este cliente pagante
+        if (clientId && viajantes.length > 0) {
+          for (const viaj of viajantes) {
+            if (!viaj.nome.trim()) continue;
+            const { error: travelerErr } = await supabase
+              .from('travelers')
+              .insert({
+                org_id: organization.id,
+                client_id: clientId,
+                full_name: viaj.nome,
+                cpf: viaj.cpf || null,
+                birth_date: viaj.nascimento || null,
+                rg: viaj.rg || null,
+                passport_number: viaj.passaporte || null,
+                relation: 'acompanhante',
+                nationality: 'Brasileira'
+              });
+
+            if (travelerErr) {
+              console.error(`Erro ao salvar acompanhante ${viaj.nome}:`, travelerErr);
+            }
+          }
+        }
+
         // Cria card no Kanban se tiver board
         if (board?.id && firstColumn?.id) {
           await supabase.from('kanban_cards').insert({

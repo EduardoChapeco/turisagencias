@@ -10,7 +10,7 @@ import { useState } from 'react';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { GuideEdit } from './GuideEdit';
 
-export default function Guides() {
+export default function Guides({ isTab = false }: { isTab?: boolean }) {
   const { data: guides, isLoading } = useGuides();
   const [searchTerm, setSearchTerm] = useState('');
   const [editSheet, setEditSheet] = useState<{ open: boolean; id: string | null }>({ open: false, id: null });
@@ -21,8 +21,8 @@ export default function Guides() {
       g.country.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  return (
-    <AppLayout>
+  const mainContent = (
+    <>
       <div className="space-y-6">
         <PageHeader 
           title="Guias Mágicos"
@@ -124,6 +124,9 @@ export default function Guides() {
         onClose={() => setEditSheet({ open: false, id: null })} 
         onSuccess={() => {}} 
       />
-    </AppLayout>
+    </>
   );
+
+  if (isTab) return mainContent;
+  return <AppLayout>{mainContent}</AppLayout>;
 }

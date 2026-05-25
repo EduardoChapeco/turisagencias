@@ -126,7 +126,7 @@ export default function PublicTravelerForm() {
   if (invalidToken) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50 dark:from-zinc-950 dark:to-blue-950/20 px-4">
-        <Card className="w-full max-w-md text-center rounded-3xl border-vj-border shadow-xl">
+        <Card className="w-full max-w-md text-center rounded-3xl border-vj-border">
           <CardContent className="py-12">
             <div className="w-16 h-16 bg-destructive/10 rounded-full flex items-center justify-center mx-auto mb-4">
               <AlertCircle className="h-8 w-8 text-destructive" />
@@ -142,7 +142,7 @@ export default function PublicTravelerForm() {
   if (alreadyCompleted) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50 dark:from-zinc-950 dark:to-blue-950/20 px-4">
-        <Card className="w-full max-w-md text-center rounded-3xl border-vj-border shadow-xl">
+        <Card className="w-full max-w-md text-center rounded-3xl border-vj-border">
           <CardContent className="py-12 space-y-4">
             <div className="w-20 h-20 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto">
               <CheckCircle2 className="h-10 w-10 text-blue-600 dark:text-blue-400" />

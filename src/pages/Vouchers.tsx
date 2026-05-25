@@ -54,7 +54,7 @@ export default function Vouchers() {
 
         {/* Toolbar */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 justify-between">
-          <div className="flex items-center gap-3 bg-white border border-vj-border rounded-xl px-4 py-2 flex-1 max-w-sm shadow-sm">
+          <div className="flex items-center gap-3 bg-white border border-vj-border rounded-xl px-4 py-2 flex-1 max-w-sm">
             <Search className="text-vj-txt3 shrink-0" size={16} />
             <Input
               value={searchTerm}
@@ -84,7 +84,7 @@ export default function Vouchers() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filtered.map(v => (
-              <div key={v.id} className="bg-white border border-vj-border rounded-2xl p-4 flex flex-col gap-2 shadow-sm hover:border-vj-green/40 transition-colors">
+              <div key={v.id} className="bg-white border border-vj-border rounded-2xl p-4 flex flex-col gap-2 hover:border-vj-green/40 transition-colors">
                 <h3 className="font-bold text-vj-txt line-clamp-1">{v.destino || 'Destino a definir'}</h3>
                 <p className="text-xs font-mono font-bold text-vj-txt3 bg-vj-bg px-2 py-0.5 rounded w-fit">
                   LOC: {v.localizador || 'N/A'}

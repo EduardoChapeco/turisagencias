@@ -327,7 +327,7 @@ function DestinationForm({
 }
 
 // ── Página Principal ──
-export default function Destinations() {
+export default function Destinations({ isTab = false }: { isTab?: boolean }) {
   const { data: destinations, isLoading } = useDestinations();
   const deleteDestination = useDeleteDestination();
   const toggleActive = useToggleDestinationActive();
@@ -357,8 +357,8 @@ export default function Destinations() {
 
   const activeCount = (destinations ?? []).filter(d => d.is_active).length;
 
-  return (
-    <AppLayout>
+  const mainContent = (
+    <>
       <div className="space-y-8 max-w-[1400px] mx-auto pb-10 px-4 sm:px-6">
 
         {/* Header */}
@@ -436,6 +436,9 @@ export default function Destinations() {
         initial={editTarget}
         onClose={() => { setFormOpen(false); setEditTarget(null); }}
       />
-    </AppLayout>
+    </>
   );
+
+  if (isTab) return mainContent;
+  return <AppLayout>{mainContent}</AppLayout>;
 }

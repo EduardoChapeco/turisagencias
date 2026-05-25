@@ -190,7 +190,7 @@ export default function ContractRecords() {
 
         {/* Toolbar */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 justify-between">
-          <div className="flex items-center gap-3 bg-white border border-vj-border rounded-xl px-4 py-2 flex-1 max-w-sm shadow-sm">
+          <div className="flex items-center gap-3 bg-white border border-vj-border rounded-xl px-4 py-2 flex-1 max-w-sm">
             <Search className="text-vj-txt3 shrink-0" size={16} />
             <Input
               value={searchTerm}
@@ -221,7 +221,7 @@ export default function ContractRecords() {
         ) : (
           <div className="grid grid-cols-1 gap-3">
             {filtered.map(c => (
-              <div key={c.id} className="bg-white border border-vj-border rounded-2xl p-4 flex items-center justify-between shadow-sm hover:border-vj-green/40 transition-colors">
+              <div key={c.id} className="bg-white border border-vj-border rounded-2xl p-4 flex items-center justify-between hover:border-vj-green/40 transition-colors">
                 <div className="space-y-0.5">
                   <h3 className="font-bold text-vj-txt">{c.titular || 'Sem titular'}</h3>
                   <p className="text-xs text-vj-txt3">{c.pacote || 'Pacote não definido'}</p>

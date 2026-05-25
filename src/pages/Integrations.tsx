@@ -13,7 +13,7 @@ import {
   ArrowRight, HelpCircle 
 } from 'lucide-react';
 
-export default function Integrations() {
+export default function Integrations({ isTab = false }: { isTab?: boolean }) {
   const { organization } = useAuthStore();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
@@ -245,11 +245,14 @@ export default function Integrations() {
     }
   };
 
-  if (loading) return <AppLayout><div className="flex h-full items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-vj-green" /></div></AppLayout>;
+  if (loading) {
+    const loadingEl = <div className="flex h-full items-center justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-vj-green" /></div>;
+    if (isTab) return loadingEl;
+    return <AppLayout>{loadingEl}</AppLayout>;
+  }
 
-  return (
-    <AppLayout>
-      <div className="max-w-5xl mx-auto py-8">
+  const mainContent = (
+    <div className="max-w-5xl mx-auto py-8">
         <div className="mb-8">
           <h1 className="text-2xl font-black text-vj-txt uppercase tracking-tighter flex items-center gap-3">
             <Plug className="w-6 h-6 text-vj-green" /> B2B API Gateway
@@ -568,6 +571,8 @@ export default function Integrations() {
         </div>
 
       </div>
-    </AppLayout>
   );
+
+  if (isTab) return mainContent;
+  return <AppLayout>{mainContent}</AppLayout>;
 }

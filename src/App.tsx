@@ -215,7 +215,7 @@ const App = () => (
               <Route path="/ai-chat" element={<ProtectedWithOrg><TripsRole><AIChat /></TripsRole></ProtectedWithOrg>} />
               <Route path="/ai-dashboard" element={<ProtectedWithOrg><AdminRole><AiDashboard /></AdminRole></ProtectedWithOrg>} />
               <Route path="/settings" element={<ProtectedWithOrg><TripsRole><Settings /></TripsRole></ProtectedWithOrg>} />
-              <Route path="/integrations" element={<ProtectedWithOrg><TripsRole><Integrations /></TripsRole></ProtectedWithOrg>} />
+              <Route path="/integrations" element={<Navigate to="/settings?tab=integrations" replace />} />
               
               {/* ERP v3 Financeiro & Jurídico */}
               <Route path="/finance/payments" element={<ProtectedWithOrg><AdminRole><Payments /></AdminRole></ProtectedWithOrg>} />
@@ -227,16 +227,16 @@ const App = () => (
               <Route path="/contracts" element={<ProtectedWithOrg><TripsRole><ContractRecords /></TripsRole></ProtectedWithOrg>} />
               <Route path="/vouchers"  element={<ProtectedWithOrg><TripsRole><Vouchers /></TripsRole></ProtectedWithOrg>} />
               <Route path="/automations" element={<ProtectedWithOrg><AdminRole><Automations /></AdminRole></ProtectedWithOrg>} />
-              <Route path="/team" element={<ProtectedWithOrg><AdminRole><Team /></AdminRole></ProtectedWithOrg>} />
+              <Route path="/team" element={<Navigate to="/settings?tab=agents" replace />} />
               <Route path="/admin/dashboard" element={<ProtectedWithOrg><AdminRole><AdminDashboard /></AdminRole></ProtectedWithOrg>} />
               <Route path="/admin/agencies/:id" element={<ProtectedWithOrg><AdminRole><AdminAgencyDetail /></AdminRole></ProtectedWithOrg>} />
 
               {/* CRM */}
-              <Route path="/guides" element={<ProtectedWithOrg><TripsRole><Guides /></TripsRole></ProtectedWithOrg>} />
+              <Route path="/guides" element={<Navigate to="/settings?tab=guides" replace />} />
 
               <Route path="/info" element={<ProtectedWithOrg><TripsRole><TravelerInfo /></TripsRole></ProtectedWithOrg>} />
 
-              <Route path="/hotels" element={<ProtectedWithOrg><TripsRole><Hotels /></TripsRole></ProtectedWithOrg>} />
+              <Route path="/hotels" element={<Navigate to="/settings?tab=hotels" replace />} />
 
               <Route path="/tickets" element={<ProtectedWithOrg><TripsRole><Tickets /></TripsRole></ProtectedWithOrg>} />
 
@@ -244,7 +244,7 @@ const App = () => (
 
               <Route path="/group-trips" element={<ProtectedWithOrg><TripsRole><GroupTrips /></TripsRole></ProtectedWithOrg>} />
               <Route path="/group-trips/:id" element={<ProtectedWithOrg><TripsRole><GroupDashboard /></TripsRole></ProtectedWithOrg>} />
-              <Route path="/destinations" element={<ProtectedWithOrg><TripsRole><Destinations /></TripsRole></ProtectedWithOrg>} />
+              <Route path="/destinations" element={<Navigate to="/settings?tab=destinations" replace />} />
               <Route path="/analytics" element={<ProtectedWithOrg><TripsRole><Analytics /></TripsRole></ProtectedWithOrg>} />
 
               <Route path="*" element={<NotFound />} />

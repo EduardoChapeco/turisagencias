@@ -26,7 +26,8 @@ import {
   Plug,
   Shield,
   BarChart2,
-  Send
+  Send,
+  ChevronRight
 } from 'lucide-react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -41,74 +42,127 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
   useSidebar,
 } from '@/components/ui/sidebar';
+import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
 import { Button } from '@/components/ui/button';
 
-type NavGroup = { title: string; items: { title: string; url: string; icon: React.ComponentType<{ className?: string }> }[] };
+type SubItem = { title: string; url: string };
+
+type NavItem = {
+  title: string;
+  url?: string;
+  icon: React.ComponentType<{ className?: string }>;
+  items?: SubItem[];
+};
+
+type NavGroup = {
+  title: string;
+  items: NavItem[];
+};
 
 const navGroups: NavGroup[] = [
   {
-    title: 'Painel',
+    title: 'Principal',
     items: [
-      { title: 'Painel Inicial',      url: '/',             icon: LayoutDashboard },
-      { title: 'Mapa de Viajantes',   url: '/radar-global', icon: Globe2 },
-      { title: 'Radar do Mercado',    url: '/radar',        icon: Newspaper },
-      { title: 'Atendimento',         url: '/tickets',      icon: Activity },
-      { title: 'Analytics',           url: '/analytics',    icon: BarChart2 },
-    ],
+      { title: 'Painel Inicial', url: '/', icon: LayoutDashboard },
+      {
+        title: 'Radar & CMS',
+        icon: Newspaper,
+        items: [
+          { title: 'Mapa de Viajantes', url: '/radar-global' },
+          { title: 'Radar do Mercado', url: '/radar' },
+          { title: 'CMS de Notícias', url: '/news-cms' },
+        ]
+      },
+      { title: 'Analytics', url: '/analytics', icon: BarChart2 },
+    ]
   },
   {
-    title: 'Vendas',
+    title: 'CRM & Fluxos',
     items: [
-      { title: 'Funil de Vendas',     url: '/kanban/sales', icon: KanbanSquare },
-      { title: 'Cotações',            url: '/quotations',   icon: FileText },
-      { title: 'Propostas Comerciais',url: '/proposals',    icon: Send },
-      { title: 'Base de Clientes',    url: '/clients',      icon: Users },
-      { title: 'Pacotes & Grupos',    url: '/group-trips',  icon: TrendingUp },
-    ],
+      {
+        title: 'Vendas',
+        icon: KanbanSquare,
+        items: [
+          { title: 'Funil de Vendas', url: '/kanban/sales' },
+          { title: 'Cotações', url: '/quotations' },
+          { title: 'Propostas Comerciais', url: '/proposals' },
+          { title: 'Base de Clientes', url: '/clients' },
+        ]
+      },
+      {
+        title: 'Operação',
+        icon: Zap,
+        items: [
+          { title: 'Minhas Tarefas', url: '/kanban/tasks' },
+          { title: 'Gestão de Embarque', url: '/kanban/departures' },
+          { title: 'Roteiros Digitais', url: '/itineraries' },
+          { title: 'Experiências', url: '/experiences' },
+          { title: 'Atendimento', url: '/tickets' },
+          { title: 'Pacotes & Grupos', url: '/group-trips' },
+        ]
+      }
+    ]
   },
   {
-    title: 'Operação',
+    title: 'Administração',
     items: [
-      { title: 'Minhas Tarefas',      url: '/kanban/tasks',      icon: Zap },
-      { title: 'Gestão de Embarque',  url: '/kanban/departures', icon: Anchor },
-      { title: 'Roteiros Digitais',   url: '/itineraries',       icon: Map },
-      { title: 'Experiências',        url: '/experiences',       icon: Tent },
-    ],
+      {
+        title: 'Financeiro',
+        icon: CreditCard,
+        items: [
+          { title: 'Gestão de Parcelas', url: '/finance/payments' },
+          { title: 'Transações', url: '/finance/transactions' },
+          { title: 'Fornecedores', url: '/finance/suppliers' },
+        ]
+      },
+      {
+        title: 'Jurídico & Voucher',
+        icon: FileSignature,
+        items: [
+          { title: 'Modelos de Contrato', url: '/legal/contracts' },
+          { title: 'Contratos Emitidos', url: '/contracts' },
+          { title: 'Vouchers & Boarding', url: '/vouchers' },
+        ]
+      }
+    ]
   },
   {
-    title: 'Financeiro & Jurídico',
+    title: 'Inteligência Artificial',
     items: [
-      { title: 'Gestão de Parcelas',  url: '/finance/payments',     icon: CreditCard },
-      { title: 'Transações',          url: '/finance/transactions', icon: CreditCard },
-      { title: 'Fornecedores',        url: '/finance/suppliers',    icon: Briefcase },
-      { title: 'Modelos de Contrato', url: '/legal/contracts',      icon: FileSignature },
-      { title: 'Contratos Emitidos',  url: '/contracts',            icon: FileSignature },
-      { title: 'Vouchers & Boarding', url: '/vouchers',             icon: FileCheck },
-    ],
+      {
+        title: 'IA & Automações',
+        icon: Sparkles,
+        items: [
+          { title: 'Assistente IA', url: '/ai-chat' },
+          { title: 'Central de IA', url: '/ai-dashboard' },
+          { title: 'Automações IA', url: '/automations' },
+        ]
+      }
+    ]
   },
   {
-    title: 'Conteúdo & IA',
+    title: 'Sistema',
     items: [
-      { title: 'CMS de Notícias',     url: '/news-cms',      icon: Newspaper },
-      { title: 'Assistente IA',       url: '/ai-chat',       icon: Sparkles },
-      { title: 'Central de IA',       url: '/ai-dashboard',  icon: Bot },
-      { title: 'Automações IA',       url: '/automations',   icon: Bot },
-    ],
-  },
-  {
-    title: 'Configurações',
-    items: [
-      { title: 'Especialistas',       url: '/guides',        icon: Book },
-      { title: 'Hotéis e Resorts',    url: '/hotels',        icon: Building2 },
-      { title: 'Destinos',            url: '/destinations',  icon: MapPin },
-      { title: 'Integrações',         url: '/integrations',  icon: Plug },
-      { title: 'Equipe',              url: '/team',          icon: Users },
-    ],
-  },
+      {
+        title: 'Configurações',
+        icon: SettingsIcon,
+        items: [
+          { title: 'Especialistas', url: '/settings?tab=guides' },
+          { title: 'Hotéis e Resorts', url: '/settings?tab=hotels' },
+          { title: 'Destinos', url: '/settings?tab=destinations' },
+          { title: 'Integrações', url: '/settings?tab=integrations' },
+          { title: 'Equipe', url: '/settings?tab=agents' },
+          { title: 'Geral', url: '/settings' },
+        ]
+      }
+    ]
+  }
 ];
-
 
 export function AppSidebar() {
   const { state } = useSidebar();
@@ -144,30 +198,74 @@ export function AppSidebar() {
           )}
         </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto py-2 px-4 no-scrollbar">
+        <div className="min-h-0 flex-1 overflow-y-auto py-4 px-4 no-scrollbar">
           {navGroups.map((group) => (
-            <SidebarGroup key={group.title} className="mb-8 p-0">
-              <SidebarGroupLabel className="text-[9px] font-black uppercase text-vj-txt3 tracking-[0.3em] px-4 mb-4">
+            <SidebarGroup key={group.title} className="mb-6 p-0">
+              <SidebarGroupLabel className="text-[9px] font-black uppercase text-vj-txt3 tracking-[0.3em] px-4 mb-3">
                 {!collapsed && group.title}
               </SidebarGroupLabel>
               <SidebarGroupContent>
-                <SidebarMenu className="gap-1.5">
+                <SidebarMenu className="gap-1">
                   {group.items.map((item) => {
-                    const isActive = item.url === '/' ? location.pathname === '/' : location.pathname.startsWith(item.url);
-                    return (
-                      <SidebarMenuItem key={item.title}>
-                        <SidebarMenuButton 
-                          asChild 
-                          isActive={isActive} 
-                          className={`h-12 rounded-2xl transition-all duration-300 group/btn ${isActive ? 'bg-vj-green text-white ' : 'text-vj-txt2 hover:bg-zinc-50 hover:text-vj-txt '}`}
-                        >
-                          <Link to={item.url} className="flex items-center gap-4 px-4">
-                            <item.icon className={`h-4 w-4 transition-colors ${isActive ? 'text-white' : 'text-vj-txt3 group-hover/btn:text-vj-green'}`} />
-                            {!collapsed && <span className="font-bold text-xs tracking-tight">{item.title}</span>}
-                          </Link>
-                        </SidebarMenuButton>
-                      </SidebarMenuItem>
-                    );
+                    if (item.items) {
+                      const isGroupActive = item.items.some(subItem => 
+                        subItem.url === '/' ? location.pathname === '/' : location.pathname.startsWith(subItem.url)
+                      );
+                      return (
+                        <Collapsible key={item.title} asChild defaultOpen={isGroupActive} className="group/collapsible">
+                          <SidebarMenuItem>
+                            <CollapsibleTrigger asChild>
+                              <SidebarMenuButton 
+                                isActive={isGroupActive}
+                                className={`h-11 rounded-xl transition-all duration-300 group/btn ${isGroupActive ? 'bg-[#EEF4FF] text-vj-green border-l-4 border-vj-green rounded-l-none font-bold' : 'text-vj-txt2 hover:bg-zinc-50 hover:text-vj-txt'}`}
+                              >
+                                <div className="flex items-center w-full justify-between gap-4 px-4">
+                                  <div className="flex items-center gap-4">
+                                    <item.icon className={`h-4 w-4 transition-colors ${isGroupActive ? 'text-vj-green' : 'text-vj-txt3 group-hover/btn:text-vj-green'}`} />
+                                    {!collapsed && <span className="text-xs font-semibold tracking-tight">{item.title}</span>}
+                                  </div>
+                                  {!collapsed && <ChevronRight className="h-3 w-3 text-vj-txt3 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />}
+                                </div>
+                              </SidebarMenuButton>
+                            </CollapsibleTrigger>
+                            <CollapsibleContent>
+                              <SidebarMenuSub className="mx-0 border-l border-vj-border/60 pl-6 pr-2 gap-1 mt-1">
+                                {item.items.map((subItem) => {
+                                  const isSubActive = subItem.url === '/' ? location.pathname === '/' : location.pathname.startsWith(subItem.url);
+                                  return (
+                                    <SidebarMenuSubItem key={subItem.title}>
+                                      <SidebarMenuSubButton 
+                                        asChild 
+                                        isActive={isSubActive}
+                                        className={`h-9 px-3 rounded-lg transition-all duration-200 text-xs font-semibold ${isSubActive ? 'bg-[#EEF4FF] text-vj-green border-l-2 border-vj-green rounded-l-none' : 'text-vj-txt2 hover:bg-zinc-50 hover:text-vj-txt'}`}
+                                      >
+                                        <Link to={subItem.url}>{subItem.title}</Link>
+                                      </SidebarMenuSubButton>
+                                    </SidebarMenuSubItem>
+                                  );
+                                })}
+                              </SidebarMenuSub>
+                            </CollapsibleContent>
+                          </SidebarMenuItem>
+                        </Collapsible>
+                      );
+                    } else {
+                      const isActive = item.url === '/' ? location.pathname === '/' : location.pathname.startsWith(item.url || '');
+                      return (
+                        <SidebarMenuItem key={item.title}>
+                          <SidebarMenuButton 
+                            asChild 
+                            isActive={isActive} 
+                            className={`h-11 rounded-xl transition-all duration-300 group/btn ${isActive ? 'bg-[#EEF4FF] text-vj-green border-l-4 border-vj-green rounded-l-none font-bold' : 'text-vj-txt2 hover:bg-zinc-50 hover:text-vj-txt'}`}
+                          >
+                            <Link to={item.url || '#'} className="flex items-center gap-4 px-4">
+                              <item.icon className={`h-4 w-4 transition-colors ${isActive ? 'text-vj-green' : 'text-vj-txt3 group-hover/btn:text-vj-green'}`} />
+                              {!collapsed && <span className="text-xs font-semibold tracking-tight">{item.title}</span>}
+                            </Link>
+                          </SidebarMenuButton>
+                        </SidebarMenuItem>
+                      );
+                    }
                   })}
                 </SidebarMenu>
               </SidebarGroupContent>
@@ -176,10 +274,10 @@ export function AppSidebar() {
 
           {/* Master Panel Button for admins */}
           {canViewMasterPanel && (
-            <div className="mt-8 mb-4 border-t border-vj-border/40 pt-8">
+            <div className="mt-6 mb-4 border-t border-vj-border/40 pt-6">
               <SidebarMenuButton 
                 asChild 
-                className={`h-12 rounded-2xl transition-all duration-300 group/btn bg-indigo-50 text-indigo-700 hover:bg-indigo-100 hover:text-indigo-900 border border-indigo-100`}
+                className={`h-11 rounded-xl transition-all duration-300 group/btn bg-indigo-50 text-indigo-700 hover:bg-indigo-100 hover:text-indigo-900 border border-indigo-100`}
               >
                 <Link to="/admin/dashboard" className="flex items-center gap-4 px-4">
                   <Shield className="h-4 w-4 text-indigo-500" />

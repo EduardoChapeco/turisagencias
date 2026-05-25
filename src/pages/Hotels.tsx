@@ -160,13 +160,13 @@ function HotelSkeletonGrid() {
 }
 
 /* ── Main Page ── */
-export default function Hotels() {
+export default function Hotels({ isTab = false }: { isTab?: boolean }) {
   const [search, setSearch] = useState('');
   const [editSheet, setEditSheet] = useState<{ open: boolean; id: string | null }>({ open: false, id: null });
   const { data: hotels, isLoading } = useHotels(search || undefined);
 
-  return (
-    <AppLayout>
+  const mainContent = (
+    <>
       <PageHeader
         title="Banco de Hotéis"
         description="Catálogo curado de hotéis para agilizar cotações e reservas."
@@ -230,6 +230,9 @@ export default function Hotels() {
         id={editSheet.id}
         onClose={() => setEditSheet({ open: false, id: null })}
       />
-    </AppLayout>
+    </>
   );
+
+  if (isTab) return mainContent;
+  return <AppLayout>{mainContent}</AppLayout>;
 }

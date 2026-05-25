@@ -10,9 +10,15 @@ import { Building2, Plus, Trash2, Users, FileText, Database, Webhook, Activity, 
 import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuthStore } from '@/stores/authStore';
+import { useSearchParams } from 'react-router-dom';
 
 import { useAiKeys, useSaveAiKey, useDeleteAiKey } from '@/hooks/useAiKeys';
 import { usePolicies, useCreatePolicy, useDeletePolicy } from '@/hooks/usePoliciesAndExperiences';
+
+import Guides from './Guides';
+import Hotels from './Hotels';
+import Destinations from './Destinations';
+import CsvImporter from './Integrations';
 
 // Import extracted tab components
 import { AgentesTab } from './settings/AgentesTab';
@@ -82,6 +88,13 @@ function BillingTab() {
 }
 
 export default function Settings() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = searchParams.get('tab') || 'aikeys';
+
+  const handleTabChange = (value: string) => {
+    setSearchParams({ tab: value });
+  };
+
   const { data: keys, isLoading } = useAiKeys();
   const saveKey = useSaveAiKey();
   const deleteKey = useDeleteAiKey();
@@ -111,7 +124,7 @@ export default function Settings() {
           </p>
         </div>
 
-        <Tabs defaultValue="aikeys" className="w-full">
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
           <div className="relative w-full overflow-hidden mb-10">
             <div className="overflow-x-auto no-scrollbar pb-2 w-full">
               <TabsList className="bg-zinc-100/60 p-1.5 rounded-2xl flex w-max min-w-full justify-start md:justify-center border border-zinc-200/50 backdrop-blur-md">
@@ -122,7 +135,11 @@ export default function Settings() {
                   { id: 'policies',     label: 'Operadoras',       icon: Database },
                   { id: 'kanban',       label: 'Painel Vendas',    icon: Columns },
                   { id: 'billing',      label: 'Assinatura',       icon: CreditCard },
-                  { id: 'integrations', label: 'Integrações',      icon: Mail },
+                  { id: 'integrations', label: 'Portais B2B',      icon: Mail },
+                  { id: 'csv-import',   label: 'Importador CSV',   icon: FileSpreadsheet },
+                  { id: 'guides',       label: 'Guias',            icon: Book },
+                  { id: 'hotels',       label: 'Hotéis',           icon: Building2 },
+                  { id: 'destinations', label: 'Destinos',         icon: MapPin },
                   { id: 'bus',          label: 'Frotas',           icon: Bus },
                   { id: 'b2b',          label: 'Acessos B2B',      icon: KeyRound },
                   { id: 'logs',         label: 'Logs IA',          icon: Activity },
@@ -144,6 +161,10 @@ export default function Settings() {
           <TabsContent value="kanban" className="animate-in fade-in slide-in-from-bottom-4 duration-500"><KanbanTab /></TabsContent>
           <TabsContent value="billing" className="animate-in fade-in slide-in-from-bottom-4 duration-500"><BillingTab /></TabsContent>
           <TabsContent value="integrations" className="animate-in fade-in slide-in-from-bottom-4 duration-500"><IntegrationsTab /></TabsContent>
+          <TabsContent value="csv-import" className="animate-in fade-in slide-in-from-bottom-4 duration-500"><CsvImporter isTab /></TabsContent>
+          <TabsContent value="guides" className="animate-in fade-in slide-in-from-bottom-4 duration-500"><Guides isTab /></TabsContent>
+          <TabsContent value="hotels" className="animate-in fade-in slide-in-from-bottom-4 duration-500"><Hotels isTab /></TabsContent>
+          <TabsContent value="destinations" className="animate-in fade-in slide-in-from-bottom-4 duration-500"><Destinations isTab /></TabsContent>
           <TabsContent value="bus" className="animate-in fade-in slide-in-from-bottom-4 duration-500"><BusLayoutTab /></TabsContent>
           <TabsContent value="b2b" className="animate-in fade-in slide-in-from-bottom-4 duration-500"><B2BTab /></TabsContent>
           <TabsContent value="logs" className="animate-in fade-in slide-in-from-bottom-4 duration-500"><AiLogsTab /></TabsContent>

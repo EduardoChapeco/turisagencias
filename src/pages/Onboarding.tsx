@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
-import { Cloud, ArrowRight, Check, Building2, Palette, Phone, Mail, Upload, Camera, Globe, MapPin } from 'lucide-react';
+import { Cloud, ArrowRight, Check, Building2, Palette, Phone, Mail, Upload, Camera, Globe, MapPin, Laptop, Layout } from 'lucide-react';
 import type { PostgrestError } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthStore } from '@/stores/authStore';
@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { BrandSquadLive } from '@/components/onboarding/BrandSquadLive';
+import VisualBuilder from '@/components/builder/VisualBuilder';
 
 const FOCUS_OPTIONS = [
   { value: 'Lazer', icon: '🏖️' },
@@ -20,8 +21,8 @@ const FOCUS_OPTIONS = [
 
 const STEPS = [
   { label: 'Informações Básicas', icon: Building2 },
-  { label: 'Identidade Visual', icon: Palette },
-  { label: 'Presença Digital', icon: Globe },
+  { label: 'Localização & Operação', icon: MapPin },
+  { label: 'Marca & Presença', icon: Palette },
   { label: 'Ativação', icon: Cloud },
 ];
 
@@ -37,6 +38,7 @@ export default function Onboarding() {
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [activationEvents, setActivationEvents] = useState<string[]>([]);
   const [squadCompleted, setSquadCompleted] = useState(false);
+  const [showAdvancedBuilder, setShowAdvancedBuilder] = useState(false);
   // Idempotency guard: prevents double-submission
   const submittingRef = useRef(false);
   
@@ -52,15 +54,70 @@ export default function Onboarding() {
     instagram_url: '',
     website_url: '',
     google_business_url: '',
+    // Novos campos operacionais e fiscais solicitados no PRD
+    razaoSocial: '',
+    cnpjCpf: '',
+    timezone: 'America/Sao_Paulo',
+    currency: 'BRL',
+    language: 'pt-BR',
+    cep: '',
+    address: '',
+    city: '',
+    uf: '',
+    country: 'Brasil',
+    hours: 'Segunda a Sexta, das 9h às 18h',
+    slogan: '',
+    bioCurta: '',
   });
   const [loading, setLoading] = useState(false);
 
-  if (organization) {
+  if (showAdvancedBuilder) {
+    return (
+      <VisualBuilder 
+        onBack={() => setShowAdvancedBuilder(false)} 
+        projectName={form.name || 'Minha Agência'} 
+      />
+    );
+  }
+
+  if (organization && step !== 4) {
     return <Navigate to="/" replace />;
   }
 
   const update = (field: string, value: string) =>
     setForm((prev) => ({ ...prev, [field]: value }));
+
+  const fetchCep = async (cepValue: string) => {
+    const cleanCep = cepValue.replace(/\D/g, '');
+    if (cleanCep.length === 8) {
+      try {
+        const response = await fetch(`https://viacep.com.br/ws/${cleanCep}/json/`);
+        const data = await response.json();
+        if (!data.erro) {
+          setForm(prev => ({
+            ...prev,
+            address: data.logradouro || '',
+            city: data.localidade || '',
+            uf: data.uf || '',
+            country: 'Brasil'
+          }));
+          toast({ title: 'CEP Encontrado!', description: 'Endereço preenchido automaticamente.' });
+        } else {
+          toast({ title: 'CEP não encontrado', description: 'Por favor, digite o endereço manualmente.', variant: 'destructive' });
+        }
+      } catch (error) {
+        logger.error('Erro ao buscar CEP:', error);
+      }
+    }
+  };
+
+  const handleCepChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    update('cep', val);
+    if (val.replace(/\D/g, '').length === 8) {
+      fetchCep(val);
+    }
+  };
 
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -137,7 +194,26 @@ export default function Onboarding() {
         instagram_url: form.instagram_url || null,
         website_url: form.website_url || null,
         google_business_url: form.google_business_url || null,
-        brand_kit: { focus: form.focus },
+        brand_kit: { 
+          focus: form.focus,
+          slogan: form.slogan || null,
+          bioCurta: form.bioCurta || null
+        },
+        address: {
+          cep: form.cep || null,
+          street: form.address || null,
+          city: form.city || null,
+          uf: form.uf || null,
+          country: form.country || 'Brasil'
+        },
+        settings: {
+          timezone: form.timezone || 'America/Sao_Paulo',
+          currency: form.currency || 'BRL',
+          language: form.language || 'pt-BR',
+          razaoSocial: form.razaoSocial || null,
+          cnpjCpf: form.cnpjCpf || null,
+          hours: form.hours || 'Segunda a Sexta, das 9h às 18h'
+        }
       });
       orgError = error;
       if (!error) break;
@@ -184,13 +260,128 @@ export default function Onboarding() {
       supabase.rpc('ensure_default_kanban_boards', { _org_id: orgId }),
     ]);
 
+    setActivationEvents((prev) => [...prev, 'Configurando portal público e templates']);
+    
+    // 1. Criar Public Site
+    const siteId = crypto.randomUUID();
+    await supabase.from('public_sites').insert({
+      id: siteId,
+      org_id: orgId,
+      slug: slug,
+      status: 'published',
+      is_primary: true
+    });
+
+    // 2. Criar Builder Project (Website)
+    const projectId = crypto.randomUUID();
+    await supabase.from('builder_projects').insert({
+      id: projectId,
+      org_id: orgId,
+      site_id: siteId,
+      project_type: 'website',
+      title: 'Website Oficial'
+    });
+
+    // 3. Criar Builder Version inicial (Snapshot)
+    const versionId = crypto.randomUUID();
+    const initialBlocks = [
+      { 
+        id: 'hero', 
+        kind: 'hero', 
+        title: `Seja bem-vindo à ${agencyName}`, 
+        subtitle: form.slogan || 'Criando experiências de viagem sob medida para você.' 
+      },
+      { 
+        id: 'features', 
+        kind: 'features', 
+        items: [
+          'Atendimento personalizado', 
+          'Roteiros exclusivos de ' + form.focus, 
+          form.hours || 'Suporte especializado'
+        ] 
+      },
+      { 
+        id: 'contact', 
+        kind: 'contact', 
+        email: form.email || 'contato@agencia.com', 
+        phone: form.whatsapp || form.phone || '(11) 99999-9999' 
+      }
+    ];
+
+    await supabase.from('builder_versions').insert({
+      id: versionId,
+      project_id: projectId,
+      version_number: 1,
+      frame_schema: { viewport: 'desktop' },
+      content_schema: initialBlocks,
+      design_tokens: { primary_color: form.primaryColor, secondary_color: form.secondaryColor },
+      render_snapshot: initialBlocks,
+      status: 'published',
+      created_by: user.id
+    });
+
+    // 4. Atualizar o current_version_id no builder_projects
+    await supabase.from('builder_projects')
+      .update({ current_version_id: versionId })
+      .eq('id', projectId);
+
     const [{ data: org }, { data: rolesData }] = await Promise.all([
       supabase.from('organizations').select('*').eq('id', orgId).maybeSingle(),
       supabase.from('user_roles').select('role').eq('user_id', user.id),
     ]);
 
-    setOrganization(org ?? null);
-    setProfile(profile);
+    // Rede de segurança contra lag de replicação / read-after-write de banco de dados
+    const updatedProfile = profile ? { ...profile, org_id: orgId } : {
+      user_id: user.id,
+      org_id: orgId,
+      first_name: user.user_metadata?.first_name || user.email?.split('@')[0] || 'Usuário',
+      last_name: user.user_metadata?.last_name || '',
+      email: user.email || null,
+      is_active: true,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    } as any;
+
+    const finalOrg = org || {
+      id: orgId,
+      name: agencyName,
+      slug: slug,
+      logo_url: finalLogoUrl,
+      whatsapp: form.whatsapp || null,
+      email: form.email || null,
+      phone: form.phone || null,
+      primary_color: form.primaryColor || '#00D37B',
+      secondary_color: form.secondaryColor || '#18181B',
+      font_style: form.fontStyle,
+      instagram_url: form.instagram_url || null,
+      website_url: form.website_url || null,
+      google_business_url: form.google_business_url || null,
+      brand_kit: { 
+        focus: form.focus,
+        slogan: form.slogan || null,
+        bioCurta: form.bioCurta || null
+      },
+      address: {
+        cep: form.cep || null,
+        street: form.address || null,
+        city: form.city || null,
+        uf: form.uf || null,
+        country: form.country || 'Brasil'
+      },
+      settings: {
+        timezone: form.timezone || 'America/Sao_Paulo',
+        currency: form.currency || 'BRL',
+        language: form.language || 'pt-BR',
+        razaoSocial: form.razaoSocial || null,
+        cnpjCpf: form.cnpjCpf || null,
+        hours: form.hours || 'Segunda a Sexta, das 9h às 18h'
+      },
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    } as any;
+
+    setOrganization(finalOrg);
+    setProfile(updatedProfile);
     setRoles((rolesData ?? []).map((item) => item.role));
     if (form.instagram_url || form.website_url) {
       setActivationEvents((prev) => [...prev, 'Iniciando enriquecimento de marca por IA']);
@@ -287,7 +478,7 @@ export default function Onboarding() {
             <div className="space-y-6 animate-in slide-in-from-right-4 fade-in duration-300">
               <div>
                 <h2 className="text-2xl font-black mb-1">Como devemos chamar?</h2>
-                <p className="text-zinc-400 text-sm">Estes dados serão usados em orçamentos e vouchers.</p>
+                <p className="text-zinc-400 text-sm">Estes dados serão usados em orçamentos, portal e notas fiscais.</p>
               </div>
 
               <div className="space-y-4">
@@ -302,13 +493,35 @@ export default function Onboarding() {
                       placeholder="Ex: Viagens Premium"
                       className={`${inputCls} pl-10`}
                       autoFocus
-                      onKeyDown={(e) => e.key === 'Enter' && form.name && setStep(2)}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-2">
+                    <Label htmlFor="razaoSocial" className="text-zinc-300 text-sm">Razão Social</Label>
+                    <Input
+                      id="razaoSocial"
+                      value={form.razaoSocial}
+                      onChange={(e) => update('razaoSocial', e.target.value)}
+                      placeholder="Ex: Viagens Premium LTDA"
+                      className={inputCls}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="cnpjCpf" className="text-zinc-300 text-sm">CNPJ / CPF</Label>
+                    <Input
+                      id="cnpjCpf"
+                      value={form.cnpjCpf}
+                      onChange={(e) => update('cnpjCpf', e.target.value)}
+                      placeholder="Ex: 00.000.000/0001-00"
+                      className={inputCls}
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-zinc-300 text-sm">E-mail Profissional</Label>
+                  <Label className="text-zinc-300 text-sm">E-mail Profissional *</Label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
                     <Input
@@ -344,27 +557,169 @@ export default function Onboarding() {
                     />
                   </div>
                 </div>
+
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="space-y-2">
+                    <Label className="text-zinc-300 text-sm">Moeda</Label>
+                    <select
+                      value={form.currency}
+                      onChange={(e) => update('currency', e.target.value)}
+                      className="w-full bg-zinc-900 border border-zinc-700 h-12 text-white px-3 focus:border-vj-green focus:ring-vj-green rounded-xl text-sm"
+                    >
+                      <option value="BRL">BRL (R$)</option>
+                      <option value="USD">USD ($)</option>
+                      <option value="EUR">EUR (€)</option>
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-zinc-300 text-sm">Idioma</Label>
+                    <select
+                      value={form.language}
+                      onChange={(e) => update('language', e.target.value)}
+                      className="w-full bg-zinc-900 border border-zinc-700 h-12 text-white px-3 focus:border-vj-green focus:ring-vj-green rounded-xl text-sm"
+                    >
+                      <option value="pt-BR">Português</option>
+                      <option value="en-US">Inglês</option>
+                      <option value="es-ES">Espanhol</option>
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-zinc-300 text-sm">Timezone</Label>
+                    <select
+                      value={form.timezone}
+                      onChange={(e) => update('timezone', e.target.value)}
+                      className="w-full bg-zinc-900 border border-zinc-700 h-12 text-white px-3 focus:border-vj-green focus:ring-vj-green rounded-xl text-xs"
+                    >
+                      <option value="America/Sao_Paulo">São Paulo (GMT-3)</option>
+                      <option value="America/Manaus">Manaus (GMT-4)</option>
+                      <option value="America/Fortaleza">Fortaleza (GMT-3)</option>
+                      <option value="America/Noronha">Noronha (GMT-2)</option>
+                    </select>
+                  </div>
+                </div>
               </div>
 
               <Button
                 className="w-full h-12 premium-button font-bold text-sm gap-2"
-                onClick={() =>
-                  form.name
-                    ? setStep(2)
-                    : toast({ title: 'Nome obrigatório', variant: 'destructive' })
-                }
+                onClick={() => {
+                  if (!form.name.trim()) {
+                    toast({ title: 'Nome obrigatório', description: 'Por favor, informe o nome da agência.', variant: 'destructive' });
+                    return;
+                  }
+                  if (!form.email.trim()) {
+                    toast({ title: 'E-mail obrigatório', description: 'Por favor, informe o e-mail da agência.', variant: 'destructive' });
+                    return;
+                  }
+                  setStep(2);
+                }}
               >
                 Continuar <ArrowRight size={16} />
               </Button>
             </div>
           )}
 
-          {/* Step 2 — Visual identity */}
+          {/* Step 2 — Location & Operation */}
           {step === 2 && (
             <div className="space-y-6 animate-in slide-in-from-right-4 fade-in duration-300">
               <div>
-                <h2 className="text-2xl font-black mb-1">Identidade Visual</h2>
-                <p className="text-zinc-400 text-sm">A cara da sua agência no Portal do Viajante e Orçamentos.</p>
+                <h2 className="text-2xl font-black mb-1">Onde sua agência opera?</h2>
+                <p className="text-zinc-400 text-sm">Insira os dados de localização física ou matriz fiscal e os horários.</p>
+              </div>
+
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="cep" className="text-zinc-300 text-sm">CEP</Label>
+                  <Input
+                    id="cep"
+                    value={form.cep}
+                    onChange={handleCepChange}
+                    placeholder="Ex: 01001-000"
+                    maxLength={9}
+                    className={inputCls}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="address" className="text-zinc-300 text-sm">Endereço Completo (Rua, Número, Bairro)</Label>
+                  <Input
+                    id="address"
+                    value={form.address}
+                    onChange={(e) => update('address', e.target.value)}
+                    placeholder="Ex: Av. Paulista, 1000 - Apto 50"
+                    className={inputCls}
+                  />
+                </div>
+
+                <div className="grid grid-cols-4 gap-3">
+                  <div className="col-span-2 space-y-2">
+                    <Label htmlFor="city" className="text-zinc-300 text-sm">Cidade</Label>
+                    <Input
+                      id="city"
+                      value={form.city}
+                      onChange={(e) => update('city', e.target.value)}
+                      placeholder="Ex: São Paulo"
+                      className={inputCls}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="uf" className="text-zinc-300 text-sm">Estado / UF</Label>
+                    <Input
+                      id="uf"
+                      value={form.uf}
+                      onChange={(e) => update('uf', e.target.value)}
+                      placeholder="Ex: SP"
+                      maxLength={2}
+                      className={inputCls}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="country" className="text-zinc-300 text-sm">País</Label>
+                    <Input
+                      id="country"
+                      value={form.country}
+                      onChange={(e) => update('country', e.target.value)}
+                      placeholder="Brasil"
+                      className={inputCls}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="hours" className="text-zinc-300 text-sm">Horário de Funcionamento</Label>
+                  <Input
+                    id="hours"
+                    value={form.hours}
+                    onChange={(e) => update('hours', e.target.value)}
+                    placeholder="Ex: Segunda a Sexta, das 9h às 18h"
+                    className={inputCls}
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <Button
+                  variant="outline"
+                  className="w-1/3 h-12 bg-transparent border-zinc-700 text-zinc-300 hover:bg-zinc-800 hover:text-white rounded-xl"
+                  onClick={() => setStep(1)}
+                >
+                  Voltar
+                </Button>
+                <Button
+                  className="flex-1 h-12 premium-button font-bold text-sm gap-2"
+                  onClick={() => setStep(3)}
+                >
+                  Continuar <ArrowRight size={16} />
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Step 3 — Marca & Presença */}
+          {step === 3 && (
+            <div className="space-y-6 animate-in slide-in-from-right-4 fade-in duration-300 max-w-xl">
+              <div>
+                <h2 className="text-2xl font-black mb-1">Identidade & Presença</h2>
+                <p className="text-zinc-400 text-sm">Defina o DNA visual da sua agência e seus canais digitais.</p>
               </div>
 
               <div className="space-y-6">
@@ -404,6 +759,7 @@ export default function Onboarding() {
                   </div>
                 </div>
 
+                {/* Cores e Slogan */}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label className="text-zinc-300 text-sm">Cor Principal</Label>
@@ -445,100 +801,99 @@ export default function Onboarding() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-zinc-300 text-sm">Foco Principal</Label>
-                  <div className="grid grid-cols-2 gap-2">
+                  <Label htmlFor="slogan" className="text-zinc-300 text-sm">Slogan da Agência</Label>
+                  <Input
+                    id="slogan"
+                    value={form.slogan}
+                    onChange={(e) => update('slogan', e.target.value)}
+                    placeholder="Ex: Viagens extraordinárias sob medida"
+                    className={inputCls}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="bioCurta" className="text-zinc-300 text-sm">Bio Curta (Quem somos / Proposta de valor)</Label>
+                  <Input
+                    id="bioCurta"
+                    value={form.bioCurta}
+                    onChange={(e) => update('bioCurta', e.target.value)}
+                    placeholder="Ex: Especialistas em roteiros de luxo na Europa e exóticos no Sudeste Asiático."
+                    className={inputCls}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-zinc-300 text-sm">Nicho de Atuação (Foco)</Label>
+                  <div className="grid grid-cols-4 gap-2">
                     {FOCUS_OPTIONS.map((f) => (
                       <button
                         key={f.value}
                         type="button"
                         onClick={() => update('focus', f.value)}
-                        className={`p-3 rounded-xl border text-sm font-semibold flex items-center gap-2 transition-all ${
+                        className={`p-3 rounded-xl border text-xs font-semibold flex flex-col items-center gap-1.5 transition-all ${
                           form.focus === f.value
                             ? 'bg-vj-green/15 border-vj-green text-white'
                             : 'bg-zinc-900 border-zinc-700 text-zinc-400 hover:border-zinc-500'
                         }`}
                       >
-                        <span>{f.icon}</span>
+                        <span className="text-lg">{f.icon}</span>
                         {f.value}
                       </button>
                     ))}
                   </div>
                 </div>
-              </div>
 
-              <div className="flex gap-3">
-                <Button
-                  variant="outline"
-                  className="w-1/3 h-12 bg-transparent border-zinc-700 text-zinc-300 hover:bg-zinc-800 hover:text-white rounded-xl"
-                  onClick={() => setStep(1)}
-                >
-                  Voltar
-                </Button>
-                <Button
-                  className="flex-1 h-12 premium-button font-bold text-sm gap-2"
-                  onClick={() => setStep(3)}
-                >
-                  Continuar <ArrowRight size={16} />
-                </Button>
-              </div>
-            </div>
-          )}
+                {/* Canais Digitais */}
+                <div className="space-y-3">
+                  <Label className="text-zinc-300 text-sm">Canais & Redes Sociais</Label>
+                  
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-2">
+                      <Label className="text-xs text-zinc-400">Instagram</Label>
+                      <div className="relative">
+                        <Camera className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-pink-500" />
+                        <Input
+                          value={form.instagram_url}
+                          onChange={(e) => update('instagram_url', e.target.value)}
+                          placeholder="instagram.com/sua_agencia"
+                          className={`${inputCls} pl-10 h-10 text-xs`}
+                        />
+                      </div>
+                    </div>
 
-          {/* Step 3 — Digital Presence */}
-          {step === 3 && (
-            <div className="space-y-6 animate-in slide-in-from-right-4 fade-in duration-300">
-              <div>
-                <h2 className="text-2xl font-black mb-1">Presença Digital</h2>
-                <p className="text-zinc-400 text-sm">
-                  Deixe nossa IA visitar seus perfis para extrair automaticamente o DNA da sua marca e treinar seus agentes de vendas.
-                </p>
-              </div>
-
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label className="text-zinc-300 text-sm">Instagram da Agência</Label>
-                  <div className="relative">
-                    <Camera className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-pink-500" />
-                    <Input
-                      value={form.instagram_url}
-                      onChange={(e) => update('instagram_url', e.target.value)}
-                      placeholder="instagram.com/sua_agencia"
-                      className={`${inputCls} pl-10`}
-                    />
+                    <div className="space-y-2">
+                      <Label className="text-xs text-zinc-400">Site Principal (Se houver)</Label>
+                      <div className="relative">
+                        <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-blue-400" />
+                        <Input
+                          value={form.website_url}
+                          onChange={(e) => update('website_url', e.target.value)}
+                          placeholder="suaagencia.com.br"
+                          className={`${inputCls} pl-10 h-10 text-xs`}
+                        />
+                      </div>
+                    </div>
                   </div>
-                </div>
 
-                <div className="space-y-2">
-                  <Label className="text-zinc-300 text-sm">Site Principal</Label>
-                  <div className="relative">
-                    <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-blue-400" />
-                    <Input
-                      value={form.website_url}
-                      onChange={(e) => update('website_url', e.target.value)}
-                      placeholder="suaagencia.com.br"
-                      className={`${inputCls} pl-10`}
-                    />
-                  </div>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label className="text-zinc-300 text-sm">Google Meu Negócio</Label>
-                  <div className="relative">
-                    <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-green-500" />
-                    <Input
-                      value={form.google_business_url}
-                      onChange={(e) => update('google_business_url', e.target.value)}
-                      placeholder="Link do Google Maps"
-                      className={`${inputCls} pl-10`}
-                    />
+                  <div className="space-y-2">
+                    <Label className="text-xs text-zinc-400">Google Meu Negócio (Maps)</Label>
+                    <div className="relative">
+                      <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-green-500" />
+                      <Input
+                        value={form.google_business_url}
+                        onChange={(e) => update('google_business_url', e.target.value)}
+                        placeholder="Link de localização no Google Maps"
+                        className={`${inputCls} pl-10 h-10 text-xs`}
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
               
-              <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 text-sm text-zinc-400 flex gap-3">
+              <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 text-xs text-zinc-400 flex gap-3">
                 <Cloud className="w-5 h-5 text-vj-green shrink-0 mt-0.5" />
                 <p>
-                  No próximo passo, nosso <strong>Esquadrão de IA</strong> vai visitar essas URLs e escanear suas imagens, grid e tom de voz para configurar sua identidade automaticamente.
+                  Ao finalizar, a <strong>Central de IA</strong> visitará esses links para sintetizar o tom de voz e os dados da sua marca em tempo real.
                 </p>
               </div>
 
@@ -563,11 +918,11 @@ export default function Onboarding() {
 
           {/* Step 4 — AI Activation */}
           {step === 4 && (
-            <div className="space-y-6 animate-in slide-in-from-right-4 fade-in duration-300">
+            <div className="space-y-6 animate-in slide-in-from-right-4 fade-in duration-300 w-full max-w-2xl">
               <div className="text-center">
                 <h2 className="text-2xl font-black mb-2">Central de IA Trabalhando</h2>
-                <p className="text-zinc-400 text-sm max-w-xs mx-auto">
-                  Monitoramento em tempo real do processamento da{' '}
+                <p className="text-zinc-400 text-sm max-w-md mx-auto">
+                  Configurando e ativando o ecossistema digital da{' '}
                   <span className="text-white font-semibold">{form.name}</span>.
                 </p>
               </div>
@@ -579,12 +934,52 @@ export default function Onboarding() {
                 onComplete={() => setSquadCompleted(true)}
               />
 
-              <Button
-                className="w-full h-12 premium-button font-bold text-base gap-2"
-                onClick={() => window.location.replace('/')}
-              >
-                Acessar Painel <ArrowRight size={16} />
-              </Button>
+              {squadCompleted ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in fade-in zoom-in duration-500 mt-6">
+                  {/* Option 1: Essential Speed */}
+                  <div className="p-6 rounded-2xl bg-zinc-900 border border-zinc-800 hover:border-vj-green/40 transition-colors flex flex-col justify-between space-y-4">
+                    <div className="space-y-2">
+                      <div className="w-10 h-10 rounded-xl bg-vj-green/10 flex items-center justify-center text-vj-green">
+                        <Laptop className="w-5 h-5" />
+                      </div>
+                      <h3 className="font-bold text-base text-white">Ativação Essencial</h3>
+                      <p className="text-xs text-zinc-400 leading-relaxed">
+                        Sua agência está oficialmente online com página básica de vendas, Portal do Cliente ativo e claims de segurança do administrador master prontas para uso.
+                      </p>
+                    </div>
+                    <Button
+                      className="w-full h-11 premium-button font-bold text-xs gap-2"
+                      onClick={() => navigate('/')}
+                    >
+                      Acessar Painel <ArrowRight size={14} />
+                    </Button>
+                  </div>
+
+                  {/* Option 2: Expanded Speed */}
+                  <div className="p-6 rounded-2xl bg-zinc-900 border border-zinc-800 hover:border-vj-green/40 transition-colors flex flex-col justify-between space-y-4">
+                    <div className="space-y-2">
+                      <div className="w-10 h-10 rounded-xl bg-vj-green/10 flex items-center justify-center text-vj-green">
+                        <Layout className="w-5 h-5" />
+                      </div>
+                      <h3 className="font-bold text-base text-white">Ativação Expandida</h3>
+                      <p className="text-xs text-zinc-400 leading-relaxed">
+                        Desbloqueie o construtor visual de páginas responsivas (Site Builder), o CMS do Blog de captação, Link-Bio do Instagram e base de conhecimento da IA.
+                      </p>
+                    </div>
+                    <Button
+                      variant="outline"
+                      className="w-full h-11 border-zinc-700 bg-transparent text-white hover:bg-zinc-800 hover:text-white font-bold text-xs gap-2 rounded-xl"
+                      onClick={() => setShowAdvancedBuilder(true)}
+                    >
+                      Abrir Construtor Visual <ArrowRight size={14} />
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center text-xs text-zinc-500 animate-pulse">
+                  Aguardando a conclusão da estruturação da agência...
+                </div>
+              )}
             </div>
           )}
         </div>

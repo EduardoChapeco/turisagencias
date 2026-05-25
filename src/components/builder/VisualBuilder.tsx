@@ -1,0 +1,598 @@
+import { useState, useEffect } from 'react';
+import { Monitor, Tablet, Smartphone, Eye, Save, Settings, Layers, ArrowLeft, Loader2, Plus, Trash2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuthStore } from '@/stores/authStore';
+import { useToast } from '@/hooks/use-toast';
+import { logger } from '@/utils/logger';
+
+export type ViewportMode = 'desktop' | 'tablet' | 'mobile';
+
+interface VisualBuilderProps {
+  onBack?: () => void;
+  projectName?: string;
+}
+
+interface BuilderBlock {
+  id: string;
+  kind: 'hero' | 'features' | 'contact' | 'text';
+  title?: string;
+  subtitle?: string;
+  items?: string[];
+  email?: string;
+  phone?: string;
+  content?: string;
+}
+
+export default function VisualBuilder({ onBack, projectName = 'Website Principal' }: VisualBuilderProps) {
+  const { organization, user } = useAuthStore();
+  const { toast } = useToast();
+  const [viewport, setViewport] = useState<ViewportMode>('desktop');
+  const [isPreview, setIsPreview] = useState(false);
+  const [activeTab, setActiveTab] = useState<'blocks' | 'settings' | 'edit'>('blocks');
+
+  // Supabase state
+  const [projectId, setProjectId] = useState<string | null>(null);
+  const [versionNumber, setVersionNumber] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  // SEO/Frame values
+  const [slug, setSlug] = useState('home');
+  const [metaTitle, setMetaTitle] = useState('Minha Agência - Home');
+  const [metaDescription, setMetaDescription] = useState('Roteiros personalizados e exclusivos.');
+
+  // Blocks source of truth
+  const [blocks, setBlocks] = useState<BuilderBlock[]>([
+    { id: 'hero', kind: 'hero', title: 'A melhor agência de viagens sob medida', subtitle: 'Roteiros exclusivos desenhados por especialistas.' },
+    { id: 'features', kind: 'features', items: ['Atendimento VIP 24h', 'Upgrade de categoria', 'Emissão rápida'] },
+    { id: 'contact', kind: 'contact', email: 'contato@agencia.com', phone: '(11) 99999-9999' }
+  ]);
+
+  // Editing state
+  const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
+
+  // Fetch initial project and version from Supabase
+  useEffect(() => {
+    const loadProject = async () => {
+      if (!organization?.id) return;
+      try {
+        setLoading(true);
+        // 1. Fetch website project
+        const { data: projectData, error: projectError } = await supabase
+          .from('builder_projects')
+          .select('*')
+          .eq('org_id', organization.id)
+          .eq('project_type', 'website')
+          .maybeSingle();
+
+        if (projectError) throw projectError;
+
+        if (projectData) {
+          setProjectId(projectData.id);
+          
+          // 2. Fetch latest published or draft version
+          const { data: versionData, error: versionError } = await supabase
+            .from('builder_versions')
+            .select('*')
+            .eq('project_id', projectData.id)
+            .order('version_number', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+          if (versionError) throw versionError;
+
+          if (versionData) {
+            setVersionNumber(versionData.version_number);
+            if (Array.isArray(versionData.content_schema)) {
+              setBlocks(versionData.content_schema as any);
+            }
+            if (versionData.frame_schema && typeof versionData.frame_schema === 'object') {
+              const frame = versionData.frame_schema as any;
+              if (frame.slug) setSlug(frame.slug);
+              if (frame.metaTitle) setMetaTitle(frame.metaTitle);
+              if (frame.metaDescription) setMetaDescription(frame.metaDescription);
+            }
+          }
+        } else {
+          // If no project exists yet (e.g. legacy org), set defaults from branding
+          if (organization.name) {
+            setMetaTitle(`${organization.name} - Home`);
+            setBlocks([
+              { 
+                id: 'hero', 
+                kind: 'hero', 
+                title: `Bem-vindo à ${organization.name}`, 
+                subtitle: (organization.brand_kit as any)?.slogan || 'Roteiros de viagem personalizados.' 
+              },
+              { 
+                id: 'features', 
+                kind: 'features', 
+                items: ['Suporte Especializado', 'Atendimento Boutique', 'Consultoria de Viagem'] 
+              },
+              { 
+                id: 'contact', 
+                kind: 'contact', 
+                email: organization.email || 'contato@agencia.com', 
+                phone: organization.whatsapp || organization.phone || '(11) 99999-9999' 
+              }
+            ]);
+          }
+        }
+      } catch (err: any) {
+        logger.error('Error loading site builder project:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProject();
+  }, [organization?.id]);
+
+  // Publish / Save Mutation
+  const handlePublish = async () => {
+    if (!organization?.id || !user?.id) return;
+    try {
+      setSaving(true);
+      let currentProjId = projectId;
+
+      // 1. Ensure project exists
+      if (!currentProjId) {
+        const newProjId = crypto.randomUUID();
+        const { error: projErr } = await supabase.from('builder_projects').insert({
+          id: newProjId,
+          org_id: organization.id,
+          site_id: null,
+          project_type: 'website',
+          title: projectName
+        });
+        if (projErr) throw projErr;
+        currentProjId = newProjId;
+        setProjectId(newProjId);
+      }
+
+      // 2. Insert new version snapshot
+      const nextVer = versionNumber + 1;
+      const versionId = crypto.randomUUID();
+      const { error: verErr } = await supabase.from('builder_versions').insert({
+        id: versionId,
+        project_id: currentProjId,
+        version_number: nextVer,
+        frame_schema: { slug, metaTitle, metaDescription },
+        content_schema: blocks as any,
+        design_tokens: { primary_color: organization.primary_color || '#00D37B', secondary_color: organization.secondary_color || '#18181B' },
+        render_snapshot: blocks as any,
+        status: 'published',
+        created_by: user.id
+      });
+
+      if (verErr) throw verErr;
+
+      // 3. Update current_version_id in project
+      const { error: updateErr } = await supabase
+        .from('builder_projects')
+        .update({ current_version_id: versionId })
+        .eq('id', currentProjId);
+
+      if (updateErr) throw updateErr;
+
+      setVersionNumber(nextVer);
+      toast({
+        title: 'Site Publicado com Sucesso!',
+        description: `Seu site institucional está no ar no link: /site/${organization.slug}`,
+      });
+    } catch (err: any) {
+      logger.error('Error publishing site version:', err);
+      toast({
+        title: 'Erro ao publicar',
+        description: err.message,
+        variant: 'destructive'
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleUpdateBlock = (updatedBlock: BuilderBlock) => {
+    setBlocks(prev => prev.map(b => b.id === updatedBlock.id ? updatedBlock : b));
+  };
+
+  const handleAddBlock = (kind: 'hero' | 'features' | 'contact' | 'text') => {
+    const id = `${kind}-${Date.now()}`;
+    let newBlock: BuilderBlock = { id, kind };
+    if (kind === 'hero') {
+      newBlock = { id, kind, title: 'Nova Seção Hero', subtitle: 'Clique aqui para editar este texto.' };
+    } else if (kind === 'features') {
+      newBlock = { id, kind, items: ['Recurso 1', 'Recurso 2', 'Recurso 3'] };
+    } else if (kind === 'contact') {
+      newBlock = { id, kind, email: 'contato@agencia.com', phone: '(11) 99999-9999' };
+    } else if (kind === 'text') {
+      newBlock = { id, kind, content: 'Texto institucional customizado da agência.' };
+    }
+
+    setBlocks(prev => [...prev, newBlock]);
+    setSelectedBlockId(id);
+    setActiveTab('edit');
+  };
+
+  const handleDeleteBlock = (id: string) => {
+    setBlocks(prev => prev.filter(b => b.id !== id));
+    if (selectedBlockId === id) setSelectedBlockId(null);
+  };
+
+  const selectedBlock = blocks.find(b => b.id === selectedBlockId);
+
+  return (
+    <div className="flex flex-col h-screen bg-zinc-950 text-white overflow-hidden font-sans">
+      {/* Top control bar */}
+      <header className="h-16 border-b border-zinc-800 bg-zinc-900/80 backdrop-blur-md px-6 flex items-center justify-between z-30 shrink-0">
+        <div className="flex items-center gap-4">
+          {onBack && (
+            <Button variant="ghost" size="icon" onClick={onBack} className="text-zinc-400 hover:text-white rounded-xl">
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
+          )}
+          <div>
+            <h1 className="text-sm font-bold tracking-tight text-white">{projectName}</h1>
+            <p className="text-[10px] text-zinc-500">Versão v1.0.{versionNumber} (Snapshot JSON)</p>
+          </div>
+        </div>
+
+        {/* Viewport controls */}
+        <div className="flex items-center bg-zinc-950 border border-zinc-800 p-1 rounded-xl">
+          <button
+            onClick={() => setViewport('desktop')}
+            className={cn(
+              "p-2 rounded-lg transition-all",
+              viewport === 'desktop' ? "bg-vj-green text-zinc-950" : "text-zinc-400 hover:text-white"
+            )}
+            title="Desktop Viewport"
+          >
+            <Monitor className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => setViewport('tablet')}
+            className={cn(
+              "p-2 rounded-lg transition-all",
+              viewport === 'tablet' ? "bg-vj-green text-zinc-950" : "text-zinc-400 hover:text-white"
+            )}
+            title="Tablet Viewport"
+          >
+            <Tablet className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => setViewport('mobile')}
+            className={cn(
+              "p-2 rounded-lg transition-all",
+              viewport === 'mobile' ? "bg-vj-green text-zinc-950" : "text-zinc-400 hover:text-white"
+            )}
+            title="Mobile Viewport"
+          >
+            <Smartphone className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Actions */}
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsPreview(!isPreview)}
+            className="border-zinc-800 bg-transparent text-zinc-300 hover:bg-zinc-800 hover:text-white rounded-xl gap-2 h-9 text-xs"
+          >
+            <Eye className="w-4 h-4" />
+            {isPreview ? 'Editar' : 'Visualizar'}
+          </Button>
+          <Button
+            size="sm"
+            onClick={handlePublish}
+            disabled={saving || loading}
+            className="bg-vj-green text-zinc-950 hover:bg-green-600 font-bold rounded-xl gap-2 h-9 text-xs"
+          >
+            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+            Publicar
+          </Button>
+        </div>
+      </header>
+
+      {/* Main Builder layout */}
+      <div className="flex-1 flex overflow-hidden relative">
+        
+        {/* Left Sidepanel - Property Manager */}
+        {!isPreview && (
+          <aside className="w-[300px] border-r border-zinc-800 bg-zinc-900/50 backdrop-blur-md flex flex-col shrink-0">
+            <div className="flex border-b border-zinc-800">
+              <button
+                onClick={() => setActiveTab('blocks')}
+                className={cn(
+                  "flex-1 py-3 text-xs font-semibold border-b-2 transition-all flex items-center justify-center gap-2",
+                  activeTab === 'blocks' ? "border-vj-green text-white" : "border-transparent text-zinc-500 hover:text-zinc-300"
+                )}
+              >
+                <Layers className="w-3.5 h-3.5" />
+                Blocos
+              </button>
+              <button
+                onClick={() => setActiveTab('edit')}
+                className={cn(
+                  "flex-1 py-3 text-xs font-semibold border-b-2 transition-all flex items-center justify-center gap-2",
+                  activeTab === 'edit' ? "border-vj-green text-white" : "border-transparent text-zinc-500 hover:text-zinc-300"
+                )}
+              >
+                <Layers className="w-3.5 h-3.5" />
+                Editar Bloco
+              </button>
+              <button
+                onClick={() => setActiveTab('settings')}
+                className={cn(
+                  "flex-1 py-3 text-xs font-semibold border-b-2 transition-all flex items-center justify-center gap-2",
+                  activeTab === 'settings' ? "border-vj-green text-white" : "border-transparent text-zinc-500 hover:text-zinc-300"
+                )}
+              >
+                <Settings className="w-3.5 h-3.5" />
+                Configurar
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-5 space-y-6">
+              {activeTab === 'blocks' && (
+                <div className="space-y-4">
+                  <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Adicionar Seções</h3>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      { label: 'Hero Banner', kind: 'hero' },
+                      { label: 'Recursos', kind: 'features' },
+                      { label: 'Contato', kind: 'contact' },
+                      { label: 'Texto Simples', kind: 'text' }
+                    ].map((btn) => (
+                      <button
+                        key={btn.label}
+                        onClick={() => handleAddBlock(btn.kind as any)}
+                        className="p-3 bg-zinc-950 border border-zinc-800 hover:border-vj-green rounded-xl text-[10px] font-semibold text-zinc-300 text-left transition-colors flex items-center gap-2"
+                      >
+                        <Plus className="w-3 h-3 text-vj-green" />
+                        {btn.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="space-y-2 pt-4 border-t border-zinc-800">
+                    <h4 className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Seções Ativas</h4>
+                    <div className="space-y-2">
+                      {blocks.map(b => (
+                        <div key={b.id} className="flex items-center justify-between bg-zinc-950 border border-zinc-800 rounded-xl p-2 text-xs">
+                          <span onClick={() => { setSelectedBlockId(b.id); setActiveTab('edit'); }} className="cursor-pointer hover:text-vj-green transition-colors font-medium capitalize">
+                            {b.kind} ({b.id.slice(0, 4)})
+                          </span>
+                          <button onClick={() => handleDeleteBlock(b.id)} className="text-zinc-500 hover:text-red-500 transition-colors">
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'edit' && (
+                <div className="space-y-4">
+                  <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Editor do Bloco</h3>
+                  {selectedBlock ? (
+                    <div className="space-y-4">
+                      {selectedBlock.kind === 'hero' && (
+                        <>
+                          <div>
+                            <label className="text-[10px] text-zinc-500 uppercase font-semibold">Título Principal</label>
+                            <input
+                              type="text"
+                              value={selectedBlock.title || ''}
+                              onChange={(e) => handleUpdateBlock({ ...selectedBlock, title: e.target.value })}
+                              className="w-full mt-1 bg-zinc-950 border border-zinc-800 text-xs rounded-lg p-2 focus:border-vj-green text-white"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-[10px] text-zinc-500 uppercase font-semibold">Subtítulo</label>
+                            <textarea
+                              value={selectedBlock.subtitle || ''}
+                              onChange={(e) => handleUpdateBlock({ ...selectedBlock, subtitle: e.target.value })}
+                              className="w-full mt-1 bg-zinc-950 border border-zinc-800 text-xs rounded-lg p-2 focus:border-vj-green text-white h-20"
+                            />
+                          </div>
+                        </>
+                      )}
+
+                      {selectedBlock.kind === 'features' && (
+                        <div>
+                          <label className="text-[10px] text-zinc-500 uppercase font-semibold">Itens do Recurso</label>
+                          <div className="space-y-2 mt-1">
+                            {selectedBlock.items?.map((item, idx) => (
+                              <input
+                                key={idx}
+                                type="text"
+                                value={item}
+                                onChange={(e) => {
+                                  const nextItems = [...(selectedBlock.items || [])];
+                                  nextItems[idx] = e.target.value;
+                                  handleUpdateBlock({ ...selectedBlock, items: nextItems });
+                                }}
+                                className="w-full bg-zinc-950 border border-zinc-800 text-xs rounded-lg p-2 focus:border-vj-green text-white"
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {selectedBlock.kind === 'contact' && (
+                        <>
+                          <div>
+                            <label className="text-[10px] text-zinc-500 uppercase font-semibold">E-mail</label>
+                            <input
+                              type="text"
+                              value={selectedBlock.email || ''}
+                              onChange={(e) => handleUpdateBlock({ ...selectedBlock, email: e.target.value })}
+                              className="w-full mt-1 bg-zinc-950 border border-zinc-800 text-xs rounded-lg p-2 focus:border-vj-green text-white"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-[10px] text-zinc-500 uppercase font-semibold">Telefone</label>
+                            <input
+                              type="text"
+                              value={selectedBlock.phone || ''}
+                              onChange={(e) => handleUpdateBlock({ ...selectedBlock, phone: e.target.value })}
+                              className="w-full mt-1 bg-zinc-950 border border-zinc-800 text-xs rounded-lg p-2 focus:border-vj-green text-white"
+                            />
+                          </div>
+                        </>
+                      )}
+
+                      {selectedBlock.kind === 'text' && (
+                        <div>
+                          <label className="text-[10px] text-zinc-500 uppercase font-semibold">Conteúdo de Texto</label>
+                          <textarea
+                            value={selectedBlock.content || ''}
+                            onChange={(e) => handleUpdateBlock({ ...selectedBlock, content: e.target.value })}
+                            className="w-full mt-1 bg-zinc-950 border border-zinc-800 text-xs rounded-lg p-2 focus:border-vj-green text-white h-32"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <p className="text-zinc-500 text-xs italic">Selecione um bloco no canvas ou no menu para editá-lo.</p>
+                  )}
+                </div>
+              )}
+
+              {activeTab === 'settings' && (
+                <div className="space-y-4">
+                  <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-wider">SEO Técnico</h3>
+                  <div className="space-y-3">
+                    <div>
+                      <label className="text-[10px] text-zinc-500 uppercase font-semibold">Slug da Página</label>
+                      <input 
+                        type="text" 
+                        value={slug}
+                        onChange={(e) => setSlug(e.target.value)}
+                        className="w-full mt-1 bg-zinc-950 border border-zinc-800 text-xs rounded-lg p-2 focus:border-vj-green text-white" 
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] text-zinc-500 uppercase font-semibold">Meta Title</label>
+                      <input 
+                        type="text" 
+                        value={metaTitle}
+                        onChange={(e) => setMetaTitle(e.target.value)}
+                        className="w-full mt-1 bg-zinc-950 border border-zinc-800 text-xs rounded-lg p-2 focus:border-vj-green text-white" 
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] text-zinc-500 uppercase font-semibold">Meta Description</label>
+                      <textarea 
+                        value={metaDescription}
+                        onChange={(e) => setMetaDescription(e.target.value)}
+                        className="w-full mt-1 bg-zinc-950 border border-zinc-800 text-xs rounded-lg p-2 h-20 focus:border-vj-green text-white" 
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </aside>
+        )}
+
+        {/* Infinite Canvas */}
+        <main className="flex-1 bg-zinc-950 p-8 flex items-center justify-center overflow-auto relative">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(0,211,123,0.04),rgba(255,255,255,0))]" />
+          
+          {loading ? (
+            <div className="flex flex-col items-center gap-2">
+              <Loader2 className="w-8 h-8 animate-spin text-vj-green" />
+              <p className="text-xs text-zinc-500 font-semibold">Carregando canvas...</p>
+            </div>
+          ) : (
+            /* Framed Viewport */
+            <div
+              className={cn(
+                "bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl transition-all duration-300 overflow-y-auto relative h-[80vh]",
+                viewport === 'desktop' && "w-[1200px]",
+                viewport === 'tablet' && "w-[768px]",
+                viewport === 'mobile' && "w-[375px]"
+              )}
+            >
+              {/* Header placeholder */}
+              <div className="h-14 border-b border-zinc-800 px-6 flex items-center justify-between bg-zinc-900/60 sticky top-0 backdrop-blur-sm z-10">
+                <span className="font-bold text-xs tracking-wider uppercase text-vj-green">
+                  {organization?.name || 'Minha Agência'}
+                </span>
+                <div className="flex gap-4 text-[10px] font-semibold text-zinc-400">
+                  <span>Início</span>
+                  <span>Roteiros</span>
+                  <span>Contato</span>
+                </div>
+              </div>
+
+              {/* Dynamic visual preview based on state blocks */}
+              <div className="p-8 space-y-12">
+                {blocks.map((block) => (
+                  <div 
+                    key={block.id} 
+                    onClick={() => { setSelectedBlockId(block.id); setActiveTab('edit'); }}
+                    className={cn(
+                      "relative group p-4 rounded-xl transition-all border border-transparent",
+                      selectedBlockId === block.id 
+                        ? "border-vj-green bg-zinc-800/30" 
+                        : "border-dashed hover:border-vj-green/40 hover:bg-zinc-800/10 cursor-pointer"
+                    )}
+                  >
+                    {block.kind === 'hero' && (
+                      <div className="text-center py-10 space-y-4">
+                        <h2 className="text-2xl md:text-3xl font-black tracking-tight max-w-xl mx-auto text-white">
+                          {block.title}
+                        </h2>
+                        <p className="text-sm text-zinc-400 max-w-md mx-auto">
+                          {block.subtitle}
+                        </p>
+                        <Button className="bg-vj-green text-zinc-950 hover:bg-green-600 rounded-xl h-10 px-6 font-bold text-xs">
+                          Falar Conosco
+                        </Button>
+                      </div>
+                    )}
+
+                    {block.kind === 'features' && (
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        {block.items?.map((item, i) => (
+                          <div key={i} className="p-4 bg-zinc-950/40 border border-zinc-800 rounded-xl text-center">
+                            <p className="text-xs font-semibold text-zinc-300">{item}</p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {block.kind === 'contact' && (
+                      <div className="p-6 bg-zinc-950 border border-zinc-800 rounded-xl flex flex-col md:flex-row items-center justify-between gap-4">
+                        <div>
+                          <p className="text-xs font-bold text-white">Deseja falar com um especialista?</p>
+                          <p className="text-[10px] text-zinc-500">Estamos de prontidão para desenhar a sua viagem.</p>
+                        </div>
+                        <div className="flex gap-4 text-xs font-mono text-zinc-300">
+                          <span>✉ {block.email}</span>
+                          <span>☏ {block.phone}</span>
+                        </div>
+                      </div>
+                    )}
+
+                    {block.kind === 'text' && (
+                      <div className="py-6 text-zinc-300 text-sm leading-relaxed text-center max-w-2xl mx-auto">
+                        <p>{block.content}</p>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </main>
+      </div>
+    </div>
+  );
+}

@@ -32,6 +32,9 @@ export default function VisualBuilder({ onBack, projectName = 'Website Principal
   const [isPreview, setIsPreview] = useState(false);
   const [activeTab, setActiveTab] = useState<'blocks' | 'settings' | 'edit'>('blocks');
 
+  // Multiproject support: website | linkbio | blog
+  const [projectType, setProjectType] = useState<'website' | 'linkbio' | 'blog'>('website');
+
   // Supabase state
   const [projectId, setProjectId] = useState<string | null>(null);
   const [versionNumber, setVersionNumber] = useState(1);
@@ -44,27 +47,25 @@ export default function VisualBuilder({ onBack, projectName = 'Website Principal
   const [metaDescription, setMetaDescription] = useState('Roteiros personalizados e exclusivos.');
 
   // Blocks source of truth
-  const [blocks, setBlocks] = useState<BuilderBlock[]>([
-    { id: 'hero', kind: 'hero', title: 'A melhor agência de viagens sob medida', subtitle: 'Roteiros exclusivos desenhados por especialistas.' },
-    { id: 'features', kind: 'features', items: ['Atendimento VIP 24h', 'Upgrade de categoria', 'Emissão rápida'] },
-    { id: 'contact', kind: 'contact', email: 'contato@agencia.com', phone: '(11) 99999-9999' }
-  ]);
+  const [blocks, setBlocks] = useState<BuilderBlock[]>([]);
 
   // Editing state
   const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
 
-  // Fetch initial project and version from Supabase
+  // Fetch initial project and version from Supabase whenever active project type changes
   useEffect(() => {
     const loadProject = async () => {
       if (!organization?.id) return;
       try {
         setLoading(true);
-        // 1. Fetch website project
+        setSelectedBlockId(null); // Clear selected block
+        
+        // 1. Fetch project corresponding to selected type
         const { data: projectData, error: projectError } = await supabase
           .from('builder_projects')
           .select('*')
           .eq('org_id', organization.id)
-          .eq('project_type', 'website')
+          .eq('project_type', projectType)
           .maybeSingle();
 
         if (projectError) throw projectError;
@@ -72,7 +73,7 @@ export default function VisualBuilder({ onBack, projectName = 'Website Principal
         if (projectData) {
           setProjectId(projectData.id);
           
-          // 2. Fetch latest published or draft version
+          // 2. Fetch latest version snapshot
           const { data: versionData, error: versionError } = await supabase
             .from('builder_versions')
             .select('*')
@@ -87,35 +88,74 @@ export default function VisualBuilder({ onBack, projectName = 'Website Principal
             setVersionNumber(versionData.version_number);
             if (Array.isArray(versionData.content_schema)) {
               setBlocks(versionData.content_schema as any);
+            } else {
+              setBlocks([]);
             }
             if (versionData.frame_schema && typeof versionData.frame_schema === 'object') {
               const frame = versionData.frame_schema as any;
-              if (frame.slug) setSlug(frame.slug);
-              if (frame.metaTitle) setMetaTitle(frame.metaTitle);
-              if (frame.metaDescription) setMetaDescription(frame.metaDescription);
+              setSlug(frame.slug || (projectType === 'website' ? 'home' : projectType));
+              setMetaTitle(frame.metaTitle || `${organization.name} - ${projectType}`);
+              setMetaDescription(frame.metaDescription || `Página de ${projectType} da agência.`);
             }
           }
         } else {
-          // If no project exists yet (e.g. legacy org), set defaults from branding
-          if (organization.name) {
-            setMetaTitle(`${organization.name} - Home`);
+          // Defaults if no project exists in the DB for this project_type
+          setProjectId(null);
+          setVersionNumber(1);
+          setSlug(projectType === 'website' ? 'home' : projectType);
+          setMetaTitle(`${organization.name} - ${projectType === 'website' ? 'Home' : projectType === 'linkbio' ? 'Link Bio' : 'Blog'}`);
+          setMetaDescription(`Página de ${projectType} da agência ${organization.name}.`);
+
+          if (projectType === 'website') {
+            setViewport('desktop');
             setBlocks([
               { 
                 id: 'hero', 
                 kind: 'hero', 
                 title: `Bem-vindo à ${organization.name}`, 
-                subtitle: (organization.brand_kit as any)?.slogan || 'Roteiros de viagem personalizados.' 
+                subtitle: (organization.brand_kit as any)?.slogan || 'Roteiros de viagem personalizados com suporte boutique.' 
               },
               { 
                 id: 'features', 
                 kind: 'features', 
-                items: ['Suporte Especializado', 'Atendimento Boutique', 'Consultoria de Viagem'] 
+                items: ['Suporte Especializado 24h', 'Upgrade de Categoria Grátis', 'Curadoria de Luxo'] 
               },
               { 
                 id: 'contact', 
                 kind: 'contact', 
                 email: organization.email || 'contato@agencia.com', 
                 phone: organization.whatsapp || organization.phone || '(11) 99999-9999' 
+              }
+            ]);
+          } else if (projectType === 'linkbio') {
+            setViewport('mobile'); // Lock mobile for Link-Bio
+            setBlocks([
+              {
+                id: 'hero',
+                kind: 'hero',
+                title: organization.name,
+                subtitle: (organization.brand_kit as any)?.slogan || 'Conectando você ao seu próximo destino. Acesse nossos canais abaixo!'
+              },
+              {
+                id: 'contact',
+                kind: 'contact',
+                email: organization.email || 'contato@agencia.com',
+                phone: organization.whatsapp || organization.phone || '(11) 99999-9999'
+              }
+            ]);
+          } else if (projectType === 'blog') {
+            setViewport('desktop');
+            setBlocks([
+              {
+                id: 'hero',
+                kind: 'hero',
+                title: `Blog de Viagens · ${organization.name}`,
+                subtitle: 'Explore o mundo com dicas, tendências de turismo e guias exclusivos escritos por especialistas.'
+              },
+              {
+                id: 'text',
+                kind: 'text',
+                content: 'Em breve, publicaremos aqui artigos incríveis sobre ecoturismo, resorts boutique, roteiros exóticos na Ásia e muito mais!'
               }
             ]);
           }
@@ -128,7 +168,7 @@ export default function VisualBuilder({ onBack, projectName = 'Website Principal
     };
 
     loadProject();
-  }, [organization?.id]);
+  }, [organization?.id, projectType]);
 
   // Publish / Save Mutation
   const handlePublish = async () => {
@@ -137,15 +177,15 @@ export default function VisualBuilder({ onBack, projectName = 'Website Principal
       setSaving(true);
       let currentProjId = projectId;
 
-      // 1. Ensure project exists
+      // 1. Ensure project exists in builder_projects
       if (!currentProjId) {
         const newProjId = crypto.randomUUID();
         const { error: projErr } = await supabase.from('builder_projects').insert({
           id: newProjId,
           org_id: organization.id,
           site_id: null,
-          project_type: 'website',
-          title: projectName
+          project_type: projectType,
+          title: projectType === 'website' ? projectName : projectType === 'linkbio' ? 'Link Bio' : 'Blog Oficial'
         });
         if (projErr) throw projErr;
         currentProjId = newProjId;
@@ -178,9 +218,16 @@ export default function VisualBuilder({ onBack, projectName = 'Website Principal
       if (updateErr) throw updateErr;
 
       setVersionNumber(nextVer);
+      
+      const linkPath = projectType === 'website' 
+        ? `/site/${organization.slug}` 
+        : projectType === 'linkbio' 
+        ? `/site/${organization.slug}/bio` 
+        : `/site/${organization.slug}/blog`;
+
       toast({
-        title: 'Site Publicado com Sucesso!',
-        description: `Seu site institucional está no ar no link: /site/${organization.slug}`,
+        title: 'Canal Publicado com Sucesso!',
+        description: `Seu canal de ${projectType} está ativo de verdade no link: ${linkPath}`,
       });
     } catch (err: any) {
       logger.error('Error publishing site version:', err);
@@ -204,11 +251,11 @@ export default function VisualBuilder({ onBack, projectName = 'Website Principal
     if (kind === 'hero') {
       newBlock = { id, kind, title: 'Nova Seção Hero', subtitle: 'Clique aqui para editar este texto.' };
     } else if (kind === 'features') {
-      newBlock = { id, kind, items: ['Recurso 1', 'Recurso 2', 'Recurso 3'] };
+      newBlock = { id, kind, items: ['Recurso Extra 1', 'Recurso Extra 2', 'Recurso Extra 3'] };
     } else if (kind === 'contact') {
-      newBlock = { id, kind, email: 'contato@agencia.com', phone: '(11) 99999-9999' };
+      newBlock = { id, kind, email: organization?.email || 'contato@agencia.com', phone: organization?.whatsapp || '(11) 99999-9999' };
     } else if (kind === 'text') {
-      newBlock = { id, kind, content: 'Texto institucional customizado da agência.' };
+      newBlock = { id, kind, content: 'Insira aqui um parágrafo personalizado sobre a agência ou destinos recomendados.' };
     }
 
     setBlocks(prev => [...prev, newBlock]);
@@ -234,44 +281,61 @@ export default function VisualBuilder({ onBack, projectName = 'Website Principal
             </Button>
           )}
           <div>
-            <h1 className="text-sm font-bold tracking-tight text-white">{projectName}</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-sm font-bold tracking-tight text-white">{projectName}</h1>
+              <select
+                value={projectType}
+                onChange={(e) => setProjectType(e.target.value as any)}
+                className="bg-zinc-800 border border-zinc-700 text-white rounded-lg text-[10px] px-2 py-0.5 font-bold focus:border-vj-green focus:ring-0 cursor-pointer"
+              >
+                <option value="website">💻 Site Principal</option>
+                <option value="linkbio">📱 Link Bio (Mobile)</option>
+                <option value="blog">✍️ Blog / CMS</option>
+              </select>
+            </div>
             <p className="text-[10px] text-zinc-500">Versão v1.0.{versionNumber} (Snapshot JSON)</p>
           </div>
         </div>
 
         {/* Viewport controls */}
-        <div className="flex items-center bg-zinc-950 border border-zinc-800 p-1 rounded-xl">
-          <button
-            onClick={() => setViewport('desktop')}
-            className={cn(
-              "p-2 rounded-lg transition-all",
-              viewport === 'desktop' ? "bg-vj-green text-zinc-950" : "text-zinc-400 hover:text-white"
-            )}
-            title="Desktop Viewport"
-          >
-            <Monitor className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => setViewport('tablet')}
-            className={cn(
-              "p-2 rounded-lg transition-all",
-              viewport === 'tablet' ? "bg-vj-green text-zinc-950" : "text-zinc-400 hover:text-white"
-            )}
-            title="Tablet Viewport"
-          >
-            <Tablet className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => setViewport('mobile')}
-            className={cn(
-              "p-2 rounded-lg transition-all",
-              viewport === 'mobile' ? "bg-vj-green text-zinc-950" : "text-zinc-400 hover:text-white"
-            )}
-            title="Mobile Viewport"
-          >
-            <Smartphone className="w-4 h-4" />
-          </button>
-        </div>
+        {projectType !== 'linkbio' ? (
+          <div className="flex items-center bg-zinc-950 border border-zinc-800 p-1 rounded-xl">
+            <button
+              onClick={() => setViewport('desktop')}
+              className={cn(
+                "p-2 rounded-lg transition-all",
+                viewport === 'desktop' ? "bg-vj-green text-zinc-950" : "text-zinc-400 hover:text-white"
+              )}
+              title="Desktop Viewport"
+            >
+              <Monitor className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setViewport('tablet')}
+              className={cn(
+                "p-2 rounded-lg transition-all",
+                viewport === 'tablet' ? "bg-vj-green text-zinc-950" : "text-zinc-400 hover:text-white"
+              )}
+              title="Tablet Viewport"
+            >
+              <Tablet className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setViewport('mobile')}
+              className={cn(
+                "p-2 rounded-lg transition-all",
+                viewport === 'mobile' ? "bg-vj-green text-zinc-950" : "text-zinc-400 hover:text-white"
+              )}
+              title="Mobile Viewport"
+            >
+              <Smartphone className="w-4 h-4" />
+            </button>
+          </div>
+        ) : (
+          <div className="text-[10px] bg-zinc-950/80 border border-zinc-800 px-3 py-1.5 rounded-xl font-bold text-zinc-400">
+            Viewport Mobile Travada para Link-Bio
+          </div>
+        )}
 
         {/* Actions */}
         <div className="flex items-center gap-2">

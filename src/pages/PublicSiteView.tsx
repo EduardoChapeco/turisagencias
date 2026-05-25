@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { Loader2, Mail, Phone, MapPin, Globe, Compass, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Loader2, Mail, Phone, MapPin, Globe, Compass, ArrowRight, ShieldCheck, Instagram, Share2 } from 'lucide-react';
 import { logger } from '@/utils/logger';
 
 interface BuilderBlock {
@@ -18,18 +18,26 @@ interface BuilderBlock {
 
 export default function PublicSiteView() {
   const { slug } = useParams<{ slug: string }>();
+  const location = useLocation();
   const [organization, setOrganization] = useState<any | null>(null);
   const [blocks, setBlocks] = useState<BuilderBlock[]>([]);
   const [designTokens, setDesignTokens] = useState<any>({});
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
+  // Detect project type based on sub-route
+  const projectType = location.pathname.endsWith('/bio') 
+    ? 'linkbio' 
+    : location.pathname.endsWith('/blog') 
+    ? 'blog' 
+    : 'website';
+
   useEffect(() => {
     const fetchSiteData = async () => {
       if (!slug) return;
       try {
         setLoading(true);
-        // 1. Buscar Organização pelo slug
+        // 1. Fetch organization by slug
         const { data: orgData, error: orgError } = await supabase
           .from('organizations')
           .select('*')
@@ -44,18 +52,18 @@ export default function PublicSiteView() {
 
         setOrganization(orgData);
 
-        // 2. Buscar Projeto website associado à organização
+        // 2. Fetch project matching type
         const { data: projectData, error: projectError } = await supabase
           .from('builder_projects')
           .select('*')
           .eq('org_id', orgData.id)
-          .eq('project_type', 'website')
+          .eq('project_type', projectType)
           .maybeSingle();
 
         if (projectError) throw projectError;
 
         if (projectData && projectData.current_version_id) {
-          // 3. Buscar a versão publicada do site
+          // 3. Fetch version snapshot
           const { data: versionData, error: versionError } = await supabase
             .from('builder_versions')
             .select('*')
@@ -73,31 +81,62 @@ export default function PublicSiteView() {
             }
           }
         } else {
-          // Fallback se não houver versão publicada do site builder
-          // Montamos o layout estático com base nas informações do onboarding
-          const initialBlocks: BuilderBlock[] = [
-            {
-              id: 'hero',
-              kind: 'hero',
-              title: `Bem-vindo à ${orgData.name}`,
-              subtitle: (orgData.brand_kit as any)?.slogan || 'Sua agência de viagens com curadoria exclusiva e suporte personalizado.'
-            },
-            {
-              id: 'features',
-              kind: 'features',
-              items: [
-                'Emissão e Suporte 24h',
-                `Foco em Viagens de ${(orgData.brand_kit as any)?.focus || 'Lazer'}`,
-                orgData.settings?.hours || 'Atendimento Boutique'
-              ]
-            },
-            {
-              id: 'contact',
-              kind: 'contact',
-              email: orgData.email || 'contato@agencia.com',
-              phone: orgData.whatsapp || orgData.phone || '(11) 99999-9999'
-            }
-          ];
+          // Fallback if project version is missing in Supabase
+          let initialBlocks: BuilderBlock[] = [];
+          if (projectType === 'website') {
+            initialBlocks = [
+              {
+                id: 'hero',
+                kind: 'hero',
+                title: `Bem-vindo à ${orgData.name}`,
+                subtitle: (orgData.brand_kit as any)?.slogan || 'Sua agência de viagens com curadoria exclusiva e suporte personalizado.'
+              },
+              {
+                id: 'features',
+                kind: 'features',
+                items: [
+                  'Emissão e Suporte 24h',
+                  `Foco em Viagens de ${(orgData.brand_kit as any)?.focus || 'Lazer'}`,
+                  orgData.settings?.hours || 'Atendimento Boutique'
+                ]
+              },
+              {
+                id: 'contact',
+                kind: 'contact',
+                email: orgData.email || 'contato@agencia.com',
+                phone: orgData.whatsapp || orgData.phone || '(11) 99999-9999'
+              }
+            ];
+          } else if (projectType === 'linkbio') {
+            initialBlocks = [
+              {
+                id: 'hero',
+                kind: 'hero',
+                title: orgData.name,
+                subtitle: (orgData.brand_kit as any)?.slogan || 'Conectando você às melhores viagens. Fale conosco abaixo!'
+              },
+              {
+                id: 'contact',
+                kind: 'contact',
+                email: orgData.email || 'contato@agencia.com',
+                phone: orgData.whatsapp || orgData.phone || '(11) 99999-9999'
+              }
+            ];
+          } else if (projectType === 'blog') {
+            initialBlocks = [
+              {
+                id: 'hero',
+                kind: 'hero',
+                title: `Blog de Viagens · ${orgData.name}`,
+                subtitle: 'Dicas, guias e novidades para inspirar sua próxima aventura pelo mundo.'
+              },
+              {
+                id: 'text',
+                kind: 'text',
+                content: 'Em breve, traremos artigos completos sobre roteiros boutique, tendências e consultoria de viagens exclusivas!'
+              }
+            ];
+          }
           setBlocks(initialBlocks);
         }
       } catch (err: any) {
@@ -109,7 +148,7 @@ export default function PublicSiteView() {
     };
 
     fetchSiteData();
-  }, [slug]);
+  }, [slug, projectType]);
 
   if (loading) {
     return (
@@ -140,6 +179,127 @@ export default function PublicSiteView() {
 
   const primaryColor = designTokens.primary_color || organization.primary_color || '#00D37B';
 
+  // Render for Link-Bio (Special super clean Mobile layout)
+  if (projectType === 'linkbio') {
+    return (
+      <div className="min-h-screen bg-zinc-950 text-white font-sans flex flex-col items-center py-12 px-4 relative overflow-x-hidden">
+        {/* Glow */}
+        <div 
+          className="absolute top-0 left-1/2 -translate-x-1/2 w-[350px] h-[350px] blur-[100px] rounded-full pointer-events-none opacity-20"
+          style={{ backgroundColor: `${primaryColor}25` }}
+        />
+
+        <div className="w-full max-w-md space-y-8 relative z-10 text-center">
+          {/* Brand Profile */}
+          <div className="flex flex-col items-center space-y-4">
+            {organization.logo_url ? (
+              <img src={organization.logo_url} alt={organization.name} className="h-20 w-20 rounded-full object-cover border-2 border-zinc-800 p-1 bg-zinc-900" />
+            ) : (
+              <div className="h-20 w-20 rounded-full bg-vj-green text-zinc-950 flex items-center justify-center font-black text-3xl">
+                {organization.name.charAt(0)}
+              </div>
+            )}
+            <div>
+              <h1 className="text-xl font-black tracking-tight">{organization.name}</h1>
+              <p className="text-xs text-zinc-400 mt-1 max-w-xs mx-auto">
+                {(organization.brand_kit as any)?.slogan || 'Sua agência de viagens sob medida.'}
+              </p>
+            </div>
+          </div>
+
+          {/* Render Link-Bio Buttons */}
+          <div className="space-y-3">
+            {blocks.map((block) => (
+              <div key={block.id} className="w-full">
+                {block.kind === 'hero' && block.title && (
+                  <div className="p-4 bg-zinc-900/40 border border-zinc-900 rounded-2xl text-xs text-zinc-400">
+                    <p className="font-bold text-white mb-1">{block.title}</p>
+                    <p>{block.subtitle}</p>
+                  </div>
+                )}
+
+                {block.kind === 'contact' && (
+                  <div className="space-y-3">
+                    {block.phone && (
+                      <a 
+                        href={`https://wa.me/${block.phone.replace(/\D/g, '')}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-full h-14 bg-zinc-900 border border-zinc-800 hover:border-vj-green/60 rounded-2xl flex items-center justify-between px-6 font-bold text-sm transition-all group hover:scale-[1.01]"
+                      >
+                        <span className="flex items-center gap-3">
+                          <Phone className="w-5 h-5 text-green-400" />
+                          Falar no WhatsApp
+                        </span>
+                        <ArrowRight size={14} className="text-zinc-500 group-hover:text-vj-green transition-colors" />
+                      </a>
+                    )}
+                    {block.email && (
+                      <a 
+                        href={`mailto:${block.email}`}
+                        className="w-full h-14 bg-zinc-900 border border-zinc-800 hover:border-vj-green/60 rounded-2xl flex items-center justify-between px-6 font-bold text-sm transition-all group hover:scale-[1.01]"
+                      >
+                        <span className="flex items-center gap-3">
+                          <Mail className="w-5 h-5 text-blue-400" />
+                          Enviar E-mail
+                        </span>
+                        <ArrowRight size={14} className="text-zinc-500 group-hover:text-vj-green transition-colors" />
+                      </a>
+                    )}
+                  </div>
+                )}
+
+                {block.kind === 'text' && (
+                  <div className="py-2 text-zinc-400 text-xs leading-relaxed max-w-xs mx-auto">
+                    <p>{block.content}</p>
+                  </div>
+                )}
+              </div>
+            ))}
+
+            {/* Default Social Buttons if available */}
+            {organization.instagram_url && (
+              <a 
+                href={`https://${organization.instagram_url.replace(/https?:\/\//, '')}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full h-14 bg-zinc-900 border border-zinc-800 hover:border-vj-green/60 rounded-2xl flex items-center justify-between px-6 font-bold text-sm transition-all group hover:scale-[1.01]"
+              >
+                <span className="flex items-center gap-3">
+                  <Instagram className="w-5 h-5 text-pink-500" />
+                  Siga no Instagram
+                </span>
+                <ArrowRight size={14} className="text-zinc-500 group-hover:text-vj-green transition-colors" />
+              </a>
+            )}
+
+            {organization.website_url && (
+              <Link 
+                to={`/site/${organization.slug}`}
+                className="w-full h-14 bg-zinc-900 border border-zinc-800 hover:border-vj-green/60 rounded-2xl flex items-center justify-between px-6 font-bold text-sm transition-all group hover:scale-[1.01]"
+              >
+                <span className="flex items-center gap-3">
+                  <Globe className="w-5 h-5 text-blue-400" />
+                  Visitar Nosso Site Oficial
+                </span>
+                <ArrowRight size={14} className="text-zinc-500 group-hover:text-vj-green transition-colors" />
+              </Link>
+            )}
+          </div>
+
+          <footer className="pt-8 text-center text-[10px] text-zinc-600 flex flex-col items-center gap-2">
+            <div className="flex gap-2 items-center justify-center">
+              <Share2 size={12} style={{ color: primaryColor }} />
+              <span>Link-Bio Homologado Turis Agências</span>
+            </div>
+            <p>© 2026 {organization.name}.</p>
+          </footer>
+        </div>
+      </div>
+    );
+  }
+
+  // Render for Website & Blog
   return (
     <div className="min-h-screen bg-zinc-950 text-white font-sans overflow-x-hidden relative">
       {/* Background glow effects */}
@@ -159,11 +319,20 @@ export default function PublicSiteView() {
             </div>
           )}
           <span className="font-black text-lg tracking-tight">{organization.name}</span>
+          {projectType === 'blog' && (
+            <span className="bg-zinc-800 text-[10px] font-bold text-zinc-400 px-2 py-0.5 rounded-lg border border-zinc-700">BLOG</span>
+          )}
         </div>
 
         <div className="flex items-center gap-6 text-sm font-semibold text-zinc-400">
-          <a href="#about" className="hover:text-white transition-colors">Sobre</a>
-          <a href="#contact" className="hover:text-white transition-colors">Contato</a>
+          {projectType === 'website' ? (
+            <>
+              <a href="#about" className="hover:text-white transition-colors">Sobre</a>
+              <a href="#contact" className="hover:text-white transition-colors">Contato</a>
+            </>
+          ) : (
+            <Link to={`/site/${organization.slug}`} className="hover:text-white transition-colors">Site Oficial</Link>
+          )}
           <Link to={`/portal/${organization.slug}`}>
             <Button className="font-bold text-xs gap-2 rounded-xl h-9" style={{ backgroundColor: primaryColor, color: '#09090b' }}>
               Portal do Cliente <ArrowRight size={12} />
@@ -191,7 +360,7 @@ export default function PublicSiteView() {
                       className="font-bold text-sm px-8 h-12 rounded-xl"
                       style={{ backgroundColor: primaryColor, color: '#09090b' }}
                     >
-                      Solicitar Roteiro
+                      {projectType === 'blog' ? 'Acompanhar Blog' : 'Solicitar Roteiro'}
                     </Button>
                   </a>
                   <Link to={`/portal/${organization.slug}`}>
@@ -249,44 +418,46 @@ export default function PublicSiteView() {
         ))}
 
         {/* About Agency details */}
-        <section id="about" className="py-12 border-t border-zinc-900 grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
-          <div className="space-y-4">
-            <h3 className="text-lg font-bold text-white">Sobre a Agência</h3>
-            <p className="text-xs text-zinc-400 leading-relaxed">
-              {(organization.brand_kit as any)?.bioCurta || 'Somos uma consultoria de viagens de alto padrão dedicada a transformar sonhos em roteiros estruturados de ponta a ponta.'}
-            </p>
-            <div className="space-y-2 pt-2 text-xs text-zinc-500">
-              {organization.address?.street && (
-                <div className="flex items-center gap-2">
-                  <MapPin size={14} />
-                  <span>{organization.address.street}, {organization.address.city} - {organization.address.uf}</span>
-                </div>
-              )}
-              {organization.settings?.hours && (
-                <div className="flex items-center gap-2">
-                  <Globe size={14} />
-                  <span>Atendimento: {organization.settings.hours}</span>
-                </div>
-              )}
+        {projectType === 'website' && (
+          <section id="about" className="py-12 border-t border-zinc-900 grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+            <div className="space-y-4">
+              <h3 className="text-lg font-bold text-white">Sobre a Agência</h3>
+              <p className="text-xs text-zinc-400 leading-relaxed">
+                {(organization.brand_kit as any)?.bioCurta || 'Somos uma consultoria de viagens de alto padrão dedicada a transformar sonhos em roteiros estruturados de ponta a ponta.'}
+              </p>
+              <div className="space-y-2 pt-2 text-xs text-zinc-500">
+                {organization.address?.street && (
+                  <div className="flex items-center gap-2">
+                    <MapPin size={14} />
+                    <span>{organization.address.street}, {organization.address.city} - {organization.address.uf}</span>
+                  </div>
+                )}
+                {organization.settings?.hours && (
+                  <div className="flex items-center gap-2">
+                    <Globe size={14} />
+                    <span>Atendimento: {organization.settings.hours}</span>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
 
-          <div className="p-6 bg-zinc-900/20 border border-zinc-900 rounded-2xl space-y-4">
-            <h4 className="text-sm font-bold text-white flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-vj-green" />
-              Operação Fiscal Regular
-            </h4>
-            <div className="space-y-1 text-[11px] text-zinc-500 font-mono">
-              {organization.settings?.razaoSocial && (
-                <p><span className="text-zinc-600">Razão Social:</span> {organization.settings.razaoSocial}</p>
-              )}
-              {organization.settings?.cnpjCpf && (
-                <p><span className="text-zinc-600">Documento:</span> {organization.settings.cnpjCpf}</p>
-              )}
-              <p><span className="text-zinc-600">Plataforma Homologada:</span> Turis Agências SaaS v6.0</p>
+            <div className="p-6 bg-zinc-900/20 border border-zinc-900 rounded-2xl space-y-4">
+              <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-vj-green" />
+                Operação Fiscal Regular
+              </h4>
+              <div className="space-y-1 text-[11px] text-zinc-500 font-mono">
+                {organization.settings?.razaoSocial && (
+                  <p><span className="text-zinc-600">Razão Social:</span> {organization.settings.razaoSocial}</p>
+                )}
+                {organization.settings?.cnpjCpf && (
+                  <p><span className="text-zinc-600">Documento:</span> {organization.settings.cnpjCpf}</p>
+                )}
+                <p><span className="text-zinc-600">Plataforma Homologada:</span> Turis Agências SaaS v6.0</p>
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+        )}
       </main>
 
       {/* Footer */}

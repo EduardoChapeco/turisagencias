@@ -183,6 +183,8 @@ const App = () => (
               <Route path="/portal/:org_slug/trip/:trip_id/ai-photos" element={<ProtectedRoute><PortalAiPhotos /></ProtectedRoute>} />
 
               <Route path="/site/:slug" element={<PublicSiteView />} />
+              <Route path="/site/:slug/bio" element={<PublicSiteView />} />
+              <Route path="/site/:slug/blog" element={<PublicSiteView />} />
               <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
 
               <Route path="/" element={<HomeOrApp />} />

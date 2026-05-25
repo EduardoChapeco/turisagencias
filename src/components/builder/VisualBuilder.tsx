@@ -13,6 +13,7 @@ export type ViewportMode = 'desktop' | 'tablet' | 'mobile';
 interface VisualBuilderProps {
   onBack?: () => void;
   projectName?: string;
+  initialProjectType?: 'website' | 'linkbio' | 'blog';
 }
 
 interface BuilderBlock {
@@ -26,7 +27,7 @@ interface BuilderBlock {
   content?: string;
 }
 
-export default function VisualBuilder({ onBack, projectName = 'Website Principal' }: VisualBuilderProps) {
+export default function VisualBuilder({ onBack, projectName = 'Website Principal', initialProjectType }: VisualBuilderProps) {
   const { organization, user } = useAuthStore();
   const { toast } = useToast();
   const [viewport, setViewport] = useState<ViewportMode>('desktop');
@@ -34,7 +35,13 @@ export default function VisualBuilder({ onBack, projectName = 'Website Principal
   const [activeTab, setActiveTab] = useState<'blocks' | 'settings' | 'edit'>('blocks');
 
   // Multiproject support: website | linkbio | blog
-  const [projectType, setProjectType] = useState<'website' | 'linkbio' | 'blog'>('website');
+  const [projectType, setProjectType] = useState<'website' | 'linkbio' | 'blog'>(initialProjectType || 'website');
+
+  useEffect(() => {
+    if (initialProjectType) {
+      setProjectType(initialProjectType);
+    }
+  }, [initialProjectType]);
 
   // Supabase state
   const [projectId, setProjectId] = useState<string | null>(null);

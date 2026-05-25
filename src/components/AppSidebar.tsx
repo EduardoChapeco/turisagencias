@@ -82,6 +82,20 @@ const navGroups: NavGroup[] = [
     ]
   },
   {
+    title: 'Marketing & Canais',
+    items: [
+      {
+        title: 'Presença Digital',
+        icon: Globe2,
+        items: [
+          { title: 'Site da Agência', url: '/site-builder?type=website' },
+          { title: 'Blog de Viagens', url: '/site-builder?type=blog' },
+          { title: 'Link na Bio', url: '/site-builder?type=linkbio' },
+        ]
+      }
+    ]
+  },
+  {
     title: 'CRM & Fluxos',
     items: [
       {
@@ -172,6 +186,21 @@ export function AppSidebar() {
   const { profile, organization, roles } = useAuthStore();
   const canViewMasterPanel = roles.includes('super_admin');
 
+  const checkActive = (url: string) => {
+    const [path, query] = url.split('?');
+    const pathMatches = path === '/' ? location.pathname === '/' : location.pathname.startsWith(path);
+    if (!pathMatches) return false;
+    if (!query) return true;
+    
+    // Validar parâmetros de busca
+    const currentParams = new URLSearchParams(location.search);
+    const targetParams = new URLSearchParams(query);
+    for (const [key, val] of targetParams.entries()) {
+      if (currentParams.get(key) !== val) return false;
+    }
+    return true;
+  };
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate('/login');
@@ -208,9 +237,7 @@ export function AppSidebar() {
                 <SidebarMenu className="gap-1">
                   {group.items.map((item) => {
                     if (item.items) {
-                      const isGroupActive = item.items.some(subItem => 
-                        subItem.url === '/' ? location.pathname === '/' : location.pathname.startsWith(subItem.url)
-                      );
+                      const isGroupActive = item.items.some(subItem => checkActive(subItem.url));
                       return (
                         <Collapsible key={item.title} asChild defaultOpen={isGroupActive} className="group/collapsible">
                           <SidebarMenuItem>
@@ -231,7 +258,7 @@ export function AppSidebar() {
                             <CollapsibleContent>
                               <SidebarMenuSub className="mx-0 border-l border-vj-border/60 pl-6 pr-2 gap-1 mt-1">
                                 {item.items.map((subItem) => {
-                                  const isSubActive = subItem.url === '/' ? location.pathname === '/' : location.pathname.startsWith(subItem.url);
+                                  const isSubActive = checkActive(subItem.url);
                                   return (
                                     <SidebarMenuSubItem key={subItem.title}>
                                       <SidebarMenuSubButton 
@@ -250,7 +277,7 @@ export function AppSidebar() {
                         </Collapsible>
                       );
                     } else {
-                      const isActive = item.url === '/' ? location.pathname === '/' : location.pathname.startsWith(item.url || '');
+                      const isActive = checkActive(item.url || '');
                       return (
                         <SidebarMenuItem key={item.title}>
                           <SidebarMenuButton 

@@ -85,6 +85,7 @@ const PublicBookingVoucher = lazy(() => import('./pages/PublicBookingVoucher'));
 const TravelerPortal   = lazy(() => import('./pages/TravelerPortal'));
 const Destinations     = lazy(() => import('./pages/Destinations'));
 const PublicSiteView   = lazy(() => import('./pages/PublicSiteView'));
+const SiteBuilderPage  = lazy(() => import('./pages/SiteBuilderPage'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -215,6 +216,7 @@ const App = () => (
               <Route path="/ai-chat" element={<ProtectedWithOrg><TripsRole><AIChat /></TripsRole></ProtectedWithOrg>} />
               <Route path="/ai-dashboard" element={<ProtectedWithOrg><AdminRole><AiDashboard /></AdminRole></ProtectedWithOrg>} />
               <Route path="/settings" element={<ProtectedWithOrg><TripsRole><Settings /></TripsRole></ProtectedWithOrg>} />
+              <Route path="/site-builder" element={<ProtectedWithOrg><TripsRole><SiteBuilderPage /></TripsRole></ProtectedWithOrg>} />
               <Route path="/integrations" element={<Navigate to="/settings?tab=integrations" replace />} />
               
               {/* ERP v3 Financeiro & Jurídico */}

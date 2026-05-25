@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, Navigate, useSearchParams } from 'react-router-dom';
-import { Zap, Loader2, ShieldCheck, TriangleAlert } from 'lucide-react';
+import { Zap, Loader2, ShieldCheck, TriangleAlert, Cloud } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthStore } from '@/stores/authStore';
 import { useToast } from '@/hooks/use-toast';
@@ -89,6 +89,7 @@ export default function Login() {
   const [resetLoading, setResetLoading] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [isResettingPassword, setIsResettingPassword] = useState(false);
   const [bridgeState, setBridgeState] = useState<BridgeState>('loading');
   const [bridgeMessage, setBridgeMessage] = useState('Validando sua sessão na plataforma...');
 
@@ -213,53 +214,183 @@ export default function Login() {
             <div className="mx-auto md:mx-0 mb-6 h-11 w-11 flex items-center justify-center rounded-xl bg-vj-bg-dark border border-white/5">
               <Zap className="h-5 w-5 text-vj-green fill-vj-green" />
             </div>
-            <h1 className="text-3xl font-black tracking-tight mb-2">Bem-vindo de volta</h1>
+            <h1 className="text-3xl font-black tracking-tight mb-2">
+              {isRecoveryMode ? 'Definir nova senha' : isResettingPassword ? 'Recuperar senha' : 'Bem-vindo de volta'}
+            </h1>
             <p className="text-vj-txt3 text-sm font-medium">
-              {wantsExtensionFlow ? 'Entre na sua conta para conectar a extensão ao WhatsApp.' : 'Acesse seu painel para gerenciar sua agência.'}
+              {isRecoveryMode
+                ? 'Escolha uma nova senha de acesso para sua conta.'
+                : isResettingPassword
+                ? 'Insira o seu e-mail abaixo e enviaremos um link para você definir uma nova senha.'
+                : wantsExtensionFlow
+                ? 'Entre na sua conta para conectar a extensão ao WhatsApp.'
+                : 'Acesse seu painel para gerenciar sua agência.'}
             </p>
           </div>
 
-          <form
-            className="space-y-5"
-            onSubmit={async (event) => {
-              event.preventDefault();
-              setLoading(true);
-              setAuthSyncing(false);
-              const { error } = await supabase.auth.signInWithPassword({ email, password });
-              setLoading(false);
+          {isRecoveryMode ? (
+            <form
+              className="space-y-5"
+              onSubmit={async (event) => {
+                event.preventDefault();
+                if (newPassword !== confirmPassword) {
+                  toast({
+                    title: 'Senhas não conferem',
+                    description: 'Por favor, certifique-se de que ambas as senhas digitadas são idênticas.',
+                    variant: 'destructive',
+                  });
+                  return;
+                }
+                if (newPassword.length < 6) {
+                  toast({
+                    title: 'Senha muito curta',
+                    description: 'A senha deve ter pelo menos 6 caracteres.',
+                    variant: 'destructive',
+                  });
+                  return;
+                }
+                setResetLoading(true);
+                const { error } = await supabase.auth.updateUser({ password: newPassword });
+                setResetLoading(false);
 
-              if (error) {
-                toast({ title: 'Erro ao entrar', description: error.message, variant: 'destructive' });
-                return;
-              }
+                if (error) {
+                  toast({ title: 'Erro ao atualizar senha', description: error.message, variant: 'destructive' });
+                  return;
+                }
 
-              setAuthSyncing(true);
-              // Remoção do window.location.assign para evitar reload completo e perda de sessão.
-              // A navegação ocorrerá automaticamente via componente <Navigate /> assim que o AuthProvider atualizar o estado.
-            }}
-          >
-            <div className="space-y-2">
-              <Label htmlFor="email" className="font-bold text-zinc-700">E-mail Profissional</Label>
-              <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="voce@agencia.com.br" className="h-12 bg-zinc-50 border-zinc-200" required />
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password" className="font-bold text-zinc-700">Senha</Label>
-                <a href="#" className="text-sm font-bold text-vj-green hover:underline">Esqueceu a senha?</a>
+                toast({
+                  title: 'Senha atualizada!',
+                  description: 'Sua senha foi redefinida com sucesso. Redirecionando...',
+                });
+                setTimeout(() => {
+                  window.location.replace('/');
+                }, 1500);
+              }}
+            >
+              <div className="space-y-2">
+                <Label htmlFor="newPassword" className="font-bold text-zinc-700">Nova Senha</Label>
+                <Input
+                  id="newPassword"
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="Mínimo de 6 caracteres"
+                  className="h-12 bg-zinc-50 border-zinc-200"
+                  required
+                />
               </div>
-              <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" className="h-12 bg-zinc-50 border-zinc-200" required />
-            </div>
-            <Button type="submit" className="w-full premium-button h-12 text-base mt-4" disabled={loading || authSyncing}>
-              {loading || authSyncing ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Entrar na Plataforma'}
-            </Button>
-            {authSyncing && (
-              <p className="text-center text-xs font-bold text-zinc-500">
-                Validando acesso e carregando organizacao...
-              </p>
-            )}
-          </form>
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword" className="font-bold text-zinc-700">Confirmar Nova Senha</Label>
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Repita a senha anterior"
+                  className="h-12 bg-zinc-50 border-zinc-200"
+                  required
+                />
+              </div>
+              <Button type="submit" className="w-full premium-button h-12 text-base mt-4" disabled={resetLoading}>
+                {resetLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Atualizar Senha'}
+              </Button>
+            </form>
+          ) : isResettingPassword ? (
+            <form
+              className="space-y-5"
+              onSubmit={async (event) => {
+                event.preventDefault();
+                setResetLoading(true);
+                const { error } = await supabase.auth.resetPasswordForEmail(email, {
+                  redirectTo: `${window.location.origin}/login#type=recovery`,
+                });
+                setResetLoading(false);
 
-          {!wantsExtensionFlow && (
+                if (error) {
+                  toast({ title: 'Erro ao enviar link', description: error.message, variant: 'destructive' });
+                  return;
+                }
+
+                toast({
+                  title: 'E-mail enviado!',
+                  description: 'Enviamos as instruções para o seu e-mail de cadastro.',
+                });
+                setIsResettingPassword(false);
+              }}
+            >
+              <div className="space-y-2">
+                <Label htmlFor="reset-email" className="font-bold text-zinc-700">E-mail Profissional</Label>
+                <Input
+                  id="reset-email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="voce@agencia.com.br"
+                  className="h-12 bg-zinc-50 border-zinc-200"
+                  required
+                />
+              </div>
+              <Button type="submit" className="w-full premium-button h-12 text-base mt-4" disabled={resetLoading}>
+                {resetLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Enviar instruções'}
+              </Button>
+              <button
+                type="button"
+                onClick={() => setIsResettingPassword(false)}
+                className="w-full text-center text-sm font-bold text-zinc-500 hover:text-vj-green transition-colors mt-2"
+              >
+                Voltar para o login
+              </button>
+            </form>
+          ) : (
+            <form
+              className="space-y-5"
+              onSubmit={async (event) => {
+                event.preventDefault();
+                setLoading(true);
+                setAuthSyncing(false);
+                const { error } = await supabase.auth.signInWithPassword({ email, password });
+                setLoading(false);
+
+                if (error) {
+                  toast({ title: 'Erro ao entrar', description: error.message, variant: 'destructive' });
+                  return;
+                }
+
+                setAuthSyncing(true);
+              }}
+            >
+              <div className="space-y-2">
+                <Label htmlFor="email" className="font-bold text-zinc-700">E-mail Profissional</Label>
+                <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="voce@agencia.com.br" className="h-12 bg-zinc-50 border-zinc-200" required />
+              </div>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="password" className="font-bold text-zinc-700">Senha</Label>
+                  <a
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setIsResettingPassword(true);
+                    }}
+                    className="text-sm font-bold text-vj-green hover:underline"
+                  >
+                    Esqueceu a senha?
+                  </a>
+                </div>
+                <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" className="h-12 bg-zinc-50 border-zinc-200" required />
+              </div>
+              <Button type="submit" className="w-full premium-button h-12 text-base mt-4" disabled={loading || authSyncing}>
+                {loading || authSyncing ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Entrar na Plataforma'}
+              </Button>
+              {authSyncing && (
+                <p className="text-center text-xs font-bold text-zinc-500">
+                  Validando acesso e carregando organizacao...
+                </p>
+              )}
+            </form>
+          )}
+
+          {!wantsExtensionFlow && !isRecoveryMode && !isResettingPassword && (
             <p className="text-center text-sm font-medium text-zinc-500 pt-6 border-t border-zinc-100">
               Ainda não tem uma conta? <Link to="/signup" className="text-vj-green hover:underline font-bold">Criar minha conta grátis</Link>
             </p>

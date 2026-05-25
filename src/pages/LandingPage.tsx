@@ -7,6 +7,7 @@ import {
   MessageSquare, MapPin, CreditCard
 } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
+import { toast } from 'sonner';
 
 // ── Feature Card ──
 function FeatureCard({ icon: Icon, title, desc, tag }: { icon: React.ComponentType<{ className?: string }>, title: string, desc: string, tag?: string }) {
@@ -202,7 +203,10 @@ export default function LandingPage() {
             >
               Transformar minha Agência <ArrowRight className="w-4 h-4" />
             </button>
-            <button className="glass-button h-12 px-8 text-base w-full sm:w-auto rounded-2xl font-bold">
+            <button
+              onClick={() => document.getElementById('recursos')?.scrollIntoView({ behavior: 'smooth' })}
+              className="glass-button h-12 px-8 text-base w-full sm:w-auto rounded-2xl font-bold"
+            >
               Ver demonstração
             </button>
           </div>
@@ -545,7 +549,19 @@ export default function LandingPage() {
           </p>
           <div className="flex items-center gap-6">
             {['Privacidade', 'Termos', 'Suporte'].map(item => (
-              <a key={item} href="#" className="text-xs font-bold text-vj-txt3 hover:text-vj-green transition-colors">
+              <a
+                key={item}
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (item === 'Suporte') {
+                    toast.info('Para suporte, entre em contato pelo e-mail suporte@turisagencias.com.br');
+                  } else {
+                    toast.info(`O documento de ${item} está em atualização para a versão OMEGA v5. Contate o suporte para dúvidas.`);
+                  }
+                }}
+                className="text-xs font-bold text-vj-txt3 hover:text-vj-green transition-colors"
+              >
                 {item}
               </a>
             ))}

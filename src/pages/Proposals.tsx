@@ -260,6 +260,7 @@ export default function Proposals() {
                         size="sm" 
                         variant="ghost" 
                         className="h-8 text-xs font-bold text-vj-green gap-1"
+                        onClick={(e) => { e.stopPropagation(); navigate(`/proposals/${prop.id}/edit`); }}
                       >
                         Editar <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                       </Button>

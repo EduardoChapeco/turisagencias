@@ -24,7 +24,9 @@ import {
   Tent,
   Briefcase,
   Plug,
-  Shield
+  Shield,
+  BarChart2,
+  Send
 } from 'lucide-react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -53,13 +55,15 @@ const navGroups: NavGroup[] = [
       { title: 'Mapa de Viajantes',   url: '/radar-global', icon: Globe2 },
       { title: 'Radar do Mercado',    url: '/radar',        icon: Newspaper },
       { title: 'Atendimento',         url: '/tickets',      icon: Activity },
+      { title: 'Analytics',           url: '/analytics',    icon: BarChart2 },
     ],
   },
   {
     title: 'Vendas',
     items: [
       { title: 'Funil de Vendas',     url: '/kanban/sales', icon: KanbanSquare },
-      { title: 'Propostas & Cotações',url: '/quotations',   icon: FileText },
+      { title: 'Cotações',            url: '/quotations',   icon: FileText },
+      { title: 'Propostas Comerciais',url: '/proposals',    icon: Send },
       { title: 'Base de Clientes',    url: '/clients',      icon: Users },
       { title: 'Pacotes & Grupos',    url: '/group-trips',  icon: TrendingUp },
     ],
@@ -74,7 +78,7 @@ const navGroups: NavGroup[] = [
     ],
   },
   {
-    title: 'Financeiro & Admin',
+    title: 'Financeiro & Jurídico',
     items: [
       { title: 'Gestão de Parcelas',  url: '/finance/payments',     icon: CreditCard },
       { title: 'Transações',          url: '/finance/transactions', icon: CreditCard },
@@ -82,19 +86,25 @@ const navGroups: NavGroup[] = [
       { title: 'Modelos de Contrato', url: '/legal/contracts',      icon: FileSignature },
       { title: 'Contratos Emitidos',  url: '/contracts',            icon: FileSignature },
       { title: 'Vouchers & Boarding', url: '/vouchers',             icon: FileCheck },
-      { title: 'Equipe',              url: '/team',                 icon: Users },
     ],
   },
   {
-    title: 'Ferramentas',
+    title: 'Conteúdo & IA',
+    items: [
+      { title: 'CMS de Notícias',     url: '/news-cms',      icon: Newspaper },
+      { title: 'Assistente IA',       url: '/ai-chat',       icon: Sparkles },
+      { title: 'Central de IA',       url: '/ai-dashboard',  icon: Bot },
+      { title: 'Automações IA',       url: '/automations',   icon: Bot },
+    ],
+  },
+  {
+    title: 'Configurações',
     items: [
       { title: 'Especialistas',       url: '/guides',        icon: Book },
       { title: 'Hotéis e Resorts',    url: '/hotels',        icon: Building2 },
       { title: 'Destinos',            url: '/destinations',  icon: MapPin },
-      { title: 'Automações IA',       url: '/automations',   icon: Bot },
-      { title: 'Central de IA',       url: '/ai-dashboard',  icon: Bot },
-      { title: 'Assistente IA',       url: '/ai-chat',       icon: Sparkles },
       { title: 'Integrações',         url: '/integrations',  icon: Plug },
+      { title: 'Equipe',              url: '/team',          icon: Users },
     ],
   },
 ];

@@ -1,221 +1,156 @@
 ---
-version: "1.0"
-name: "Turis Agências OMEGA v5"
+version: "2.0"
+name: "Turis Agências OMEGA v6.5"
 description: >
   Design system da plataforma SaaS de gestão de viagens Turis Agências.
-  Arquitetura visual: Bento Grid OMEGA + Google Material Design 3 — Shadowless, Premium, Minimalista.
-
-colors:
-  primary:         "#22c55e"     # vj-green — CTA principal (Emerald 500)
-  primary-hover:   "#16a34a"     # Emerald 600
-  primary-bg:      "#f0fdf4"     # vj-green-bg — superfície leve
-  secondary:       "#09090b"     # vj-bg-dark / títulos (Zinc 950)
-  surface:         "#ffffff"     # vj-surface — cards e painéis
-  background:      "#f8f9fa"     # vj-bg — fundo global
-  on-surface:      "#09090b"     # vj-txt — texto principal
-  on-surface-muted:"#52525b"    # vj-txt2 — subtexto
-  on-surface-faint:"#a1a1aa"    # vj-txt3 — hints/placeholders
-  border:          "#e4e4e7"     # vj-border
-  border-strong:   "#d4d4d8"     # vj-border2
-  danger:          "#ef4444"     # vj-red
-  danger-bg:       "#fef2f2"     # vj-red-bg
-  warning:         "#d4511a"     # vj-orange
-  warning-bg:      "#fff4ee"     # vj-orange-bg
-  info:            "#3b82f6"     # vj-blue
-  info-bg:         "#eff6ff"     # vj-blue-bg
-
-typography:
-  display:
-    fontFamily:    "Outfit"
-    fontSize:      "2.25rem"
-    fontWeight:    "900"
-    letterSpacing: "-0.03em"
-    lineHeight:    "1.1"
-  h1:
-    fontFamily:    "Outfit"
-    fontSize:      "1.875rem"
-    fontWeight:    "800"
-    letterSpacing: "-0.02em"
-  h2:
-    fontFamily:    "Outfit"
-    fontSize:      "1.5rem"
-    fontWeight:    "700"
-    letterSpacing: "-0.02em"
-  h3:
-    fontFamily:    "Outfit"
-    fontSize:      "1.125rem"
-    fontWeight:    "700"
-    letterSpacing: "-0.01em"
-  body-md:
-    fontFamily:    "Inter"
-    fontSize:      "0.875rem"
-    fontWeight:    "400"
-    lineHeight:    "1.6"
-  body-sm:
-    fontFamily:    "Inter"
-    fontSize:      "0.75rem"
-    fontWeight:    "400"
-  label:
-    fontFamily:    "Inter"
-    fontSize:      "0.625rem"
-    fontWeight:    "700"
-    letterSpacing: "0.1em"
-    textTransform: "uppercase"
-
-rounded:
-  sm:   "8px"
-  md:   "12px"    # --radius padrão
-  lg:   "16px"
-  xl:   "1.5rem"  # --r-xl — cards
-  2xl:  "2rem"    # --r-2xl — modais/sheets
-  full: "9999px"  # chips/badges
-
-spacing:
-  xs:   "4px"
-  sm:   "8px"
-  md:   "16px"
-  lg:   "24px"
-  xl:   "32px"
-  2xl:  "48px"
-
-components:
-  button-primary:
-    backgroundColor: "{colors.primary}"
-    textColor:       "#ffffff"
-    rounded:         "{rounded.md}"
-    padding:         "0 20px"
-    height:          "40px"
-    typography:      "{typography.body-md}"
-    fontWeight:      "700"
-
-  button-primary-hover:
-    backgroundColor: "{colors.primary-hover}"
-
-  button-outline:
-    backgroundColor: "{colors.surface}"
-    textColor:       "{colors.on-surface}"
-    rounded:         "{rounded.md}"
-    padding:         "0 20px"
-    height:          "40px"
-
-  bento-card:
-    backgroundColor: "{colors.surface}"
-    rounded:         "{rounded.xl}"
-    padding:         "{spacing.lg}"
-    border:          "1px solid {colors.border}"
-
-  bento-card-hover:
-    border:          "1px solid {colors.primary}"
-
-  kanban-card:
-    backgroundColor: "{colors.surface}"
-    rounded:         "{rounded.md}"
-    padding:         "12px 12px 12px 24px"
-    border:          "1px solid {colors.border}"
-
-  status-badge-emitido:
-    backgroundColor: "#eff6ff"
-    textColor:       "#1d4ed8"
-    rounded:         "{rounded.full}"
-
-  status-badge-assinado:
-    backgroundColor: "#f0fdf4"
-    textColor:       "#15803d"
-    rounded:         "{rounded.full}"
-
-  status-badge-rascunho:
-    backgroundColor: "#f4f4f5"
-    textColor:       "#52525b"
-    rounded:         "{rounded.full}"
-
-  status-badge-cancelado:
-    backgroundColor: "#fef2f2"
-    textColor:       "#b91c1c"
-    rounded:         "{rounded.full}"
-
-  input:
-    backgroundColor: "{colors.surface}"
-    textColor:       "{colors.on-surface}"
-    rounded:         "{rounded.md}"
-    height:          "40px"
-    padding:         "0 12px"
-    border:          "1px solid {colors.border}"
-
-  sheet:
-    backgroundColor: "{colors.surface}"
-    rounded:         "0"
-    width:           "min(672px, 100vw)"
-
-  sidebar:
-    backgroundColor: "{colors.surface}"
-    width:           "240px"
-    border:          "1px solid {colors.border}"
+  Arquitetura visual: Google AI Studio/Gemini-inspired Stitch-like UI — Shadowless, Premium, Minimalista, Neutra e Altamente Produtiva.
 ---
 
-## Overview
+## 1. Overview / Brand & Style
 
-O Turis Agências OMEGA v5 é uma plataforma SaaS B2B para agências de turismo brasileiras.
-O design segue os princípios do **Bento Grid OMEGA + Google Material Design 3** adaptado ao contexto brasileiro:
-premium sem excessos, funcional sem ser genérico.
+O Turis Agências OMEGA v6.5 é regido por uma estética minimalista, clara, respirada e sofisticada. O layout busca reduzir ruídos cognitivos, fornecendo uma interface calma e fluida.
 
-### Filosofia "Shadowless"
-- Nenhum `box-shadow` em cards comuns — profundidade via `border` fina e `border-color` de destaque no hover
-- Sombras APENAS em overlays/dropdowns/tooltips (`box-shadow: 0 8px 32px rgba(0,0,0,0.12)`)
-- Bordas levíssimas `border-vj-border` (`#e4e4e7`) definem separações sem peso visual
+### Filosofia "Shadowless" (Sem Sombras)
+- **Nenhum box-shadow** em cards ou containers comuns. A profundidade é demarcada exclusivamente por bordas finas (`1px` border) e cores de fundo sutis (como contrastes entre branco e cinza claro).
+- **Sombras de elevação** são permitidas apenas em elementos flutuantes reais: overlays, dropdowns, tooltips e modais (`box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06)`).
 
-### Fontes Obrigatórias
-- **Outfit** (pesos 700–900): Títulos, headings, labels em uppercase
-- **Inter** (pesos 400–700): Corpo de texto, inputs, dados
+---
 
-### Padrões de Micro-interação (OBRIGATÓRIO)
-Todo elemento interativo DEVE ter:
-```css
-transition: all 0.2s ease;
-/* hover: border-color levemente colorida, subtle translateY(-1px) */
-/* active: scale(0.97) */
+## 2. Colors (Paleta de Cores)
+
+A paleta é neutra, clara, elegante e baseada em tons frios/slate.
+
+```yaml
+colors:
+  bg-app: "#FAFAFA"            # Fundo principal da aplicação
+  bg-shell: "#FFFFFF"          # Fundo de shells/estruturas
+  surface: "#FFFFFF"           # Cards, painéis e formulários
+  surface-muted: "#F5F7FA"     # Superfícies levemente sombreadas/tabelas
+  surface-subtle: "#F8FAFC"    # Hints ou sub-seções
+  surface-hover: "#F1F5F9"     # Hover de itens/tabela
+  surface-active: "#EEF4FF"    # Item selecionado/ativo
+  border-hairline: "#E5E7EB"   # Linhas divisorias internas
+  border-subtle: "#DDE3EA"     # Borda padrão de inputs e cards
+  border-strong: "#CBD5E1"     # Borda de foco ou separadores fortes
+  text-primary: "#111827"      # Cor do texto principal
+  text-secondary: "#475569"    # Subtítulos e descrições
+  text-muted: "#64748B"        # placeholders, legendas
+  text-soft: "#94A3B8"         # Dicas e ícones desativados
+  text-inverse: "#FFFFFF"      # Texto sobre fundos escuros/botões
+  primary: "#2563EB"           # Azul Royal — Ação primária e foco
+  primary-hover: "#1D4ED8"     # Azul escuro para hover
+  primary-soft: "#DBEAFE"      # Azul claro para backgrounds de status
+  primary-subtle: "#EFF6FF"    # Azul levíssimo para hovers ativos
+  accent-violet: "#7C3AED"     # Destaques específicos (Ex: IA Avançada)
+  accent-cyan: "#0891B2"       # Módulo extra
+  accent-green: "#16A34A"      # Sucesso/Aprovado
+  accent-amber: "#D97706"      # Alerta/Pendente
+  accent-rose: "#E11D48"       # Erro/Cancelado
 ```
-Nunca deixar elementos estáticos sem feedback visual.
 
-## Colors
+---
 
-- **Primary (`#22c55e`):** Verde Emerald — CTA, links, ícones ativos, bordas de foco
-- **Secondary (`#09090b`):** Ink — textos principais, backgrounds escuros (logotipo)
-- **Surface (`#ffffff`):** Cards, modais, formulários — branco puro
-- **Background (`#f8f9fa`):** Fundo da aplicação — cinza levíssimo
-- **Border (`#e4e4e7`):** Separadores — zinc-200
+## 3. Typography (Tipografia)
 
-## Typography
+Tipografia baseada em **Inter** de ponta a ponta para maximizar a coerência visual.
 
-Headings usam Outfit (Black/ExtraBold), corpo usa Inter.
-Labels de seção usam `text-[10px] font-black uppercase tracking-[0.15em] text-vj-txt3`.
-Nunca usar placeholder genérico. Sempre adicionar peso visual com `font-bold` mínimo em labels.
+```yaml
+typography:
+  display:
+    fontFamily: "Inter, sans-serif"
+    fontSize: "40px"
+    fontWeight: "700"
+    letterSpacing: "-0.035em"
+    lineHeight: "1.1"
+  h1:
+    fontFamily: "Inter, sans-serif"
+    fontSize: "32px"
+    fontWeight: "700"
+    letterSpacing: "-0.03em"
+  h2:
+    fontFamily: "Inter, sans-serif"
+    fontSize: "24px"
+    fontWeight: "600"
+    letterSpacing: "-0.02em"
+  body-md:
+    fontFamily: "Inter, sans-serif"
+    fontSize: "14px"
+    fontWeight: "400"
+    lineHeight: "1.6"
+  body-sm:
+    fontFamily: "Inter, sans-serif"
+    fontSize: "13px"
+    fontWeight: "400"
+    lineHeight: "1.5"
+  label:
+    fontFamily: "Inter, sans-serif"
+    fontSize: "13px"
+    fontWeight: "500"
+    lineHeight: "1.2"
+```
 
-## Components
+---
 
-### Cards (Bento)
-Sempre `rounded-2xl` (1.5rem), borda `border border-vj-border`, bg branco.
-Hover: `hover:border-vj-green/40 hover:-translate-y-0.5 transition-all duration-200`.
+## 4. Spacing (Espaçamento)
 
-### Badges de Status
-Usar as classes de componente definidas (emitido=azul, assinado=verde, rascunho=cinza, cancelado=vermelho).
-NUNCA usar cores genéricas (`red`, `green`) sem ton correto do sistema.
+Uso rígido da escala baseada em múltiplos de 4px:
+`0px`, `4px` (`gap-1`), `8px` (`gap-2`), `12px` (`gap-3`), `16px` (`gap-4`), `24px` (`gap-6`), `32px` (`gap-8`).
 
-### Formulários (Inputs, Selects, Textareas)
-Altura padrão `h-10`, borda `border-vj-border`, bg branco, rounded `rounded-xl`.
-Focus ring: `focus:ring-2 focus:ring-vj-green/30`.
+---
 
-### Sidebar
-Largura `240px` (colapsada: `64px`), bg branco, sem sombra.
-Itens ativos: bg `vj-green`, texto branco.
-Itens inativos: hover `bg-zinc-50`.
+## 5. Radius (Cantos Semi-arredondados)
 
-### OCR Drop Zones
-Borda tracejada `border-2 border-dashed border-vj-border`.
-Hover: `hover:border-vj-green/50`.
-Ícone centralizado com fundo `bg-vj-bg border border-vj-border rounded-full`.
+- **xs** (6px): Badges menores ou elementos minúsculos.
+- **sm** (8px): Inputs em grids apertados.
+- **md** (12px): Botões e inputs padrão.
+- **lg** (16px): Cards de informações e grids bento.
+- **xl** (24px): Side panels, sheets e modais de topo.
 
-## Motion
+---
 
-Todos os hoveres usam `duration-200`. Entradas de listas usam `duration-300`.
-Nunca usar `duration-500` em micro-interações — parece lento.
-Preferir `ease-out` para entradas, `ease-in-out` para hovers.
+## 6. Components (Componentes Base)
+
+### 6.1 Buttons (Botões)
+- **Primary**: Background `var(--vj-primary)` (`#2563EB`), sem sombra. Hover muda para `#1D4ED8` com transição suave.
+- **Secondary / Outline**: Background branco, borda `var(--vj-border)` (`#DDE3EA`).
+- Todo botão assíncrono DEVE conter indicador de loading (`<Loader2 className="animate-spin" />`).
+
+### 6.2 Cards (Bento Cards)
+- Background branco, borda fina `border border-zinc-200`, `rounded-2xl` (16px), sem sombra.
+- Microinterações no hover: `hover:border-vj-primary/30 hover:-translate-y-0.5 transition-all duration-200`.
+
+---
+
+## 7. Do's and Don'ts (Diretrizes)
+
+### Do's (Fazer)
+- Manter telas respiradas e com amplo uso de espaços em branco.
+- Utilizar cores apenas para acentuações contextuais de status ou botões primários.
+- Preservar transições rápidas (`transition-all duration-200`) em todas as interações.
+
+### Don'ts (Não Fazer)
+- Não usar neumorphism ou glassmorphism pesado.
+- Não introduzir sombras (`shadow-lg`, `shadow-xl`) em cards e sidebars.
+- Não espalhar classes utilitárias de cores arbitrárias como `bg-[#123456]` ou margens customizadas `mt-[13px]`.
+
+---
+
+## 8. Fixed Documents vs Responsive Pages (Layout Segregation)
+
+### A. Documentos de Saída Fixa (Pixel-Perfect)
+- Propostas A4, Contratos, Vouchers, Recibos e Mapas de Assento de ônibus.
+- **Regra**: Container travado em largura física (ex: `w-[794px]` para A4, `w-[400px]` para Story).
+- **Zoom**: Controlado client-side usando `transform: scale(zoom)` reativo.
+
+### B. Páginas Responsivas (Fluid Layouts)
+- Landing page, Blog, Portal do Viajante, News CMS.
+- **Regra**: Viewport adaptável com grid responsivo Tailwind (`md:`, `lg:`).
+
+---
+
+## 9. QA / Audit Rules
+
+Toda alteração deve ser submetida a verificações estritas:
+1. `npx tsc --noEmit` para garantir ausência de erros de compilação.
+2. `npx vitest run` para cobertura de regressões de testes unitários.
+3. Validação de contratos de payloads de API com schemas JSONB do banco.

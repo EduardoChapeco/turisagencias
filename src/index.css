@@ -8,103 +8,103 @@
 
 @layer base {
   :root {
-    /* ── VIAJA SYSTEM CORE PALETTE ── */
-    --vj-bg: #f8f9fa;
-    --vj-bg-dark: #09090b;
+    /* ── TURIS OMEGA V6 CORE PALETTE ── */
+    --vj-bg: #FAFAFA;
+    --vj-bg-dark: #0F172A;
     --vj-white: #ffffff;
     --vj-surface: #ffffff;
 
-    /* Typography */
-    --vj-txt: #09090b;
-    --vj-txt2: #52525b;
-    --vj-txt3: #a1a1aa;
+    /* Typography colors */
+    --vj-txt: #111827;
+    --vj-txt2: #475569;
+    --vj-txt3: #64748B;
 
-    /* Accent colors */
-    --vj-green: #22c55e;
-    --vj-green-bg: #f0fdf4;
-    --vj-primary: #22c55e;
-    --vj-primary-bg: #f0fdf4;
-    --vj-orange: #d4511a;
-    --vj-orange-bg: #fff4ee;
-    --vj-blue: #3b82f6;
-    --vj-blue-bg: #eff6ff;
-    --vj-red: #ef4444;
-    --vj-red-bg: #fef2f2;
-    --vj-yellow: #eab308;
+    /* Accent & Action colors */
+    --vj-green: #2563EB;        /* Primary action is now Blue */
+    --vj-green-bg: #EFF6FF;     /* bg-primary-subtle */
+    --vj-primary: #2563EB;
+    --vj-primary-bg: #EFF6FF;
+    --vj-orange: #D97706;       /* Warning is Amber */
+    --vj-orange-bg: #FEF3C7;
+    --vj-blue: #2563EB;
+    --vj-blue-bg: #EFF6FF;
+    --vj-red: #DC2626;          /* Danger is Red */
+    --vj-red-bg: #FEE2E2;
+    --vj-yellow: #D97706;
 
     /* Borders */
-    --vj-border: #e4e4e7;
-    --vj-border2: #d4d4d8;
-    --vj-border-light: rgba(228, 228, 231, 0.5);
+    --vj-border: #DDE3EA;       /* border-subtle */
+    --vj-border2: #CBD5E1;      /* border-strong */
+    --vj-border-light: rgba(221, 227, 234, 0.5);
 
     /* Radius */
     --radius: 12px;
-    --r-xl: 1.5rem;
-    --r-2xl: 2rem;
+    --r-xl: 16px;
+    --r-2xl: 24px;
 
     /* shadcn/ui tokens */
-    --background: 210 20% 98%;
-    --foreground: 240 10% 3.9%;
+    --background: 0 0% 98%;
+    --foreground: 220 13% 11%;
     --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
+    --card-foreground: 220 13% 11%;
     --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    --primary: 142.1 76.2% 36.3%;
-    --primary-foreground: 355.7 100% 97.3%;
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 142.1 76.2% 36.3%;
+    --popover-foreground: 220 13% 11%;
+    --primary: 221 83% 53%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 18% 96%;
+    --secondary-foreground: 220 13% 11%;
+    --muted: 210 18% 96%;
+    --muted-foreground: 215 16% 47%;
+    --accent: 210 20% 96%;
+    --accent-foreground: 220 13% 11%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 212 20% 89%;
+    --input: 212 20% 89%;
+    --ring: 221 83% 53%;
   }
 
   .dark {
-    --vj-bg: #09090b;
-    --vj-bg-dark: #09090b;
+    --vj-bg: #0F172A;
+    --vj-bg-dark: #09090B;
     --vj-white: #000000;
-    --vj-surface: #18181b;
-    --vj-txt: #fafafa;
-    --vj-txt2: #a1a1aa;
-    --vj-txt3: #52525b;
-    --vj-green: #22c55e;
-    --vj-green-bg: rgba(34, 197, 94, 0.1);
-    --vj-primary: #22c55e;
-    --vj-primary-bg: rgba(34, 197, 94, 0.1);
-    --vj-orange: #f97316;
-    --vj-orange-bg: rgba(249, 115, 22, 0.1);
-    --vj-blue: #3b82f6;
+    --vj-surface: #1E293B;
+    --vj-txt: #F8FAFC;
+    --vj-txt2: #94A3B8;
+    --vj-txt3: #64748B;
+    --vj-green: #3B82F6;
+    --vj-green-bg: rgba(59, 130, 246, 0.1);
+    --vj-primary: #3B82F6;
+    --vj-primary-bg: rgba(59, 130, 246, 0.1);
+    --vj-orange: #F59E0B;
+    --vj-orange-bg: rgba(245, 158, 11, 0.1);
+    --vj-blue: #3B82F6;
     --vj-blue-bg: rgba(59, 130, 246, 0.1);
-    --vj-red: #ef4444;
+    --vj-red: #EF4444;
     --vj-red-bg: rgba(239, 68, 68, 0.1);
-    --vj-yellow: #eab308;
-    --vj-border: #27272a;
-    --vj-border2: #3f3f46;
-    --vj-border-light: rgba(39, 39, 42, 0.5);
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 142.1 70.6% 45.3%;
-    --primary-foreground: 144.9 80.4% 10%;
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 142.4 71.8% 29.2%;
+    --vj-yellow: #F59E0B;
+    --vj-border: #334155;
+    --vj-border2: #475569;
+    --vj-border-light: rgba(51, 65, 85, 0.5);
+    --background: 222 47% 11%;
+    --foreground: 210 37% 96%;
+    --card: 222 47% 11%;
+    --card-foreground: 210 37% 96%;
+    --popover: 222 47% 11%;
+    --popover-foreground: 210 37% 96%;
+    --primary: 217 91% 60%;
+    --primary-foreground: 222 47% 11%;
+    --secondary: 217 32% 17%;
+    --secondary-foreground: 210 37% 96%;
+    --muted: 217 32% 17%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 217 32% 17%;
+    --accent-foreground: 210 37% 96%;
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 210 37% 96%;
+    --border: 217 32% 17%;
+    --input: 217 32% 17%;
+    --ring: 217 91% 60%;
   }
 
   /* ── GLOBAL RESET ── */
@@ -136,9 +136,9 @@
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Outfit', sans-serif;
-    font-weight: 800;
-    letter-spacing: -0.02em;
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.025em;
   }
 
   ::-webkit-scrollbar { display: none !important; }

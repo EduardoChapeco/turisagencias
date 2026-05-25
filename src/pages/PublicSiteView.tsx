@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link, useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { Loader2, Mail, Phone, MapPin, Globe, Compass, ArrowRight, ShieldCheck, Instagram, Share2 } from 'lucide-react';
+import { Loader2, Mail, Phone, MapPin, Globe, Compass, ArrowRight, ShieldCheck, Camera, Share2 } from 'lucide-react';
 import { logger } from '@/utils/logger';
 
 interface BuilderBlock {
@@ -266,7 +266,7 @@ export default function PublicSiteView() {
                 className="w-full h-14 bg-zinc-900 border border-zinc-800 hover:border-vj-green/60 rounded-2xl flex items-center justify-between px-6 font-bold text-sm transition-all group hover:scale-[1.01]"
               >
                 <span className="flex items-center gap-3">
-                  <Instagram className="w-5 h-5 text-pink-500" />
+                  <Camera className="w-5 h-5 text-pink-500" />
                   Siga no Instagram
                 </span>
                 <ArrowRight size={14} className="text-zinc-500 group-hover:text-vj-green transition-colors" />

@@ -32,6 +32,65 @@ export default function PublicSiteView() {
     ? 'blog' 
     : 'website';
 
+  const loadDefaultTemplate = (orgData: any) => {
+    let initialBlocks: BuilderBlock[] = [];
+    if (projectType === 'website') {
+      initialBlocks = [
+        {
+          id: 'hero',
+          kind: 'hero',
+          title: `Bem-vindo à ${orgData.name}`,
+          subtitle: (orgData.brand_kit as any)?.slogan || 'Sua agência de viagens com curadoria exclusiva e suporte personalizado.'
+        },
+        {
+          id: 'features',
+          kind: 'features',
+          items: [
+            'Emissão e Suporte 24h',
+            `Foco em Viagens de ${(orgData.brand_kit as any)?.focus || 'Lazer'}`,
+            orgData.settings?.hours || 'Atendimento Boutique'
+          ]
+        },
+        {
+          id: 'contact',
+          kind: 'contact',
+          email: orgData.email || 'contato@agencia.com',
+          phone: orgData.whatsapp || orgData.phone || '(11) 99999-9999'
+        }
+      ];
+    } else if (projectType === 'linkbio') {
+      initialBlocks = [
+        {
+          id: 'hero',
+          kind: 'hero',
+          title: orgData.name,
+          subtitle: (orgData.brand_kit as any)?.slogan || 'Conectando você às melhores viagens. Fale conosco abaixo!'
+        },
+        {
+          id: 'contact',
+          kind: 'contact',
+          email: orgData.email || 'contato@agencia.com',
+          phone: orgData.whatsapp || orgData.phone || '(11) 99999-9999'
+        }
+      ];
+    } else if (projectType === 'blog') {
+      initialBlocks = [
+        {
+          id: 'hero',
+          kind: 'hero',
+          title: `Blog de Viagens · ${orgData.name}`,
+          subtitle: 'Dicas, guias e novidades para inspirar sua próxima aventura pelo mundo.'
+        },
+        {
+          id: 'text',
+          kind: 'text',
+          content: 'Em breve, traremos artigos completos sobre roteiros boutique, tendências e consultoria de viagens exclusivas!'
+        }
+      ];
+    }
+    setBlocks(initialBlocks);
+  };
+
   useEffect(() => {
     const fetchSiteData = async () => {
       if (!slug) return;
@@ -72,72 +131,19 @@ export default function PublicSiteView() {
 
           if (versionError) throw versionError;
 
-          if (versionData) {
+          // Garantir que a versão recuperada está de fato publicada
+          if (versionData && versionData.status === 'published') {
             if (Array.isArray(versionData.content_schema)) {
               setBlocks(versionData.content_schema as any);
             }
             if (versionData.design_tokens) {
               setDesignTokens(versionData.design_tokens);
             }
+          } else {
+            loadDefaultTemplate(orgData);
           }
         } else {
-          // Fallback if project version is missing in Supabase
-          let initialBlocks: BuilderBlock[] = [];
-          if (projectType === 'website') {
-            initialBlocks = [
-              {
-                id: 'hero',
-                kind: 'hero',
-                title: `Bem-vindo à ${orgData.name}`,
-                subtitle: (orgData.brand_kit as any)?.slogan || 'Sua agência de viagens com curadoria exclusiva e suporte personalizado.'
-              },
-              {
-                id: 'features',
-                kind: 'features',
-                items: [
-                  'Emissão e Suporte 24h',
-                  `Foco em Viagens de ${(orgData.brand_kit as any)?.focus || 'Lazer'}`,
-                  orgData.settings?.hours || 'Atendimento Boutique'
-                ]
-              },
-              {
-                id: 'contact',
-                kind: 'contact',
-                email: orgData.email || 'contato@agencia.com',
-                phone: orgData.whatsapp || orgData.phone || '(11) 99999-9999'
-              }
-            ];
-          } else if (projectType === 'linkbio') {
-            initialBlocks = [
-              {
-                id: 'hero',
-                kind: 'hero',
-                title: orgData.name,
-                subtitle: (orgData.brand_kit as any)?.slogan || 'Conectando você às melhores viagens. Fale conosco abaixo!'
-              },
-              {
-                id: 'contact',
-                kind: 'contact',
-                email: orgData.email || 'contato@agencia.com',
-                phone: orgData.whatsapp || orgData.phone || '(11) 99999-9999'
-              }
-            ];
-          } else if (projectType === 'blog') {
-            initialBlocks = [
-              {
-                id: 'hero',
-                kind: 'hero',
-                title: `Blog de Viagens · ${orgData.name}`,
-                subtitle: 'Dicas, guias e novidades para inspirar sua próxima aventura pelo mundo.'
-              },
-              {
-                id: 'text',
-                kind: 'text',
-                content: 'Em breve, traremos artigos completos sobre roteiros boutique, tendências e consultoria de viagens exclusivas!'
-              }
-            ];
-          }
-          setBlocks(initialBlocks);
+          loadDefaultTemplate(orgData);
         }
       } catch (err: any) {
         logger.error('Error fetching public site view data:', err);
@@ -344,78 +350,90 @@ export default function PublicSiteView() {
       {/* Main Blocks Render */}
       <main className="max-w-4xl mx-auto px-6 py-12 space-y-20 relative z-10">
         
-        {blocks.map((block) => (
-          <section key={block.id} className="animate-in fade-in slide-in-from-bottom-6 duration-700">
-            {block.kind === 'hero' && (
-              <div className="text-center py-16 space-y-6">
-                <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tight max-w-3xl mx-auto leading-none text-white">
-                  {block.title}
-                </h1>
-                <p className="text-base md:text-lg text-zinc-400 max-w-2xl mx-auto leading-relaxed">
-                  {block.subtitle}
-                </p>
-                <div className="flex items-center justify-center gap-4 pt-4">
-                  <a href="#contact">
-                    <Button 
-                      className="font-bold text-sm px-8 h-12 rounded-xl"
-                      style={{ backgroundColor: primaryColor, color: '#09090b' }}
-                    >
-                      {projectType === 'blog' ? 'Acompanhar Blog' : 'Solicitar Roteiro'}
-                    </Button>
-                  </a>
-                  <Link to={`/portal/${organization.slug}`}>
-                    <Button variant="outline" className="border-zinc-800 bg-transparent text-zinc-300 hover:bg-zinc-900 rounded-xl h-12 px-6">
-                      Acessar Minha Viagem
-                    </Button>
-                  </Link>
-                </div>
-              </div>
-            )}
+        {blocks.map((block) => {
+          // Fallback defensivo para blocos desconhecidos ou inválidos
+          if (!block || !['hero', 'features', 'contact', 'text'].includes(block.kind)) {
+            logger.warn(`PublicSiteView: Bloco desconhecido ou nulo ignorado no renderizador público: ${block?.kind || 'undefined'}`);
+            return null;
+          }
 
-            {block.kind === 'features' && (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {block.items?.map((item, idx) => (
-                  <div key={idx} className="p-6 bg-zinc-900/40 border border-zinc-800/80 rounded-2xl relative overflow-hidden group hover:border-zinc-700 transition-colors">
-                    <div className="absolute top-0 right-0 w-24 h-24 blur-[40px] rounded-full pointer-events-none opacity-20" style={{ backgroundColor: primaryColor }} />
-                    <Compass className="w-8 h-8 mb-4" style={{ color: primaryColor }} />
-                    <p className="text-sm font-bold text-white mb-2">{item}</p>
-                    <p className="text-xs text-zinc-500 leading-relaxed">
-                      Compromisso com excelência, segurança, pontualidade e experiências inesquecíveis.
+          return (
+            <section key={block.id} className="animate-in fade-in slide-in-from-bottom-6 duration-700">
+              {block.kind === 'hero' && (
+                <div className="text-center py-16 space-y-6">
+                  <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tight max-w-3xl mx-auto leading-none text-white">
+                    {block.title}
+                  </h1>
+                  <p className="text-base md:text-lg text-zinc-400 max-w-2xl mx-auto leading-relaxed">
+                    {block.subtitle}
+                  </p>
+                  <div className="flex items-center justify-center gap-4 pt-4">
+                    <a href="#contact">
+                      <Button 
+                        className="font-bold text-sm px-8 h-12 rounded-xl"
+                        style={{ backgroundColor: primaryColor, color: '#09090b' }}
+                      >
+                        {projectType === 'blog' ? 'Acompanhar Blog' : 'Solicitar Roteiro'}
+                      </Button>
+                    </a>
+                    <Link to={`/portal/${organization.slug}`}>
+                      <Button variant="outline" className="border-zinc-800 bg-transparent text-zinc-300 hover:bg-zinc-900 rounded-xl h-12 px-6">
+                        Acessar Minha Viagem
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+              )}
+
+              {block.kind === 'features' && (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {block.items?.map((item, idx) => (
+                    <div key={idx} className="p-6 bg-zinc-900/40 border border-zinc-800/80 rounded-2xl relative overflow-hidden group hover:border-zinc-700 transition-colors">
+                      <div className="absolute top-0 right-0 w-24 h-24 blur-[40px] rounded-full pointer-events-none opacity-20" style={{ backgroundColor: primaryColor }} />
+                      <Compass className="w-8 h-8 mb-4" style={{ color: primaryColor }} />
+                      <p className="text-sm font-bold text-white mb-2">{item}</p>
+                      <p className="text-xs text-zinc-500 leading-relaxed">
+                        Compromisso com excelência, segurança, pontualidade e experiências inesquecíveis.
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {block.kind === 'contact' && (
+                <div id="contact" className="p-8 bg-zinc-900/60 border border-zinc-800/80 rounded-3xl flex flex-col md:flex-row items-center justify-between gap-8 relative overflow-hidden">
+                  <div className="space-y-2 text-center md:text-left">
+                    <h3 className="text-xl font-bold text-white">Pronto para a sua próxima aventura?</h3>
+                    <p className="text-xs text-zinc-500 max-w-md">
+                      Fale diretamente com nossa equipe e desenhe sua viagem com quem entende do assunto.
                     </p>
                   </div>
-                ))}
-              </div>
-            )}
 
-            {block.kind === 'contact' && (
-              <div id="contact" className="p-8 bg-zinc-900/60 border border-zinc-800/80 rounded-3xl flex flex-col md:flex-row items-center justify-between gap-8 relative overflow-hidden">
-                <div className="space-y-2 text-center md:text-left">
-                  <h3 className="text-xl font-bold text-white">Pronto para a sua próxima aventura?</h3>
-                  <p className="text-xs text-zinc-500 max-w-md">
-                    Fale diretamente com nossa equipe e desenhe sua viagem com quem entende do assunto.
-                  </p>
+                  <div className="flex flex-col sm:flex-row gap-4 shrink-0 font-mono text-xs w-full md:w-auto">
+                    {block.email && (
+                      <a href={`mailto:${block.email}`} className="flex items-center gap-3 p-4 bg-zinc-950 border border-zinc-800 hover:border-zinc-700 rounded-2xl justify-center transition-colors">
+                        <Mail size={16} style={{ color: primaryColor }} />
+                        <span>{block.email}</span>
+                      </a>
+                    )}
+                    {block.phone && (
+                      <a href={`https://wa.me/${block.phone.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-4 bg-zinc-950 border border-zinc-800 hover:border-zinc-700 rounded-2xl justify-center transition-colors">
+                        <Phone size={16} className="text-green-400" />
+                        <span>{block.phone}</span>
+                      </a>
+                    )}
+                  </div>
                 </div>
+              )}
 
-                <div className="flex flex-col sm:flex-row gap-4 shrink-0 font-mono text-xs w-full md:w-auto">
-                  <a href={`mailto:${block.email}`} className="flex items-center gap-3 p-4 bg-zinc-950 border border-zinc-800 hover:border-zinc-700 rounded-2xl justify-center transition-colors">
-                    <Mail size={16} style={{ color: primaryColor }} />
-                    <span>{block.email}</span>
-                  </a>
-                  <a href={`https://wa.me/${block.phone?.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-4 bg-zinc-950 border border-zinc-800 hover:border-zinc-700 rounded-2xl justify-center transition-colors">
-                    <Phone size={16} className="text-green-400" />
-                    <span>{block.phone}</span>
-                  </a>
+              {block.kind === 'text' && (
+                <div className="py-8 text-zinc-300 text-sm md:text-base leading-relaxed text-center max-w-3xl mx-auto border-t border-zinc-900">
+                  <p className="whitespace-pre-line">{block.content}</p>
                 </div>
-              </div>
-            )}
-
-            {block.kind === 'text' && (
-              <div className="py-8 text-zinc-300 text-sm md:text-base leading-relaxed text-center max-w-3xl mx-auto border-t border-zinc-900">
-                <p className="whitespace-pre-line">{block.content}</p>
-              </div>
-            )}
-          </section>
-        ))}
+              )}
+            </section>
+          );
+        })}
 
         {/* About Agency details */}
         {projectType === 'website' && (

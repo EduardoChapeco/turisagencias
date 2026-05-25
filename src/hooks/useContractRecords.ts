@@ -56,9 +56,11 @@ export function useContractRecords() {
   return useQuery<ContractRecord[]>({
     queryKey: [QK, organization?.id],
     queryFn: async () => {
+      if (!organization?.id) return [];
       const { data, error } = await supabase
         .from('contracts')
         .select('*')
+        .eq('org_id', organization.id)
         .order('created_at', { ascending: false });
       if (error) throw error;
       return (data ?? []) as ContractRecord[];
@@ -69,18 +71,19 @@ export function useContractRecords() {
 
 export function useCreateContractRecord() {
   const qc = useQueryClient();
+  const { organization } = useAuthStore();
 
   return useMutation({
     mutationFn: async (payload: ContractRecordUpsert) => {
-      const numero =
-        payload.numero ||
-        `CT-${new Date().getFullYear()}-${Math.floor(Math.random() * 100000)
-          .toString()
-          .padStart(5, '0')}`;
+      if (!organization?.id) throw new Error('Organização não autenticada');
+      const now = new Date();
+      const datePart = now.toISOString().slice(0, 10).replace(/-/g, '');
+      const randPart = Math.random().toString(36).substring(2, 6).toUpperCase();
+      const numero = payload.numero || `CT-${datePart}-${randPart}`;
 
       const { data, error } = await supabase
         .from('contracts')
-        .insert({ ...payload, numero, status: payload.status ?? 'emitido' })
+        .insert({ ...payload, org_id: organization.id, numero, status: payload.status ?? 'emitido' })
         .select()
         .single();
       if (error) throw error;
@@ -96,13 +99,16 @@ export function useCreateContractRecord() {
 
 export function useUpdateContractRecord() {
   const qc = useQueryClient();
+  const { organization } = useAuthStore();
 
   return useMutation({
     mutationFn: async ({ id, ...payload }: ContractRecordUpsert & { id: string }) => {
+      if (!organization?.id) throw new Error('Organização não autenticada');
       const { data: current, error: fetchErr } = await supabase
         .from('contracts')
         .select('status')
         .eq('id', id)
+        .eq('org_id', organization.id)
         .single();
       
       if (fetchErr) throw fetchErr;
@@ -114,6 +120,7 @@ export function useUpdateContractRecord() {
         .from('contracts')
         .update(payload)
         .eq('id', id)
+        .eq('org_id', organization.id)
         .select()
         .single();
       if (error) throw error;
@@ -129,13 +136,16 @@ export function useUpdateContractRecord() {
 
 export function useDeleteContractRecord() {
   const qc = useQueryClient();
+  const { organization } = useAuthStore();
 
   return useMutation({
     mutationFn: async (id: string) => {
+      if (!organization?.id) throw new Error('Organização não autenticada');
       const { data: current, error: fetchErr } = await supabase
         .from('contracts')
         .select('status')
         .eq('id', id)
+        .eq('org_id', organization.id)
         .single();
       
       if (fetchErr) throw fetchErr;
@@ -143,7 +153,11 @@ export function useDeleteContractRecord() {
         throw new Error('Não é permitido excluir um contrato já assinado.');
       }
 
-      const { error } = await supabase.from('contracts').delete().eq('id', id);
+      const { error } = await supabase
+        .from('contracts')
+        .delete()
+        .eq('id', id)
+        .eq('org_id', organization.id);
       if (error) throw error;
     },
     onSuccess: () => {

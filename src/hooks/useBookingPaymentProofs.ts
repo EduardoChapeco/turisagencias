@@ -93,6 +93,13 @@ export function useReviewPaymentProof() {
 
       // 2. If approved and has installmentId → mark installment as paid
       if (action === 'approved' && installmentId) {
+        const { data: currentInst } = await supabase
+          .from('booking_installments')
+          .select('status, amount, due_date, booking_id')
+          .eq('id', installmentId)
+          .single();
+        const wasPaid = currentInst?.status === 'paid';
+
         const { error: e2 } = await supabase
           .from('booking_installments')
           .update({
@@ -102,6 +109,43 @@ export function useReviewPaymentProof() {
           } as any)
           .eq('id', installmentId);
         if (e2) throw e2;
+
+        if (!wasPaid && currentInst) {
+          const { data: booking } = await supabase
+            .from('group_bookings')
+            .select('group_trip_id, org_id, lead_name')
+            .eq('id', currentInst.booking_id)
+            .single();
+
+          if (booking) {
+            // Sync with Global Agency Finance
+            await supabase.from('financial_transactions').insert({
+              org_id: booking.org_id,
+              group_trip_id: booking.group_trip_id,
+              type: 'receivable',
+              status: 'paid',
+              amount: currentInst.amount,
+              currency: 'BRL',
+              due_date: currentInst.due_date,
+              paid_at: new Date().toISOString(),
+              payment_method: 'comprovante_cliente',
+              description: `Recebimento Parcela ${installmentId.split('-')[0].toUpperCase()} - ${booking.lead_name} (Via Comprovante)`,
+            });
+
+            // Sync with Internal Trip Ledger
+            await supabase.from('group_trip_ledger').insert({
+              org_id: booking.org_id,
+              group_trip_id: booking.group_trip_id,
+              type: 'income',
+              category: 'venda_pacote',
+              amount: currentInst.amount,
+              currency: 'BRL',
+              status: 'paid',
+              paid_at: new Date().toISOString(),
+              description: `Recebimento Passageiro: ${booking.lead_name} (Via Comprovante)`,
+            });
+          }
+        }
       }
 
       // 3. Keep the canonical booking status in sync when every installment is paid.

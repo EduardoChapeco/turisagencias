@@ -8,6 +8,21 @@ import {
   Plane, Edit, Star, Calendar
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useSignedUrl } from '@/hooks/useSignedUrl';
+
+function DocumentLink({ url }: { url: string }) {
+  const { url: signedUrl, loading } = useSignedUrl(url);
+  return (
+    <a
+      href={signedUrl || '#'}
+      target="_blank"
+      rel="noreferrer"
+      className={`text-xs text-vj-green underline hover:text-vj-green/70 ${loading ? 'opacity-50 pointer-events-none' : ''}`}
+    >
+      {loading ? 'Processando...' : 'Ver arquivo'}
+    </a>
+  );
+}
 
 interface ClientQuickViewProps {
   clientId: string | null;
@@ -140,7 +155,7 @@ export function ClientQuickView({ clientId, open, onClose, onEdit }: ClientQuick
                         <FileText className="w-4 h-4 text-vj-green" /> {doc.type || 'Documento'}
                       </span>
                       {doc.url && (
-                        <a href={doc.url} target="_blank" rel="noreferrer" className="text-xs text-vj-green underline hover:text-vj-green/70">Ver arquivo</a>
+                        <DocumentLink url={doc.url} />
                       )}
                     </div>
                     {doc.number && <p className="text-xs text-vj-txt2">Nº: <span className="font-mono font-semibold">{doc.number}</span></p>}

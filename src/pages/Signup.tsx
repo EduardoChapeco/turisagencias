@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Cloud, Loader2, Sparkles, Building2 } from 'lucide-react';
+import { Zap, Loader2, Sparkles, Building2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -22,11 +22,11 @@ export default function Signup() {
       <div className="w-full lg:w-1/2 flex flex-col items-center justify-center p-8 sm:p-12 lg:p-24 bg-white relative z-10">
         <div className="w-full max-w-md space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-700">
           <div className="text-center md:text-left">
-            <div className="mx-auto md:mx-0 mb-6 flex h-12 w-12 items-center justify-center rounded-xl bg-vj-green">
-              <Cloud className="h-6 w-6 text-zinc-950" />
+            <div className="mx-auto md:mx-0 mb-6 h-11 w-11 flex items-center justify-center rounded-xl bg-vj-bg-dark border border-white/5">
+              <Zap className="h-5 w-5 text-vj-green fill-vj-green" />
             </div>
             <h1 className="text-3xl font-black tracking-tight mb-2">Criar sua conta Turis</h1>
-            <p className="text-zinc-500">
+            <p className="text-vj-txt3 text-sm font-medium">
               Junte-se às agências mais produtivas do Brasil.
             </p>
           </div>

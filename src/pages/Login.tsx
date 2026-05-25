@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, Navigate, useSearchParams } from 'react-router-dom';
-import { Cloud, Loader2, ShieldCheck, TriangleAlert } from 'lucide-react';
+import { Zap, Loader2, ShieldCheck, TriangleAlert } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthStore } from '@/stores/authStore';
 import { useToast } from '@/hooks/use-toast';
@@ -174,26 +174,26 @@ export default function Login() {
   if (!isLoading && user && wantsExtensionFlow) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-muted/30 px-4">
-        <Card className="w-full max-w-md">
+        <Card className="w-full max-w-md border-zinc-200 shadow-xl shadow-zinc-200/50">
           <CardHeader className="text-center">
-            <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-xl bg-vj-green text-vj-green-foreground">
-              {bridgeState === 'error' ? <TriangleAlert className="h-6 w-6" /> : <ShieldCheck className="h-6 w-6" />}
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-vj-green/10 border border-vj-green/20 text-vj-green">
+              {bridgeState === 'error' ? <TriangleAlert className="h-7 w-7" /> : <ShieldCheck className="h-7 w-7" />}
             </div>
-            <CardTitle className="font-heading text-2xl">Conectar extensão</CardTitle>
-            <CardDescription>
-              A autorização acontece na sua sessão atual da plataforma e volta direto para o painel do WhatsApp.
+            <CardTitle className="font-black text-2xl tracking-tight">Conectar extensão</CardTitle>
+            <CardDescription className="text-zinc-500 font-medium">
+              A autorização acontece na sua sessão atual e volta direto para o seu painel.
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4 text-center">
-            <div className="rounded-xl border border-border bg-background p-4 text-sm text-muted-foreground">
-              {bridgeState !== 'error' && <Loader2 className="mx-auto mb-3 h-5 w-5 animate-spin text-accent" />}
+          <CardContent className="space-y-6 text-center">
+            <div className="rounded-xl border border-zinc-100 bg-zinc-50/50 p-4 text-sm font-medium text-zinc-600">
+              {bridgeState !== 'error' && <Loader2 className="mx-auto mb-3 h-5 w-5 animate-spin text-vj-green" />}
               {bridgeMessage}
             </div>
 
             {bridgeState === 'error' && (
               <div className="flex flex-col gap-2">
-                <Button onClick={() => window.location.reload()}>Tentar novamente</Button>
-                <Button variant="outline" onClick={() => window.location.replace('/')}>
+                <Button className="w-full h-11" onClick={() => window.location.reload()}>Tentar novamente</Button>
+                <Button variant="outline" className="w-full h-11" onClick={() => window.location.replace('/')}>
                   Voltar para a plataforma
                 </Button>
               </div>
@@ -210,12 +210,12 @@ export default function Login() {
       <div className="w-full lg:w-1/2 flex flex-col items-center justify-center p-8 sm:p-12 lg:p-24 bg-white relative z-10">
         <div className="w-full max-w-md space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-700">
           <div className="text-center md:text-left">
-            <div className="mx-auto md:mx-0 mb-6 flex h-12 w-12 items-center justify-center rounded-xl bg-vj-green">
-              <Cloud className="h-6 w-6 text-zinc-950" />
+            <div className="mx-auto md:mx-0 mb-6 h-11 w-11 flex items-center justify-center rounded-xl bg-vj-bg-dark border border-white/5">
+              <Zap className="h-5 w-5 text-vj-green fill-vj-green" />
             </div>
             <h1 className="text-3xl font-black tracking-tight mb-2">Bem-vindo de volta</h1>
-            <p className="text-zinc-500">
-              {wantsExtensionFlow ? 'Entre na sua conta para conectar a extensão ao WhatsApp.' : 'Acesse seu painel inteligente para gerenciar suas operações.'}
+            <p className="text-vj-txt3 text-sm font-medium">
+              {wantsExtensionFlow ? 'Entre na sua conta para conectar a extensão ao WhatsApp.' : 'Acesse seu painel para gerenciar sua agência.'}
             </p>
           </div>
 

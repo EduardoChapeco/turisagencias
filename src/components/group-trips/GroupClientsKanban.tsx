@@ -2,13 +2,14 @@ import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { useGroupClients, useUpdateGroupClient, getInadimplenciaColor } from '@/hooks/useGroupClients';
+import { useGroupClients, useUpdateGroupClient, getInadimplenciaColor, gerarLinkCobrancaWhatsapp, gerarLinkCobrancaComPortalWhatsapp } from '@/hooks/useGroupClients';
 import { useGroupInstallmentsByTrip } from '@/hooks/useGroupInstallments';
+import { useGroupTripBookings } from '@/hooks/useGroupTripFinance';
+import { useGroupTrips } from '@/hooks/useGroupTrips';
 import { SheetPage } from '@/components/ui/SheetPage';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Users, FileText, BadgeDollarSign, PlaneTakeoff, Bell, Trash2, Search, ArrowRight } from 'lucide-react';
-import { gerarLinkCobrancaWhatsapp } from '@/hooks/useGroupClients';
 
 interface GroupClientsKanbanProps {
   groupTripId: string;
@@ -24,12 +25,53 @@ const COLUMNS = [
 export function GroupClientsKanban({ groupTripId }: GroupClientsKanbanProps) {
   const { data: clients, isLoading } = useGroupClients(groupTripId);
   const { data: installments } = useGroupInstallmentsByTrip(groupTripId);
+  const { data: bookings } = useGroupTripBookings(groupTripId);
+  const { data: trips } = useGroupTrips();
   const updateClient = useUpdateGroupClient();
 
   const [search, setSearch] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
 
   if (isLoading) return <div className="p-12 text-center text-zinc-500">Carregando painel de clientes...</div>;
+
+  const trip = trips?.find(t => t.id === groupTripId);
+  const destino = trip?.destination || 'sua viagem';
+
+  const findBookingForClient = (groupClient: any) => {
+    if (!bookings || !groupClient) return null;
+    return bookings.find((b: any) => {
+      // 1. Match por client_id
+      if (groupClient.client_id && b.client_id && groupClient.client_id === b.client_id) return true;
+      
+      // 2. Match por CPF normalizado
+      if (groupClient.cpf && b.lead_cpf) {
+        const c1 = groupClient.cpf.replace(/\D/g, '');
+        const c2 = b.lead_cpf.replace(/\D/g, '');
+        if (c1 && c1 === c2) return true;
+      }
+      
+      // 3. Match por e-mail
+      if (groupClient.email && b.lead_email) {
+        if (groupClient.email.trim().toLowerCase() === b.lead_email.trim().toLowerCase()) return true;
+      }
+      
+      // 4. Match por telefone normalizado
+      if (groupClient.telefone && b.lead_phone) {
+        const t1 = groupClient.telefone.replace(/\D/g, '');
+        const t2 = b.lead_phone.replace(/\D/g, '');
+        if (t1 && t1 === t2) return true;
+      }
+      
+      // 5. Match por nome completo
+      if (groupClient.nome_completo && b.lead_name) {
+        const n1 = groupClient.nome_completo.trim().toLowerCase();
+        const n2 = b.lead_name.trim().toLowerCase();
+        if (n1 && n1 === n2) return true;
+      }
+      
+      return false;
+    }) || null;
+  };
 
   const filteredClients = clients?.filter(c => 
     c.nome_completo.toLowerCase().includes(search.toLowerCase()) || 
@@ -126,7 +168,21 @@ export function GroupClientsKanban({ groupTripId }: GroupClientsKanbanProps) {
                               className="w-full text-xs h-10 rounded-xl border-vj-green/30 text-vj-green hover:bg-vj-green hover:text-white hover:scale-[1.02] active:scale-95 transition-all duration-300 shadow-sm"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                window.open(gerarLinkCobrancaWhatsapp(client, 'Sua Viagem'), '_blank');
+                                const clientInsts = installments?.filter(i => i.group_client_id === client.id) || [];
+                                const lateInst = clientInsts.find(i => i.status === 'atrasado') || clientInsts.find(i => i.status === 'pendente') || null;
+                                const valorParcela = lateInst ? lateInst.valor : (client.valor_total || 0) / (client.max_parcelas || 1);
+                                const numParcela = lateInst ? lateInst.numero_parcela : 1;
+                                const bookingObj = findBookingForClient(client);
+                                const token = bookingObj?.public_token || null;
+
+                                const link = gerarLinkCobrancaComPortalWhatsapp(
+                                  client,
+                                  destino,
+                                  valorParcela,
+                                  numParcela,
+                                  token
+                                );
+                                window.open(link, '_blank');
                               }}
                             >
                               Cobrar WhatsApp

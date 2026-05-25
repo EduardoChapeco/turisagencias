@@ -4,7 +4,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useGroupInstallmentsByTrip, useUpdateGroupInstallment } from '@/hooks/useGroupInstallments';
-import { useGroupClients } from '@/hooks/useGroupClients';
+import { useGroupClients, gerarLinkCobrancaComPortalWhatsapp } from '@/hooks/useGroupClients';
+import { useGroupTripBookings } from '@/hooks/useGroupTripFinance';
+import { useGroupTrips } from '@/hooks/useGroupTrips';
 import { BadgeDollarSign, Calendar, CheckCircle2, AlertCircle, Clock, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -15,6 +17,8 @@ interface GroupFinancialBoardProps {
 export function GroupFinancialBoard({ groupTripId }: GroupFinancialBoardProps) {
   const { data: installments, isLoading: isLoadingInstallments } = useGroupInstallmentsByTrip(groupTripId);
   const { data: clients, isLoading: isLoadingClients } = useGroupClients(groupTripId);
+  const { data: bookings } = useGroupTripBookings(groupTripId);
+  const { data: trips } = useGroupTrips();
   const updateInstallment = useUpdateGroupInstallment();
 
   const [filterStatus, setFilterStatus] = useState<string>('todos');
@@ -23,6 +27,45 @@ export function GroupFinancialBoard({ groupTripId }: GroupFinancialBoardProps) {
   if (isLoadingInstallments || isLoadingClients) {
     return <div className="p-12 text-center text-zinc-500">Carregando financeiro...</div>;
   }
+
+  const trip = trips?.find(t => t.id === groupTripId);
+  const destino = trip?.destination || 'sua viagem';
+
+  const findBookingForClient = (groupClient: any) => {
+    if (!bookings || !groupClient) return null;
+    return bookings.find((b: any) => {
+      // 1. Match por client_id
+      if (groupClient.client_id && b.client_id && groupClient.client_id === b.client_id) return true;
+      
+      // 2. Match por CPF normalizado
+      if (groupClient.cpf && b.lead_cpf) {
+        const c1 = groupClient.cpf.replace(/\D/g, '');
+        const c2 = b.lead_cpf.replace(/\D/g, '');
+        if (c1 && c1 === c2) return true;
+      }
+      
+      // 3. Match por e-mail
+      if (groupClient.email && b.lead_email) {
+        if (groupClient.email.trim().toLowerCase() === b.lead_email.trim().toLowerCase()) return true;
+      }
+      
+      // 4. Match por telefone normalizado
+      if (groupClient.telefone && b.lead_phone) {
+        const t1 = groupClient.telefone.replace(/\D/g, '');
+        const t2 = b.lead_phone.replace(/\D/g, '');
+        if (t1 && t1 === t2) return true;
+      }
+      
+      // 5. Match por nome completo
+      if (groupClient.nome_completo && b.lead_name) {
+        const n1 = groupClient.nome_completo.trim().toLowerCase();
+        const n2 = b.lead_name.trim().toLowerCase();
+        if (n1 && n1 === n2) return true;
+      }
+      
+      return false;
+    }) || null;
+  };
 
   const clientsMap = new Map(clients?.map(c => [c.id, c.nome_completo]));
 
@@ -133,19 +176,53 @@ export function GroupFinancialBoard({ groupTripId }: GroupFinancialBoardProps) {
                       </span>
                     </td>
                     <td className="px-6 py-4 text-right">
-                      {inst.status !== 'pago' && (
-                        <Button 
-                          size="sm" 
-                          variant="outline" 
-                          className="h-9 rounded-xl text-xs font-bold border-vj-green/30 text-vj-green hover:bg-vj-green hover:text-white hover:scale-[1.02] active:scale-95 transition-all duration-300 shadow-sm"
-                          onClick={() => handleMarcarPago(inst.id)}
-                        >
-                          Marcar Pago
-                        </Button>
-                      )}
-                      {inst.status === 'pago' && (
-                        <span className="text-xs text-zinc-400 font-medium">Pago em {inst.data_pagamento ? new Date(inst.data_pagamento).toLocaleDateString('pt-BR') : ''}</span>
-                      )}
+                      <div className="flex items-center justify-end gap-2">
+                        {inst.status !== 'pago' && (
+                          <>
+                            {(() => {
+                              const clientObj = clients?.find(c => c.id === inst.group_client_id);
+                              const bookingObj = findBookingForClient(clientObj);
+                              const token = bookingObj?.public_token || null;
+                              
+                              return (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="h-9 rounded-xl text-xs font-bold border-emerald-500/30 text-emerald-600 hover:bg-emerald-600 hover:text-white hover:scale-[1.02] active:scale-95 transition-all duration-300 shadow-sm"
+                                  onClick={() => {
+                                    if (clientObj) {
+                                      const link = gerarLinkCobrancaComPortalWhatsapp(
+                                        clientObj,
+                                        destino,
+                                        inst.valor,
+                                        inst.numero_parcela,
+                                        token
+                                      );
+                                      window.open(link, '_blank');
+                                    } else {
+                                      toast.error('Erro ao processar cliente.');
+                                    }
+                                  }}
+                                >
+                                  Cobrar WhatsApp
+                                </Button>
+                              );
+                            })()}
+                            
+                            <Button 
+                              size="sm" 
+                              variant="outline" 
+                              className="h-9 rounded-xl text-xs font-bold border-vj-green/30 text-vj-green hover:bg-vj-green hover:text-white hover:scale-[1.02] active:scale-95 transition-all duration-300 shadow-sm"
+                              onClick={() => handleMarcarPago(inst.id)}
+                            >
+                              Marcar Pago
+                            </Button>
+                          </>
+                        )}
+                        {inst.status === 'pago' && (
+                          <span className="text-xs text-zinc-400 font-medium">Pago em {inst.data_pagamento ? new Date(inst.data_pagamento).toLocaleDateString('pt-BR') : ''}</span>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))

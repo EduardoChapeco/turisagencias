@@ -172,8 +172,36 @@ export function gerarLinkCobrancaWhatsapp(cliente: GroupClient, destino: string)
   const msg = encodeURIComponent(
     `Olá ${cliente.nome_completo.split(' ')[0]}! 😊✈️\n` +
     `Sua próxima parcela da viagem para ${destino} está vencendo em breve.\n` +
-    `Valor: ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(cliente.valor_total ?? 0 / (cliente.max_parcelas || 1))}\n\n` +
+    `Valor: ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format((cliente.valor_total ?? 0) / (cliente.max_parcelas || 1))}\n\n` +
     `Dúvidas? Me chama aqui! 👋`
   );
   return `https://wa.me/55${telefone}?text=${msg}`;
 }
+
+/** Gera link WhatsApp de cobrança com link seguro do portal do passageiro */
+export function gerarLinkCobrancaComPortalWhatsapp(
+  cliente: GroupClient,
+  destino: string,
+  valor: number,
+  numeroParcela: number,
+  token: string | null
+): string {
+  const telefone = (cliente.telefone ?? '').replace(/\D/g, '');
+  const primeironome = cliente.nome_completo.split(' ')[0];
+  const fmtValor = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor);
+  
+  let msg = `Olá ${primeironome}! 😊✈️\n` +
+    `Identificamos que a sua ${numeroParcela === 0 ? 'entrada' : `${numeroParcela}ª parcela`} da viagem para ${destino} está em aberto no valor de ${fmtValor}.\n\n`;
+
+  if (token) {
+    msg += `Para sua comodidade, você pode acessar o seu portal seguro do passageiro para consultar o carnê e enviar o comprovante de pagamento diretamente por este link:\n` +
+      `${window.location.origin}/minha-viagem/${token}\n\n`;
+  } else {
+    msg += `Por favor, efetue o pagamento e nos envie o comprovante de pagamento respondendo diretamente aqui nesta conversa do WhatsApp da agência.\n\n`;
+  }
+
+  msg += `Qualquer dúvida ou se precisar de suporte, estamos à disposição! 👋`;
+
+  return `https://wa.me/55${telefone}?text=${encodeURIComponent(msg)}`;
+}
+

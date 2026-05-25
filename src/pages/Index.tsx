@@ -3,7 +3,7 @@ import {
   PlaneTakeoff, Users, FileText, TrendingUp, Zap,
   ArrowRight, Plus, Activity, DollarSign, Clock,
   AlertCircle, CheckCircle2, BarChart2, Headphones,
-  Building2, Loader2,
+  Building2, Loader2, Newspaper
 } from 'lucide-react';
 import { AppLayout } from '@/components/AppLayout';
 import { useAuthStore } from '@/stores/authStore';
@@ -18,6 +18,7 @@ import { GlobalRadarMapWidget, RadarMarker } from '@/components/GlobalRadarMapWi
 import { geocodeCity } from '@/utils/geocoder';
 import { useToast } from '@/hooks/use-toast';
 import type { Tables } from '@/integrations/supabase/types';
+import { Badge } from '@/components/ui/badge';
 
 type OrganizationRow = Tables<'organizations'>;
 
@@ -77,7 +78,7 @@ export default function Dashboard() {
 
     if (error) {
       toast({
-        title: 'Nao foi possivel vincular a organizacao',
+        title: 'Não foi possível vincular a organização',
         description: error.message,
         variant: 'destructive',
       });
@@ -87,7 +88,7 @@ export default function Dashboard() {
     setProfile(updatedProfile);
     setOrganization(org);
     await queryClient.invalidateQueries();
-    toast({ title: 'Organizacao vinculada', description: org.name });
+    toast({ title: 'Organização vinculada', description: org.name });
   };
 
   /* ── KPIs ── */
@@ -111,8 +112,6 @@ export default function Dashboard() {
 
       const T = trips || [], Q = quotations || [], TK = tickets || [], C = clients || [];
 
-      // Em viagem: departure_date <= hoje <= return_date, status publicado/encerrado
-      // Status reais: 'draft' | 'published' | 'closed' | 'cancelled'
       const traveling = T.filter(t => {
         if (!t.departure_date) return false;
         const ret = (t as any).return_date || t.departure_date;
@@ -120,26 +119,20 @@ export default function Dashboard() {
       });
       const paxNow = traveling.reduce((s, t) => s + (t.current_pax || 0), 0);
 
-      // Embarques hoje: saida = hoje, publicados
       const embarquesHoje = T.filter(t =>
         t.departure_date === today && ['published', 'closed'].includes(t.status)
       ).length;
 
-      // Grupos ativos: publicados
       const gruposAtivos = T.filter(t => t.status === 'published').length;
 
-      // Atendimentos abertos
       const atendimentosAbertos = TK.filter(t => ['open', 'pending'].includes(t.status)).length;
 
-      // Pipeline: cotacoes nao rejeitadas/canceladas
       const openQ = Q.filter(q => !['rejected', 'cancelled'].includes((q.status || '')));
       const pipeline = openQ.reduce((s, q) => s + (Number((q as any).total_value) || 0), 0);
 
-      // Cotacoes este mes
       const mesInicio = new Date(); mesInicio.setDate(1); mesInicio.setHours(0, 0, 0, 0);
       const cotacoesMes = Q.filter(q => new Date(q.created_at) >= mesInicio).length;
 
-      // Proximos embarques: publicados, partindo hoje em diante, ate 30 dias
       const next30Str = new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0];
       const upcoming = T
         .filter(t =>
@@ -185,13 +178,13 @@ export default function Dashboard() {
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div className="max-w-2xl">
                 <p className="mb-2 text-xs font-black uppercase tracking-[0.25em] text-vj-green">
-                  Recuperacao master
+                  Recuperação master
                 </p>
                 <h1 className="text-2xl font-black tracking-tight text-vj-txt">
-                  Selecionar organizacao
+                  Selecionar organização
                 </h1>
                 <p className="mt-2 text-sm font-medium text-vj-txt3">
-                  Seu acesso administrativo esta ativo, mas nenhuma organizacao foi carregada para esta sessao.
+                  Seu acesso administrativo está ativo, mas nenhuma organização foi carregada para esta sessão.
                 </p>
               </div>
               <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-vj-green/10">
@@ -203,12 +196,12 @@ export default function Dashboard() {
               {organizationsLoading ? (
                 <div className="flex items-center gap-3 rounded-xl border border-vj-border bg-zinc-50 px-4 py-3 text-sm font-bold text-vj-txt3">
                   <Loader2 className="h-4 w-4 animate-spin text-vj-green" />
-                  Carregando organizacoes...
+                  Carregando organizações...
                 </div>
               ) : !visibleOrganizations?.length ? (
                 <div className="flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-bold text-amber-700">
                   <AlertCircle className="h-4 w-4" />
-                  Nenhuma organizacao visivel para este usuario.
+                  Nenhuma organização visível para este usuário.
                 </div>
               ) : (
                 visibleOrganizations.map((org) => (
@@ -268,10 +261,8 @@ export default function Dashboard() {
       </div>
 
       <div className="space-y-5">
-
         {/* ── LINHA 1: 4 KPIs OPERACIONAIS ── */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-
           {/* Passageiros Embarcados */}
           <div
             className="bento-card p-5 bg-white cursor-pointer group hover:border-vj-green/40"
@@ -341,7 +332,6 @@ export default function Dashboard() {
 
         {/* ── LINHA 2: MAPA + PIPELINE + PRÓXIMOS EMBARQUES ── */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-
           {/* Mapa ao vivo */}
           <div className="lg:col-span-7 bento-card bg-zinc-950 h-[340px] overflow-hidden relative border-none">
             <GlobalRadarMapWidget markers={markers} interactive={false} />
@@ -358,7 +348,6 @@ export default function Dashboard() {
 
           {/* Pipeline + Próximos */}
           <div className="lg:col-span-5 flex flex-col gap-4">
-
             {/* Pipeline Comercial */}
             <div
               className="bento-card p-5 bg-white cursor-pointer group relative overflow-hidden hover:border-vj-green/40"
@@ -438,37 +427,104 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* ── LINHA 3: NOTÍCIAS DO SETOR ── */}
+        {/* ── LINHA 3: NOTÍCIAS DO SETOR (BENTO GRID OMEGA) ── */}
         <div>
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <FileText className="w-4 h-4 text-vj-green" />
               <h2 className="text-sm font-black text-vj-txt uppercase tracking-tight">Notícias do Setor</h2>
             </div>
+            <button
+              onClick={() => navigate('/radar')}
+              className="text-xs font-bold text-vj-green hover:underline flex items-center gap-1"
+            >
+              Ver Radar Completo <ArrowRight className="w-3.5 h-3.5" />
+            </button>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {newsLoading
-              ? [1, 2, 3, 4].map(i => <Skeleton key={i} className="h-44 rounded-[1.5rem]" />)
-              : (news || []).slice(0, 4).map((n: any) => (
-                <div
-                  key={n.id}
-                  className="bento-card p-5 bg-white hover:border-vj-green/40 hover:-translate-y-1 transition-all duration-300 flex flex-col gap-3 group cursor-pointer"
+
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+            {newsLoading ? (
+              [1, 2, 3, 4].map(i => (
+                <Skeleton key={i} className="h-56 rounded-2xl bg-zinc-100 border border-zinc-200 animate-pulse" />
+              ))
+            ) : !news || news.length === 0 ? (
+              <div className="col-span-full p-8 text-center border-2 border-dashed border-zinc-200 rounded-2xl bg-zinc-50/50">
+                <p className="text-sm text-zinc-500 font-medium">Nenhuma notícia curada no radar.</p>
+                <button
+                  onClick={() => navigate('/radar')}
+                  className="mt-3 text-xs font-bold text-vj-green hover:underline"
                 >
-                  <span className="text-[8px] font-black uppercase px-2 py-0.5 bg-zinc-100 text-vj-txt3 rounded-full self-start tracking-widest">
-                    {n.source}
-                  </span>
-                  <h4 className="font-bold text-sm leading-snug line-clamp-3 text-vj-txt flex-1">{n.title}</h4>
-                  <div className="flex items-center justify-between mt-auto">
-                    <span className="text-[10px] font-bold text-vj-txt3">
-                      {new Date(n.published_at).toLocaleDateString('pt-BR')}
-                    </span>
-                    <ArrowRight className="w-4 h-4 text-vj-green opacity-0 group-hover:opacity-100 transition-opacity" />
+                  Sincronizar feeds agora
+                </button>
+              </div>
+            ) : (
+              <>
+                {/* Destaque Bento */}
+                {news.slice(0, 1).map((n: any) => (
+                  <div
+                    key={n.id}
+                    onClick={() => navigate(`/noticias/${n.slug}`)}
+                    className="md:col-span-2 p-5 rounded-2xl border border-zinc-200/50 bg-zinc-950 text-white flex flex-col justify-between group cursor-pointer relative overflow-hidden transition-all duration-300 hover:shadow-lg"
+                  >
+                    <div className="absolute top-0 right-0 w-48 h-48 bg-vj-green/10 blur-[80px] pointer-events-none" />
+                    <div>
+                      <div className="flex items-center justify-between gap-2 mb-3">
+                        <span className="text-[8px] font-black uppercase tracking-widest px-2 py-0.5 bg-zinc-800 text-zinc-300 rounded-full">
+                          {n.ai_category || 'geral'}
+                        </span>
+                        <span className="text-[8px] font-black uppercase text-vj-green">
+                          Destaque
+                        </span>
+                      </div>
+                      <h4 className="font-bold text-lg leading-tight mb-2 group-hover:text-vj-green transition-colors">{n.title}</h4>
+                      <p className="text-xs text-zinc-400 line-clamp-2 leading-relaxed">
+                        {n.ai_short_summary || n.ai_summary || n.raw_excerpt}
+                      </p>
+                      {n.ai_travel_agency_insight && (
+                        <div className="mt-3 p-3 rounded-xl bg-zinc-900 border border-zinc-800 text-[11px] text-zinc-300 leading-snug">
+                          <strong className="text-vj-green font-bold uppercase tracking-wider block text-[9px] mb-0.5">Insight Comercial:</strong>
+                          {n.ai_travel_agency_insight}
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex items-center justify-between mt-4 pt-3 border-t border-zinc-900">
+                      <span className="text-[10px] text-zinc-500 font-semibold">Fonte: {n.source_name}</span>
+                      <ArrowRight className="w-4 h-4 text-vj-green opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+
+                {/* Secundárias Bento */}
+                {news.slice(1, 3).map((n: any) => (
+                  <div
+                    key={n.id}
+                    onClick={() => navigate(`/noticias/${n.slug}`)}
+                    className="p-5 rounded-2xl border border-zinc-100 bg-white flex flex-col justify-between group cursor-pointer transition-all duration-300 hover:border-vj-green/30 hover:shadow-md"
+                  >
+                    <div>
+                      <div className="flex items-center justify-between gap-2 mb-3">
+                        <span className="text-[8px] font-black uppercase tracking-widest px-2 py-0.5 bg-zinc-100 text-zinc-600 rounded-full">
+                          {n.ai_category || 'geral'}
+                        </span>
+                        <span className="h-4 text-[9px] font-black text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-full shrink-0">
+                          {n.ai_relevance_score || 50}%
+                        </span>
+                      </div>
+                      <h4 className="font-bold text-sm leading-snug line-clamp-3 text-zinc-900 group-hover:text-vj-green transition-colors">{n.title}</h4>
+                      <p className="text-xs text-zinc-500 line-clamp-2 mt-2 leading-relaxed">
+                        {n.ai_short_summary || n.ai_summary || n.raw_excerpt}
+                      </p>
+                    </div>
+                    <div className="flex items-center justify-between mt-4 pt-3 border-t border-zinc-50">
+                      <span className="text-[10px] text-zinc-400 font-semibold truncate">Fonte: {n.source_name}</span>
+                      <ArrowRight className="w-4 h-4 text-vj-green opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </div>
+                  </div>
+                ))}
+              </>
+            )}
           </div>
         </div>
-
       </div>
 
       <QuotationBuilderSheet open={quotationOpen} onClose={() => setQuotationOpen(false)} />

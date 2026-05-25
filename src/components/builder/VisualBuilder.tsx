@@ -6,6 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuthStore } from '@/stores/authStore';
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/utils/logger';
+import { useUnsavedChangesGuard } from '@/hooks/useUnsavedChangesGuard';
 
 export type ViewportMode = 'desktop' | 'tablet' | 'mobile';
 
@@ -51,6 +52,10 @@ export default function VisualBuilder({ onBack, projectName = 'Website Principal
 
   // Editing state
   const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
+
+  // Dirty state & Draft control
+  const [isDirty, setIsDirty] = useState(false);
+  const [hasDraft, setHasDraft] = useState(false);
 
   // Fetch initial project and version from Supabase whenever active project type changes
   useEffect(() => {
@@ -160,6 +165,28 @@ export default function VisualBuilder({ onBack, projectName = 'Website Principal
             ]);
           }
         }
+
+        // 3. Verificar rascunho no localStorage
+        if (user?.id) {
+          const key = `turisagencias:builder:draft:${user.id}:${projectType}`;
+          const rawDraft = localStorage.getItem(key);
+          if (rawDraft) {
+            try {
+              const parsed = JSON.parse(rawDraft);
+              if (parsed && (Array.isArray(parsed.blocks) && parsed.blocks.length > 0)) {
+                setHasDraft(true);
+              } else {
+                setHasDraft(false);
+              }
+            } catch (e) {
+              logger.error('Error parsing draft:', e);
+              setHasDraft(false);
+            }
+          } else {
+            setHasDraft(false);
+          }
+        }
+        setIsDirty(false); // Reset dirty ao carregar com sucesso do banco
       } catch (err: any) {
         logger.error('Error loading site builder project:', err);
       } finally {
@@ -169,6 +196,78 @@ export default function VisualBuilder({ onBack, projectName = 'Website Principal
 
     loadProject();
   }, [organization?.id, projectType]);
+
+  const draftKey = user?.id ? `turisagencias:builder:draft:${user.id}:${projectType}` : null;
+
+  // Autosave Draft in LocalStorage (Debounced 1s)
+  useEffect(() => {
+    if (!isDirty || !draftKey) return;
+
+    const saveDraft = () => {
+      const draftData = {
+        projectId,
+        projectType,
+        updatedAt: Date.now(),
+        blocks,
+        slug,
+        metaTitle,
+        metaDescription,
+        isDirty: true
+      };
+      localStorage.setItem(draftKey, JSON.stringify(draftData));
+      logger.debug(`[DRAFT_SAVE] Auto-saved draft for ${projectType}`);
+    };
+
+    const timeoutId = setTimeout(saveDraft, 1000);
+    return () => clearTimeout(timeoutId);
+  }, [blocks, slug, metaTitle, metaDescription, isDirty, draftKey, projectId, projectType]);
+
+  // Protect unsaved changes on window unload
+  useUnsavedChangesGuard(isDirty, 'Você possui alterações não salvas no editor. Tem certeza que deseja sair?');
+
+  const handleRestoreDraft = () => {
+    if (!draftKey) return;
+    const rawDraft = localStorage.getItem(draftKey);
+    if (!rawDraft) return;
+
+    try {
+      const parsed = JSON.parse(rawDraft);
+      if (parsed) {
+        if (Array.isArray(parsed.blocks)) {
+          setBlocks(parsed.blocks);
+        }
+        if (parsed.slug) setSlug(parsed.slug);
+        if (parsed.metaTitle) setMetaTitle(parsed.metaTitle);
+        if (parsed.metaDescription) setMetaDescription(parsed.metaDescription);
+        
+        setIsDirty(true);
+        setHasDraft(false);
+        toast({
+          title: 'Rascunho restaurado!',
+          description: 'Suas alterações não salvas foram recuperadas com sucesso.',
+        });
+      }
+    } catch (e) {
+      logger.error('Error restoring draft:', e);
+      toast({
+        title: 'Erro ao restaurar',
+        description: 'Não foi possível recuperar o rascunho.',
+        variant: 'destructive'
+      });
+    }
+  };
+
+  const handleDiscardDraft = () => {
+    if (draftKey) {
+      localStorage.removeItem(draftKey);
+    }
+    setHasDraft(false);
+    setIsDirty(false);
+    toast({
+      title: 'Rascunho descartado',
+      description: 'As alterações locais pendentes foram excluídas.',
+    });
+  };
 
   // Publish / Save Mutation
   const handlePublish = async () => {
@@ -225,6 +324,14 @@ export default function VisualBuilder({ onBack, projectName = 'Website Principal
         ? `/site/${organization.slug}/bio` 
         : `/site/${organization.slug}/blog`;
 
+      // Limpar rascunho local após publicação com sucesso
+      if (user?.id) {
+        const key = `turisagencias:builder:draft:${user.id}:${projectType}`;
+        localStorage.removeItem(key);
+      }
+      setIsDirty(false);
+      setHasDraft(false);
+
       toast({
         title: 'Canal Publicado com Sucesso!',
         description: `Seu canal de ${projectType} está ativo de verdade no link: ${linkPath}`,
@@ -243,6 +350,7 @@ export default function VisualBuilder({ onBack, projectName = 'Website Principal
 
   const handleUpdateBlock = (updatedBlock: BuilderBlock) => {
     setBlocks(prev => prev.map(b => b.id === updatedBlock.id ? updatedBlock : b));
+    setIsDirty(true);
   };
 
   const handleAddBlock = (kind: 'hero' | 'features' | 'contact' | 'text') => {
@@ -261,11 +369,13 @@ export default function VisualBuilder({ onBack, projectName = 'Website Principal
     setBlocks(prev => [...prev, newBlock]);
     setSelectedBlockId(id);
     setActiveTab('edit');
+    setIsDirty(true);
   };
 
   const handleDeleteBlock = (id: string) => {
     setBlocks(prev => prev.filter(b => b.id !== id));
     if (selectedBlockId === id) setSelectedBlockId(null);
+    setIsDirty(true);
   };
 
   const selectedBlock = blocks.find(b => b.id === selectedBlockId);
@@ -536,7 +646,7 @@ export default function VisualBuilder({ onBack, projectName = 'Website Principal
                       <input 
                         type="text" 
                         value={slug}
-                        onChange={(e) => setSlug(e.target.value)}
+                        onChange={(e) => { setSlug(e.target.value); setIsDirty(true); }}
                         className="w-full mt-1 bg-zinc-950 border border-zinc-800 text-xs rounded-lg p-2 focus:border-vj-green text-white" 
                       />
                     </div>
@@ -545,7 +655,7 @@ export default function VisualBuilder({ onBack, projectName = 'Website Principal
                       <input 
                         type="text" 
                         value={metaTitle}
-                        onChange={(e) => setMetaTitle(e.target.value)}
+                        onChange={(e) => { setMetaTitle(e.target.value); setIsDirty(true); }}
                         className="w-full mt-1 bg-zinc-950 border border-zinc-800 text-xs rounded-lg p-2 focus:border-vj-green text-white" 
                       />
                     </div>
@@ -553,7 +663,7 @@ export default function VisualBuilder({ onBack, projectName = 'Website Principal
                       <label className="text-[10px] text-zinc-500 uppercase font-semibold">Meta Description</label>
                       <textarea 
                         value={metaDescription}
-                        onChange={(e) => setMetaDescription(e.target.value)}
+                        onChange={(e) => { setMetaDescription(e.target.value); setIsDirty(true); }}
                         className="w-full mt-1 bg-zinc-950 border border-zinc-800 text-xs rounded-lg p-2 h-20 focus:border-vj-green text-white" 
                       />
                     </div>
@@ -568,6 +678,39 @@ export default function VisualBuilder({ onBack, projectName = 'Website Principal
         <main className="flex-1 bg-zinc-950 p-8 flex items-center justify-center overflow-auto relative">
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(0,211,123,0.04),rgba(255,255,255,0))]" />
           
+          {hasDraft && (
+            <div className="absolute top-6 left-1/2 -translate-x-1/2 z-40 w-full max-w-xl animate-in fade-in slide-in-from-top-4 duration-300">
+              <div className="mx-4 p-4 bg-zinc-900/95 border border-emerald-500/20 backdrop-blur-xl rounded-2xl shadow-2xl flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 bg-emerald-500/10 rounded-xl flex items-center justify-center border border-emerald-500/20 text-emerald-400">
+                    <Save className="w-5 h-5 animate-pulse" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-white">Rascunho recuperado localmente!</h4>
+                    <p className="text-[10px] text-zinc-400">Você possui alterações não salvas de uma edição anterior.</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button 
+                    size="sm" 
+                    variant="ghost" 
+                    onClick={handleDiscardDraft}
+                    className="h-8 text-[10px] font-bold text-zinc-400 hover:text-white rounded-lg px-3"
+                  >
+                    Descartar
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    onClick={handleRestoreDraft}
+                    className="h-8 text-[10px] font-bold bg-vj-green text-zinc-950 hover:bg-emerald-400 rounded-lg px-4"
+                  >
+                    Restaurar
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+
           {loading ? (
             <div className="flex flex-col items-center gap-2">
               <Loader2 className="w-8 h-8 animate-spin text-vj-green" />

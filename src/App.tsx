@@ -63,6 +63,11 @@ const AdminAgencyDetail = lazy(() => import('./pages/admin/AdminAgencyDetail'));
 
 const RadarPortal = lazy(() => import('./pages/RadarPortal'));
 const GlobalRadarMap = lazy(() => import('./pages/GlobalRadarMap'));
+const NewsCMS = lazy(() => import('./pages/NewsCMS'));
+const PublicNewsArticle = lazy(() => import('./pages/PublicNewsArticle'));
+const Proposals = lazy(() => import('./pages/Proposals'));
+const ProposalEditor = lazy(() => import('./pages/ProposalEditor'));
+const PublicProposal = lazy(() => import('./pages/PublicProposal'));
 const LandingPage = lazy(() => import('./pages/LandingPage'));
 const Pricing = lazy(() => import('./pages/Pricing'));
 
@@ -178,6 +183,8 @@ const App = () => (
               <Route path="/voucher/:token" element={<PublicBookingVoucher />} />
               <Route path="/minha-viagem/:token" element={<TravelerPortal />} />
               <Route path="/portal/:org_slug" element={<PortalLogin />} />
+              <Route path="/noticias/:slug" element={<PublicNewsArticle />} />
+              <Route path="/p/:token" element={<PublicProposal />} />
               <Route path="/portal/:org_slug/home" element={<ProtectedRoute><PortalHome /></ProtectedRoute>} />
               <Route path="/portal/:org_slug/trip/:id" element={<ProtectedRoute><PortalTripDetail /></ProtectedRoute>} />
               <Route path="/portal/:org_slug/trip/:trip_id/ai-photos" element={<ProtectedRoute><PortalAiPhotos /></ProtectedRoute>} />
@@ -190,6 +197,9 @@ const App = () => (
               <Route path="/" element={<HomeOrApp />} />
               <Route path="/radar" element={<ProtectedWithOrg><RadarPortal /></ProtectedWithOrg>} />
               <Route path="/radar-global" element={<ProtectedWithOrg><GlobalRadarMap /></ProtectedWithOrg>} />
+              <Route path="/news-cms" element={<ProtectedWithOrg><TripsRole><NewsCMS /></TripsRole></ProtectedWithOrg>} />
+              <Route path="/proposals" element={<ProtectedWithOrg><TripsRole><Proposals /></TripsRole></ProtectedWithOrg>} />
+              <Route path="/proposals/:id/edit" element={<ProtectedWithOrg><TripsRole><ProposalEditor /></TripsRole></ProtectedWithOrg>} />
 
               <Route path="/clients" element={<ProtectedWithOrg><Clients /></ProtectedWithOrg>} />
 

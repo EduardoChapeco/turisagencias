@@ -14,6 +14,7 @@ import { AvatarUploader } from '@/components/ui/AvatarUploader';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useCreateClient, useUpdateClient, useClient } from '@/hooks/useClients';
 import { useToast } from '@/hooks/use-toast';
+import { useUnsavedChangesGuard } from '@/hooks/useUnsavedChangesGuard';
 
 const ORIGIN_OPTIONS = ['Instagram', 'Indicação', 'Google', 'Facebook', 'WhatsApp', 'Site', 'Evento', 'Outro'];
 const DOC_TYPES = ['Passaporte', 'RG', 'CNH', 'CPF', 'CRM (Médico)', 'OAB (Advogado)', 'Visto', 'Outro'];
@@ -59,6 +60,10 @@ export function ClientEditSheet({ id, open, onClose, onSuccess }: ClientEditShee
   });
   const [tagInput, setTagInput] = useState('');
   const [cepLoading, setCepLoading] = useState(false);
+  const [isFormDirty, setIsFormDirty] = useState(false);
+
+  // Unsaved changes guard para a ficha do cliente
+  useUnsavedChangesGuard(isFormDirty && open, 'Você possui alterações não salvas na ficha do cliente. Tem certeza que deseja fechar?');
 
   // Fetch client if editing
   const { data: existingClient, isLoading: isClientLoading } = useClient(isUpdate ? id || undefined : undefined);
@@ -116,9 +121,13 @@ export function ClientEditSheet({ id, open, onClose, onSuccess }: ClientEditShee
       });
       setTagInput('');
     }
+    setIsFormDirty(false); // Reset dirty flag on form load or reset
   }, [open, isUpdate, existingClient]);
 
-  const update = (field: string, value: any) => setForm((p: any) => ({ ...p, [field]: value }));
+  const update = (field: string, value: any) => {
+    setForm((p: any) => ({ ...p, [field]: value }));
+    setIsFormDirty(true);
+  };
 
   const addTag = () => {
     const t = tagInput.trim();
@@ -227,9 +236,11 @@ export function ClientEditSheet({ id, open, onClose, onSuccess }: ClientEditShee
 
     if (isUpdate && updateClient) {
       const res = await updateClient.mutateAsync({ id: id!, ...payload });
+      setIsFormDirty(false);
       onSuccess?.(res.id);
     } else {
       const res = await createClient.mutateAsync(payload);
+      setIsFormDirty(false);
       onSuccess?.(res.id);
     }
     onClose();

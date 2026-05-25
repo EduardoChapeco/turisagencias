@@ -6,6 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuthStore } from '@/stores/authStore';
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/utils/logger';
+import { useUnsavedChangesGuard } from '@/hooks/useUnsavedChangesGuard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -70,6 +71,10 @@ export default function Onboarding() {
     bioCurta: '',
   });
   const [loading, setLoading] = useState(false);
+
+  // Proteger progresso de onboarding contra fechamentos acidentais de aba
+  const isDirty = !!form.name || !!form.whatsapp || !!form.email || !!form.cnpjCpf || !!logoFile;
+  useUnsavedChangesGuard(isDirty && step < 4, 'Você possui dados de onboarding preenchidos. Tem certeza que deseja fechar ou sair antes de concluir a ativação?');
 
   if (showAdvancedBuilder) {
     return (

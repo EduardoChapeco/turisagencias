@@ -7180,6 +7180,570 @@ export type Database = {
           },
         ]
       }
+      feeds_master: {
+        Row: {
+          category: string
+          country: string
+          created_at: string
+          feed_url: string
+          fetch_frequency_minutes: number
+          id: string
+          is_active: boolean
+          language: string
+          last_error: string | null
+          last_fetched_at: string | null
+          last_success_at: string | null
+          name: string
+          source_type: string
+          trust_score: number
+          updated_at: string
+          url: string | null
+        }
+        Insert: {
+          category?: string
+          country?: string
+          created_at?: string
+          feed_url: string
+          fetch_frequency_minutes?: number
+          id?: string
+          is_active?: boolean
+          language?: string
+          last_error?: string | null
+          last_fetched_at?: string | null
+          last_success_at?: string | null
+          name: string
+          source_type?: string
+          trust_score?: number
+          updated_at?: string
+          url?: string | null
+        }
+        Update: {
+          category?: string
+          country?: string
+          created_at?: string
+          feed_url?: string
+          fetch_frequency_minutes?: number
+          id?: string
+          is_active?: boolean
+          language?: string
+          last_error?: string | null
+          last_fetched_at?: string | null
+          last_success_at?: string | null
+          name?: string
+          source_type?: string
+          trust_score?: number
+          updated_at?: string
+          url?: string | null
+        }
+        Relationships: []
+      }
+      feeds_user: {
+        Row: {
+          category: string
+          created_at: string
+          feed_url: string
+          id: string
+          is_active: boolean
+          last_error: string | null
+          last_fetched_at: string | null
+          last_success_at: string | null
+          name: string
+          org_id: string
+          updated_at: string
+          url: string | null
+          user_id: string | null
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          feed_url: string
+          id?: string
+          is_active?: boolean
+          last_error?: string | null
+          last_fetched_at?: string | null
+          last_success_at?: string | null
+          name: string
+          org_id: string
+          updated_at?: string
+          url?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          feed_url?: string
+          id?: string
+          is_active?: boolean
+          last_error?: string | null
+          last_fetched_at?: string | null
+          last_success_at?: string | null
+          name?: string
+          org_id?: string
+          updated_at?: string
+          url?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feeds_user_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      news_articles: {
+        Row: {
+          ai_bullets: Json
+          ai_category: string | null
+          ai_relevance_score: number | null
+          ai_sentiment: string | null
+          ai_short_summary: string | null
+          ai_summary: string | null
+          ai_tags: Json
+          ai_travel_agency_insight: string | null
+          ai_recommended_action: string | null
+          author: string | null
+          canonical_url: string | null
+          created_at: string
+          fetched_at: string
+          image_url: string | null
+          id: string
+          is_featured: boolean
+          org_id: string | null
+          original_url: string
+          published_at: string
+          raw_content: string | null
+          raw_excerpt: string | null
+          safe_to_publish: boolean
+          slug: string
+          source_feed_id: string | null
+          source_name: string
+          source_scope: string
+          status: string
+          reading_time_minutes: number | null
+          hash_dedup: string | null
+          updated_at: string
+        }
+        Insert: {
+          ai_bullets?: Json
+          ai_category?: string | null
+          ai_relevance_score?: number | null
+          ai_sentiment?: string | null
+          ai_short_summary?: string | null
+          ai_summary?: string | null
+          ai_tags?: Json
+          ai_travel_agency_insight?: string | null
+          ai_recommended_action?: string | null
+          author?: string | null
+          canonical_url?: string | null
+          created_at?: string
+          fetched_at?: string
+          image_url?: string | null
+          id?: string
+          is_featured?: boolean
+          org_id?: string | null
+          original_url: string
+          published_at?: string
+          raw_content?: string | null
+          raw_excerpt?: string | null
+          safe_to_publish?: boolean
+          slug: string
+          source_feed_id?: string | null
+          source_name?: string
+          source_scope?: string
+          status?: string
+          reading_time_minutes?: number | null
+          hash_dedup?: string | null
+          updated_at?: string
+        }
+        Update: {
+          ai_bullets?: Json
+          ai_category?: string | null
+          ai_relevance_score?: number | null
+          ai_sentiment?: string | null
+          ai_short_summary?: string | null
+          ai_summary?: string | null
+          ai_tags?: Json
+          ai_travel_agency_insight?: string | null
+          ai_recommended_action?: string | null
+          author?: string | null
+          canonical_url?: string | null
+          created_at?: string
+          fetched_at?: string
+          image_url?: string | null
+          id?: string
+          is_featured?: boolean
+          org_id?: string | null
+          original_url?: string
+          published_at?: string
+          raw_content?: string | null
+          raw_excerpt?: string | null
+          safe_to_publish?: boolean
+          slug?: string
+          source_feed_id?: string | null
+          source_name?: string
+          source_scope?: string
+          status?: string
+          reading_time_minutes?: number | null
+          hash_dedup?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "news_articles_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      news_sync_runs: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          error_log: Json
+          finished_at: string | null
+          id: string
+          org_id: string | null
+          started_at: string
+          status: string
+          total_duplicates: number
+          total_failed: number
+          total_feeds: number
+          total_fetched: number
+          total_new: number
+          triggered_by: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          error_log?: Json
+          finished_at?: string | null
+          id?: string
+          org_id?: string | null
+          started_at?: string
+          status?: string
+          total_duplicates?: number
+          total_failed?: number
+          total_feeds?: number
+          total_fetched?: number
+          total_new?: number
+          triggered_by?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          error_log?: Json
+          finished_at?: string | null
+          id?: string
+          org_id?: string | null
+          started_at?: string
+          status?: string
+          total_duplicates?: number
+          total_failed?: number
+          total_feeds?: number
+          total_fetched?: number
+          total_new?: number
+          triggered_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "news_sync_runs_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      quote_templates: {
+        Row: {
+          category: string | null
+          created_at: string
+          default_sections: Json
+          description: string | null
+          design_schema: Json
+          id: string
+          is_active: boolean
+          is_master: boolean
+          name: string
+          org_id: string | null
+          thumbnail_url: string | null
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          default_sections?: Json
+          description?: string | null
+          design_schema?: Json
+          id?: string
+          is_active?: boolean
+          is_master?: boolean
+          name: string
+          org_id?: string | null
+          thumbnail_url?: string | null
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          default_sections?: Json
+          description?: string | null
+          design_schema?: Json
+          id?: string
+          is_active?: boolean
+          is_master?: boolean
+          name?: string
+          org_id?: string | null
+          thumbnail_url?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quote_templates_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      quote_design_elements: {
+        Row: {
+          category: string | null
+          compatibility: string
+          created_at: string
+          html_template: string | null
+          id: string
+          is_active: boolean
+          is_master: boolean
+          name: string
+          org_id: string | null
+          schema: Json
+          style_schema: Json
+          thumbnail_url: string | null
+          type: string
+          updated_at: string
+          version: string
+        }
+        Insert: {
+          category?: string | null
+          compatibility?: string
+          created_at?: string
+          html_template?: string | null
+          id?: string
+          is_active?: boolean
+          is_master?: boolean
+          name: string
+          org_id?: string | null
+          schema?: Json
+          style_schema?: Json
+          thumbnail_url?: string | null
+          type: string
+          updated_at?: string
+          version?: string
+        }
+        Update: {
+          category?: string | null
+          compatibility?: string
+          created_at?: string
+          html_template?: string | null
+          id?: string
+          is_active?: boolean
+          is_master?: boolean
+          name?: string
+          org_id?: string | null
+          schema?: Json
+          style_schema?: Json
+          thumbnail_url?: string | null
+          type?: string
+          updated_at?: string
+          version?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quote_design_elements_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      proposals: {
+        Row: {
+          ai_extracted_data: Json
+          client_id: string | null
+          content_schema: Json
+          created_at: string
+          destination: string | null
+          id: string
+          itinerary_schema: Json
+          media_schema: Json
+          org_id: string
+          pdf_url: string | null
+          pricing_schema: Json
+          public_slug: string | null
+          public_token: string
+          source_pdf_ocr_text: string | null
+          source_pdf_url: string | null
+          status: string
+          template_id: string | null
+          title: string
+          updated_at: string
+          webview_url: string | null
+        }
+        Insert: {
+          ai_extracted_data?: Json
+          client_id?: string | null
+          content_schema?: Json
+          created_at?: string
+          destination?: string | null
+          id?: string
+          itinerary_schema?: Json
+          media_schema?: Json
+          org_id: string
+          pdf_url?: string | null
+          pricing_schema?: Json
+          public_slug?: string | null
+          public_token?: string
+          source_pdf_ocr_text?: string | null
+          source_pdf_url?: string | null
+          status?: string
+          template_id?: string | null
+          title: string
+          updated_at?: string
+          webview_url?: string | null
+        }
+        Update: {
+          ai_extracted_data?: Json
+          client_id?: string | null
+          content_schema?: Json
+          created_at?: string
+          destination?: string | null
+          id?: string
+          itinerary_schema?: Json
+          media_schema?: Json
+          org_id?: string
+          pdf_url?: string | null
+          pricing_schema?: Json
+          public_slug?: string | null
+          public_token?: string
+          source_pdf_ocr_text?: string | null
+          source_pdf_url?: string | null
+          status?: string
+          template_id?: string | null
+          title?: string
+          updated_at?: string
+          webview_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "proposals_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "proposals_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "proposals_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "quote_templates"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      proposal_versions: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          html_snapshot: string | null
+          id: string
+          pdf_url: string | null
+          proposal_id: string
+          snapshot: Json
+          version_number: number
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          html_snapshot?: string | null
+          id?: string
+          pdf_url?: string | null
+          proposal_id: string
+          snapshot: Json
+          version_number: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          html_snapshot?: string | null
+          id?: string
+          pdf_url?: string | null
+          proposal_id?: string
+          snapshot?: Json
+          version_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "proposal_versions_proposal_id_fkey"
+            columns: ["proposal_id"]
+            isOneToOne: false
+            referencedRelation: "proposals"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      proposal_assets: {
+        Row: {
+          bucket_path: string | null
+          created_at: string
+          file_url: string
+          file_type: string | null
+          id: string
+          metadata: Json
+          proposal_id: string
+        }
+        Insert: {
+          bucket_path?: string | null
+          created_at?: string
+          file_url: string
+          file_type?: string | null
+          id?: string
+          metadata?: Json
+          proposal_id: string
+        }
+        Update: {
+          bucket_path?: string | null
+          created_at?: string
+          file_url?: string
+          file_type?: string | null
+          id?: string
+          metadata?: Json
+          proposal_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "proposal_assets_proposal_id_fkey"
+            columns: ["proposal_id"]
+            isOneToOne: false
+            referencedRelation: "proposals"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       rss_feeds: {
         Row: {
           category: string | null

@@ -59,6 +59,7 @@ export default function PublicItinerary() {
   });
 
   const containerRef = useRef<HTMLDivElement>(null);
+  const exportRef = useRef<HTMLDivElement>(null);
   const [isExporting, setIsExporting] = useState(false);
   const [formData, setFormData] = useState({ name: '', email: '', whatsapp: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -148,10 +149,10 @@ export default function PublicItinerary() {
   };
 
   const handleDownloadImage = async () => {
-    if (!containerRef.current) return;
+    if (!exportRef.current) return;
     setIsExporting(true);
     try {
-      const canvas = await html2canvas(containerRef.current, {
+      const canvas = await html2canvas(exportRef.current, {
         scale: 2,
         useCORS: true,
         backgroundColor: '#09090b', // dark background matching zinc-950
@@ -359,6 +360,79 @@ export default function PublicItinerary() {
       </div>
 
       <TurisBadge />
+
+      {/* Elemento oculto com layout fixo (800px) exclusivamente para exportação de imagem */}
+      <div 
+        ref={exportRef}
+        style={{ width: '800px', position: 'absolute', left: '-9999px', top: '-9999px' }}
+        className="bg-zinc-950 text-white p-10 space-y-8 font-sans"
+      >
+        {/* Cabeçalho do Roteiro */}
+        <div className="border-b border-zinc-800 pb-6 space-y-4">
+          <div className="flex justify-between items-center">
+            <span className="text-xs font-black uppercase tracking-widest px-3 py-1 bg-zinc-900 border border-zinc-800 rounded-full text-[#00D37B]">
+              {itinerary.org?.name || 'Excelência Tour'}
+            </span>
+            {itinerary.destination && (
+              <span className="text-xs text-zinc-400 font-bold">
+                📍 {itinerary.destination}
+              </span>
+            )}
+          </div>
+          <h2 className="text-3xl font-black tracking-tight text-white leading-tight">
+            {itinerary.title}
+          </h2>
+          {itinerary.subtitle && (
+            <p className="text-sm text-zinc-400 font-medium max-w-2xl">
+              {itinerary.subtitle}
+            </p>
+          )}
+          {itinerary.departure_date && (
+            <p className="text-xs text-zinc-500 font-bold uppercase tracking-wider">
+              Saída: {new Date(itinerary.departure_date).toLocaleDateString('pt-BR')}
+            </p>
+          )}
+        </div>
+
+        {/* Paradas do Roteiro (Timeline Simplificada) */}
+        <div className="space-y-6">
+          <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Cronograma Oficial</h3>
+          {mappedStops.length > 0 ? (
+            <div className="space-y-4">
+              {mappedStops.map((stop, idx) => (
+                <div key={stop.id || idx} className="p-5 rounded-2xl border border-zinc-900 bg-zinc-900/40 space-y-2 relative">
+                  <div className="flex justify-between items-center">
+                    <span className="text-[10px] font-black bg-[#00D37B]/10 border border-[#00D37B]/20 text-[#00D37B] rounded-full px-2 py-0.5">
+                      Dia {stop.day_number}
+                    </span>
+                    {stop.time && (
+                      <span className="text-[10px] text-zinc-500 font-bold uppercase">
+                        🕒 {stop.time}
+                      </span>
+                    )}
+                  </div>
+                  <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                    {stop.emoji || '📍'} {stop.name}
+                  </h4>
+                  {stop.description && (
+                    <p className="text-xs text-zinc-400 leading-relaxed pt-1">
+                      {stop.description}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-xs text-zinc-500 italic text-center py-10">Roteiro em construção.</p>
+          )}
+        </div>
+
+        {/* Rodapé da Imagem */}
+        <div className="pt-6 border-t border-zinc-900 flex justify-between items-center text-[10px] text-zinc-500">
+          <span>Roteiro de Viagem Personalizado</span>
+          <span className="font-bold text-zinc-400">Turis Agências</span>
+        </div>
+      </div>
     </div>
   );
 }

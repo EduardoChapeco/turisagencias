@@ -98,6 +98,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
 
+      // Reduzir desmontagens drásticas da árvore React:
+      // Se o usuário já está logado na store e o ID é idêntico, realizamos a re-sincronização silenciosamente em background.
+      const currentStore = useAuthStore.getState();
+      const isAlreadyLoggedIn = !!currentStore.user && currentStore.user.id === session.user.id;
+
       activeUserIdRef.current = session.user.id;
 
       if (event === 'TOKEN_REFRESHED') {
@@ -105,17 +110,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      setLoading(true);
+      if (!isAlreadyLoggedIn) {
+        setLoading(true);
+      }
       setUser(session.user);
 
       setTimeout(() => {
         fetchUserData(session.user.id)
           .catch((error) => {
             logger.error('Failed to sync authenticated user context', error);
-            // Novamente, não apagamos a sessão (reset), apenas reportamos o erro.
-            // O usuário não será deslogado por conta de falha na tabela de profiles.
           })
-          .finally(() => setLoading(false));
+          .finally(() => {
+            if (!isAlreadyLoggedIn) {
+              setLoading(false);
+            }
+          });
       }, 0);
     });
 

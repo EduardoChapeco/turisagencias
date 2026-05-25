@@ -7,33 +7,67 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Fallback RSS feeds focused on travel B2B
-const FALLBACK_FEEDS = [
-  "https://www.panrotas.com.br/rss.xml",
-  "https://www.mercadoeeventos.com.br/feed/",
-  "https://brasilturis.com.br/feed/"
-];
+// Helper para gerar slug amigável
+function generateSlug(title: string): string {
+  const clean = title
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/[\s_]+/g, "-")
+    .replace(/-+/g, "-")
+    .trim();
+  return `${clean}-${Math.random().toString(36).slice(2, 6)}`;
+}
 
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
 
-  try {
-    const cronSecret = Deno.env.get("CRON_SECRET");
-    const incomingSecret = req.headers.get("X-Cron-Secret") || req.headers.get("Authorization")?.replace("Bearer ", "");
+  // Criar registro de sincronização
+  let syncRunId: string | null = null;
+  let orgId: string | null = null;
+  let totalFeeds = 0;
+  let totalFetched = 0;
+  let totalNew = 0;
+  let totalDuplicates = 0;
+  let totalFailed = 0;
+  const errorLogs: any[] = [];
 
-    if (cronSecret && incomingSecret !== cronSecret) {
-      return new Response(JSON.stringify({ error: "Unauthorized: Invalid Cron Secret" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" }
-      });
+  const supabaseClient = createClient(
+    Deno.env.get("SUPABASE_URL") ?? "",
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+  );
+
+  try {
+    // Obter payload do request (se houver org_id)
+    let body: any = {};
+    try {
+      body = await req.json();
+      orgId = body.org_id || null;
+    } catch (_) {
+      // Ignora erro se não houver body JSON
     }
 
-    const supabaseClient = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
-    );
+    const triggerType = body.triggered_by || 'system';
+    const userId = body.user_id || null;
+
+    // Criar o registro de execução news_sync_runs
+    const { data: syncRun, error: syncRunErr } = await supabaseClient
+      .from('news_sync_runs')
+      .insert({
+        org_id: orgId,
+        status: 'running',
+        triggered_by: triggerType,
+        created_by: userId
+      })
+      .select('id')
+      .single();
+
+    if (!syncRunErr && syncRun) {
+      syncRunId = syncRun.id;
+    }
 
     // Get Groq/OpenRouter keys
     const apiKey = Deno.env.get("GROQ_API_KEY") || Deno.env.get("OPENROUTER_API_KEY");
@@ -44,150 +78,305 @@ Deno.serve(async (req: Request) => {
 
     const firecrawlKey = Deno.env.get("FIRECRAWL_API_KEY");
 
-    // 1. Fetch available RSS feeds from the database
-    let { data: dbFeeds, error: dbError } = await supabaseClient.from('rss_feeds').select('url').eq('is_active', true);
-    
-    let feedUrls = FALLBACK_FEEDS;
-    if (!dbError && dbFeeds && dbFeeds.length > 0) {
-        feedUrls = [...new Set([...feedUrls, ...dbFeeds.map(f => f.url)])];
+    // 1. Carregar feeds master (globais) ativos
+    const { data: masterFeeds, error: masterErr } = await supabaseClient
+      .from('feeds_master')
+      .select('*')
+      .eq('is_active', true);
+
+    if (masterErr) {
+      console.error("Erro ao carregar feeds master:", masterErr);
+      errorLogs.push({ step: 'load_master_feeds', error: masterErr.message });
     }
 
-    let processedCount = 0;
-    
-    // 2. Aggregate recent articles from RSS feeds
+    // 2. Carregar feeds do usuário (específicos da agência/org) ativos
+    let userFeeds: any[] = [];
+    if (orgId) {
+      const { data: orgFeeds, error: userErr } = await supabaseClient
+        .from('feeds_user')
+        .select('*')
+        .eq('org_id', orgId)
+        .eq('is_active', true);
+
+      if (userErr) {
+        console.error("Erro ao carregar feeds user:", userErr);
+        errorLogs.push({ step: 'load_user_feeds', error: userErr.message });
+      } else if (orgFeeds) {
+        userFeeds = orgFeeds;
+      }
+    }
+
+    const feedsToFetch = [
+      ...(masterFeeds || []).map(f => ({ ...f, scope: 'master' })),
+      ...(userFeeds || []).map(f => ({ ...f, scope: 'user' }))
+    ];
+
+    totalFeeds = feedsToFetch.length;
+
+    // 3. Processar cada feed
     const rawArticles = [];
-    for (const feedUrl of feedUrls) {
+    for (const feed of feedsToFetch) {
       try {
-        const response = await fetch(feedUrl);
-        if (!response.ok) continue;
-        const xml = await response.text();
-        const feed = await parseFeed(xml);
+        console.log(`Buscando feed: ${feed.name} (${feed.feed_url})`);
+        const response = await fetch(feed.feed_url);
         
-        // Take top 3 most recent articles per feed to avoid overload
-        const entries = feed.entries.slice(0, 3);
-        for (const entry of entries) {
-           rawArticles.push({
-             title: entry.title?.value || "Sem Título",
-             url: entry.links[0]?.href || "",
-             source: feed.title.value || "RSS Feed",
-             body: entry.description?.value || ""
-           });
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
         }
-      } catch (e) {
-        console.error(`Erro ao parsear feed ${feedUrl}:`, e);
+        
+        const xml = await response.text();
+        const parsed = await parseFeed(xml);
+        
+        // Atualizar feed com sucesso
+        const targetTable = feed.scope === 'master' ? 'feeds_master' : 'feeds_user';
+        await supabaseClient
+          .from(targetTable)
+          .update({
+            last_fetched_at: new Date().toISOString(),
+            last_success_at: new Date().toISOString(),
+            last_error: null
+          })
+          .eq('id', feed.id);
+
+        // Pegar os 3 mais recentes por feed para controle de limites
+        const entries = parsed.entries.slice(0, 3);
+        totalFetched += entries.length;
+
+        for (const entry of entries) {
+          const title = entry.title?.value || "Sem Título";
+          const originalUrl = entry.links[0]?.href || "";
+          
+          if (!originalUrl) continue;
+
+          rawArticles.push({
+            feed_id: feed.id,
+            scope: feed.scope,
+            source_name: feed.name,
+            org_id: feed.scope === 'user' ? feed.org_id : null,
+            title,
+            original_url: originalUrl,
+            published_at: entry.published ? entry.published.toISOString() : new Date().toISOString(),
+            body: entry.description?.value || entry.summary?.value || ""
+          });
+        }
+      } catch (e: any) {
+        totalFailed++;
+        console.error(`Erro no feed ${feed.name}:`, e);
+        errorLogs.push({ feed_id: feed.id, feed_name: feed.name, error: e.message });
+
+        // Registrar falha no feed
+        const targetTable = feed.scope === 'master' ? 'feeds_master' : 'feeds_user';
+        await supabaseClient
+          .from(targetTable)
+          .update({
+            last_fetched_at: new Date().toISOString(),
+            last_error: e.message
+          })
+          .eq('id', feed.id);
       }
     }
 
-    // 3. Process each article with Crawling & AI Scoring
+    // 4. Processar artigos coletados
     for (const item of rawArticles) {
-      if (!item.url) continue;
+      try {
+        // Verificar se artigo já existe
+        const { data: existing } = await supabaseClient
+          .from('news_articles')
+          .select('id')
+          .eq('original_url', item.original_url)
+          .maybeSingle();
 
-      // Check if already processed
-      const { data: existing } = await supabaseClient
-        .from('ai_radar_news')
-        .select('id')
-        .eq('url', item.url)
-        .maybeSingle();
+        if (existing) {
+          totalDuplicates++;
+          continue;
+        }
 
-      if (existing) continue;
+        let fullContent = item.body;
 
-      let fullContent = item.body;
-      
-      // se houver chave do Firecrawl e a URL for válida, raspar o conteúdo real!
-      if (firecrawlKey && item.url) {
-         try {
-             console.log("Scraping with Firecrawl:", item.url);
-             const scrapeRes = await fetch("https://api.firecrawl.dev/v1/scrape", {
-                 method: "POST",
-                 headers: {
-                     "Content-Type": "application/json",
-                     "Authorization": `Bearer ${firecrawlKey}`
-                 },
-                 body: JSON.stringify({ url: item.url, formats: ["markdown"] })
-             });
-             const scrapeData = await scrapeRes.json();
-             if (scrapeData.success && scrapeData.data?.markdown) {
-                 // limita o texto para n estourar o contexto
-                 fullContent = scrapeData.data.markdown.substring(0, 4000); 
-             }
-         } catch(e) {
-             console.error("Erro no Firecrawl:", e);
-         }
-      }
+        // Se houver Firecrawl configurado, raspar o markdown real
+        if (firecrawlKey && item.original_url) {
+          try {
+            console.log("Raspando com Firecrawl:", item.original_url);
+            const scrapeRes = await fetch("https://api.firecrawl.dev/v1/scrape", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${firecrawlKey}`
+              },
+              body: JSON.stringify({ url: item.original_url, formats: ["markdown"] })
+            });
+            const scrapeData = await scrapeRes.json();
+            if (scrapeData.success && scrapeData.data?.markdown) {
+              fullContent = scrapeData.data.markdown.substring(0, 4000);
+            }
+          } catch(e: any) {
+            console.error("Erro no Firecrawl:", e);
+            errorLogs.push({ step: 'firecrawl_scrape', url: item.original_url, error: e.message });
+          }
+        }
 
-      let score = 50;
-      let tags = ['Turismo'];
-      let is_alert = false;
-      let ai_validation_reason = "Curadoria automática via RSS.";
-      let content_summary = fullContent.substring(0, 200) + "...";
+        // Valores default para curadoria e metadados
+        let aiResult = {
+          summary: fullContent.substring(0, 250) + "...",
+          short_summary: item.title.substring(0, 150) + "...",
+          bullets: ["Leitura rápida recomendada na fonte oficial."],
+          category: "geral",
+          tags: ["turismo"],
+          sentiment: "neutro",
+          relevance_score: 50,
+          travel_agency_insight: "Nova matéria publicada no setor. Acompanhe os detalhes na fonte.",
+          recommended_action: "Leia a matéria original para se manter atualizado.",
+          safe_to_publish: true
+        };
 
-      // Classificação com LLM Gratuita/Baixo custo (Groq/OpenRouter)
-      if (apiKey) {
-        const aiPrompt = `Você é um curador de notícias para agências de viagem atuando no Brasil. Analise:
+        // Chamar IA para enriquecimento
+        if (apiKey) {
+          const prompt = `Você é um analista de inteligência de mercado para agências de turismo. Receberá uma notícia/artigo e deve gerar uma curadoria útil, curta e prática para uma agência de viagens.
+
+Não copie o artigo completo.
+Não invente fatos.
+Não esconda a fonte original.
+Não publique conteúdo inseguro.
+Não gere plágio.
+Se o conteúdo for irrelevante para turismo/agências, reduza a relevância.
+
 Título: "${item.title}"
-Conteúdo: "${fullContent}"
+Conteúdo original: "${fullContent}"
 
-Retorne APENAS um JSON:
-{"relevance_score": [int 0-100], "tags": ["array strings"], "is_alert": boolean, "summary": "Resumo executivo limpo", "reason": "Motivo da relevância p/ agência B2B"}`;
-        
-        try {
-          const aiRes = await fetch(aiBaseUrl, {
-             method: 'POST',
-             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
-             body: JSON.stringify({
-                 model: aiModel,
-                 messages: [{ role: "user", content: aiPrompt }],
-                 temperature: 0.1,
-                 response_format: { type: "json_object" }
-             })
+Retorne APENAS um objeto JSON válido seguindo estritamente este formato:
+{
+  "summary": "Resumo claro em 1 parágrafo.",
+  "short_summary": "Resumo em até 160 caracteres.",
+  "bullets": ["ponto importante 1", "ponto importante 2", "ponto importante 3"],
+  "category": "turismo | aviacao | hotelaria | cruzeiros | destinos | vistos | economia | eventos | tecnologia | marketing | geral",
+  "tags": ["tag1", "tag2"],
+  "sentiment": "positivo | neutro | alerta | oportunidade | risco",
+  "relevance_score": 75,
+  "travel_agency_insight": "Explique por que isso importa para uma agência de viagens.",
+  "recommended_action": "Sugira uma ação prática para a agência.",
+  "safe_to_publish": true
+}`;
+
+          try {
+            const aiRes = await fetch(aiBaseUrl, {
+              method: 'POST',
+              headers: { 
+                'Content-Type': 'application/json', 
+                'Authorization': `Bearer ${apiKey}` 
+              },
+              body: JSON.stringify({
+                model: aiModel,
+                messages: [{ role: "user", content: prompt }],
+                temperature: 0.2,
+                response_format: { type: "json_object" }
+              })
+            });
+
+            if (aiRes.ok) {
+              const aiData = await aiRes.json();
+              const parsed = JSON.parse(aiData.choices[0]?.message?.content || "{}");
+              if (parsed.summary) {
+                aiResult = { ...aiResult, ...parsed };
+              }
+            }
+          } catch (aiErr: any) {
+            console.error("Erro na chamada de IA:", aiErr);
+            errorLogs.push({ step: 'ai_enrichment', url: item.original_url, error: aiErr.message });
+          }
+        }
+
+        // Criar registro na tabela news_articles
+        const { error: insertErr } = await supabaseClient
+          .from('news_articles')
+          .insert({
+            org_id: item.org_id,
+            source_scope: item.scope,
+            source_feed_id: item.feed_id,
+            source_name: item.source_name,
+            title: item.title,
+            slug: generateSlug(item.title),
+            original_url: item.original_url,
+            published_at: item.published_at,
+            raw_excerpt: item.body ? item.body.substring(0, 500) : null,
+            raw_content: fullContent,
+            ai_summary: aiResult.summary,
+            ai_short_summary: aiResult.short_summary,
+            ai_bullets: aiResult.bullets,
+            ai_tags: aiResult.tags,
+            ai_category: aiResult.category,
+            ai_sentiment: aiResult.sentiment,
+            ai_relevance_score: aiResult.relevance_score,
+            ai_travel_agency_insight: aiResult.travel_agency_insight,
+            ai_recommended_action: aiResult.recommended_action,
+            safe_to_publish: aiResult.safe_to_publish,
+            status: 'published'
           });
 
-          if (aiRes.ok) {
-             const aiData = await aiRes.json();
-             const rawResult = aiData.choices[0]?.message?.content || "{}";
-             const parsed = JSON.parse(rawResult);
-             
-             score = parsed.relevance_score ?? score;
-             tags = parsed.tags && parsed.tags.length > 0 ? parsed.tags : tags;
-             is_alert = parsed.is_alert || false;
-             content_summary = parsed.summary || content_summary;
-             ai_validation_reason = parsed.reason || ai_validation_reason;
-          }
-        } catch (e) {
-          console.error("Erro no LLM (Groq/OpenRouter)", e);
+        if (insertErr) {
+          console.error("Erro ao inserir artigo:", insertErr);
+          errorLogs.push({ step: 'insert_article', url: item.original_url, error: insertErr.message });
+        } else {
+          totalNew++;
         }
-      } else {
-        // Fallback local se não houver chave
-        if (item.title.toLowerCase().includes("suspende") || item.title.toLowerCase().includes("cancelado")) {
-           is_alert = true; score = 90; tags.push("Aviso Crítico");
-        }
+      } catch (errItem: any) {
+        console.error("Erro ao processar item individual:", errItem);
+        errorLogs.push({ step: 'process_item', url: item.original_url, error: errItem.message });
       }
-
-      await supabaseClient.from('ai_radar_news').insert({
-          title: item.title,
-          source: item.source,
-          url: item.url,
-          content_summary: content_summary,
-          full_extracted_content: fullContent,
-          ai_classification_tags: tags,
-          ai_relevance_score: score,
-          ai_validation_reason: ai_validation_reason,
-          is_alert: is_alert
-      });
-
-      processedCount++;
     }
 
-    return new Response(JSON.stringify({ success: true, processed: processedCount }), {
+    // 5. Atualizar news_sync_runs como sucesso/parcial
+    if (syncRunId) {
+      await supabaseClient
+        .from('news_sync_runs')
+        .update({
+          finished_at: new Date().toISOString(),
+          status: errorLogs.length === 0 ? 'success' : 'partial',
+          total_feeds: totalFeeds,
+          total_fetched: totalFetched,
+          total_new: totalNew,
+          total_duplicates: totalDuplicates,
+          total_failed: totalFailed,
+          error_log: errorLogs
+        })
+        .eq('id', syncRunId);
+    }
+
+    return new Response(JSON.stringify({ 
+      success: true, 
+      processed: totalNew, 
+      duplicates: totalDuplicates,
+      failed: totalFailed,
+      syncRunId 
+    }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
 
-  } catch (error) {
-    console.error("Agent Crawler Exception:", error);
+  } catch (error: any) {
+    console.error("Exceção geral no Sync Crawler:", error);
+    
+    // Atualizar news_sync_runs como falha
+    if (syncRunId) {
+      errorLogs.push({ step: 'general_exception', error: error.message });
+      await supabaseClient
+        .from('news_sync_runs')
+        .update({
+          finished_at: new Date().toISOString(),
+          status: 'failed',
+          total_feeds: totalFeeds,
+          total_fetched: totalFetched,
+          total_new: totalNew,
+          total_duplicates: totalDuplicates,
+          total_failed: totalFailed,
+          error_log: errorLogs
+        })
+        .eq('id', syncRunId);
+    }
+
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
     });
   }
 });
+

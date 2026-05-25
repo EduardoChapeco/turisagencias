@@ -133,17 +133,36 @@ export default function ContractRecords() {
       ]);
       toast.loading('Gerando PDF...');
       const clone = a4Ref.current.cloneNode(true) as HTMLElement;
-      clone.style.cssText = 'position:absolute;top:-9999px;left:-9999px;width:794px;height:auto;min-height:1123px;';
+      clone.style.cssText = 'position:absolute;top:-9999px;left:-9999px;width:794px;height:auto;';
       document.body.appendChild(clone);
+      
       const canvas = await html2canvas(clone, { scale: 2, useCORS: true, backgroundColor: '#fff' });
-      const pdf    = new jsPDF('p', 'mm', 'a4');
-      const w      = pdf.internal.pageSize.getWidth();
-      pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, w, (canvas.height * w) / canvas.width);
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const imgWidth = 210; // A4 width in mm
+      const pageHeight = 297; // A4 height in mm
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+      const imgData = canvas.toDataURL('image/png');
+      let position = 0;
+
+      // Add first page
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      // Add extra pages if content is taller than A4 page height
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+
       pdf.save(`Contrato_${formData.titular || 'Cliente'}.pdf`);
       document.body.removeChild(clone);
       toast.dismiss();
       toast.success('PDF gerado!');
-    } catch {
+    } catch (err) {
+      toast.dismiss();
       toast.error('Erro ao gerar PDF.');
     }
   };

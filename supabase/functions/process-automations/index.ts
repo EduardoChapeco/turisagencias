@@ -135,7 +135,7 @@ serve(async (req) => {
         body = body.replace(/{{nome_cliente}}/g, clientName);
         body = body.replace(/{{destino}}/g, trip.destination_city || "seu destino");
         
-        let sentMethod = "queued_no_provider_configured";
+        const sentMethod = "queued_no_provider_configured";
 
         logsToInsert.push({
           org_id: orgId,

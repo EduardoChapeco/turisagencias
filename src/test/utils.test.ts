@@ -70,7 +70,8 @@ describe('cn', () => {
   });
 
   it('handles conditional classes', () => {
-    const result = cn('base', false && 'hidden', 'extra');
+    const isHidden = false;
+    const result = cn('base', isHidden && 'hidden', 'extra');
     expect(result).toBe('base extra');
   });
 });

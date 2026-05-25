@@ -397,6 +397,7 @@ export default function ProposalEditor() {
                           {b.settings.image_url && (
                             <img 
                               src={b.settings.image_url} 
+                              crossOrigin="anonymous"
                               className="absolute inset-0 w-full h-full object-cover opacity-60"
                               alt="Destino" 
                             />

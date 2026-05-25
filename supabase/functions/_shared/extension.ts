@@ -426,7 +426,7 @@ function ticketPriorityToPlatform(value: string | null | undefined) {
 }
 
 export async function ensureTaskBoard(supabase: ReturnType<typeof createClient>, orgId: string) {
-  let { data: board, error: boardError } = await supabase
+  const { data: initialBoard, error: boardError } = await supabase
     .from('kanban_boards')
     .select('id, slug, name, board_type')
     .eq('org_id', orgId)
@@ -435,6 +435,7 @@ export async function ensureTaskBoard(supabase: ReturnType<typeof createClient>,
 
   if (boardError) throw new Error(boardError.message);
 
+  let board = initialBoard;
   if (!board) {
     const { data: createdBoard, error: createBoardError } = await supabase
       .from('kanban_boards')
@@ -451,13 +452,14 @@ export async function ensureTaskBoard(supabase: ReturnType<typeof createClient>,
     board = createdBoard;
   }
 
-  let { data: columns, error: columnsError } = await supabase
+  const { data: initialColumns, error: columnsError } = await supabase
     .from('kanban_columns')
     .select('id, name, position')
     .eq('board_id', board.id)
     .order('position', { ascending: true });
 
   if (columnsError) throw new Error(columnsError.message);
+  let columns = initialColumns;
 
   if (!columns?.length) {
     const defaults = [

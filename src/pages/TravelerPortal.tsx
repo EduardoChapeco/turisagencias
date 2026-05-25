@@ -506,8 +506,15 @@ export default function TravelerPortal() {
           {org?.logo_url && (
             <img src={org.logo_url} alt={org.name} className="h-7 mb-2 object-contain" />
           )}
-          <h1 className="font-black text-white text-xl sm:text-3xl leading-tight">{trip?.title}</h1>
-          <div className="flex items-center gap-3 mt-1 flex-wrap">
+          <h1 className="font-black text-white text-xl sm:text-3xl leading-tight">
+            {org?.settings?.portal_title || trip?.title}
+          </h1>
+          {org?.settings?.portal_subtitle && (
+            <p className="text-white/80 text-xs mt-1 max-w-md">
+              {org.settings.portal_subtitle}
+            </p>
+          )}
+          <div className="flex items-center gap-3 mt-1.5 flex-wrap">
             {trip?.destination && (
               <span className="flex items-center gap-1 text-white/80 text-xs">
                 <MapPin size={11} /> {trip.destination}
@@ -569,7 +576,7 @@ export default function TravelerPortal() {
             <span className="flex items-center gap-1 text-zinc-600">
               <Users size={13} /> {booking.pax_count} viajante{booking.pax_count > 1 ? 's' : ''}
             </span>
-            {booking.seat_numbers?.length > 0 && (
+            {booking.seat_numbers?.length > 0 && org?.settings?.portal_seats_enabled !== false && (
               <span className="flex items-center gap-1 text-blue-600 font-medium">
                 <Bus size={13} /> Assento{booking.seat_numbers.length > 1 ? 's' : ''}: {booking.seat_numbers.join(', ')}
               </span>
@@ -643,7 +650,7 @@ export default function TravelerPortal() {
                     </div>
 
                     {/* Upload button */}
-                    {inst.status !== 'paid' && inst.status !== 'cancelled' && !hasPendingProof && !isCancelled && (
+                    {inst.status !== 'paid' && inst.status !== 'cancelled' && !hasPendingProof && !isCancelled && org?.settings?.portal_upload_enabled !== false && (
                       <Button
                         size="sm"
                         onClick={() => setUploadDialog({ installmentId: inst.id, num: inst.installment_number, amount: inst.amount })}
@@ -730,7 +737,7 @@ export default function TravelerPortal() {
         )}
 
         {/* ❌ Cancelamento */}
-        {!isCancelled && !hasPendingCancellation && (
+        {!isCancelled && !hasPendingCancellation && org?.settings?.portal_cancel_enabled !== false && (
           <div className="rounded-2xl border border-zinc-100 bg-white p-4">
             <button
               className="w-full flex items-center justify-between group"

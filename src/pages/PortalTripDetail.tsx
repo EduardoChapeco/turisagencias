@@ -83,14 +83,16 @@ export default function PortalTripDetail() {
               Voltar ao Início
             </Button>
 
-            <Button
-              variant="default"
-              className="rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700 text-white border-0  gap-2 font-semibold"
-              onClick={() => navigate(`/portal/${org_slug}/trip/${id}/ai-photos`)}
-            >
-              <Sparkles className="h-4 w-4" />
-              Fotos Mágicas IA
-            </Button>
+            {organization?.settings?.portal_ai_photos_enabled !== false && (
+              <Button
+                variant="default"
+                className="rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-700 hover:to-fuchsia-700 text-white border-0  gap-2 font-semibold"
+                onClick={() => navigate(`/portal/${org_slug}/trip/${id}/ai-photos`)}
+              >
+                <Sparkles className="h-4 w-4" />
+                Fotos Mágicas IA
+              </Button>
+            )}
           </div>
 
           <div className="mt-auto pb-10">

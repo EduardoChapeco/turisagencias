@@ -8,34 +8,39 @@ export function useTravelers(clientId?: string) {
   return useQuery({
     queryKey: ['travelers', organization?.id, clientId],
     queryFn: async () => {
+      if (!organization?.id) return [];
       let query = supabase
         .from('travelers')
         .select('*')
+        .eq('org_id', organization.id)
         .order('created_at', { ascending: false });
       if (clientId) query = query.eq('client_id', clientId);
       const { data, error } = await query;
       if (error) throw error;
       return data;
     },
-    enabled: !!organization,
+    enabled: !!organization?.id,
     staleTime: 5 * 60 * 1000,
   });
 }
 
 export function useTraveler(id: string | undefined) {
+  const { organization } = useAuthStore();
   return useQuery({
-    queryKey: ['traveler', id],
+    queryKey: ['traveler', id, organization?.id],
     queryFn: async () => {
+      if (!organization?.id) return null;
       const { data, error } = await supabase
         .from('travelers')
         .select('*, traveler_documents(*)')
         .eq('id', id!)
+        .eq('org_id', organization.id)
         .maybeSingle();
       if (error) throw error;
       if (!data) throw new Error('Viajante não encontrado');
       return data;
     },
-    enabled: !!id,
+    enabled: !!id && !!organization?.id,
   });
 }
 
@@ -76,6 +81,7 @@ export function useCreateTraveler() {
 
 export function useUpdateTraveler() {
   const queryClient = useQueryClient();
+  const { organization } = useAuthStore();
   const { toast } = useToast();
 
   return useMutation({
@@ -83,10 +89,12 @@ export function useUpdateTraveler() {
       full_name: string; cpf: string; birth_date: string; gender: string;
       nationality: string; phone: string; email: string; relation: string; client_id: string;
     }>) => {
+      if (!organization?.id) throw new Error('Organização não autenticada');
       const { data: traveler, error } = await supabase
         .from('travelers')
         .update(data)
         .eq('id', id)
+        .eq('org_id', organization.id)
         .select()
         .single();
       if (error) throw error;
@@ -105,11 +113,17 @@ export function useUpdateTraveler() {
 
 export function useDeleteTraveler() {
   const queryClient = useQueryClient();
+  const { organization } = useAuthStore();
   const { toast } = useToast();
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from('travelers').delete().eq('id', id);
+      if (!organization?.id) throw new Error('Organização não autenticada');
+      const { error } = await supabase
+        .from('travelers')
+        .delete()
+        .eq('id', id)
+        .eq('org_id', organization.id);
       if (error) throw error;
     },
     onSuccess: () => {

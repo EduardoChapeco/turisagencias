@@ -31,19 +31,22 @@ export function useClients(search?: string) {
 }
 
 export function useClient(id: string | undefined) {
+  const { organization } = useAuthStore();
   return useQuery({
-    queryKey: ['client', id],
+    queryKey: ['client', id, organization?.id],
     queryFn: async () => {
+      if (!organization?.id) return null;
       const { data, error } = await supabase
         .from('clients')
         .select('*')
         .eq('id', id!)
+        .eq('org_id', organization.id)
         .maybeSingle();
       if (error) throw error;
       if (!data) throw new Error('Cliente não encontrado');
       return data;
     },
-    enabled: !!id,
+    enabled: !!id && !!organization?.id,
   });
 }
 
@@ -94,6 +97,7 @@ export function useCreateClient() {
 
 export function useUpdateClient() {
   const queryClient = useQueryClient();
+  const { organization } = useAuthStore();
   const { toast } = useToast();
 
   return useMutation({
@@ -108,6 +112,7 @@ export function useUpdateClient() {
       is_member: boolean; loyalty_points: number; member_tier: string;
       preferences: any;
     }>) => {
+      if (!organization?.id) throw new Error('Organização não autenticada');
       const { documents, preferences, ...restData } = data;
       // Todas as colunas flat são espalhadas diretamente (address, city, state, zip_code, country,
       // passport_number, passport_expiry, passport_url, is_member, loyalty_points, member_tier, cover_url)
@@ -124,6 +129,7 @@ export function useUpdateClient() {
         .from('clients')
         .update(updateData)
         .eq('id', id)
+        .eq('org_id', organization.id)
         .select()
         .single();
       if (error) throw error;
@@ -142,11 +148,17 @@ export function useUpdateClient() {
 
 export function useDeleteClient() {
   const queryClient = useQueryClient();
+  const { organization } = useAuthStore();
   const { toast } = useToast();
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from('clients').delete().eq('id', id);
+      if (!organization?.id) throw new Error('Organização não autenticada');
+      const { error } = await supabase
+        .from('clients')
+        .delete()
+        .eq('id', id)
+        .eq('org_id', organization.id);
       if (error) throw error;
     },
     onSuccess: () => {

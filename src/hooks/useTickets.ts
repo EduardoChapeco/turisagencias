@@ -117,9 +117,12 @@ export function useTickets(filters?: {
 }
 
 export function useTicket(id: string | undefined) {
+  const { organization } = useAuthStore();
+
   return useQuery({
-    queryKey: ['ticket', id],
+    queryKey: ['ticket', id, organization?.id],
     queryFn: async () => {
+      if (!organization?.id) return null;
       const { data, error } = await supabase
         .from('tickets')
         .select(`
@@ -131,6 +134,7 @@ export function useTicket(id: string | undefined) {
           ticket_attachments(*)
         `)
         .eq('id', id!)
+        .eq('org_id', organization.id)
         .maybeSingle();
       if (error) throw error;
       if (!data) throw new Error('Protocolo não encontrado');
@@ -140,7 +144,7 @@ export function useTicket(id: string | undefined) {
         ticket_attachments: TicketAttachment[];
       };
     },
-    enabled: !!id,
+    enabled: !!id && !!organization?.id,
     refetchInterval: 30000, // poll every 30s for real-time updates
   });
 }
@@ -214,14 +218,17 @@ export function useCreateTicket() {
 
 export function useUpdateTicket() {
   const queryClient = useQueryClient();
+  const { organization } = useAuthStore();
   const { toast } = useToast();
 
   return useMutation({
     mutationFn: async ({ id, ...payload }: { id: string } & Record<string, any>) => {
+      if (!organization?.id) throw new Error('Organização não autenticada');
       const { data, error } = await supabase
         .from('tickets')
         .update({ ...payload, updated_at: new Date().toISOString() })
         .eq('id', id)
+        .eq('org_id', organization.id)
         .select()
         .single();
       if (error) throw error;
@@ -280,11 +287,17 @@ export function useCreateTicketMessage() {
 
 export function useDeleteTicket() {
   const queryClient = useQueryClient();
+  const { organization } = useAuthStore();
   const { toast } = useToast();
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from('tickets').delete().eq('id', id);
+      if (!organization?.id) throw new Error('Organização não autenticada');
+      const { error } = await supabase
+        .from('tickets')
+        .delete()
+        .eq('id', id)
+        .eq('org_id', organization.id);
       if (error) throw error;
     },
     onSuccess: () => {

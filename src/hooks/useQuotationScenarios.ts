@@ -79,7 +79,7 @@ export function useScoreQuotation() {
       // Busca dados da cotação para montar o request
       const { data: quotation, error } = await supabase
         .from('quotations')
-        .select('destination, check_in, num_adults, pax_adultos')
+        .select('destination, check_in, num_adults')
         .eq('id', quotationId)
         .single();
       if (error || !quotation) throw new Error('Cotação não encontrada');
@@ -94,7 +94,7 @@ export function useScoreQuotation() {
           org_id:         organization.id,
           destination:    quotation.destination || '',
           departure_date: quotation.check_in || null,
-          adults:         quotation.num_adults ?? quotation.pax_adultos ?? 1,
+          adults:         quotation.num_adults ?? 1,
           cabin:          'ECONOMY',
         }),
       });

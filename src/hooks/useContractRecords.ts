@@ -99,6 +99,17 @@ export function useUpdateContractRecord() {
 
   return useMutation({
     mutationFn: async ({ id, ...payload }: ContractRecordUpsert & { id: string }) => {
+      const { data: current, error: fetchErr } = await supabase
+        .from('contracts')
+        .select('status')
+        .eq('id', id)
+        .single();
+      
+      if (fetchErr) throw fetchErr;
+      if (current?.status === 'assinado') {
+        throw new Error('Não é permitido alterar um contrato já assinado.');
+      }
+
       const { data, error } = await supabase
         .from('contracts')
         .update(payload)
@@ -121,6 +132,17 @@ export function useDeleteContractRecord() {
 
   return useMutation({
     mutationFn: async (id: string) => {
+      const { data: current, error: fetchErr } = await supabase
+        .from('contracts')
+        .select('status')
+        .eq('id', id)
+        .single();
+      
+      if (fetchErr) throw fetchErr;
+      if (current?.status === 'assinado') {
+        throw new Error('Não é permitido excluir um contrato já assinado.');
+      }
+
       const { error } = await supabase.from('contracts').delete().eq('id', id);
       if (error) throw error;
     },

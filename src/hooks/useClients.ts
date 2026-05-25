@@ -10,9 +10,11 @@ export function useClients(search?: string) {
   return useQuery({
     queryKey: ['clients', organization?.id, search],
     queryFn: async () => {
+      if (!organization?.id) return [];
       let query = supabase
         .from('clients')
         .select('*')
+        .eq('org_id', organization.id)
         .order('created_at', { ascending: false });
 
       if (search) {
@@ -23,7 +25,7 @@ export function useClients(search?: string) {
       if (error) throw error;
       return data;
     },
-    enabled: !!organization,
+    enabled: !!organization?.id,
     staleTime: 5 * 60 * 1000,
   });
 }

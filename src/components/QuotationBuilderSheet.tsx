@@ -99,8 +99,8 @@ export function QuotationBuilderSheet({ open, onClose, clientId, onCreated }: Qu
         if (d.check_in) updateForm('check_in', d.check_in);
         if (d.check_out) updateForm('check_out', d.check_out);
         if (d.num_nights) updateForm('num_nights', d.num_nights.toString());
-        if (d.num_adults || d.pax_adultos) updateForm('num_adults', (d.num_adults ?? d.pax_adultos).toString());
-        if (d.num_children || d.pax_criancas) updateForm('num_children', (d.num_children ?? d.pax_criancas).toString());
+        if (d.num_adults) updateForm('num_adults', d.num_adults.toString());
+        if (d.num_children) updateForm('num_children', d.num_children.toString());
         if (d.meal_plan) updateForm('meal_plan', d.meal_plan);
         if (d.room_type) updateForm('room_type', d.room_type);
         if (d.total_value) updateForm('total_value', d.total_value.toString());
@@ -133,16 +133,10 @@ export function QuotationBuilderSheet({ open, onClose, clientId, onCreated }: Qu
       check_in: form.check_in || undefined,
       check_out: form.check_out || undefined,
       num_nights: form.num_nights ? parseInt(form.num_nights) : undefined,
-      // Colunas canônicas de PAX
-      pax_adultos: numAdults,
-      pax_seniores: numSeniores,
-      pax_criancas: numChildren,
-      pax_infantil: numInfantil,
-      // Retrocompatibilidade com colunas legadas
       num_adults: numAdults,
+      pax_seniores: numSeniores,
       num_children: numChildren,
-      adults: numAdults,
-      children: numChildren,
+      pax_infantil: numInfantil,
       total_pax: numAdults + numSeniores + numChildren + numInfantil,
       meal_plan: form.meal_plan || undefined,
       room_type: form.room_type || undefined,

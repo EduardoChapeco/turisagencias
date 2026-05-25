@@ -200,7 +200,7 @@ export function QuotationDetailSheet({ id, open, onClose }: { id: string | null;
                        <div className="flex items-center gap-3">
                           <Users className="w-3.5 h-3.5 text-vj-txt3" />
                           <span className="text-xs font-medium text-vj-txt2">
-                            {Number(quotation.pax_adultos || 0)} Ad + {Number(quotation.pax_criancas || 0)} Ch
+                            {Number(quotation.num_adults || 0)} Ad + {Number(quotation.num_children || 0)} Ch
                           </span>
                        </div>
                     </div>

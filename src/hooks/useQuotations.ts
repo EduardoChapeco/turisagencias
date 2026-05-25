@@ -267,22 +267,26 @@ export function useUpdateQuotation() {
       if (excluded_items !== undefined) payload.excluded_items = excluded_items;
       if (media_urls !== undefined) payload.media_urls = media_urls;
 
-      // Normaliza colunas PAX quando qualquer uma é enviada
-      if (payload.pax_adultos !== undefined || payload.num_adults !== undefined || payload.adults !== undefined) {
-        const v = payload.pax_adultos ?? payload.num_adults ?? payload.adults;
-        payload.pax_adultos = v; payload.num_adults = v; payload.adults = v;
+      // Traduz propriedades legadas para as colunas canônicas do banco
+      if (payload.adults !== undefined) {
+        payload.num_adults = payload.adults;
+        delete payload.adults;
       }
-      if (payload.pax_seniores !== undefined) {
-        // sem legacy — só canonica
+      if (payload.children !== undefined) {
+        payload.num_children = payload.children;
+        delete payload.children;
       }
-      if (payload.pax_criancas !== undefined || payload.num_children !== undefined || payload.children !== undefined) {
-        const v = payload.pax_criancas ?? payload.num_children ?? payload.children;
-        payload.pax_criancas = v; payload.num_children = v; payload.children = v;
+      if (payload.pax_adultos !== undefined) {
+        payload.num_adults = payload.pax_adultos;
+        delete payload.pax_adultos;
       }
-      if (payload.markup_percent !== undefined && payload.markup_pct === undefined) {
+      if (payload.pax_criancas !== undefined) {
+        payload.num_children = payload.pax_criancas;
+        delete payload.pax_criancas;
+      }
+      if (payload.markup_percent !== undefined) {
         payload.markup_pct = payload.markup_percent;
-      } else if (payload.markup_pct !== undefined && payload.markup_percent === undefined) {
-        payload.markup_percent = payload.markup_pct;
+        delete payload.markup_percent;
       }
 
       const { data: quotation, error } = await supabase

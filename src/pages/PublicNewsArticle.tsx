@@ -254,7 +254,7 @@ export default function PublicNewsArticle() {
                 <div 
                   key={r.id} 
                   onClick={() => navigate(`/noticias/${r.slug}`)}
-                  className="p-5 rounded-xl border border-zinc-200 bg-white hover:border-vj-green/30 hover:shadow-sm transition-all duration-200 cursor-pointer flex flex-col justify-between"
+                  className="p-5 rounded-xl border border-zinc-200 bg-white hover:border-vj-green/30 transition-all duration-200 cursor-pointer flex flex-col justify-between"
                 >
                   <div>
                     <Badge variant="outline" className="capitalize text-[9px] font-bold bg-zinc-50 text-zinc-600 mb-2">

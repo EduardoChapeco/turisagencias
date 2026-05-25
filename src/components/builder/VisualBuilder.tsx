@@ -300,7 +300,7 @@ export default function VisualBuilder({ onBack, projectName = 'Website Principal
         version_number: nextVer,
         frame_schema: { slug, metaTitle, metaDescription },
         content_schema: blocks as any,
-        design_tokens: { primary_color: organization.primary_color || '#00D37B', secondary_color: organization.secondary_color || '#18181B' },
+        design_tokens: { primary_color: organization.primary_color || '#2563EB', secondary_color: organization.secondary_color || '#18181B' },
         render_snapshot: blocks as any,
         status: 'published',
         created_by: user.id

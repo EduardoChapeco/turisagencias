@@ -117,9 +117,9 @@ export default function Proposals() {
                 </DropdownMenuItem>
                 <DropdownMenuItem 
                   onClick={() => setIsImportSheetOpen(true)}
-                  className="cursor-pointer gap-2 rounded-lg py-2 font-semibold text-emerald-700 hover:text-emerald-800 bg-emerald-50/20"
+                  className="cursor-pointer gap-2 rounded-lg py-2 font-semibold text-violet-700 hover:text-violet-800 hover:bg-violet-50"
                 >
-                  <Sparkles className="w-4 h-4 text-emerald-500" /> Importar PDF por IA
+                  <Sparkles className="w-4 h-4 text-violet-500" /> Importar PDF por IA
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -190,7 +190,7 @@ export default function Proposals() {
               return (
                 <div 
                   key={prop.id}
-                  className="bg-white border border-zinc-100 hover:border-zinc-200 hover:shadow-lg rounded-2xl p-6 flex flex-col justify-between transition-all duration-300 group relative overflow-hidden cursor-pointer"
+                  className="bg-white border border-zinc-200 hover:border-vj-green rounded-2xl p-6 flex flex-col justify-between transition-all duration-300 group relative overflow-hidden cursor-pointer"
                   onClick={() => navigate(`/proposals/${prop.id}/edit`)}
                 >
                   <div className="space-y-4">

@@ -183,7 +183,7 @@ export default function PublicSiteView() {
     );
   }
 
-  const primaryColor = designTokens.primary_color || organization.primary_color || '#00D37B';
+  const primaryColor = designTokens.primary_color || organization.primary_color || '#2563EB';
 
   // Render for Link-Bio (Special super clean Mobile layout)
   if (projectType === 'linkbio') {

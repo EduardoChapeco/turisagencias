@@ -113,12 +113,12 @@ export function GroupClientsKanban({ groupTripId }: GroupClientsKanbanProps) {
             <div key={col.id} className="flex flex-col gap-3 min-w-[300px]">
               
               {/* Column Header */}
-              <div className={`p-4 rounded-[2rem] border border-white/40 shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex items-center justify-between ${col.color}`}>
+              <div className={`p-4 rounded-xl border border-zinc-200 flex items-center justify-between ${col.color}`}>
                 <div className="flex items-center gap-2">
                   <col.icon size={18} className="text-zinc-600" />
                   <span className="font-bold text-sm text-zinc-800">{col.label}</span>
                 </div>
-                <Badge variant="secondary" className="bg-white/80 shadow-sm border-white/50">{colClients.length}</Badge>
+                <Badge variant="secondary" className="bg-white/80 border-zinc-200">{colClients.length}</Badge>
               </div>
 
               {/* Cards */}
@@ -134,7 +134,7 @@ export function GroupClientsKanban({ groupTripId }: GroupClientsKanbanProps) {
                     return (
                       <Card 
                         key={client.id} 
-                        className="p-5 border-white/60 bg-white/60 backdrop-blur-md shadow-[0_4px_20px_rgb(0,0,0,0.03)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] rounded-[1.5rem] hover:-translate-y-1 transition-all duration-300 cursor-pointer group"
+                        className="p-5 border border-zinc-200 bg-white hover:border-vj-green rounded-xl hover:-translate-y-0.5 transition-all duration-300 cursor-pointer group"
                         onClick={() => setEditingId(client.id)}
                       >
                         <div className="flex justify-between items-start mb-3">
@@ -165,7 +165,7 @@ export function GroupClientsKanban({ groupTripId }: GroupClientsKanbanProps) {
                             <Button 
                               size="sm" 
                               variant="outline" 
-                              className="w-full text-xs h-10 rounded-xl border-vj-green/30 text-vj-green hover:bg-vj-green hover:text-white hover:scale-[1.02] active:scale-95 transition-all duration-300 shadow-sm"
+                              className="w-full text-xs h-10 rounded-xl border-vj-green/30 text-vj-green hover:bg-vj-green hover:text-white transition-all duration-200"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 const clientInsts = installments?.filter(i => i.group_client_id === client.id) || [];
@@ -189,7 +189,7 @@ export function GroupClientsKanban({ groupTripId }: GroupClientsKanbanProps) {
                             </Button>
                           )}
                           {client.status_pagamento !== 'atrasado' && (
-                            <Button size="sm" variant="ghost" className="w-full text-xs h-10 rounded-xl text-zinc-500 hover:bg-zinc-100 hover:scale-[1.02] active:scale-95 transition-all duration-300">
+                            <Button size="sm" variant="ghost" className="w-full text-xs h-10 rounded-xl text-zinc-500 hover:bg-zinc-100 transition-all duration-200">
                               Ver Detalhes <ArrowRight size={14} className="ml-1" />
                             </Button>
                           )}

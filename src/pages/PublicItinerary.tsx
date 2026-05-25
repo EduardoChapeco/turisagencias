@@ -46,7 +46,7 @@ export default function PublicItinerary() {
       // Fetch org info
       const { data: org } = await publicItineraryDb
         .from('organizations')
-        .select('name, logo_url, whatsapp, slug')
+        .select('name, logo_url, whatsapp, slug, primary_color')
         .eq('id', itin.org_id)
         .maybeSingle();
 
@@ -370,7 +370,10 @@ export default function PublicItinerary() {
         {/* Cabeçalho do Roteiro */}
         <div className="border-b border-zinc-800 pb-6 space-y-4">
           <div className="flex justify-between items-center">
-            <span className="text-xs font-black uppercase tracking-widest px-3 py-1 bg-zinc-900 border border-zinc-800 rounded-full text-[#00D37B]">
+            <span 
+              className="text-xs font-black uppercase tracking-widest px-3 py-1 bg-zinc-900 border border-zinc-800 rounded-full"
+              style={{ color: itinerary.org?.primary_color || '#2563EB' }}
+            >
               {itinerary.org?.name || 'Excelência Tour'}
             </span>
             {itinerary.destination && (
@@ -402,7 +405,14 @@ export default function PublicItinerary() {
               {mappedStops.map((stop, idx) => (
                 <div key={stop.id || idx} className="p-5 rounded-2xl border border-zinc-900 bg-zinc-900/40 space-y-2 relative">
                   <div className="flex justify-between items-center">
-                    <span className="text-[10px] font-black bg-[#00D37B]/10 border border-[#00D37B]/20 text-[#00D37B] rounded-full px-2 py-0.5">
+                    <span 
+                      className="text-[10px] font-black rounded-full px-2 py-0.5 border"
+                      style={{ 
+                        backgroundColor: `${itinerary.org?.primary_color || '#2563EB'}15`, 
+                        borderColor: `${itinerary.org?.primary_color || '#2563EB'}30`, 
+                        color: itinerary.org?.primary_color || '#2563EB' 
+                      }}
+                    >
                       Dia {stop.day_number}
                     </span>
                     {stop.time && (

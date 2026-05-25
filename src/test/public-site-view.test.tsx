@@ -64,7 +64,7 @@ describe('PublicSiteView - Dynamic Renderer OM-001', () => {
       id: 'org-123',
       name: 'Agência Fallback',
       slug: 'agencia-fallback',
-      primary_color: '#00D37B',
+      primary_color: '#2563EB',
       whatsapp: '48999999999',
       brand_kit: { slogan: 'Sua melhor experiência de viagem.' },
       settings: { hours: 'Atendimento 24/7' },

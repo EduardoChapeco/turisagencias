@@ -177,7 +177,7 @@ export default function Dashboard() {
           <section className="w-full rounded-2xl border border-vj-border bg-white p-6 shadow-sm">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div className="max-w-2xl">
-                <p className="mb-2 text-xs font-black uppercase tracking-[0.25em] text-vj-green">
+                <p className="mb-2 text-xs font-black uppercase tracking-[0.25em] text-vj-blue">
                   Recuperação master
                 </p>
                 <h1 className="text-2xl font-black tracking-tight text-vj-txt">
@@ -187,15 +187,15 @@ export default function Dashboard() {
                   Seu acesso administrativo está ativo, mas nenhuma organização foi carregada para esta sessão.
                 </p>
               </div>
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-vj-green/10">
-                <Building2 className="h-5 w-5 text-vj-green" />
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-vj-blue-bg border border-vj-blue/10">
+                <Building2 className="h-5 w-5 text-vj-blue" />
               </div>
             </div>
 
             <div className="mt-6 space-y-2">
               {organizationsLoading ? (
                 <div className="flex items-center gap-3 rounded-xl border border-vj-border bg-zinc-50 px-4 py-3 text-sm font-bold text-vj-txt3">
-                  <Loader2 className="h-4 w-4 animate-spin text-vj-green" />
+                  <Loader2 className="h-4 w-4 animate-spin text-vj-blue" />
                   Carregando organizações...
                 </div>
               ) : !visibleOrganizations?.length ? (
@@ -209,13 +209,13 @@ export default function Dashboard() {
                     key={org.id}
                     type="button"
                     onClick={() => void handleSelectOrganization(org)}
-                    className="flex w-full items-center justify-between gap-4 rounded-xl border border-vj-border bg-white px-4 py-3 text-left transition-colors hover:border-vj-green/50 hover:bg-vj-green/5"
+                    className="flex w-full items-center justify-between gap-4 rounded-xl border border-vj-border bg-white px-4 py-3 text-left transition-colors hover:border-vj-blue/50 hover:bg-vj-blue-bg"
                   >
                     <span className="min-w-0">
                       <span className="block truncate text-sm font-black text-vj-txt">{org.name}</span>
                       <span className="block truncate text-xs font-bold text-vj-txt3">{org.slug}</span>
                     </span>
-                    <ArrowRight className="h-4 w-4 shrink-0 text-vj-green" />
+                    <ArrowRight className="h-4 w-4 shrink-0 text-vj-blue" />
                   </button>
                 ))
               )}
@@ -246,12 +246,12 @@ export default function Dashboard() {
             className="rounded-xl border-vj-border bg-white text-vj-txt font-bold text-xs h-9 px-4 hover:bg-zinc-50"
             onClick={() => navigate('/group-trips')}
           >
-            <Activity className="h-3.5 w-3.5 mr-2 text-vj-green" />
+            <Activity className="h-3.5 w-3.5 mr-2 text-vj-blue" />
             Grupos &amp; Viagens
           </Button>
           <Button
             size="sm"
-            className="rounded-xl bg-vj-green hover:bg-vj-green/90 text-white font-bold text-xs h-9 px-4"
+            className="rounded-xl bg-vj-blue hover:bg-vj-blue/90 text-white font-bold text-xs h-9 px-4"
             onClick={() => setQuotationOpen(true)}
           >
             <Plus className="h-3.5 w-3.5 mr-2" />
@@ -265,14 +265,14 @@ export default function Dashboard() {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Passageiros Embarcados */}
           <div
-            className="bento-card p-5 bg-white cursor-pointer group hover:border-vj-green/40"
+            className="bento-card p-5 bg-white cursor-pointer group hover:border-vj-blue/40"
             onClick={() => navigate('/group-trips')}
           >
             <div className="flex items-center justify-between mb-4">
-              <div className="h-9 w-9 rounded-xl bg-vj-green/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <PlaneTakeoff className="w-4 h-4 text-vj-green" />
+              <div className="h-9 w-9 rounded-xl bg-vj-blue-bg border border-vj-blue/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <PlaneTakeoff className="w-4 h-4 text-vj-blue" />
               </div>
-              <span className="text-[9px] font-black uppercase tracking-widest text-vj-green bg-vj-green/10 px-2 py-0.5 rounded-full">
+              <span className="text-[9px] font-black uppercase tracking-widest text-vj-blue bg-vj-blue-bg border border-vj-blue/10 px-2 py-0.5 rounded-full">
                 Ao Vivo
               </span>
             </div>
@@ -337,7 +337,7 @@ export default function Dashboard() {
             <GlobalRadarMapWidget markers={markers} interactive={false} />
             <div className="absolute top-4 left-4 bg-black/70 backdrop-blur-md border border-white/10 px-4 py-3 rounded-xl">
               <div className="flex items-center gap-2">
-                <div className="h-1.5 w-1.5 rounded-full bg-vj-green animate-pulse" />
+                <div className="h-1.5 w-1.5 rounded-full bg-vj-blue animate-pulse" />
                 <span className="text-white font-black text-[10px] uppercase tracking-[0.3em]">Grupos em Viagem</span>
               </div>
               <p className="text-zinc-400 text-xs font-medium mt-0.5">
@@ -350,15 +350,15 @@ export default function Dashboard() {
           <div className="lg:col-span-5 flex flex-col gap-4">
             {/* Pipeline Comercial */}
             <div
-              className="bento-card p-5 bg-white cursor-pointer group relative overflow-hidden hover:border-vj-green/40"
+              className="bento-card p-5 bg-white cursor-pointer group relative overflow-hidden hover:border-vj-blue/40"
               onClick={() => navigate('/quotations')}
             >
               <div className="absolute -right-6 -bottom-6 opacity-[0.05] group-hover:opacity-[0.10] transition-opacity duration-500">
-                <BarChart2 className="w-32 h-32 text-vj-green" />
+                <BarChart2 className="w-32 h-32 text-vj-blue" />
               </div>
               <div className="flex items-start justify-between mb-3">
-                <div className="h-9 w-9 rounded-xl bg-vj-green/10 flex items-center justify-center">
-                  <DollarSign className="w-4 h-4 text-vj-green" />
+                <div className="h-9 w-9 rounded-xl bg-vj-blue-bg border border-vj-blue/10 flex items-center justify-center">
+                  <DollarSign className="w-4 h-4 text-vj-blue" />
                 </div>
                 <ArrowRight className="w-4 h-4 text-vj-txt3 opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
@@ -367,7 +367,7 @@ export default function Dashboard() {
                 {fmt(kpi?.pipeline || 0)}
               </p>
               <p className="text-[10px] font-bold text-vj-txt3 mt-0.5 flex items-center gap-1">
-                <Zap className="w-3 h-3 text-vj-green" /> Total em cotações abertas
+                <Zap className="w-3 h-3 text-vj-blue" /> Total em cotações abertas
               </p>
               <div className="flex items-center gap-4 mt-4 pt-4 border-t border-vj-border">
                 <div>
@@ -388,7 +388,7 @@ export default function Dashboard() {
                   Próximos Embarques <span className="text-vj-txt3 font-bold">(30 dias)</span>
                 </h3>
                 <button
-                  className="text-[10px] font-black text-vj-green hover:underline"
+                  className="text-[10px] font-black text-vj-blue hover:underline"
                   onClick={() => navigate('/group-trips')}
                 >
                   Ver todos
@@ -399,7 +399,7 @@ export default function Dashboard() {
                   [1, 2, 3].map(i => <Skeleton key={i} className="h-10 rounded-xl" />)
                 ) : !kpi.upcoming?.length ? (
                   <div className="flex items-center gap-2 py-3 text-vj-txt3">
-                    <CheckCircle2 className="w-4 h-4 text-vj-green shrink-0" />
+                    <CheckCircle2 className="w-4 h-4 text-vj-blue shrink-0" />
                     <span className="text-xs font-medium">Nenhum embarque nos próximos 30 dias</span>
                   </div>
                 ) : (
@@ -417,7 +417,7 @@ export default function Dashboard() {
                         <p className="text-[10px] font-black text-vj-txt uppercase">
                           {new Date(g.departure_date).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
                         </p>
-                        <p className="text-[10px] text-vj-green font-bold">{g.current_pax || 0} pax</p>
+                        <p className="text-[10px] text-vj-blue font-bold">{g.current_pax || 0} pax</p>
                       </div>
                     </div>
                   ))
@@ -431,12 +431,12 @@ export default function Dashboard() {
         <div>
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <FileText className="w-4 h-4 text-vj-green" />
+              <FileText className="w-4 h-4 text-vj-blue" />
               <h2 className="text-sm font-black text-vj-txt uppercase tracking-tight">Notícias do Setor</h2>
             </div>
             <button
               onClick={() => navigate('/radar')}
-              className="text-xs font-bold text-vj-green hover:underline flex items-center gap-1"
+              className="text-xs font-bold text-vj-blue hover:underline flex items-center gap-1"
             >
               Ver Radar Completo <ArrowRight className="w-3.5 h-3.5" />
             </button>
@@ -452,7 +452,7 @@ export default function Dashboard() {
                 <p className="text-sm text-zinc-500 font-medium">Nenhuma notícia curada no radar.</p>
                 <button
                   onClick={() => navigate('/radar')}
-                  className="mt-3 text-xs font-bold text-vj-green hover:underline"
+                  className="mt-3 text-xs font-bold text-vj-blue hover:underline"
                 >
                   Sincronizar feeds agora
                 </button>
@@ -464,32 +464,32 @@ export default function Dashboard() {
                   <div
                     key={n.id}
                     onClick={() => navigate(`/noticias/${n.slug}`)}
-                    className="md:col-span-2 p-5 rounded-2xl border border-zinc-200/50 bg-zinc-950 text-white flex flex-col justify-between group cursor-pointer relative overflow-hidden transition-all duration-300 hover:shadow-lg"
+                    className="md:col-span-2 p-5 rounded-2xl border border-zinc-800 bg-zinc-950 text-white flex flex-col justify-between group cursor-pointer relative overflow-hidden transition-all duration-300 hover:border-zinc-700"
                   >
-                    <div className="absolute top-0 right-0 w-48 h-48 bg-vj-green/10 blur-[80px] pointer-events-none" />
+                    <div className="absolute top-0 right-0 w-48 h-48 bg-vj-blue/10 blur-[80px] pointer-events-none" />
                     <div>
                       <div className="flex items-center justify-between gap-2 mb-3">
                         <span className="text-[8px] font-black uppercase tracking-widest px-2 py-0.5 bg-zinc-800 text-zinc-300 rounded-full">
                           {n.ai_category || 'geral'}
                         </span>
-                        <span className="text-[8px] font-black uppercase text-vj-green">
+                        <span className="text-[8px] font-black uppercase text-vj-blue">
                           Destaque
                         </span>
                       </div>
-                      <h4 className="font-bold text-lg leading-tight mb-2 group-hover:text-vj-green transition-colors">{n.title}</h4>
+                      <h4 className="font-bold text-lg leading-tight mb-2 group-hover:text-vj-blue transition-colors">{n.title}</h4>
                       <p className="text-xs text-zinc-400 line-clamp-2 leading-relaxed">
                         {n.ai_short_summary || n.ai_summary || n.raw_excerpt}
                       </p>
                       {n.ai_travel_agency_insight && (
                         <div className="mt-3 p-3 rounded-xl bg-zinc-900 border border-zinc-800 text-[11px] text-zinc-300 leading-snug">
-                          <strong className="text-vj-green font-bold uppercase tracking-wider block text-[9px] mb-0.5">Insight Comercial:</strong>
+                          <strong className="text-vj-blue font-bold uppercase tracking-wider block text-[9px] mb-0.5">Insight Comercial:</strong>
                           {n.ai_travel_agency_insight}
                         </div>
                       )}
                     </div>
                     <div className="flex items-center justify-between mt-4 pt-3 border-t border-zinc-900">
                       <span className="text-[10px] text-zinc-500 font-semibold">Fonte: {n.source_name}</span>
-                      <ArrowRight className="w-4 h-4 text-vj-green opacity-0 group-hover:opacity-100 transition-opacity" />
+                      <ArrowRight className="w-4 h-4 text-vj-blue opacity-0 group-hover:opacity-100 transition-opacity" />
                     </div>
                   </div>
                 ))}
@@ -499,7 +499,7 @@ export default function Dashboard() {
                   <div
                     key={n.id}
                     onClick={() => navigate(`/noticias/${n.slug}`)}
-                    className="p-5 rounded-2xl border border-zinc-100 bg-white flex flex-col justify-between group cursor-pointer transition-all duration-300 hover:border-vj-green/30 hover:shadow-md"
+                    className="p-5 rounded-2xl border border-zinc-200 bg-white flex flex-col justify-between group cursor-pointer transition-all duration-300 hover:border-vj-blue/40"
                   >
                     <div>
                       <div className="flex items-center justify-between gap-2 mb-3">
@@ -510,14 +510,14 @@ export default function Dashboard() {
                           {n.ai_relevance_score || 50}%
                         </span>
                       </div>
-                      <h4 className="font-bold text-sm leading-snug line-clamp-3 text-zinc-900 group-hover:text-vj-green transition-colors">{n.title}</h4>
+                      <h4 className="font-bold text-sm leading-snug line-clamp-3 text-zinc-900 group-hover:text-vj-blue transition-colors">{n.title}</h4>
                       <p className="text-xs text-zinc-500 line-clamp-2 mt-2 leading-relaxed">
                         {n.ai_short_summary || n.ai_summary || n.raw_excerpt}
                       </p>
                     </div>
                     <div className="flex items-center justify-between mt-4 pt-3 border-t border-zinc-50">
                       <span className="text-[10px] text-zinc-400 font-semibold truncate">Fonte: {n.source_name}</span>
-                      <ArrowRight className="w-4 h-4 text-vj-green opacity-0 group-hover:opacity-100 transition-opacity" />
+                      <ArrowRight className="w-4 h-4 text-vj-blue opacity-0 group-hover:opacity-100 transition-opacity" />
                     </div>
                   </div>
                 ))}

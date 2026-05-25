@@ -20,7 +20,7 @@ const STATUS_STYLES: Record<string, { color: string; label: string }> = {
   draft:    { color: 'bg-zinc-100 text-zinc-600 border-zinc-200',           label: 'Rascunho' },
   sent:     { color: 'bg-blue-50 text-blue-600 border-blue-100', label: 'Enviada' },
   viewed:   { color: 'bg-orange-50 text-orange-600 border-orange-100',       label: 'Visualizada' },
-  confirmed: { color: 'bg-vj-green/10 text-vj-green border-vj-green/20', label: 'Confirmada' },
+  confirmed: { color: 'bg-emerald-50 text-emerald-700 border-emerald-200', label: 'Confirmada' },
   expired:  { color: 'bg-red-50 text-red-600 border-red-100',             label: 'Expirada' },
 };
 

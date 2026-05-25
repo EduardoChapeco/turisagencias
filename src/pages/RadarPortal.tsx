@@ -121,12 +121,12 @@ export default function RadarPortal() {
             return (
               <div
                 key={item.id}
-                className={`p-6 rounded-2xl border flex flex-col justify-between transition-all duration-300 relative overflow-hidden group hover:shadow-lg ${
+                className={`p-6 rounded-2xl border flex flex-col justify-between transition-all duration-300 relative overflow-hidden group ${
                   isFeatured
-                    ? 'md:col-span-2 bg-gradient-to-br from-zinc-950 to-zinc-900 text-white border-zinc-800'
+                    ? 'md:col-span-2 bg-gradient-to-br from-zinc-950 to-zinc-900 text-white border-zinc-800 hover:border-zinc-700'
                     : isAlert
-                    ? 'bg-rose-50/40 border-rose-100 hover:border-rose-200'
-                    : 'bg-white border-zinc-100 hover:border-zinc-200'
+                    ? 'bg-rose-50/40 border-rose-100 hover:border-rose-300'
+                    : 'bg-white border-zinc-200 hover:border-vj-green/40'
                 }`}
               >
                 {/* Glow decorativo */}

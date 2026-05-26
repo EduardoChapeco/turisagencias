@@ -1,30 +1,121 @@
-# Auditoria 00 - Inventário do Builder Turis
+# 00 Inventário Bruto do Builder
 
-**Data da Auditoria:** Maio 2026
-**Objetivo:** Levantar o estado atual do Construtor de Sites da Turis Agências em relação ao PRD OMEGA v7.0.
+## Rotas do Builder
+- `/site-builder`
+- `/public-site-view`
 
-## 1. Componentes e Rotas Encontradas
-Atualmente, o projeto `turisagencias` possui uma rota focada no construtor que renderiza o componente `VisualBuilder.tsx`.
-**Path Principal:** `src/components/builder/VisualBuilder.tsx`
+## Componentes do Builder
+- AccordionBlock.tsx
+- AirlineBoardingPassButtonBlock.tsx
+- AirlineCheckinButtonBlock.tsx
+- AirlineCheckinStatusCardBlock.tsx
+- AirlineFlightStatusBlock.tsx
+- AirlineManageBookingBlock.tsx
+- AlertBlock.tsx
+- BlogFeaturedPostBlock.tsx
+- BlogPostGridBlock.tsx
+- CardBlogArticleBlock.tsx
+- CardDestinationBlock.tsx
+- CardProductBlock.tsx
+- CardPromotionBlock.tsx
+- CardReviewBlock.tsx
+- CardTeamMemberBlock.tsx
+- CarouselLogosBlock.tsx
+- CarouselTestimonialsBlock.tsx
+- CmsGridBlock.tsx
+- ColumnGridBlock.tsx
+- ContainerBlock.tsx
+- CtaBlock.tsx
+- CtaFloatingWhatsappBlock.tsx
+- CtaStickyBottomBlock.tsx
+- DividerBlock.tsx
+- FaqBlock.tsx
+- FeatureAdvancedGridBlock.tsx
+- FeaturesBlock.tsx
+- FinanceInvoiceStatusBlock.tsx
+- FinancePaymentButtonBlock.tsx
+- FinanceQuoteSummaryBlock.tsx
+- FooterBlock.tsx
+- FormContactBlock.tsx
+- FormContainerBlock.tsx
+- FormGroupTripSignupBlock.tsx
+- FormLeadQuizBlock.tsx
+- FormNpsBlock.tsx
+- FormQuoteRequestBlock.tsx
+- FormSupportTicketBlock.tsx
+- FormWaitlistBlock.tsx
+- FormWhatsappPrequalifierBlock.tsx
+- GalleryBeforeAfterBlock.tsx
+- GalleryBentoGridBlock.tsx
+- GalleryBlock.tsx
+- GalleryCarouselBlock.tsx
+- GalleryInstagramFeedBlock.tsx
+- GalleryMasonryBlock.tsx
+- GridProductListBlock.tsx
+- HeaderBlock.tsx
+- HeadingBlock.tsx
+- HeroAgencyProfileBlock.tsx
+- HeroBlock.tsx
+- HeroCenteredMinimalBlock.tsx
+- HeroCountdownCampaignBlock.tsx
+- HeroDarkLuxuryBlock.tsx
+- HeroGroupTripBlock.tsx
+- HeroLinkBioProfileBlock.tsx
+- HeroPortalEntryBlock.tsx
+- HeroSearchBookingBlock.tsx
+- HeroSplitImageBlock.tsx
+- HeroVideoBackgroundBlock.tsx
+- ImageBlock.tsx
+- InputBlock.tsx
+- LayoutGrid2ColBlock.tsx
+- LayoutGrid3ColBlock.tsx
+- LayoutSidebarLeftBlock.tsx
+- LayoutSidebarRightBlock.tsx
+- LinkBioButtonListBlock.tsx
+- LinkBioSocialIconsBlock.tsx
+- LinkBioWhatsappCardBlock.tsx
+- LogoTickerBlock.tsx
+- MediaAudioPlayerBlock.tsx
+- MediaDocumentViewerBlock.tsx
+- MediaInteractiveMapBlock.tsx
+- MediaTestimonialVideoBlock.tsx
+- NewsletterBlock.tsx
+- ParagraphBlock.tsx
+- PricingBlock.tsx
+- PricingCardsBlock.tsx
+- SectionCallToActionBlock.tsx
+- SectionFaqAccordionBlock.tsx
+- SectionFeatureZigZagBlock.tsx
+- SectionHeroVideoBlock.tsx
+- SectionLogoCloudBlock.tsx
+- SectionPricingTableBlock.tsx
+- SpacerBlock.tsx
+- StatsBlock.tsx
+- StepsBlock.tsx
+- SubmitButtonBlock.tsx
+- TeamBlock.tsx
+- TestimonialsBlock.tsx
+- TimelineBlock.tsx
+- TravelDocumentRequirementsBlock.tsx
+- TravelDynamicPriceBadgeBlock.tsx
+- TravelFlightSummaryBlock.tsx
+- TravelHotelSummaryBlock.tsx
+- TravelIncludedNotIncludedBlock.tsx
+- TravelItineraryTimelineBlock.tsx
+- TravelLastSpotsBlock.tsx
+- TravelMapRouteBlock.tsx
+- TravelPackageGridBlock.tsx
+- TravelRoomingPreviewBlock.tsx
+- VideoPlayerBlock.tsx
 
-### Situação Atual:
-- **Painel Esquerdo (`BuilderSidebar.tsx`):** Lista blocos registrados no sistema. Recentemente expandido para 28 blocos (foco em Turismo, Layout, UI e Typografia). Falta suporte nativo a arrastar assets do OS e tabs completas de camadas/páginas.
-- **Canvas Central (`BuilderCanvas.tsx`):** Renderização reativa via estado Zustand (`useBuilderStore`). Utiliza drag-and-drop da biblioteca `@dnd-kit/core`.
-- **Painel Direito:** O painel de propriedades existe mas é genérico para a maioria dos elementos. Falta a quebra em abas "Conteúdo | Layout | Estilo | Responsivo | Dados | Ações".
+## Hooks & Stores
+- `useBuilderStore.ts`
+- `BuilderRegistry.ts`
 
-## 2. Tabelas de Banco de Dados (Supabase) Atuais vs Necessárias
-Atualmente o banco de dados tem um suporte básico implementado:
-- `builder_projects`: Salva o cabeçalho e meta informações.
-- `builder_versions`: Salva versões históricas baseadas no schema `content_schema` (JSON).
+## Migrations (Supabase)
+- 20260526000000_add_builder_projects_view_count.sql
+- 20260526000002_omega_v7_builder_schema.sql
 
-**Falta Implementar (Gap Analysis):**
-O PRD exige refatorar isso para a hierarquia: `Org -> Sites -> Pages -> Versions`. O sistema atual não possui tabelas claras para controle detalhado de SEO por página, integração com CRM para analytics nativa ou galerias gerenciadas via Edge Storage.
+## Mocks encontrados (rg)
+Nenhum mock ou array estático foi encontrado nas propriedades de renderização primária. O builder puxa os dados do Supabase.
 
-## 3. Blocos Existentes no Registry (`src/components/builder/blocks/index.ts`)
-O construtor já dispõe de blocos criados recentemente com padrão OMEGA v6.5, mas precisa ser migrado para o modelo de registry avançado do PRD (v7.0):
-- HeroBlock, FeaturesBlock, PricingBlock, GalleryBlock, FaqBlock, CtaBlock, TestimonialsBlock, StatsBlock, FormContainerBlock, CmsGridBlock.
-- Blocos Micro: Heading, Paragraph, Divider, Spacer, ColumnGrid, Container.
-- Blocos Interativos: Accordion, Alert, Video, Steps, Timeline, PricingCards, Team, LogoTicker, Header, Footer, Newsletter.
-
-## Conclusão da Auditoria 00
-O sistema não possui construtores duplicados "fakes", mas possui um construtor que estava sendo iterado como MVP (v6.5) que será agora reestruturado arquiteturalmente para o v7.0 de acordo com as diretrizes do novo PRD. O próximo passo é refatorar as rotas, criar os schemas SQL exigidos e integrar o novo fluxo de dados.

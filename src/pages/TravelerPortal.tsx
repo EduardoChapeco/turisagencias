@@ -14,6 +14,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { SheetPage } from '@/components/ui/SheetPage';
 import { cn } from '@/lib/utils';
+import { useToast } from '@/hooks/use-toast';
+
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_ANON = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -65,6 +67,7 @@ function UploadProofDialog({
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const { toast } = useToast();
   const fileRef = useRef<HTMLInputElement>(null);
 
   const handleFile = (f: File) => {
@@ -98,7 +101,11 @@ function UploadProofDialog({
       setSuccess(true);
       setTimeout(() => { onSuccess(); onClose(); }, 1500);
     } catch (err: any) {
-      alert('Erro ao enviar: ' + err.message);
+      toast({
+        title: 'Erro ao enviar comprovante',
+        description: err.message,
+        variant: 'destructive',
+      });
     } finally {
       setLoading(false);
     }
@@ -256,6 +263,8 @@ function CancelRequestDialog({
     }
   };
 
+  const { toast } = useToast();
+
   const handleSubmit = async () => {
     if (!fineData) { await fetchFine(); return; }
     setLoading(true);
@@ -290,7 +299,11 @@ function CancelRequestDialog({
       onSuccess();
       onClose();
     } catch (err: any) {
-      alert(err.message);
+      toast({
+        title: 'Erro ao solicitar cancelamento',
+        description: err.message,
+        variant: 'destructive',
+      });
     } finally {
       setLoading(false);
     }

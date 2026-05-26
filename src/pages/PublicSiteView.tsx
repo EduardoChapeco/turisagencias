@@ -7,13 +7,17 @@ import { logger } from '@/utils/logger';
 
 interface BuilderBlock {
   id: string;
-  kind: 'hero' | 'features' | 'contact' | 'text';
+  kind: 'hero' | 'features' | 'contact' | 'text' | 'testimonials' | 'faq' | 'pricing' | 'gallery';
   title?: string;
   subtitle?: string;
   items?: string[];
   email?: string;
   phone?: string;
   content?: string;
+  testimonials?: { quote: string; author: string; role?: string }[];
+  faqItems?: { question: string; answer: string }[];
+  pricingItems?: { title: string; price: string; description?: string; features?: string[] }[];
+  images?: string[];
 }
 
 export default function PublicSiteView() {
@@ -352,7 +356,7 @@ export default function PublicSiteView() {
         
         {blocks.map((block) => {
           // Fallback defensivo para blocos desconhecidos ou inválidos
-          if (!block || !['hero', 'features', 'contact', 'text'].includes(block.kind)) {
+          if (!block || !['hero', 'features', 'contact', 'text', 'testimonials', 'faq', 'pricing', 'gallery'].includes(block.kind)) {
             logger.warn(`PublicSiteView: Bloco desconhecido ou nulo ignorado no renderizador público: ${block?.kind || 'undefined'}`);
             return null;
           }
@@ -429,6 +433,68 @@ export default function PublicSiteView() {
               {block.kind === 'text' && (
                 <div className="py-8 text-zinc-300 text-sm md:text-base leading-relaxed text-center max-w-3xl mx-auto border-t border-zinc-900">
                   <p className="whitespace-pre-line">{block.content}</p>
+                </div>
+              )}
+
+              {block.kind === 'testimonials' && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {(block.testimonials || []).map((t, idx) => (
+                    <div key={idx} className="p-6 bg-zinc-900/20 border border-zinc-800/80 rounded-2xl text-left space-y-4">
+                      <p className="text-sm text-zinc-300 italic">"{t.quote}"</p>
+                      <div>
+                        <p className="text-xs font-bold text-white">{t.author}</p>
+                        {t.role && <p className="text-[10px] text-zinc-500">{t.role}</p>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {block.kind === 'faq' && (
+                <div className="space-y-6 text-left">
+                  <h3 className="text-lg font-bold text-white border-b border-zinc-900 pb-2 flex items-center gap-2">
+                    <Compass size={18} style={{ color: primaryColor }} /> Perguntas Frequentes
+                  </h3>
+                  <div className="space-y-4">
+                    {(block.faqItems || []).map((faq, idx) => (
+                      <div key={idx} className="p-5 bg-zinc-900/40 border border-zinc-800 rounded-2xl">
+                        <h4 className="text-sm font-bold text-white mb-2">Q: {faq.question}</h4>
+                        <p className="text-xs text-zinc-400 leading-relaxed">A: {faq.answer}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {block.kind === 'pricing' && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
+                  {(block.pricingItems || []).map((p, idx) => (
+                    <div key={idx} className="p-6 bg-zinc-900/40 border border-zinc-800 rounded-2xl flex flex-col justify-between hover:border-zinc-700 transition-colors">
+                      <div>
+                        <h4 className="text-sm font-bold text-white mb-2">{p.title}</h4>
+                        <p className="text-xs text-zinc-400 leading-relaxed mb-4">{p.description}</p>
+                      </div>
+                      <div className="pt-4 border-t border-zinc-850 flex justify-between items-baseline mt-4">
+                        <span className="text-[10px] text-zinc-500 uppercase font-mono">Valor Estimado</span>
+                        <span className="text-lg font-black text-white" style={{ color: primaryColor }}>{p.price}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {block.kind === 'gallery' && (
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  {(block.images || []).map((img, idx) => (
+                    <div key={idx} className="aspect-video rounded-2xl overflow-hidden border border-zinc-800 bg-zinc-900 group">
+                      <img 
+                        src={img} 
+                        alt="Galeria de Viagem" 
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                        onError={(e) => { (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=800&auto=format&fit=crop&q=60'; }}
+                      />
+                    </div>
+                  ))}
                 </div>
               )}
             </section>

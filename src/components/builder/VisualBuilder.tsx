@@ -18,13 +18,17 @@ interface VisualBuilderProps {
 
 interface BuilderBlock {
   id: string;
-  kind: 'hero' | 'features' | 'contact' | 'text';
+  kind: 'hero' | 'features' | 'contact' | 'text' | 'testimonials' | 'faq' | 'pricing' | 'gallery';
   title?: string;
   subtitle?: string;
   items?: string[];
   email?: string;
   phone?: string;
   content?: string;
+  testimonials?: { quote: string; author: string; role?: string }[];
+  faqItems?: { question: string; answer: string }[];
+  pricingItems?: { title: string; price: string; description?: string; features?: string[] }[];
+  images?: string[];
 }
 
 export default function VisualBuilder({ onBack, projectName = 'Website Principal', initialProjectType }: VisualBuilderProps) {
@@ -360,7 +364,7 @@ export default function VisualBuilder({ onBack, projectName = 'Website Principal
     setIsDirty(true);
   };
 
-  const handleAddBlock = (kind: 'hero' | 'features' | 'contact' | 'text') => {
+  const handleAddBlock = (kind: 'hero' | 'features' | 'contact' | 'text' | 'testimonials' | 'faq' | 'pricing' | 'gallery') => {
     const id = `${kind}-${Date.now()}`;
     let newBlock: BuilderBlock = { id, kind };
     if (kind === 'hero') {
@@ -371,6 +375,43 @@ export default function VisualBuilder({ onBack, projectName = 'Website Principal
       newBlock = { id, kind, email: organization?.email || 'contato@agencia.com', phone: organization?.whatsapp || '(11) 99999-9999' };
     } else if (kind === 'text') {
       newBlock = { id, kind, content: 'Insira aqui um parágrafo personalizado sobre a agência ou destinos recomendados.' };
+    } else if (kind === 'testimonials') {
+      newBlock = {
+        id,
+        kind,
+        testimonials: [
+          { quote: 'Viagem sensacional! O suporte da agência durante a estadia foi impecável.', author: 'Mariana Costa', role: 'Cliente Jalapão 2025' },
+          { quote: 'Melhor consultoria que já contratei. Roteiro personalizado e hotéis de altíssimo nível.', author: 'Rodrigo Mello', role: 'Cliente Europa Premium' }
+        ]
+      };
+    } else if (kind === 'faq') {
+      newBlock = {
+        id,
+        kind,
+        faqItems: [
+          { question: 'Quais as formas de pagamento disponíveis?', answer: 'Trabalhamos com boleto parcelado sem juros, PIX com desconto ou cartão de crédito em até 10x.' },
+          { question: 'A viagem possui seguro incluso?', answer: 'Sim, todas as nossas viagens contratadas acompanham seguro viagem internacional ou nacional completo.' }
+        ]
+      };
+    } else if (kind === 'pricing') {
+      newBlock = {
+        id,
+        kind,
+        pricingItems: [
+          { title: 'Roteiro Essencial', price: 'R$ 2.400', description: 'Pacote com hospedagem, transfer e 3 passeios principais.', features: ['Hospedagem 3 estrelas', 'Transfer aeroporto', 'Suporte digital'] },
+          { title: 'Experiência Premium', price: 'R$ 4.900', description: 'Curadoria completa com resorts de luxo, guias privativos e gastronomia inclusa.', features: ['Hospedagem 5 estrelas', 'Transfer privativo', 'Acompanhamento de guia', 'Seguro viagem VIP'] }
+        ]
+      };
+    } else if (kind === 'gallery') {
+      newBlock = {
+        id,
+        kind,
+        images: [
+          'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&auto=format&fit=crop&q=60',
+          'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=800&auto=format&fit=crop&q=60',
+          'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800&auto=format&fit=crop&q=60'
+        ]
+      };
     }
 
     setBlocks(prev => [...prev, newBlock]);
@@ -525,7 +566,11 @@ export default function VisualBuilder({ onBack, projectName = 'Website Principal
                       { label: 'Hero Banner', kind: 'hero' },
                       { label: 'Recursos', kind: 'features' },
                       { label: 'Contato', kind: 'contact' },
-                      { label: 'Texto Simples', kind: 'text' }
+                      { label: 'Texto Simples', kind: 'text' },
+                      { label: 'Depoimentos', kind: 'testimonials' },
+                      { label: 'Perguntas Freq.', kind: 'faq' },
+                      { label: 'Catálogo/Preços', kind: 'pricing' },
+                      { label: 'Galeria Fotos', kind: 'gallery' }
                     ].map((btn) => (
                       <button
                         key={btn.label}
@@ -635,6 +680,145 @@ export default function VisualBuilder({ onBack, projectName = 'Website Principal
                             onChange={(e) => handleUpdateBlock({ ...selectedBlock, content: e.target.value })}
                             className="w-full mt-1 bg-zinc-950 border border-zinc-800 text-xs rounded-lg p-2 focus:border-vj-green text-white h-32"
                           />
+                        </div>
+                      )}
+
+                      {selectedBlock.kind === 'testimonials' && (
+                        <div className="space-y-4">
+                          <label className="text-[10px] text-zinc-500 uppercase font-semibold block">Depoimentos dos Clientes</label>
+                          {(selectedBlock.testimonials || []).map((t, idx) => (
+                            <div key={idx} className="space-y-2 p-3 bg-zinc-950 border border-zinc-800 rounded-xl">
+                              <label className="text-[9px] text-zinc-500 uppercase font-semibold">Citação #{idx + 1}</label>
+                              <textarea
+                                value={t.quote}
+                                onChange={(e) => {
+                                  const next = [...(selectedBlock.testimonials || [])];
+                                  next[idx] = { ...next[idx], quote: e.target.value };
+                                  handleUpdateBlock({ ...selectedBlock, testimonials: next });
+                                }}
+                                className="w-full bg-zinc-900 border border-zinc-850 text-[11px] rounded-lg p-2 focus:border-vj-green text-white h-16 resize-none"
+                              />
+                              <div className="flex gap-2">
+                                <input
+                                  type="text"
+                                  value={t.author}
+                                  placeholder="Autor"
+                                  onChange={(e) => {
+                                    const next = [...(selectedBlock.testimonials || [])];
+                                    next[idx] = { ...next[idx], author: e.target.value };
+                                    handleUpdateBlock({ ...selectedBlock, testimonials: next });
+                                  }}
+                                  className="w-1/2 bg-zinc-900 border border-zinc-850 text-[11px] rounded-lg p-2 focus:border-vj-green text-white"
+                                />
+                                <input
+                                  type="text"
+                                  value={t.role || ''}
+                                  placeholder="Cargo / Destino"
+                                  onChange={(e) => {
+                                    const next = [...(selectedBlock.testimonials || [])];
+                                    next[idx] = { ...next[idx], role: e.target.value };
+                                    handleUpdateBlock({ ...selectedBlock, testimonials: next });
+                                  }}
+                                  className="w-1/2 bg-zinc-900 border border-zinc-850 text-[11px] rounded-lg p-2 focus:border-vj-green text-white"
+                                />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {selectedBlock.kind === 'faq' && (
+                        <div className="space-y-4">
+                          <label className="text-[10px] text-zinc-500 uppercase font-semibold block">Itens do FAQ</label>
+                          {(selectedBlock.faqItems || []).map((faq, idx) => (
+                            <div key={idx} className="space-y-2 p-3 bg-zinc-950 border border-zinc-800 rounded-xl">
+                              <input
+                                type="text"
+                                value={faq.question}
+                                placeholder="Pergunta"
+                                onChange={(e) => {
+                                  const next = [...(selectedBlock.faqItems || [])];
+                                  next[idx] = { ...next[idx], question: e.target.value };
+                                  handleUpdateBlock({ ...selectedBlock, faqItems: next });
+                                }}
+                                className="w-full bg-zinc-900 border border-zinc-850 text-[11px] rounded-lg p-2 focus:border-vj-green text-white font-bold"
+                              />
+                              <textarea
+                                value={faq.answer}
+                                placeholder="Resposta"
+                                onChange={(e) => {
+                                  const next = [...(selectedBlock.faqItems || [])];
+                                  next[idx] = { ...next[idx], answer: e.target.value };
+                                  handleUpdateBlock({ ...selectedBlock, faqItems: next });
+                                }}
+                                className="w-full bg-zinc-900 border border-zinc-850 text-[11px] rounded-lg p-2 focus:border-vj-green text-white h-16 resize-none"
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {selectedBlock.kind === 'pricing' && (
+                        <div className="space-y-4">
+                          <label className="text-[10px] text-zinc-500 uppercase font-semibold block">Opções de Pacote / Preços</label>
+                          {(selectedBlock.pricingItems || []).map((p, idx) => (
+                            <div key={idx} className="space-y-2 p-3 bg-zinc-950 border border-zinc-800 rounded-xl">
+                              <input
+                                type="text"
+                                value={p.title}
+                                placeholder="Título do Plano"
+                                onChange={(e) => {
+                                  const next = [...(selectedBlock.pricingItems || [])];
+                                  next[idx] = { ...next[idx], title: e.target.value };
+                                  handleUpdateBlock({ ...selectedBlock, pricingItems: next });
+                                }}
+                                className="w-full bg-zinc-900 border border-zinc-850 text-[11px] rounded-lg p-2 focus:border-vj-green text-white font-bold"
+                              />
+                              <input
+                                type="text"
+                                value={p.price}
+                                placeholder="Preço (ex: R$ 2.500)"
+                                onChange={(e) => {
+                                  const next = [...(selectedBlock.pricingItems || [])];
+                                  next[idx] = { ...next[idx], price: e.target.value };
+                                  handleUpdateBlock({ ...selectedBlock, pricingItems: next });
+                                }}
+                                className="w-full bg-zinc-900 border border-zinc-850 text-[11px] rounded-lg p-2 focus:border-vj-green text-white"
+                              />
+                              <input
+                                type="text"
+                                value={p.description || ''}
+                                placeholder="Resumo curto"
+                                onChange={(e) => {
+                                  const next = [...(selectedBlock.pricingItems || [])];
+                                  next[idx] = { ...next[idx], description: e.target.value };
+                                  handleUpdateBlock({ ...selectedBlock, pricingItems: next });
+                                }}
+                                className="w-full bg-zinc-900 border border-zinc-850 text-[11px] rounded-lg p-2 focus:border-vj-green text-white"
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {selectedBlock.kind === 'gallery' && (
+                        <div className="space-y-4">
+                          <label className="text-[10px] text-zinc-500 uppercase font-semibold block">Fotos da Galeria (URLs)</label>
+                          {(selectedBlock.images || []).map((img, idx) => (
+                            <div key={idx} className="space-y-2 p-2 bg-zinc-950 border border-zinc-800 rounded-xl">
+                              <input
+                                type="text"
+                                value={img}
+                                placeholder="URL da foto"
+                                onChange={(e) => {
+                                  const next = [...(selectedBlock.images || [])];
+                                  next[idx] = e.target.value;
+                                  handleUpdateBlock({ ...selectedBlock, images: next });
+                                }}
+                                className="w-full bg-zinc-900 border border-zinc-850 text-[11px] rounded-lg p-2 focus:border-vj-green text-white"
+                              />
+                            </div>
+                          ))}
                         </div>
                       )}
                     </div>
@@ -798,6 +982,61 @@ export default function VisualBuilder({ onBack, projectName = 'Website Principal
                     {block.kind === 'text' && (
                       <div className="py-6 text-zinc-300 text-sm leading-relaxed text-center max-w-2xl mx-auto">
                         <p>{block.content}</p>
+                      </div>
+                    )}
+
+                    {block.kind === 'testimonials' && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {(block.testimonials || []).map((t, i) => (
+                          <div key={i} className="p-4 bg-zinc-950/40 border border-zinc-800 rounded-xl text-left space-y-2">
+                            <p className="text-xs text-zinc-400 italic">"{t.quote}"</p>
+                            <div>
+                              <p className="text-[10px] font-bold text-white">{t.author}</p>
+                              {t.role && <p className="text-[8px] text-zinc-500">{t.role}</p>}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {block.kind === 'faq' && (
+                      <div className="space-y-3 text-left">
+                        <h4 className="text-xs font-bold text-vj-green uppercase tracking-wide">Dúvidas Frequentes</h4>
+                        <div className="space-y-2">
+                          {(block.faqItems || []).map((faq, i) => (
+                            <div key={i} className="p-3 bg-zinc-950/20 border border-zinc-850 rounded-xl">
+                              <p className="text-xs font-bold text-white mb-1">Q: {faq.question}</p>
+                              <p className="text-[11px] text-zinc-400">A: {faq.answer}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {block.kind === 'pricing' && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
+                        {(block.pricingItems || []).map((p, i) => (
+                          <div key={i} className="p-4 bg-zinc-950 border border-zinc-850 rounded-xl flex flex-col justify-between">
+                            <div>
+                              <h4 className="text-xs font-bold text-white mb-1">{p.title}</h4>
+                              <p className="text-[10px] text-zinc-400 mb-2">{p.description}</p>
+                            </div>
+                            <div className="pt-2 border-t border-zinc-800 flex justify-between items-baseline mt-4">
+                              <span className="text-[10px] text-zinc-500">Valor sugerido</span>
+                              <span className="text-sm font-black text-vj-green">{p.price}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {block.kind === 'gallery' && (
+                      <div className="grid grid-cols-3 gap-2">
+                        {(block.images || []).map((img, i) => (
+                          <div key={i} className="aspect-video rounded-lg overflow-hidden border border-zinc-800 bg-zinc-900">
+                            <img src={img} alt="Galeria" className="w-full h-full object-cover" />
+                          </div>
+                        ))}
                       </div>
                     )}
                   </div>

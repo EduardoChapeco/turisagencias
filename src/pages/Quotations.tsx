@@ -204,7 +204,7 @@ export default function Quotations() {
                          <p className="text-[9px] font-black text-vj-txt3 uppercase tracking-widest mb-1">Total Sugerido</p>
                          <span className="text-2xl font-black text-vj-txt tracking-tighter">
                           {fmtCurrency(q.total_value).split(',')[0]}
-                          <span className="text-sm opacity-30">,00</span>
+                          <span className="text-sm opacity-30">,{fmtCurrency(q.total_value).split(',')[1] || '00'}</span>
                          </span>
                        </div>
                        <Button variant="ghost" size="icon" className="h-11 w-11 rounded-2xl group-hover:bg-vj-green group-hover:text-white transition-all duration-300">

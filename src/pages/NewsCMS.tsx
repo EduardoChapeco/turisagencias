@@ -585,6 +585,27 @@ export default function NewsCMS() {
                     />
                   </div>
 
+                  {/* Imagem de Capa */}
+                  <div className="space-y-2">
+                    <span className="text-xs font-bold text-zinc-500 uppercase">Imagem de Capa (URL)</span>
+                    <Input
+                      defaultValue={selectedArticle.image_url || ''}
+                      placeholder="URL da imagem (ex: https://...)"
+                      className="h-10 text-xs"
+                      onBlur={(e) => handleSaveArticleEdits(selectedArticle.id, { image_url: e.target.value })}
+                    />
+                    {selectedArticle.image_url && (
+                      <div className="relative mt-2 border border-zinc-100 rounded-2xl overflow-hidden bg-zinc-50 max-h-32">
+                        <img 
+                          src={selectedArticle.image_url} 
+                          alt="Capa do Artigo" 
+                          className="w-full h-full object-cover max-h-32"
+                          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                        />
+                      </div>
+                    )}
+                  </div>
+
                   {/* Resumo completo da IA */}
                   <div className="space-y-1">
                     <span className="text-xs font-bold text-zinc-500 uppercase">Resumo Completo (IA)</span>

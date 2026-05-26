@@ -3,27 +3,40 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { AppLayout } from '@/components/AppLayout';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useGroupTrips } from '@/hooks/useGroupTrips';
+import { useGroupTrip } from '@/hooks/useGroupTrips';
 import { PricingCalculator } from '@/components/group-trips/PricingCalculator';
 import { GroupBloqueiosTab } from '@/components/group-trips/GroupBloqueiosTab';
 import { GroupClientsKanban } from '@/components/group-trips/GroupClientsKanban';
 import { GroupFinancialBoard } from '@/components/group-trips/GroupFinancialBoard';
 import { GroupContractGenerator } from '@/components/group-trips/GroupContractGenerator';
 import { VoucherPipeline } from '@/components/group-trips/VoucherPipeline';
-import { ArrowLeft, Users, Calculator, Plane, FileText, BadgeDollarSign, Ticket } from 'lucide-react';
+import { ArrowLeft, Users, Calculator, Plane, FileText, BadgeDollarSign, Ticket, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export default function GroupDashboard() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { data: trips } = useGroupTrips();
+  const { data: trip, isLoading } = useGroupTrip(id);
   
-  const trip = trips?.find(t => t.id === id);
+  if (isLoading) {
+    return (
+      <AppLayout>
+        <div className="flex flex-col items-center justify-center min-h-[400px] gap-2">
+          <Loader2 className="h-8 w-8 animate-spin text-vj-blue" />
+          <p className="text-sm text-vj-txt2">Carregando detalhes do grupo...</p>
+        </div>
+      </AppLayout>
+    );
+  }
 
   if (!trip) {
     return (
       <AppLayout>
-        <div className="p-8 text-center">Carregando grupo...</div>
+        <div className="p-8 text-center">
+          <h2 className="text-lg font-bold text-vj-txt">Grupo não encontrado</h2>
+          <p className="text-sm text-vj-txt2 mb-4">Esta viagem em grupo não existe ou foi removida.</p>
+          <Button onClick={() => navigate('/group-trips')}>Voltar para Viagens em Grupo</Button>
+        </div>
       </AppLayout>
     );
   }

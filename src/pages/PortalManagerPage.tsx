@@ -42,6 +42,7 @@ export default function PortalManagerPage() {
   // UI state
   const [saving, setSaving] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [copiedBooking, setCopiedBooking] = useState(false);
   const [bookings, setBookings] = useState<any[]>([]);
   const [selectedBooking, setSelectedBooking] = useState<string>('');
   const [loadingBookings, setLoadingBookings] = useState(false);
@@ -107,6 +108,18 @@ export default function PortalManagerPage() {
       description: 'O link do portal foi copiado para a sua área de transferência.',
     });
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleCopyBookingLink = () => {
+    if (!selectedBooking) return;
+    const link = `${window.location.origin}/minha-viagem/${selectedBooking}`;
+    navigator.clipboard.writeText(link);
+    setCopiedBooking(true);
+    toast({
+      title: 'Link da viagem copiado!',
+      description: 'O link direto desta reserva de teste foi copiado para a sua área de transferência.',
+    });
+    setTimeout(() => setCopiedBooking(false), 2000);
   };
 
   const handleSaveSettings = async () => {
@@ -292,13 +305,23 @@ export default function PortalManagerPage() {
                         ))}
                       </select>
                     </div>
-                    <Button 
-                      variant="outline" 
-                      onClick={() => window.open(`/minha-viagem/${selectedBooking}`, '_blank')}
-                      className="h-11 rounded-xl gap-2 text-xs font-bold shrink-0 bg-white hover:bg-zinc-50 border-zinc-200 text-vj-txt"
-                    >
-                      Visualizar Portal do Cliente <ExternalLink className="w-4 h-4" />
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button 
+                        variant="outline" 
+                        onClick={handleCopyBookingLink}
+                        className="h-11 rounded-xl gap-2 text-xs font-bold bg-white hover:bg-zinc-50 border-zinc-200 text-vj-txt"
+                      >
+                        {copiedBooking ? <Check className="w-4 h-4 text-vj-green" /> : <Copy className="w-4 h-4 text-zinc-400" />}
+                        Copiar Link
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        onClick={() => window.open(`/minha-viagem/${selectedBooking}`, '_blank')}
+                        className="h-11 rounded-xl gap-2 text-xs font-bold shrink-0 bg-white hover:bg-zinc-50 border-zinc-200 text-vj-txt"
+                      >
+                        Visualizar Portal do Cliente <ExternalLink className="w-4 h-4" />
+                      </Button>
+                    </div>
                   </div>
                 ) : (
                   <div className="p-4 bg-zinc-50 border border-dashed border-zinc-200 rounded-xl text-center text-xs text-zinc-400 italic">

@@ -71,6 +71,47 @@ const removeNodeFromTree = (nodes: BuilderNode[], id: string): BuilderNode[] => 
   });
 };
 
+const removeAndReturnNode = (nodes: BuilderNode[], id: string): { tree: BuilderNode[], node: BuilderNode | null } => {
+  let foundNode: BuilderNode | null = null;
+  const filterTree = (list: BuilderNode[]): BuilderNode[] => {
+    const result: BuilderNode[] = [];
+    for (const item of list) {
+      if (item.id === id) {
+        foundNode = { ...item };
+      } else {
+        const newItem = { ...item };
+        if (newItem.children) {
+          newItem.children = filterTree(newItem.children);
+        }
+        result.push(newItem);
+      }
+    }
+    return result;
+  };
+  const newTree = filterTree(nodes);
+  return { tree: newTree, node: foundNode };
+};
+
+const insertNodeAt = (nodes: BuilderNode[], parentId: string | null, node: BuilderNode, index: number): BuilderNode[] => {
+  if (parentId === null) {
+    const newNodes = [...nodes];
+    newNodes.splice(index, 0, node);
+    return newNodes;
+  }
+
+  return nodes.map(n => {
+    if (n.id === parentId) {
+      const children = [...(n.children || [])];
+      children.splice(index, 0, node);
+      return { ...n, children };
+    }
+    if (n.children) {
+      return { ...n, children: insertNodeAt(n.children, parentId, node, index) };
+    }
+    return n;
+  });
+};
+
 export const useBuilderStore = create<BuilderState>((set, get) => ({
   projectId: null,
   projectType: 'website',
@@ -174,9 +215,19 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
   }),
 
   moveNode: (id, toParentId, toIndex) => set((state) => {
-    // Advanced DND logic (implement later inside dnd-kit handlers directly to avoid redundant logic here)
-    // For now, this is a placeholder. Actual moving is usually done by getting flattened nodes, moving, and rebuilding tree.
-    return {};
+    const { tree: treeAfterRemoval, node } = removeAndReturnNode(state.nodes, id);
+    if (!node) return {};
+    
+    const newNodes = insertNodeAt(treeAfterRemoval, toParentId, node, toIndex);
+    
+    return {
+      nodes: newNodes,
+      history: {
+        past: [...state.history.past, clone(state.nodes)].slice(-50),
+        future: []
+      },
+      isDirty: true
+    };
   }),
 
   setSelectedNodeId: (id) => set({ selectedNodeId: id, activeTab: id ? 'edit' : 'blocks' }),

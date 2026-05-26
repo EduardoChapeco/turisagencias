@@ -73,7 +73,7 @@ function HotelCard({
         </div>
         {/* Edit overlay */}
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all flex items-center justify-center">
-          <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-white rounded-xl p-2 shadow-lg">
+          <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-white rounded-xl p-2 border border-vj-border">
             <Pencil size={14} className="text-vj-txt" />
           </div>
         </div>

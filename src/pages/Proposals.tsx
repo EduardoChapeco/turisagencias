@@ -102,7 +102,7 @@ export default function Proposals() {
           <div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button className="bg-vj-green text-white hover:bg-vj-green/90 font-bold gap-1.5 shadow-sm">
+                <Button className="bg-vj-green text-white hover:bg-vj-green/90 font-bold gap-1.5">
                   <Plus className="w-4 h-4" /> Nova Proposta
                 </Button>
               </DropdownMenuTrigger>

@@ -174,7 +174,7 @@ export default function Dashboard() {
     return (
       <AppLayout>
         <div className="mx-auto flex min-h-[70vh] w-full max-w-4xl items-center justify-center px-2">
-          <section className="w-full rounded-2xl border border-vj-border bg-white p-6 shadow-sm">
+          <section className="w-full rounded-2xl border border-vj-border bg-white p-6">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div className="max-w-2xl">
                 <p className="mb-2 text-xs font-black uppercase tracking-[0.25em] text-vj-blue">

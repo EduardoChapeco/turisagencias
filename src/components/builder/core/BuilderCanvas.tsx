@@ -75,6 +75,13 @@ function SortableBlock({ node }: { node: BuilderNode }) {
 
       <div className="pointer-events-none relative z-0">
         <RenderComponent node={node} />
+        {node.children && node.children.length > 0 && (
+          <div className="pl-4 mt-4 border-l-2 border-dashed border-zinc-200">
+             {node.children.map(childNode => (
+               <SortableBlock key={childNode.id} node={childNode} />
+             ))}
+          </div>
+        )}
       </div>
     </div>
   );

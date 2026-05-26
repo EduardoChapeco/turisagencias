@@ -11,97 +11,50 @@ const templates = [
     description: 'Design escuro luxuoso com hero de alto impacto, features vitrificados e tabela de preços.',
     icon: Palette,
     nodes: [
-      {
-        id: `hero-${Date.now()}-1`,
-        type: 'hero',
-        props: {
-          title: 'Descubra o Mundo com Exclusividade',
-          subtitle: 'Roteiros de luxo desenhados para você.',
-          buttonText: 'Falar com Especialista',
-          align: 'center'
-        },
-        styles: {
-          paddingTop: 'py-32',
-          paddingBottom: 'pb-32',
-          backgroundColor: 'bg-zinc-950',
-          textColor: 'text-white'
-        }
-      },
-      {
-        id: `features-${Date.now()}-2`,
-        type: 'features',
-        props: {
-          title: 'Por que nós?',
-          features: [
-            { title: 'Curadoria Exclusiva', desc: 'Acesso aos resorts mais restritos.', iconName: 'compass' },
-            { title: 'Suporte 24/7', desc: 'Atendimento via WhatsApp em qualquer fuso.', iconName: 'shield' },
-            { title: 'Roteiros VJ', desc: 'Integração completa com IA.', iconName: 'zap' }
-          ]
-        },
-        styles: {
-          paddingTop: 'py-20',
-          paddingBottom: 'pb-20',
-          backgroundColor: 'bg-zinc-900',
-          textColor: 'text-white'
-        }
-      },
-      {
-        id: `pricing-${Date.now()}-3`,
-        type: 'pricing',
-        props: {
-          title: 'Nossos Serviços',
-          subtitle: 'Selecione o estilo de viagem ideal.',
-          plans: [
-            { name: 'Essence', price: 'Sob Consulta', features: 'Hospedagem 5 estrelas, Transfers In/Out', isPopular: false },
-            { name: 'Premium', price: 'VIP', features: 'Hospedagem 5 estrelas, Helicóptero, Jantares Michelin', isPopular: true }
-          ]
-        },
-        styles: {
-          paddingTop: 'py-24',
-          paddingBottom: 'pb-24',
-          backgroundColor: 'bg-zinc-950',
-          textColor: 'text-white'
-        }
-      }
+      { id: `b-${Date.now()}-1`, type: 'hero_dark_luxury', props: {}, styles: {} },
+      { id: `b-${Date.now()}-2`, type: 'section_feature_zigzag', props: {}, styles: {} },
+      { id: `b-${Date.now()}-3`, type: 'travel_package_grid', props: {}, styles: {} },
+      { id: `b-${Date.now()}-4`, type: 'testimonials', props: {}, styles: {} },
+      { id: `b-${Date.now()}-5`, type: 'footer', props: {}, styles: {} }
+    ]
+  },
+  {
+    id: 'tpl-quotation',
+    name: 'Orçamento Turis',
+    description: 'Apresente cotações para seus clientes com roteiro, voos, hotel e resumo financeiro.',
+    icon: Blocks,
+    nodes: [
+      { id: `b-${Date.now()}-6`, type: 'hero_centered_minimal', props: {}, styles: {} },
+      { id: `b-${Date.now()}-7`, type: 'travel_flight_summary', props: {}, styles: {} },
+      { id: `b-${Date.now()}-8`, type: 'travel_hotel_summary', props: {}, styles: {} },
+      { id: `b-${Date.now()}-9`, type: 'travel_itinerary_timeline', props: {}, styles: {} },
+      { id: `b-${Date.now()}-10`, type: 'finance_quote_summary', props: {}, styles: {} },
+      { id: `b-${Date.now()}-11`, type: 'finance_payment_button', props: {}, styles: {} }
     ]
   },
   {
     id: 'tpl-linkbio',
     name: 'LinkBio OMEGA',
-    description: 'Layout vertical otimizado para Instagram com botões CTA e destaques em formato grid.',
+    description: 'Layout vertical otimizado para Instagram com botões sociais e links.',
     icon: Layout,
     nodes: [
-      {
-        id: `hero-${Date.now()}-1`,
-        type: 'hero',
-        props: {
-          title: '@TurisAgency',
-          subtitle: 'Transformando sonhos em passaportes carimbados. Fale conosco!',
-          buttonText: '',
-          align: 'center'
-        },
-        styles: {
-          paddingTop: 'py-16',
-          paddingBottom: 'pb-8',
-          backgroundColor: 'bg-vj-green',
-          textColor: 'text-zinc-950'
-        }
-      },
-      {
-        id: `cta-${Date.now()}-2`,
-        type: 'cta',
-        props: {
-          title: 'Solicite seu Orçamento',
-          subtitle: 'Atendimento expresso via WhatsApp',
-          buttonText: 'Chamar no WhatsApp'
-        },
-        styles: {
-          paddingTop: 'pt-8',
-          paddingBottom: 'pb-16',
-          backgroundColor: 'bg-white',
-          textColor: 'text-zinc-950'
-        }
-      }
+      { id: `b-${Date.now()}-12`, type: 'hero_linkbio_profile', props: {}, styles: {} },
+      { id: `b-${Date.now()}-13`, type: 'linkbio_social_icons', props: {}, styles: {} },
+      { id: `b-${Date.now()}-14`, type: 'linkbio_button_list', props: {}, styles: {} },
+      { id: `b-${Date.now()}-15`, type: 'cta_floating_whatsapp', props: {}, styles: {} }
+    ]
+  },
+  {
+    id: 'tpl-blog',
+    name: 'Portal / Blog',
+    description: 'Crie uma página de artigos ou notícias para sua agência de turismo.',
+    icon: Layout,
+    nodes: [
+      { id: `b-${Date.now()}-16`, type: 'hero_search_booking', props: {}, styles: {} },
+      { id: `b-${Date.now()}-17`, type: 'blog_featured_post', props: {}, styles: {} },
+      { id: `b-${Date.now()}-18`, type: 'blog_post_grid', props: {}, styles: {} },
+      { id: `b-${Date.now()}-19`, type: 'newsletter', props: {}, styles: {} },
+      { id: `b-${Date.now()}-20`, type: 'footer', props: {}, styles: {} }
     ]
   }
 ];

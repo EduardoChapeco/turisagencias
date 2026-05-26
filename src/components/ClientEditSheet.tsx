@@ -353,11 +353,11 @@ export function ClientEditSheet({ id, open, onClose, onSuccess }: ClientEditShee
             {activeSection === 'documentos' && (
               <div className="space-y-6">
                 {/* Passaporte — colunas flat dedicadas */}
-                <div className="p-4 rounded-vj-lg bg-blue-50/50 border border-blue-100 space-y-4">
-                  <Label className="text-base font-semibold text-blue-900 flex items-center gap-2">
-                    <Plane className="h-4 w-4 text-blue-500" /> Passaporte Principal
+                <div className="p-4 rounded-vj-lg bg-vj-blue-bg border border-vj-blue/30 space-y-4">
+                  <Label className="text-base font-semibold text-vj-txt flex items-center gap-2">
+                    <Plane className="h-4 w-4 text-vj-blue" /> Passaporte Principal
                   </Label>
-                  <p className="text-xs text-blue-600">Campos indexáveis — armazenados em colunas dedicadas para busca e alerta de vencimento.</p>
+                  <p className="text-xs text-vj-txt2">Campos indexáveis — armazenados em colunas dedicadas para busca e alerta de vencimento.</p>
                   <div className="grid sm:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
                       <Label>Número do Passaporte</Label>
@@ -389,27 +389,29 @@ export function ClientEditSheet({ id, open, onClose, onSuccess }: ClientEditShee
                   <Label className="text-base font-semibold text-vj-txt flex items-center gap-2">
                     <FileText className="h-5 w-5 text-vj-green" /> Outros Documentos
                   </Label>
-                  <Button onClick={addDocumentBlock} size="sm" variant="outline" className="border-vj-green text-vj-green hover:bg-vj-green hover:text-white transition-colors">
+                  <Button onClick={addDocumentBlock} size="sm" variant="outline" className="text-vj-green focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
                     <Plus className="w-4 h-4 mr-1" /> Adicionar Mídia/Documento
                   </Button>
                 </div>
-
+ 
                 {form.documents?.length === 0 && (
                   <div className="text-center py-8 text-vj-txt3 text-sm bg-vj-surface rounded-vj-lg border border-dashed border-vj-border">
                     Nenhum documento adicional. Adicione RGs, vistos ou registros profissionais.
                   </div>
                 )}
-
+ 
                 <div className="space-y-6">
                   {form.documents?.map((doc: any, index: number) => (
                     <div key={doc.id || index} className="p-4 rounded-vj-lg border border-vj-border bg-vj-surface relative space-y-4">
-                      <button
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         onClick={() => removeDocumentBlock(index)}
-                        className="absolute right-3 top-3 text-vj-txt3 hover:text-red-500 transition-colors"
+                        className="absolute right-3 top-3 h-8 w-8 text-vj-txt3 hover:text-red-500 focus-visible:ring-2 focus-visible:ring-ring"
                         title="Remover documento"
                       >
                         <Trash2 className="w-4 h-4" />
-                      </button>
+                      </Button>
 
                       <div className="grid sm:grid-cols-2 gap-4">
                         <div className="space-y-1.5">
@@ -538,12 +540,12 @@ export function ClientEditSheet({ id, open, onClose, onSuccess }: ClientEditShee
 
             {activeSection === 'fidelidade' && (
               <div className="space-y-6">
-                <div className="p-5 rounded-vj-lg bg-amber-50/50 border border-amber-100 flex items-center justify-between">
+                <div className="p-5 rounded-vj-lg bg-vj-orange-bg border border-vj-orange/30 flex items-center justify-between">
                   <div className="space-y-1">
-                    <h3 className="font-bold text-amber-900 flex items-center gap-2">
-                      <Star className="h-4 w-4 text-amber-500" /> Membro do Clube
+                    <h3 className="font-bold text-vj-txt flex items-center gap-2">
+                      <Star className="h-4 w-4 text-vj-orange" /> Membro do Clube
                     </h3>
-                    <p className="text-xs text-amber-700">Cliente faz parte do programa de fidelidade da agência.</p>
+                    <p className="text-xs text-vj-txt2">Cliente faz parte do programa de fidelidade da agência.</p>
                   </div>
                   <Switch
                     checked={form.is_member}
@@ -612,7 +614,12 @@ export function ClientEditSheet({ id, open, onClose, onSuccess }: ClientEditShee
                       {form.tags.map((tag: string) => (
                         <Badge key={tag} variant="secondary" className="gap-1.5 pr-1 text-sm bg-vj-green/10 text-vj-green border border-vj-green/20">
                           {tag}
-                          <button type="button" onClick={() => removeTag(tag)} className="hover:text-red-500 transition-colors">
+                          <button 
+                            type="button" 
+                            onClick={() => removeTag(tag)} 
+                            className="hover:text-red-500 transition-colors focus-visible:ring-1 focus-visible:ring-ring rounded"
+                            aria-label={`Remover tag ${tag}`}
+                          >
                             <X className="h-3 w-3" />
                           </button>
                         </Badge>

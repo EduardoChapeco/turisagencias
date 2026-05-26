@@ -152,7 +152,7 @@ export default function PublicNewsArticle() {
           <div className="md:col-span-2 space-y-6">
             
             {/* Box Resumo Inteligente */}
-            <Card className="border-zinc-200/60 shadow-sm overflow-hidden rounded-2xl bg-white">
+            <Card className="border-zinc-200/60 overflow-hidden rounded-2xl bg-white">
               <CardHeader className="bg-zinc-50/50 border-b border-zinc-100 py-4 px-6">
                 <CardTitle className="text-sm font-bold uppercase tracking-wider text-zinc-600 flex items-center gap-2">
                   <Newspaper className="w-4 h-4 text-vj-green" /> Análise e Resumo do Radar
@@ -195,7 +195,7 @@ export default function PublicNewsArticle() {
             
             {/* Box Insights para Agência */}
             {article.ai_travel_agency_insight && (
-              <Card className="border-emerald-100 bg-emerald-50/20 rounded-2xl overflow-hidden shadow-sm">
+              <Card className="border-emerald-100 bg-emerald-50/20 rounded-2xl overflow-hidden">
                 <CardHeader className="bg-emerald-50 border-b border-emerald-100/50 py-3 px-5">
                   <CardTitle className="text-xs font-bold uppercase tracking-wider text-emerald-700 flex items-center gap-1.5">
                     <Lightbulb className="w-4 h-4 text-emerald-500" /> Insight do Setor
@@ -211,7 +211,7 @@ export default function PublicNewsArticle() {
 
             {/* Box Ação Recomendada */}
             {article.ai_recommended_action && (
-              <Card className="border-blue-100 bg-blue-50/20 rounded-2xl overflow-hidden shadow-sm">
+              <Card className="border-blue-100 bg-blue-50/20 rounded-2xl overflow-hidden">
                 <CardHeader className="bg-blue-50 border-b border-blue-100/50 py-3 px-5">
                   <CardTitle className="text-xs font-bold uppercase tracking-wider text-blue-700 flex items-center gap-1.5">
                     <Globe className="w-4 h-4 text-blue-500" /> Oportunidade

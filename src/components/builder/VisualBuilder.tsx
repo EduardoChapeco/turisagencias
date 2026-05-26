@@ -14,6 +14,7 @@ import { logger } from '@/utils/logger';
 import { useBuilderStore } from './core/useBuilderStore';
 import { BuilderSidebar } from './core/BuilderSidebar';
 import { BuilderCanvas } from './core/BuilderCanvas';
+import { BuilderRightPanel } from './core/BuilderRightPanel';
 import { registerAllBlocks } from './blocks';
 
 // Initialize the block registry once
@@ -350,6 +351,7 @@ export default function VisualBuilder({
       <div className="flex-1 flex min-h-0 overflow-hidden relative">
         {!isPreview && <BuilderSidebar />}
         <BuilderCanvas />
+        {!isPreview && <BuilderRightPanel />}
       </div>
     </div>
   );

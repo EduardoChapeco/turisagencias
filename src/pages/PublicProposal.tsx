@@ -114,7 +114,7 @@ export default function PublicProposal() {
       <div className="min-h-screen bg-zinc-50 pb-20 font-sans text-zinc-800">
         
         {/* Top Floating CTA Bar */}
-        <nav className="bg-white/90 backdrop-blur-md border-b border-zinc-100 py-3.5 px-4 sticky top-0 z-50 shadow-sm no-print">
+        <nav className="bg-white/90 backdrop-blur-md border-b border-zinc-100 py-3.5 px-4 sticky top-0 z-50 border-vj-border no-print">
         <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
           <div className="flex items-center gap-2.5 min-w-0">
             {agency?.logo_url ? (
@@ -141,7 +141,7 @@ export default function PublicProposal() {
             </Button>
             <Button 
               size="sm" 
-              className="bg-vj-green text-white hover:bg-vj-green/90 text-xs font-bold gap-1.5 shadow-sm"
+              className="bg-vj-green text-white hover:bg-vj-green/90 text-xs font-bold gap-1.5"
               asChild
             >
               <a href={whatsappLink} target="_blank" rel="noopener noreferrer">
@@ -162,7 +162,7 @@ export default function PublicProposal() {
               
               {/* Capa Premium (HERO) */}
               {b.type === 'hero' && (
-                <div className="relative h-80 sm:h-96 rounded-3xl overflow-hidden bg-zinc-950 flex items-end p-8 text-white shadow-md border border-zinc-900">
+                <div className="relative h-80 sm:h-96 rounded-3xl overflow-hidden bg-zinc-950 flex items-end p-8 text-white border border-zinc-900">
                   {b.settings?.image_url ? (
                     <img 
                       src={b.settings.image_url} 
@@ -190,7 +190,7 @@ export default function PublicProposal() {
 
               {/* Roteiro Diário (ITINERARY) */}
               {b.type === 'itinerary' && (
-                <Card className="rounded-2xl border-zinc-200 bg-white overflow-hidden shadow-sm">
+                <Card className="rounded-2xl border-zinc-200 bg-white overflow-hidden">
                   <div className="p-6 border-b border-zinc-100 bg-zinc-50/50">
                     <h3 className="font-bold text-base text-zinc-900 flex items-center gap-2">
                       <Globe className="w-5 h-5 text-vj-green" /> {b.name || 'Cronograma e Roteiro Diário'}
@@ -200,7 +200,7 @@ export default function PublicProposal() {
                     <div className="relative border-l border-zinc-200 ml-3 pl-6 space-y-6">
                       {b.settings?.days?.map((d: any, idx: number) => (
                         <div key={idx} className="relative space-y-1">
-                          <span className="absolute -left-[35px] top-0.5 h-6.5 w-6.5 rounded-full bg-vj-green text-white font-bold text-xs flex items-center justify-center border-4 border-white shadow-sm">
+                          <span className="absolute -left-[35px] top-0.5 h-6.5 w-6.5 rounded-full bg-vj-green text-white font-bold text-xs flex items-center justify-center border-4 border-white">
                             {d.day}
                           </span>
                           <h4 className="text-sm font-bold text-zinc-900 leading-snug">{d.title}</h4>
@@ -214,7 +214,7 @@ export default function PublicProposal() {
 
               {/* Hospedagem (HOTEL) */}
               {b.type === 'hotel' && (
-                <Card className="rounded-2xl border-zinc-200 bg-white overflow-hidden shadow-sm">
+                <Card className="rounded-2xl border-zinc-200 bg-white overflow-hidden">
                   <div className="p-6 border-b border-zinc-100 bg-zinc-50/50">
                     <h3 className="font-bold text-base text-zinc-900 flex items-center gap-2">
                       🏨 {b.name || 'Hospedagem Recomendada'}
@@ -240,7 +240,7 @@ export default function PublicProposal() {
 
               {/* Voos (FLIGHT) */}
               {b.type === 'flight' && (
-                <Card className="rounded-2xl border-zinc-200 bg-white overflow-hidden shadow-sm">
+                <Card className="rounded-2xl border-zinc-200 bg-white overflow-hidden">
                   <div className="p-6 border-b border-zinc-100 bg-zinc-50/50">
                     <h3 className="font-bold text-base text-zinc-900 flex items-center gap-2">
                       ✈️ {b.name || 'Malha Aérea Sugerida'}
@@ -277,7 +277,7 @@ export default function PublicProposal() {
 
               {/* Preços e Condições (PRICING) */}
               {b.type === 'pricing' && (
-                <div className="p-6 sm:p-8 rounded-3xl bg-zinc-900 border border-zinc-850 text-white space-y-6 shadow-md relative overflow-hidden">
+                <div className="p-6 sm:p-8 rounded-3xl bg-zinc-900 border border-zinc-850 text-white space-y-6 relative overflow-hidden">
                   <div className="absolute top-0 right-0 w-40 h-40 bg-vj-green/5 blur-[50px] pointer-events-none" />
                   <div className="flex justify-between items-baseline gap-4 flex-wrap border-b border-zinc-800 pb-4">
                     <div>
@@ -309,7 +309,7 @@ export default function PublicProposal() {
 
               {/* Inclusões (INCLUSIONS) */}
               {b.type === 'inclusions' && (
-                <Card className="rounded-2xl border-zinc-200 bg-white overflow-hidden shadow-sm">
+                <Card className="rounded-2xl border-zinc-200 bg-white overflow-hidden">
                   <div className="p-6 border-b border-zinc-100 bg-zinc-50/50">
                     <h3 className="font-bold text-base text-zinc-900 flex items-center gap-2">
                       <CheckCircle className="w-5 h-5 text-vj-green" /> {b.name || 'O Que Está Incluso'}
@@ -330,7 +330,7 @@ export default function PublicProposal() {
 
               {/* Não Incluso (EXCLUSIONS) */}
               {b.type === 'exclusions' && (
-                <Card className="rounded-2xl border-zinc-200 bg-white overflow-hidden shadow-sm">
+                <Card className="rounded-2xl border-zinc-200 bg-white overflow-hidden">
                   <div className="p-6 border-b border-zinc-100 bg-zinc-50/50">
                     <h3 className="font-bold text-base text-zinc-900 flex items-center gap-2 text-rose-700">
                       ⚠️ {b.name || 'O Que Não Está Incluso'}

@@ -1,37 +1,30 @@
-# Inventário Bruto do Builder
+# Auditoria 00 - Inventário do Builder Turis
 
+**Data da Auditoria:** Maio 2026
+**Objetivo:** Levantar o estado atual do Construtor de Sites da Turis Agências em relação ao PRD OMEGA v7.0.
 
-Este inventário apresenta o mapeamento físico dos componentes, rotas, hooks, tabelas e migrações do Builder e do CMS do Turis Agências.
+## 1. Componentes e Rotas Encontradas
+Atualmente, o projeto `turisagencias` possui uma rota focada no construtor que renderiza o componente `VisualBuilder.tsx`.
+**Path Principal:** `src/components/builder/VisualBuilder.tsx`
 
-## 🚀 1. Rotas do Builder e Páginas Públicas
-No arquivo `src/App.tsx`, as seguintes rotas controlam a experiência do Builder e do renderizador público:
-- **Editor do Builder**: Protegido sob a rota `/admin` / `/builder` ou embutido de forma contextual.
-- **Visualização Pública do Site**: `/site/:slug` (Aponta para `PublicSiteView.tsx`)
-- **Visualização Pública do LinkBio**: `/site/:slug/bio` (Aponta para `PublicSiteView.tsx` no modo LinkBio)
-- **Visualização Pública do Blog**: `/site/:slug/blog` (Aponta para `PublicSiteView.tsx` no modo Blog)
-- **Páginas Individuais de Pacotes**: `/g/:slug` ou `/g/:id` (Aponta para `PublicGroupTrip.tsx`)
+### Situação Atual:
+- **Painel Esquerdo (`BuilderSidebar.tsx`):** Lista blocos registrados no sistema. Recentemente expandido para 28 blocos (foco em Turismo, Layout, UI e Typografia). Falta suporte nativo a arrastar assets do OS e tabs completas de camadas/páginas.
+- **Canvas Central (`BuilderCanvas.tsx`):** Renderização reativa via estado Zustand (`useBuilderStore`). Utiliza drag-and-drop da biblioteca `@dnd-kit/core`.
+- **Painel Direito:** O painel de propriedades existe mas é genérico para a maioria dos elementos. Falta a quebra em abas "Conteúdo | Layout | Estilo | Responsivo | Dados | Ações".
 
-## 🛠️ 2. Componentes e Páginas do Frontend
-### Construtor de Sites e Lojas (Builder)
-- [VisualBuilder.tsx](file:///c:/Users/aline/Music/turisagencias/src/components/builder/VisualBuilder.tsx) (43.53 kB) - Core do page builder, canvas de arrastar/adicionar seções, painel inspetor lateral e persistência de draft local.
-- [MediaPicker.tsx](file:///c:/Users/aline/Music/turisagencias/src/components/builder/MediaPicker.tsx) (14.58 kB) - Seletor de imagens com suporte a upload real no Supabase Storage (`org-assets` bucket), biblioteca Unsplash e URLs diretas.
+## 2. Tabelas de Banco de Dados (Supabase) Atuais vs Necessárias
+Atualmente o banco de dados tem um suporte básico implementado:
+- `builder_projects`: Salva o cabeçalho e meta informações.
+- `builder_versions`: Salva versões históricas baseadas no schema `content_schema` (JSON).
 
-### Curadoria e Gestão de Conteúdo (CMS)
-- [NewsCMS.tsx](file:///c:/Users/aline/Music/turisagencias/src/pages/NewsCMS.tsx) (26.09 kB) - Curadoria de artigos RSS, filtros, edição de metadados, reclassificação com IA, upload de capa com MediaPicker e painel de versionamento histórico.
+**Falta Implementar (Gap Analysis):**
+O PRD exige refatorar isso para a hierarquia: `Org -> Sites -> Pages -> Versions`. O sistema atual não possui tabelas claras para controle detalhado de SEO por página, integração com CRM para analytics nativa ou galerias gerenciadas via Edge Storage.
 
-### Renderizador Público (Renderer)
-- [PublicSiteView.tsx](file:///c:/Users/aline/Music/turisagencias/src/pages/PublicSiteView.tsx) (26.45 kB) - Renderizador responsivo de sites, blogs e link-bios a partir do snapshot versionado do banco.
+## 3. Blocos Existentes no Registry (`src/components/builder/blocks/index.ts`)
+O construtor já dispõe de blocos criados recentemente com padrão OMEGA v6.5, mas precisa ser migrado para o modelo de registry avançado do PRD (v7.0):
+- HeroBlock, FeaturesBlock, PricingBlock, GalleryBlock, FaqBlock, CtaBlock, TestimonialsBlock, StatsBlock, FormContainerBlock, CmsGridBlock.
+- Blocos Micro: Heading, Paragraph, Divider, Spacer, ColumnGrid, Container.
+- Blocos Interativos: Accordion, Alert, Video, Steps, Timeline, PricingCards, Team, LogoTicker, Header, Footer, Newsletter.
 
-## 📦 3. Banco de Dados e Schemas
-As tabelas que sustentam a persistência física no Supabase são:
-1. `builder_projects`: Registra os canais de cada organização (tipo `website`, `linkbio` ou `blog`), contendo `slug`, `current_version_id` e a métrica de visualizações `view_count`.
-2. `builder_versions`: Tabela de snapshots de versão que guarda o JSON schema dos blocos (`content_schema`), SEO (`frame_schema`) e chaves de design (`design_tokens`).
-3. `news_articles`: Tabela principal que guarda artigos coletados por feed RSS e enriquecidos com IA.
-4. `news_article_versions`: Tabela de histórico que guarda versões anteriores de artigos do CMS (com RLS e políticas seguras).
-5. `organizations`: Guarda metadados da agência e o Brand Kit (`primary_color`, `secondary_color`, `brand_kit`).
-6. `group_trips`: Tabela de pacotes reais consultada pelo bloco de viagens em grupo do builder.
-
-## 🕵️ 4. Mocks, Hardcodes e Fallbacks Identificados
-- **Rascunhos Locais**: O autosave debotado utiliza o `localStorage` do navegador para manter o draft local antes da publicação oficial. Chave: `turisagencias:builder:draft:USER_ID:PROJECT_TYPE`.
-- **Valores Estáticos de Presets**: Presets curados de imagens do Unsplash para facilitar a escolha rápida de fotos de turismo de praia, hotelaria, voos e destinos.
-
+## Conclusão da Auditoria 00
+O sistema não possui construtores duplicados "fakes", mas possui um construtor que estava sendo iterado como MVP (v6.5) que será agora reestruturado arquiteturalmente para o v7.0 de acordo com as diretrizes do novo PRD. O próximo passo é refatorar as rotas, criar os schemas SQL exigidos e integrar o novo fluxo de dados.

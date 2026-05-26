@@ -50,7 +50,7 @@ function HeaderBar() {
                 <button
                   onClick={() => setInfoOpen(true)}
                   title={pageInfo.description || pageInfo.title}
-                  className="flex items-center justify-center h-6 w-6 rounded-lg text-vj-txt3 hover:bg-zinc-100 hover:text-vj-txt transition-all shrink-0"
+                  className="flex items-center justify-center h-6 w-6 rounded-lg text-vj-txt3 hover:bg-zinc-100 hover:text-vj-txt focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 outline-none transition-all shrink-0"
                   aria-label="Informações da página"
                 >
                   <Info size={13} />
@@ -59,7 +59,7 @@ function HeaderBar() {
             </div>
           )}
         </div>
-
+ 
         {/* Direita: search + sino + avatar */}
         <div className="flex shrink-0 items-center gap-2.5">
           <div className="hidden lg:flex items-center relative w-52 xl:w-64 group">
@@ -73,12 +73,12 @@ function HeaderBar() {
               <span>K</span>
             </div>
           </div>
-
+ 
           <NotificationPanel />
-
+ 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="group flex items-center gap-2 p-1 pr-2.5 rounded-full hover:bg-zinc-100 transition-all border border-transparent hover:border-vj-border/60">
+              <button className="group flex items-center gap-2 p-1 pr-2.5 rounded-full hover:bg-zinc-100 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 outline-none transition-all border border-transparent hover:border-vj-border/60">
                 <div className="h-8 w-8 rounded-full flex items-center justify-center text-xs font-black text-white bg-vj-green">
                   {(profile?.first_name?.[0] || '?').toUpperCase()}
                 </div>

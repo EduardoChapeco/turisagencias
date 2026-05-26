@@ -19,17 +19,20 @@ export function BuilderSidebar() {
     const categories = Array.from(new Set(blocks.map(b => b.category)));
 
     return (
-      <div className="space-y-6">
+      <div className="space-y-2">
         {categories.map(cat => (
-          <div key={cat}>
-            <h4 className="text-xs font-bold text-zinc-500 uppercase mb-3 px-1">{cat}</h4>
-            <div className="grid grid-cols-2 gap-2">
+          <details key={cat} className="group bg-[#151515] border border-white/5 rounded-lg overflow-hidden" open={cat === 'travel' || cat === 'hero'}>
+            <summary className="flex items-center justify-between p-3 cursor-pointer select-none bg-white/5 group-hover:bg-white/10 transition-colors">
+              <span className="text-xs font-bold text-zinc-300 uppercase">{cat}</span>
+              <span className="text-zinc-500 group-open:rotate-180 transition-transform">▼</span>
+            </summary>
+            <div className="grid grid-cols-2 gap-2 p-3 bg-[#0A0A0A]">
               {blocks.filter(b => b.category === cat).map(block => (
                 <div
                   key={block.type}
                   draggable
                   onDragStart={(e) => handleDragStart(e, block.type)}
-                  className="p-3 bg-zinc-900 border border-zinc-800 rounded-xl flex flex-col items-center justify-center gap-2 cursor-grab hover:border-vj-green hover:bg-zinc-800 transition-colors"
+                  className="p-3 bg-zinc-900 border border-zinc-800 rounded-xl flex flex-col items-center justify-center gap-2 cursor-grab hover:border-vj-green hover:bg-zinc-800 transition-colors text-center h-20"
                   onClick={() => {
                     const newNode: BuilderNode = {
                       id: `${block.type}-${Date.now()}`,
@@ -41,12 +44,12 @@ export function BuilderSidebar() {
                     addNode(newNode);
                   }}
                 >
-                  {block.icon && <block.icon className="w-5 h-5 text-zinc-400" />}
-                  <span className="text-[10px] font-bold text-zinc-300">{block.label}</span>
+                  {block.icon && <block.icon className="w-5 h-5 text-zinc-400 shrink-0" />}
+                  <span className="text-[9px] font-bold text-zinc-300 leading-tight">{block.label}</span>
                 </div>
               ))}
             </div>
-          </div>
+          </details>
         ))}
       </div>
     );

@@ -6,14 +6,14 @@
 
 :root {
   --glass-bg: rgba(255, 255, 255, 0.7);
-  --vj-green-gradient: linear-gradient(135deg, #1a7a4a 0%, #22c55e 100%);
+  --vj-green-gradient: linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%);
   --vj-dark-gradient: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
   --vj-orange-gradient: linear-gradient(135deg, #c2410c 0%, #d4511a 100%);
 }
 
 /* ── Gradientes decorativos de card ── */
 .card-gradient-green {
-  background: linear-gradient(135deg, rgba(26, 122, 74, 0.05) 0%, rgba(34, 197, 94, 0.02) 100%);
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.05) 0%, rgba(96, 165, 250, 0.02) 100%);
 }
 
 .card-gradient-amber {

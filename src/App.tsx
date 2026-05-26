@@ -45,6 +45,7 @@ const Tickets = lazy(() => import('./pages/Tickets'));
 const Experiences = lazy(() => import('./pages/Experiences'));
 
 const PortalLogin = lazy(() => import('./pages/PortalLogin'));
+const TravelerCheckinPortal = lazy(() => import('./pages/portal/TravelerCheckinPortal'));
 const PortalHome = lazy(() => import('./pages/PortalHome'));
 const PortalTripDetail = lazy(() => import('./pages/PortalTripDetail'));
 const PortalAiPhotos = lazy(() => import('./pages/PortalAiPhotos'));
@@ -185,6 +186,7 @@ const App = () => (
               <Route path="/voucher/:token" element={<PublicBookingVoucher />} />
               <Route path="/minha-viagem/:token" element={<TravelerPortal />} />
               <Route path="/portal/:org_slug" element={<PortalLogin />} />
+              <Route path="/portal/t/:token/checkin" element={<TravelerCheckinPortal />} />
               <Route path="/noticias/:slug" element={<PublicNewsArticle />} />
               <Route path="/p/:token" element={<PublicProposal />} />
               <Route path="/portal/:org_slug/home" element={<ProtectedRoute><PortalHome /></ProtectedRoute>} />

@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Building2, Plus, Trash2, Users, FileText, Database, Webhook, Activity, CreditCard, Columns, Brain, Lock, MapPin, Search, ChevronDown, Check, X, Plane, FileSearch, ShieldCheck, Cpu, Key, Mail, Bus, KeyRound, AlertCircle, Settings as SettingsIcon } from 'lucide-react';
+import { PageHeader } from '@/components/ui/PageHeader';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuthStore } from '@/stores/authStore';
@@ -117,12 +118,11 @@ export default function Settings() {
   return (
     <AppLayout>
       <div className="space-y-8 max-w-[1400px] mx-auto pb-10 px-4 sm:px-6 w-full overflow-hidden">
-        <div>
-          <h1 className="font-heading text-4xl font-extrabold tracking-tight">Configurações da <span className="highlight-text">Agência</span></h1>
-          <p className="text-muted-foreground text-sm mt-2 flex items-center gap-2">
-            <SettingsIcon className="w-4 h-4 text-vj-green" /> Hub administrativo completo da Turis Agências.
-          </p>
-        </div>
+        <PageHeader 
+          title="Configurações da Agência" 
+          description="Hub administrativo completo da Turis Agências. Gerencie sua equipe, integre chaves de IA, configure políticas de operadoras e ajuste a assinatura." 
+          icon={SettingsIcon} 
+        />
 
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
           <div className="relative w-full overflow-hidden mb-10">

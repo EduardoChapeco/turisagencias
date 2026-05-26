@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { ProposalAiImportSheet } from '@/components/ProposalAiImportSheet';
 import { Skeleton } from '@/components/ui/skeleton';
+import { PageHeader } from '@/components/ui/PageHeader';
 import { 
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
@@ -92,15 +93,12 @@ export default function Proposals() {
       <div className="space-y-6 max-w-[1600px] mx-auto pb-10 px-4">
         {/* Header */}
         <div className="flex items-start justify-between gap-4 flex-wrap border-b border-zinc-100 pb-4">
-          <div>
-            <p className="text-xs font-bold text-vj-txt3 uppercase tracking-[0.25em] mb-1">Vendas & Comercial</p>
-            <h1 className="text-2xl font-black text-vj-txt tracking-tight leading-none flex items-center gap-2">
-              <FileText className="w-6 h-6 text-vj-green" /> Propostas Comerciais
-            </h1>
-            <p className="text-sm text-vj-txt3 font-medium mt-1">
-              Gere e compartilhe propostas visuais premium, crie roteiros baseados em PDFs com IA e acompanhe os status.
-            </p>
-          </div>
+        {/* Header (Opcional se usar apenas PageHeader) */}
+        <PageHeader
+          title="Propostas Comerciais"
+          description="Gere e compartilhe propostas visuais premium, crie roteiros baseados em PDFs com IA e acompanhe os status. Ao criar propostas em branco, você pode usar os blocos do sistema."
+          icon={FileText}
+        />
           <div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>

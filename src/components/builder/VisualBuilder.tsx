@@ -41,6 +41,8 @@ interface BuilderBlock {
   buttonStyle?: 'solid' | 'outline' | 'glass';
   imageUrl?: string;
   videoUrl?: string;
+  ctaText?: string;
+  ctaUrl?: string;
 }
 
 export default function VisualBuilder({ onBack, projectName = 'Website Principal', initialProjectType }: VisualBuilderProps) {
@@ -1074,6 +1076,41 @@ export default function VisualBuilder({ onBack, projectName = 'Website Principal
                           </select>
                         </div>
 
+                        <div>
+                          <label className="text-[10px] text-zinc-500 uppercase font-semibold">Estilo do Botão (CTA)</label>
+                          <select
+                            value={selectedBlock.buttonStyle || 'solid'}
+                            onChange={(e) => handleUpdateBlock({ ...selectedBlock, buttonStyle: e.target.value as any })}
+                            className="w-full mt-1 bg-zinc-950 border border-zinc-800 text-xs rounded-lg p-2 focus:border-vj-green text-white"
+                          >
+                            <option value="solid">Preenchido (Solid)</option>
+                            <option value="outline">Contorno (Outline)</option>
+                            <option value="glass">Vidro / Translúcido (Glass)</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="text-[10px] text-zinc-500 uppercase font-semibold">Texto do Botão (CTA)</label>
+                          <input
+                            type="text"
+                            value={selectedBlock.ctaText || ''}
+                            onChange={(e) => handleUpdateBlock({ ...selectedBlock, ctaText: e.target.value })}
+                            placeholder="Ex: Falar Conosco"
+                            className="w-full mt-1 bg-zinc-950 border border-zinc-800 text-xs rounded-lg p-2 focus:border-vj-green text-white"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="text-[10px] text-zinc-500 uppercase font-semibold">Link do Botão / Destino (CTA)</label>
+                          <input
+                            type="text"
+                            value={selectedBlock.ctaUrl || ''}
+                            onChange={(e) => handleUpdateBlock({ ...selectedBlock, ctaUrl: e.target.value })}
+                            placeholder="Ex: #contact ou https://wa.me/..."
+                            className="w-full mt-1 bg-zinc-950 border border-zinc-800 text-xs rounded-lg p-2 focus:border-vj-green text-white"
+                          />
+                        </div>
+
                         {(selectedBlock.kind === 'hero' || selectedBlock.kind === 'gallery') && (
                           <div className="pt-2">
                             <MediaPicker
@@ -1268,8 +1305,13 @@ export default function VisualBuilder({ onBack, projectName = 'Website Principal
                                 <p className="text-sm text-zinc-400">
                                   {block.subtitle}
                                 </p>
-                                <Button className="bg-vj-green text-zinc-950 hover:bg-green-600 rounded-xl h-10 px-6 font-bold text-xs">
-                                  Falar Conosco
+                                <Button className={cn(
+                                  block.buttonStyle === 'outline' ? 'border border-vj-green bg-transparent text-vj-green hover:bg-vj-green/10' :
+                                  block.buttonStyle === 'glass' ? 'backdrop-blur-md bg-white/10 hover:bg-white/20 border border-white/20 text-white' :
+                                  'bg-vj-green text-zinc-950 hover:bg-green-600',
+                                  "rounded-xl h-10 px-6 font-bold text-xs"
+                                )}>
+                                  {block.ctaText || 'Falar Conosco'}
                                 </Button>
                               </div>
                               <div className="aspect-video rounded-xl overflow-hidden border border-zinc-800 bg-zinc-900 shadow-lg">
@@ -1282,14 +1324,28 @@ export default function VisualBuilder({ onBack, projectName = 'Website Principal
                               <div className="relative z-10 max-w-xl mx-auto bg-zinc-900/80 backdrop-blur-md border border-white/10 p-6 rounded-2xl space-y-4">
                                 <h2 className="text-xl md:text-2xl font-black text-white leading-tight">{block.title}</h2>
                                 <p className="text-xs text-zinc-300">{block.subtitle}</p>
-                                <Button className="bg-vj-green text-zinc-950 hover:bg-green-600 rounded-xl h-9 px-5 font-bold text-xs">Falar Conosco</Button>
+                                <Button className={cn(
+                                  block.buttonStyle === 'outline' ? 'border border-vj-green bg-transparent text-vj-green hover:bg-vj-green/10' :
+                                  block.buttonStyle === 'glass' ? 'backdrop-blur-md bg-white/10 hover:bg-white/20 border border-white/20 text-white' :
+                                  'bg-vj-green text-zinc-950 hover:bg-green-600',
+                                  "rounded-xl h-9 px-5 font-bold text-xs"
+                                )}>
+                                  {block.ctaText || 'Falar Conosco'}
+                                </Button>
                               </div>
                             </div>
                           ) : block.layoutVariant === 'glass' ? (
                             <div className="max-w-xl mx-auto bg-white/5 border border-white/10 backdrop-blur-xl p-8 rounded-2xl space-y-4 shadow-2xl">
                               <h2 className="text-2xl md:text-3xl font-black text-white leading-tight">{block.title}</h2>
                               <p className="text-sm text-zinc-300">{block.subtitle}</p>
-                              <Button className="bg-vj-green text-zinc-950 hover:bg-green-600 rounded-xl h-10 px-6 font-bold text-xs">Falar Conosco</Button>
+                              <Button className={cn(
+                                block.buttonStyle === 'outline' ? 'border border-vj-green bg-transparent text-vj-green hover:bg-vj-green/10' :
+                                block.buttonStyle === 'glass' ? 'backdrop-blur-md bg-white/10 hover:bg-white/20 border border-white/20 text-white' :
+                                'bg-vj-green text-zinc-950 hover:bg-green-600',
+                                "rounded-xl h-10 px-6 font-bold text-xs"
+                              )}>
+                                {block.ctaText || 'Falar Conosco'}
+                              </Button>
                             </div>
                           ) : (
                             <div className="space-y-4">
@@ -1299,8 +1355,13 @@ export default function VisualBuilder({ onBack, projectName = 'Website Principal
                               <p className="text-sm text-zinc-400 max-w-md mx-auto">
                                 {block.subtitle}
                               </p>
-                              <Button className="bg-vj-green text-zinc-950 hover:bg-green-600 rounded-xl h-10 px-6 font-bold text-xs">
-                                Falar Conosco
+                              <Button className={cn(
+                                block.buttonStyle === 'outline' ? 'border border-vj-green bg-transparent text-vj-green hover:bg-vj-green/10' :
+                                block.buttonStyle === 'glass' ? 'backdrop-blur-md bg-white/10 hover:bg-white/20 border border-white/20 text-white' :
+                                'bg-vj-green text-zinc-950 hover:bg-green-600',
+                                "rounded-xl h-10 px-6 font-bold text-xs"
+                              )}>
+                                {block.ctaText || (projectType === 'blog' ? 'Acompanhar Blog' : 'Solicitar Roteiro')}
                               </Button>
                             </div>
                           )}
@@ -1421,7 +1482,9 @@ export default function VisualBuilder({ onBack, projectName = 'Website Principal
                                   <h4 className="text-sm font-bold text-white">{block.pricingItems[1].title}</h4>
                                   <p className="text-[10px] text-zinc-400">{block.pricingItems[1].description}</p>
                                   <div className="text-2xl font-black text-amber-400">{block.pricingItems[1].price}</div>
-                                  <Button className="w-full bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold text-xs h-9 rounded-xl">Reservar Agora</Button>
+                                  <Button className="w-full bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold text-xs h-9 rounded-xl">
+                                    {block.ctaText || 'Reservar Agora'}
+                                  </Button>
                                 </div>
                               )}
                             </div>

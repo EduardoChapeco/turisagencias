@@ -16,6 +16,26 @@ const sanitizeHref = (url: string | undefined): string => {
   return url;
 };
 
+const getButtonProps = (style: string | undefined, primaryColor: string) => {
+  if (style === 'outline') {
+    return {
+      className: 'border bg-transparent hover:bg-white/5 font-bold text-xs transition-all duration-300',
+      style: { borderColor: primaryColor, color: primaryColor }
+    };
+  }
+  if (style === 'glass') {
+    return {
+      className: 'backdrop-blur-md bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold text-xs transition-all duration-300',
+      style: {}
+    };
+  }
+  // solid
+  return {
+    className: 'text-zinc-950 hover:opacity-90 font-bold text-xs transition-all duration-300',
+    style: { backgroundColor: primaryColor }
+  };
+};
+
 interface BuilderBlock {
   id: string;
   kind: 'hero' | 'features' | 'contact' | 'text' | 'testimonials' | 'faq' | 'pricing' | 'gallery' | 'packages';
@@ -36,6 +56,8 @@ interface BuilderBlock {
   buttonStyle?: 'solid' | 'outline' | 'glass';
   imageUrl?: string;
   videoUrl?: string;
+  ctaText?: string;
+  ctaUrl?: string;
 }
 
 export default function PublicSiteView() {
@@ -442,9 +464,12 @@ export default function PublicSiteView() {
                         <p className="text-sm md:text-base text-zinc-400">
                           {block.subtitle}
                         </p>
-                        <a href={sanitizeHref('#contact')}>
-                          <Button className="text-zinc-950 hover:bg-green-600 rounded-xl h-10 px-6 font-bold text-xs" style={{ backgroundColor: primaryColor }}>
-                            Falar Conosco
+                        <a href={sanitizeHref(block.ctaUrl || '#contact')}>
+                          <Button 
+                            className={cn("rounded-xl h-10 px-6", getButtonProps(block.buttonStyle, primaryColor).className)} 
+                            style={getButtonProps(block.buttonStyle, primaryColor).style}
+                          >
+                            {block.ctaText || 'Falar Conosco'}
                           </Button>
                         </a>
                       </div>
@@ -458,8 +483,13 @@ export default function PublicSiteView() {
                       <div className="relative z-10 max-w-xl mx-auto bg-zinc-900/80 backdrop-blur-md border border-white/10 p-6 rounded-2xl space-y-4">
                         <h2 className="text-2xl md:text-3xl font-black text-white leading-tight">{block.title}</h2>
                         <p className="text-xs text-zinc-300">{block.subtitle}</p>
-                        <a href={sanitizeHref('#contact')}>
-                          <Button className="text-zinc-950 hover:bg-green-600 rounded-xl h-9 px-5 font-bold text-xs" style={{ backgroundColor: primaryColor }}>Falar Conosco</Button>
+                        <a href={sanitizeHref(block.ctaUrl || '#contact')}>
+                          <Button 
+                            className={cn("rounded-xl h-9 px-5", getButtonProps(block.buttonStyle, primaryColor).className)} 
+                            style={getButtonProps(block.buttonStyle, primaryColor).style}
+                          >
+                            {block.ctaText || 'Falar Conosco'}
+                          </Button>
                         </a>
                       </div>
                     </div>
@@ -467,8 +497,13 @@ export default function PublicSiteView() {
                     <div className="max-w-xl mx-auto bg-white/5 border border-white/10 backdrop-blur-xl p-8 rounded-2xl space-y-4 shadow-2xl">
                       <h2 className="text-3xl md:text-4xl font-black text-white leading-tight">{block.title}</h2>
                       <p className="text-sm text-zinc-300">{block.subtitle}</p>
-                      <a href={sanitizeHref('#contact')}>
-                        <Button className="text-zinc-950 hover:bg-green-600 rounded-xl h-10 px-6 font-bold text-xs" style={{ backgroundColor: primaryColor }}>Falar Conosco</Button>
+                      <a href={sanitizeHref(block.ctaUrl || '#contact')}>
+                        <Button 
+                          className={cn("rounded-xl h-10 px-6", getButtonProps(block.buttonStyle, primaryColor).className)} 
+                          style={getButtonProps(block.buttonStyle, primaryColor).style}
+                        >
+                          {block.ctaText || 'Falar Conosco'}
+                        </Button>
                       </a>
                     </div>
                   ) : (
@@ -480,12 +515,12 @@ export default function PublicSiteView() {
                         {block.subtitle}
                       </p>
                       <div className="flex items-center justify-center gap-4 pt-4">
-                        <a href={sanitizeHref('#contact')}>
+                        <a href={sanitizeHref(block.ctaUrl || '#contact')}>
                           <Button 
-                            className="font-bold text-sm px-8 h-12 rounded-xl text-zinc-950"
-                            style={{ backgroundColor: primaryColor }}
+                            className={cn("font-bold text-sm px-8 h-12 rounded-xl", getButtonProps(block.buttonStyle, primaryColor).className)}
+                            style={getButtonProps(block.buttonStyle, primaryColor).style}
                           >
-                            {projectType === 'blog' ? 'Acompanhar Blog' : 'Solicitar Roteiro'}
+                            {block.ctaText || (projectType === 'blog' ? 'Acompanhar Blog' : 'Solicitar Roteiro')}
                           </Button>
                         </a>
                         <Link to={`/portal/${organization.slug}`}>
@@ -633,7 +668,17 @@ export default function PublicSiteView() {
                           <h4 className="text-sm font-bold text-white">{block.pricingItems[1].title}</h4>
                           <p className="text-[10px] text-zinc-400">{block.pricingItems[1].description}</p>
                           <div className="text-2xl font-black text-amber-400">{block.pricingItems[1].price}</div>
-                          <Button className="w-full bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold text-xs h-9 rounded-xl">Reservar Agora</Button>
+                          {block.ctaUrl ? (
+                            <a href={sanitizeHref(block.ctaUrl)}>
+                              <Button className="w-full bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold text-xs h-9 rounded-xl">
+                                {block.ctaText || 'Reservar Agora'}
+                              </Button>
+                            </a>
+                          ) : (
+                            <Button className="w-full bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold text-xs h-9 rounded-xl">
+                              {block.ctaText || 'Reservar Agora'}
+                            </Button>
+                          )}
                         </div>
                       )}
                     </div>

@@ -328,4 +328,83 @@ describe('PublicSiteView - Dynamic Renderer OM-001', () => {
     // Invalid/malicious blocks are safely skipped and do not appear or break the page
     expect(screen.queryByText('<script>alert(1)</script>')).not.toBeInTheDocument();
   });
+
+  it('applies custom buttonStyle, ctaText and ctaUrl properties to hero block buttons', async () => {
+    const mockOrg = {
+      id: 'org-123',
+      name: 'Agência Custom CTA',
+      slug: 'agencia-custom-cta',
+      primary_color: '#10B981',
+    };
+
+    const mockProject = {
+      id: 'proj-123',
+      org_id: 'org-123',
+      project_type: 'website',
+      current_version_id: 'ver-888',
+    };
+
+    const mockVersion = {
+      id: 'ver-888',
+      project_id: 'proj-123',
+      status: 'published',
+      content_schema: [
+        {
+          id: 'custom-hero-cta',
+          kind: 'hero',
+          title: 'Conheça o Caribe',
+          subtitle: 'Os melhores destinos caribenhos.',
+          buttonStyle: 'outline',
+          ctaText: 'Falar com Consultor no WhatsApp',
+          ctaUrl: 'https://wa.me/5548999999999',
+        },
+      ],
+    };
+
+    mockFrom.mockImplementation((table: string) => {
+      if (table === 'organizations') {
+        return {
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          order: vi.fn().mockReturnThis(),
+          maybeSingle: vi.fn().mockResolvedValue({ data: mockOrg, error: null }),
+        };
+      }
+      if (table === 'builder_projects') {
+        return {
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          order: vi.fn().mockReturnThis(),
+          maybeSingle: vi.fn().mockResolvedValue({ data: mockProject, error: null }),
+        };
+      }
+      if (table === 'builder_versions') {
+        return {
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          order: vi.fn().mockReturnThis(),
+          maybeSingle: vi.fn().mockResolvedValue({ data: mockVersion, error: null }),
+        };
+      }
+      return {
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        order: vi.fn().mockReturnThis(),
+        maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+      };
+    });
+
+    renderPublicSiteView('/site/agencia-custom-cta');
+
+    // Wait for render
+    expect(await screen.findByText('Conheça o Caribe')).toBeInTheDocument();
+    
+    // Check that button text is applied
+    const button = screen.getByText('Falar com Consultor no WhatsApp');
+    expect(button).toBeInTheDocument();
+    
+    // Check that the link wraps it correctly with the ctaUrl
+    const link = button.closest('a');
+    expect(link).toHaveAttribute('href', 'https://wa.me/5548999999999');
+  });
 });

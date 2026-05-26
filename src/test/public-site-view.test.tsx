@@ -407,4 +407,101 @@ describe('PublicSiteView - Dynamic Renderer OM-001', () => {
     const link = button.closest('a');
     expect(link).toHaveAttribute('href', 'https://wa.me/5548999999999');
   });
+
+  it('renders bento features, fullscreen video hero, and testimonials carousel layouts successfully', async () => {
+    const mockOrg = {
+      id: 'org-123',
+      name: 'Agência Layouts',
+      slug: 'agencia-layouts',
+      primary_color: '#3B82F6',
+    };
+
+    const mockProject = {
+      id: 'proj-123',
+      org_id: 'org-123',
+      project_type: 'website',
+      current_version_id: 'ver-777',
+    };
+
+    const mockVersion = {
+      id: 'ver-777',
+      project_id: 'proj-123',
+      status: 'published',
+      content_schema: [
+        {
+          id: 'video-hero',
+          kind: 'hero',
+          title: 'Viaje em Vídeo',
+          subtitle: 'Assista a esta beleza.',
+          layoutVariant: 'fullscreen',
+          videoUrl: 'https://test-server.com/clip.mp4',
+        },
+        {
+          id: 'bento-features',
+          kind: 'features',
+          layoutVariant: 'bento',
+          items: ['Item Bento 1', 'Item Bento 2'],
+        },
+        {
+          id: 'carousel-testimonials',
+          kind: 'testimonials',
+          layoutVariant: 'carousel',
+          testimonials: [
+            { quote: 'Slide Depoimento 1', author: 'Autor 1' },
+            { quote: 'Slide Depoimento 2', author: 'Autor 2' },
+          ],
+        },
+      ],
+    };
+
+    mockFrom.mockImplementation((table: string) => {
+      if (table === 'organizations') {
+        return {
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          order: vi.fn().mockReturnThis(),
+          maybeSingle: vi.fn().mockResolvedValue({ data: mockOrg, error: null }),
+        };
+      }
+      if (table === 'builder_projects') {
+        return {
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          order: vi.fn().mockReturnThis(),
+          maybeSingle: vi.fn().mockResolvedValue({ data: mockProject, error: null }),
+        };
+      }
+      if (table === 'builder_versions') {
+        return {
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          order: vi.fn().mockReturnThis(),
+          maybeSingle: vi.fn().mockResolvedValue({ data: mockVersion, error: null }),
+        };
+      }
+      return {
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        order: vi.fn().mockReturnThis(),
+        maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+      };
+    });
+
+    renderPublicSiteView('/site/agencia-layouts');
+
+    // Fullscreen video rendering validation
+    expect(await screen.findByText('Viaje em Vídeo')).toBeInTheDocument();
+    const video = document.querySelector('video');
+    expect(video).toBeInTheDocument();
+    expect(video).toHaveAttribute('src', 'https://test-server.com/clip.mp4');
+
+    // Bento grid feature rendering validation
+    expect(screen.getByText('Item Bento 1')).toBeInTheDocument();
+    expect(screen.getByText('Item Bento 2')).toBeInTheDocument();
+
+    // Testimonials slider rendering validation
+    expect(screen.getByText('"Slide Depoimento 1"')).toBeInTheDocument();
+    expect(screen.getByText('Autor 1')).toBeInTheDocument();
+    expect(screen.getByText('1 / 2')).toBeInTheDocument();
+  });
 });

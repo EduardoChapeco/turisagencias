@@ -52,6 +52,7 @@ export default function VisualBuilder({ onBack, projectName = 'Website Principal
   const [viewport, setViewport] = useState<ViewportMode>('desktop');
   const [isPreview, setIsPreview] = useState(false);
   const [activeTab, setActiveTab] = useState<'blocks' | 'settings' | 'edit'>('blocks');
+  const [activeTestimonialIdx, setActiveTestimonialIdx] = useState<Record<string, number>>({});
 
   // Multiproject support: website | linkbio | blog
   const [projectType, setProjectType] = useState<'website' | 'linkbio' | 'blog'>(initialProjectType || 'website');
@@ -980,6 +981,7 @@ export default function VisualBuilder({ onBack, projectName = 'Website Principal
                                 <option value="grid">Grade Simples (3 colunas)</option>
                                 <option value="timeline">Timeline Horizontal</option>
                                 <option value="list">Lista com Ícones</option>
+                                <option value="bento">Mosaico Premium (Bento Grid)</option>
                               </>
                             )}
                             {selectedBlock.kind === 'contact' && (
@@ -999,6 +1001,7 @@ export default function VisualBuilder({ onBack, projectName = 'Website Principal
                               <>
                                 <option value="grid">Grade de Cards</option>
                                 <option value="list">Lista Linear</option>
+                                <option value="carousel">Slider Carrossel Interativo</option>
                               </>
                             )}
                             {selectedBlock.kind === 'faq' && (
@@ -1130,6 +1133,19 @@ export default function VisualBuilder({ onBack, projectName = 'Website Principal
                                   handleUpdateBlock({ ...selectedBlock, images: nextImages, imageUrl: url });
                                 }
                               }}
+                            />
+                          </div>
+                        )}
+
+                        {selectedBlock.kind === 'hero' && (
+                          <div className="pt-2">
+                            <label className="text-[10px] text-zinc-500 uppercase font-semibold">Vídeo de Fundo (Opcional - link MP4)</label>
+                            <input
+                              type="text"
+                              value={selectedBlock.videoUrl || ''}
+                              onChange={(e) => handleUpdateBlock({ ...selectedBlock, videoUrl: e.target.value })}
+                              placeholder="Ex: https://site.com/video.mp4"
+                              className="w-full mt-1 bg-zinc-950 border border-zinc-800 text-xs rounded-lg p-2 focus:border-vj-green text-white"
                             />
                           </div>
                         )}
@@ -1320,9 +1336,12 @@ export default function VisualBuilder({ onBack, projectName = 'Website Principal
                               </div>
                             </div>
                           ) : block.layoutVariant === 'fullscreen' ? (
-                            <div className="relative rounded-2xl overflow-hidden py-16 px-6 bg-cover bg-center text-center" style={{ backgroundImage: `url(${block.imageUrl || 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1080&auto=format&fit=crop&q=80'})` }}>
-                              <div className="absolute inset-0 bg-black/60 z-0" />
-                              <div className="relative z-10 max-w-xl mx-auto bg-zinc-900/80 backdrop-blur-md border border-white/10 p-6 rounded-2xl space-y-4">
+                            <div className="relative rounded-2xl overflow-hidden py-16 px-6 bg-cover bg-center text-center" style={{ backgroundImage: block.videoUrl ? 'none' : `url(${block.imageUrl || 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1080&auto=format&fit=crop&q=80'})` }}>
+                              {block.videoUrl && (
+                                <video src={block.videoUrl} autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover z-0" />
+                              )}
+                              <div className="absolute inset-0 bg-black/60 z-10" />
+                              <div className="relative z-20 max-w-xl mx-auto bg-zinc-900/80 backdrop-blur-md border border-white/10 p-6 rounded-2xl space-y-4">
                                 <h2 className="text-xl md:text-2xl font-black text-white leading-tight">{block.title}</h2>
                                 <p className="text-xs text-zinc-300">{block.subtitle}</p>
                                 <Button className={cn(
@@ -1389,6 +1408,36 @@ export default function VisualBuilder({ onBack, projectName = 'Website Principal
                                 </div>
                               ))}
                             </div>
+                          ) : block.layoutVariant === 'bento' ? (
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                              {block.items?.map((item, i) => {
+                                const colSpan = i === 0 ? "md:col-span-2" : i === 3 ? "md:col-span-2" : "md:col-span-1";
+                                const presetImages = [
+                                  'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&auto=format&fit=crop&q=60',
+                                  'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=800&auto=format&fit=crop&q=60',
+                                  'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800&auto=format&fit=crop&q=60',
+                                  'https://images.unsplash.com/photo-1520175480921-4edfa2983e0f?w=800&auto=format&fit=crop&q=60'
+                                ];
+                                const bgImg = presetImages[i % presetImages.length];
+                                return (
+                                  <div 
+                                    key={i} 
+                                    className={cn(
+                                      "p-6 bg-zinc-950/40 border border-zinc-800 rounded-2xl relative overflow-hidden group hover:border-zinc-700 transition-all duration-300 min-h-[160px] flex flex-col justify-end text-left",
+                                      colSpan
+                                    )}
+                                  >
+                                    <div className="absolute inset-0 z-0 bg-cover bg-center opacity-30" style={{ backgroundImage: `url(${bgImg})` }} />
+                                    <div className="absolute inset-0 z-10 bg-gradient-to-t from-zinc-950 via-zinc-950/40 to-transparent" />
+                                    <div className="relative z-20 space-y-1">
+                                      <span className="text-[8px] font-mono text-vj-green uppercase tracking-widest font-black">Destaque {i+1}</span>
+                                      <h4 className="text-sm font-bold text-white leading-tight">{item}</h4>
+                                      <p className="text-[10px] text-zinc-400 font-medium">Curadoria premium com hotéis parceiros e passeios guiados exclusivos.</p>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
                           ) : (
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                               {block.items?.map((item, i) => (
@@ -1446,17 +1495,68 @@ export default function VisualBuilder({ onBack, projectName = 'Website Principal
                       )}
 
                       {block.kind === 'testimonials' && (
-                        <div className={block.layoutVariant === 'list' ? 'space-y-4 max-w-xl mx-auto' : 'grid grid-cols-1 md:grid-cols-2 gap-4'}>
-                          {(block.testimonials || []).map((t, i) => (
-                            <div key={i} className="p-4 bg-zinc-950/40 border border-zinc-800 rounded-xl text-left space-y-2">
-                              <p className="text-xs text-zinc-400 italic">"{t.quote}"</p>
-                              <div>
-                                <p className="text-[10px] font-bold text-white">{t.author}</p>
-                                {t.role && <p className="text-[8px] text-zinc-500">{t.role}</p>}
-                              </div>
+                        <>
+                          {block.layoutVariant === 'carousel' ? (
+                            <div className="relative max-w-md mx-auto p-6 bg-zinc-950/40 border border-zinc-800 rounded-2xl text-center space-y-4 min-h-[160px]">
+                              {(() => {
+                                const list = block.testimonials || [];
+                                if (list.length === 0) return <p className="text-xs text-zinc-500 italic">Sem depoimentos cadastrados.</p>;
+                                const currentIdx = activeTestimonialIdx[block.id] || 0;
+                                const t = list[currentIdx % list.length];
+                                return (
+                                  <>
+                                    <p className="text-xs text-zinc-300 italic">"{t.quote}"</p>
+                                    <div>
+                                      <p className="text-[10px] font-bold text-white">{t.author}</p>
+                                      {t.role && <p className="text-[8px] text-zinc-500">{t.role}</p>}
+                                    </div>
+                                    <div className="flex justify-center gap-4 pt-2">
+                                      <button 
+                                        type="button" 
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setActiveTestimonialIdx(prev => ({
+                                            ...prev,
+                                            [block.id]: (currentIdx - 1 + list.length) % list.length
+                                          }));
+                                        }}
+                                        className="text-[10px] text-zinc-500 hover:text-white font-bold bg-zinc-900 border border-zinc-850 px-2 py-0.5 rounded"
+                                      >
+                                        ← Ant
+                                      </button>
+                                      <span className="text-[10px] text-zinc-600 font-mono">{currentIdx + 1} / {list.length}</span>
+                                      <button 
+                                        type="button" 
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setActiveTestimonialIdx(prev => ({
+                                            ...prev,
+                                            [block.id]: (currentIdx + 1) % list.length
+                                          }));
+                                        }}
+                                        className="text-[10px] text-zinc-500 hover:text-white font-bold bg-zinc-900 border border-zinc-850 px-2 py-0.5 rounded"
+                                      >
+                                        Próx →
+                                      </button>
+                                    </div>
+                                  </>
+                                );
+                              })()}
                             </div>
-                          ))}
-                        </div>
+                          ) : (
+                            <div className={block.layoutVariant === 'list' ? 'space-y-4 max-w-xl mx-auto' : 'grid grid-cols-1 md:grid-cols-2 gap-4'}>
+                              {(block.testimonials || []).map((t, i) => (
+                                <div key={i} className="p-4 bg-zinc-950/40 border border-zinc-800 rounded-xl text-left space-y-2">
+                                  <p className="text-xs text-zinc-400 italic">"{t.quote}"</p>
+                                  <div>
+                                    <p className="text-[10px] font-bold text-white">{t.author}</p>
+                                    {t.role && <p className="text-[8px] text-zinc-500">{t.role}</p>}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </>
                       )}
 
                       {block.kind === 'faq' && (

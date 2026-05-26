@@ -1,4 +1,5 @@
 -- 1. Registry de links por companhia
+drop table if exists airline_link_registry cascade;
 create table if not exists airline_link_registry (
   id uuid primary key default gen_random_uuid(),
   airline_iata text not null,

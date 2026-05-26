@@ -172,8 +172,10 @@ CREATE TABLE IF NOT EXISTS public.builder_publish_events (
 CREATE TABLE IF NOT EXISTS public.airline_link_registry (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   airline_iata text NOT NULL,
+  airline_icao text,
   airline_name text NOT NULL,
-  link_type text NOT NULL CHECK (link_type in ('checkin','boarding_pass','manage_booking','baggage','flight_status')),
+  country text,
+  link_type text NOT NULL CHECK (link_type in ('checkin','boarding_pass','manage_booking','baggage','flight_status','support','documents')),
   official_url text NOT NULL,
   deep_link_template text,
   required_fields text[] NOT NULL DEFAULT '{}',
@@ -181,11 +183,14 @@ CREATE TABLE IF NOT EXISTS public.airline_link_registry (
   window_open_hours_before integer,
   window_close_minutes_before integer,
   supports_prefill boolean DEFAULT false,
+  supports_boarding_pass_direct boolean DEFAULT false,
   source_url text,
+  source_notes text,
   last_verified_at timestamptz,
-  status text NOT NULL DEFAULT 'active',
-  notes text,
+  verification_status text NOT NULL DEFAULT 'needs_review' CHECK (verification_status in ('verified','needs_review','broken','deprecated')),
+  is_active boolean DEFAULT true,
   created_at timestamptz DEFAULT now(),
+  updated_at timestamptz DEFAULT now(),
   UNIQUE(airline_iata, link_type)
 );
 
@@ -220,44 +225,44 @@ ALTER TABLE public.airline_link_registry ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.trip_airline_links ENABLE ROW LEVEL SECURITY;
 
 -- Standard Org Policies
-CREATE POLICY "Users can view their org sites" ON public.builder_sites FOR SELECT USING (org_id = (select auth.get_my_org_id()));
-CREATE POLICY "Users can manage their org sites" ON public.builder_sites FOR ALL USING (org_id = (select auth.get_my_org_id()));
+CREATE POLICY "Users can view their org sites" ON public.builder_sites FOR SELECT USING (org_id = public.get_my_org_id());
+CREATE POLICY "Users can manage their org sites" ON public.builder_sites FOR ALL USING (org_id = public.get_my_org_id());
 
-CREATE POLICY "Users can view their org pages" ON public.builder_pages FOR SELECT USING (org_id = (select auth.get_my_org_id()));
-CREATE POLICY "Users can manage their org pages" ON public.builder_pages FOR ALL USING (org_id = (select auth.get_my_org_id()));
+CREATE POLICY "Users can view their org pages" ON public.builder_pages FOR SELECT USING (org_id = public.get_my_org_id());
+CREATE POLICY "Users can manage their org pages" ON public.builder_pages FOR ALL USING (org_id = public.get_my_org_id());
 
-CREATE POLICY "Users can view their org page versions" ON public.builder_page_versions FOR SELECT USING (org_id = (select auth.get_my_org_id()));
-CREATE POLICY "Users can manage their org page versions" ON public.builder_page_versions FOR ALL USING (org_id = (select auth.get_my_org_id()));
+CREATE POLICY "Users can view their org page versions" ON public.builder_page_versions FOR SELECT USING (org_id = public.get_my_org_id());
+CREATE POLICY "Users can manage their org page versions" ON public.builder_page_versions FOR ALL USING (org_id = public.get_my_org_id());
 
-CREATE POLICY "Users can view org templates" ON public.builder_templates FOR SELECT USING (org_id = (select auth.get_my_org_id()) OR scope = 'global');
-CREATE POLICY "Users can manage their org templates" ON public.builder_templates FOR ALL USING (org_id = (select auth.get_my_org_id()));
+CREATE POLICY "Users can view org templates" ON public.builder_templates FOR SELECT USING (org_id = public.get_my_org_id() OR scope = 'global');
+CREATE POLICY "Users can manage their org templates" ON public.builder_templates FOR ALL USING (org_id = public.get_my_org_id());
 
-CREATE POLICY "Users can view their org assets" ON public.builder_assets FOR SELECT USING (org_id = (select auth.get_my_org_id()));
-CREATE POLICY "Users can manage their org assets" ON public.builder_assets FOR ALL USING (org_id = (select auth.get_my_org_id()));
+CREATE POLICY "Users can view their org assets" ON public.builder_assets FOR SELECT USING (org_id = public.get_my_org_id());
+CREATE POLICY "Users can manage their org assets" ON public.builder_assets FOR ALL USING (org_id = public.get_my_org_id());
 
-CREATE POLICY "Users can view their org collections" ON public.builder_collections FOR SELECT USING (org_id = (select auth.get_my_org_id()));
-CREATE POLICY "Users can manage their org collections" ON public.builder_collections FOR ALL USING (org_id = (select auth.get_my_org_id()));
+CREATE POLICY "Users can view their org collections" ON public.builder_collections FOR SELECT USING (org_id = public.get_my_org_id());
+CREATE POLICY "Users can manage their org collections" ON public.builder_collections FOR ALL USING (org_id = public.get_my_org_id());
 
-CREATE POLICY "Users can view their org collection items" ON public.builder_collection_items FOR SELECT USING (org_id = (select auth.get_my_org_id()));
-CREATE POLICY "Users can manage their org collection items" ON public.builder_collection_items FOR ALL USING (org_id = (select auth.get_my_org_id()));
+CREATE POLICY "Users can view their org collection items" ON public.builder_collection_items FOR SELECT USING (org_id = public.get_my_org_id());
+CREATE POLICY "Users can manage their org collection items" ON public.builder_collection_items FOR ALL USING (org_id = public.get_my_org_id());
 
-CREATE POLICY "Users can view their org form submissions" ON public.builder_form_submissions FOR SELECT USING (org_id = (select auth.get_my_org_id()));
-CREATE POLICY "Users can manage their org form submissions" ON public.builder_form_submissions FOR ALL USING (org_id = (select auth.get_my_org_id()));
+CREATE POLICY "Users can view their org form submissions" ON public.builder_form_submissions FOR SELECT USING (org_id = public.get_my_org_id());
+CREATE POLICY "Users can manage their org form submissions" ON public.builder_form_submissions FOR ALL USING (org_id = public.get_my_org_id());
 
-CREATE POLICY "Users can view their org analytics events" ON public.builder_analytics_events FOR SELECT USING (org_id = (select auth.get_my_org_id()));
-CREATE POLICY "Users can manage their org analytics events" ON public.builder_analytics_events FOR ALL USING (org_id = (select auth.get_my_org_id()));
+CREATE POLICY "Users can view their org analytics events" ON public.builder_analytics_events FOR SELECT USING (org_id = public.get_my_org_id());
+CREATE POLICY "Users can manage their org analytics events" ON public.builder_analytics_events FOR ALL USING (org_id = public.get_my_org_id());
 
-CREATE POLICY "Users can view their org publish events" ON public.builder_publish_events FOR SELECT USING (org_id = (select auth.get_my_org_id()));
-CREATE POLICY "Users can manage their org publish events" ON public.builder_publish_events FOR ALL USING (org_id = (select auth.get_my_org_id()));
+CREATE POLICY "Users can view their org publish events" ON public.builder_publish_events FOR SELECT USING (org_id = public.get_my_org_id());
+CREATE POLICY "Users can manage their org publish events" ON public.builder_publish_events FOR ALL USING (org_id = public.get_my_org_id());
 
 CREATE POLICY "Everyone can read airline link registry" ON public.airline_link_registry FOR SELECT USING (true);
 CREATE POLICY "Only super admins can modify airline links" ON public.airline_link_registry FOR ALL USING (
     EXISTS (
-        SELECT 1 FROM profiles 
-        WHERE id = auth.uid() 
-        AND user_type = 'super_admin'
+        SELECT 1 FROM public.user_roles 
+        WHERE user_id = auth.uid() 
+        AND role = 'super_admin'
     )
 );
 
-CREATE POLICY "Users can view their org trip airline links" ON public.trip_airline_links FOR SELECT USING (org_id = (select auth.get_my_org_id()));
-CREATE POLICY "Users can manage their org trip airline links" ON public.trip_airline_links FOR ALL USING (org_id = (select auth.get_my_org_id()));
+CREATE POLICY "Users can view their org trip airline links" ON public.trip_airline_links FOR SELECT USING (org_id = public.get_my_org_id());
+CREATE POLICY "Users can manage their org trip airline links" ON public.trip_airline_links FOR ALL USING (org_id = public.get_my_org_id());

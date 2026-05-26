@@ -22,11 +22,13 @@ registerAllBlocks();
 interface VisualBuilderProps {
   onBack?: () => void;
   projectName?: string;
+  initialProjectType?: 'website' | 'linkbio' | 'blog';
 }
 
 export default function VisualBuilder({
   onBack,
   projectName = 'Website Principal',
+  initialProjectType,
 }: VisualBuilderProps) {
   const { organization, user } = useAuthStore();
   const { toast } = useToast();
@@ -40,6 +42,13 @@ export default function VisualBuilder({
     projectId, projectType, slug, metaTitle, metaDescription,
     setProjectMeta,
   } = useBuilderStore();
+
+  // Set project type on mount
+  useEffect(() => {
+    if (initialProjectType) {
+      setProjectMeta({ projectType: initialProjectType });
+    }
+  }, [initialProjectType, setProjectMeta]);
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);

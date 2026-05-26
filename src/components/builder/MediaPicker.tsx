@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { Upload, Image as ImageIcon, Link2, Search, Loader2, Check } from 'lucide-react';
+import { Upload, Image as ImageIcon, Link2, Search, Loader2, Check, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
@@ -106,13 +106,34 @@ const TOURISM_PRESETS = [
   }
 ];
 
+const getAiSuggestions = (kind: string | undefined): string[] => {
+  switch (kind) {
+    case 'hero':
+      return ['Paradisíaca', 'Voo', 'Paris', 'Resort'];
+    case 'gallery':
+      return ['Santorini', 'Rio', 'Montanhas', 'Bora Bora'];
+    case 'features':
+      return ['Sydney', 'Yosemite', 'Roma', 'Coliseu'];
+    case 'testimonials':
+      return ['Praia', 'Resort', 'Santorini', 'Copacabana'];
+    case 'pricing':
+    case 'packages':
+      return ['Resort', 'Suite', 'Classe', 'Bungalow'];
+    case 'blog':
+      return ['Eiffel', 'Coliseu', 'Voo', 'Yosemite'];
+    default:
+      return ['Praia', 'Paris', 'Resort', 'Montanhas'];
+  }
+};
+
 interface MediaPickerProps {
   value: string;
   onChange: (url: string) => void;
   label?: string;
+  blockKind?: string;
 }
 
-export function MediaPicker({ value, onChange, label = 'Imagem / Mídia' }: MediaPickerProps) {
+export function MediaPicker({ value, onChange, label = 'Imagem / Mídia', blockKind }: MediaPickerProps) {
   const { organization } = useAuthStore();
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -297,6 +318,28 @@ export function MediaPicker({ value, onChange, label = 'Imagem / Mídia' }: Medi
                 <option value="hotel">Resorts</option>
                 <option value="voo">Vôos</option>
               </select>
+            </div>
+
+            {/* AI Suggestions Chips */}
+            <div className="space-y-1">
+              <span className="text-[9px] text-zinc-500 font-semibold flex items-center gap-1">
+                <Sparkles size={10} className="text-amber-400" /> Sugestões de Busca IA:
+              </span>
+              <div className="flex flex-wrap gap-1">
+                {getAiSuggestions(blockKind).map((term) => (
+                  <button
+                    key={term}
+                    type="button"
+                    onClick={() => {
+                      setSearchQuery(term);
+                      logger.info(`[AI SUGGESTION] Applied Unsplash search term: ${term}`);
+                    }}
+                    className="text-[9px] bg-zinc-950 border border-zinc-850 hover:border-amber-400/50 hover:bg-zinc-900/60 px-2 py-0.5 rounded-full text-zinc-300 transition-colors"
+                  >
+                    {term}
+                  </button>
+                ))}
+              </div>
             </div>
 
             {/* Grid */}

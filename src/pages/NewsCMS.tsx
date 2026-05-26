@@ -719,6 +719,7 @@ export default function NewsCMS() {
                     <MediaPicker
                       label="Imagem de Capa"
                       value={selectedArticle.image_url || ''}
+                      blockKind="blog"
                       onChange={(url) => handleSaveArticleEdits(selectedArticle.id, { image_url: url })}
                     />
                   </div>

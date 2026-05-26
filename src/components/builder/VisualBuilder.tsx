@@ -1116,6 +1116,7 @@ export default function VisualBuilder({ onBack, projectName = 'Website Principal
                             <MediaPicker
                               label={selectedBlock.kind === 'hero' ? 'Imagem de Fundo / Split' : 'Adicionar Foto à Galeria'}
                               value={selectedBlock.imageUrl || (selectedBlock.kind === 'gallery' && selectedBlock.images?.[0]) || ''}
+                              blockKind={selectedBlock.kind}
                               onChange={(url) => {
                                 if (selectedBlock.kind === 'hero') {
                                   handleUpdateBlock({ ...selectedBlock, imageUrl: url });

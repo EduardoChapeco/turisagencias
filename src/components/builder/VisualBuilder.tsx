@@ -18,6 +18,7 @@ interface VisualBuilderProps {
 
 import { useGroupTrips } from '@/hooks/useGroupTrips';
 import { Compass, Calendar, MapPin, Sparkles } from 'lucide-react';
+import { MediaPicker } from './MediaPicker';
 
 interface BuilderBlock {
   id: string;
@@ -32,6 +33,14 @@ interface BuilderBlock {
   faqItems?: { question: string; answer: string }[];
   pricingItems?: { title: string; price: string; description?: string; features?: string[] }[];
   images?: string[];
+  // Advanced styling customizer properties (OMEGA v6.5)
+  layoutVariant?: string;
+  align?: 'left' | 'center' | 'right';
+  paddingY?: 'compact' | 'normal' | 'cozy' | 'heroic';
+  bgPattern?: 'flat' | 'gradient' | 'glass' | 'border';
+  buttonStyle?: 'solid' | 'outline' | 'glass';
+  imageUrl?: string;
+  videoUrl?: string;
 }
 
 export default function VisualBuilder({ onBack, projectName = 'Website Principal', initialProjectType }: VisualBuilderProps) {
@@ -433,19 +442,47 @@ export default function VisualBuilder({ onBack, projectName = 'Website Principal
 
   const handleAddBlock = (kind: 'hero' | 'features' | 'contact' | 'text' | 'testimonials' | 'faq' | 'pricing' | 'gallery' | 'packages') => {
     const id = `${kind}-${Date.now()}`;
-    let newBlock: BuilderBlock = { id, kind };
+    let newBlock: BuilderBlock = { 
+      id, 
+      kind,
+      layoutVariant: 'default',
+      align: 'center',
+      paddingY: 'normal',
+      bgPattern: 'flat',
+      buttonStyle: 'solid'
+    };
+    
     if (kind === 'hero') {
-      newBlock = { id, kind, title: 'Nova Seção Hero', subtitle: 'Clique aqui para editar este texto.' };
+      newBlock = { 
+        ...newBlock,
+        title: 'Nova Seção Hero', 
+        subtitle: 'Clique aqui para editar este texto.',
+        layoutVariant: 'centered',
+        imageUrl: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1080&auto=format&fit=crop&q=80'
+      };
     } else if (kind === 'features') {
-      newBlock = { id, kind, items: ['Recurso Extra 1', 'Recurso Extra 2', 'Recurso Extra 3'] };
+      newBlock = { 
+        ...newBlock,
+        items: ['Recurso Extra 1', 'Recurso Extra 2', 'Recurso Extra 3'],
+        layoutVariant: 'grid'
+      };
     } else if (kind === 'contact') {
-      newBlock = { id, kind, email: organization?.email || 'contato@agencia.com', phone: organization?.whatsapp || '(11) 99999-9999' };
+      newBlock = { 
+        ...newBlock,
+        email: organization?.email || 'contato@agencia.com', 
+        phone: organization?.whatsapp || '(11) 99999-9999',
+        layoutVariant: 'standard'
+      };
     } else if (kind === 'text') {
-      newBlock = { id, kind, content: 'Insira aqui um parágrafo personalizado sobre a agência ou destinos recomendados.' };
+      newBlock = { 
+        ...newBlock,
+        content: 'Insira aqui um parágrafo personalizado sobre a agência ou destinos recomendados.',
+        layoutVariant: 'centered'
+      };
     } else if (kind === 'testimonials') {
       newBlock = {
-        id,
-        kind,
+        ...newBlock,
+        layoutVariant: 'grid',
         testimonials: [
           { quote: 'Viagem sensacional! O suporte da agência durante a estadia foi impecável.', author: 'Mariana Costa', role: 'Cliente Jalapão 2025' },
           { quote: 'Melhor consultoria que já contratei. Roteiro personalizado e hotéis de altíssimo nível.', author: 'Rodrigo Mello', role: 'Cliente Europa Premium' }
@@ -453,8 +490,8 @@ export default function VisualBuilder({ onBack, projectName = 'Website Principal
       };
     } else if (kind === 'faq') {
       newBlock = {
-        id,
-        kind,
+        ...newBlock,
+        layoutVariant: 'accordion',
         faqItems: [
           { question: 'Quais as formas de pagamento disponíveis?', answer: 'Trabalhamos com boleto parcelado sem juros, PIX com desconto ou cartão de crédito em até 10x.' },
           { question: 'A viagem possui seguro incluso?', answer: 'Sim, todas as nossas viagens contratadas acompanham seguro viagem internacional ou nacional completo.' }
@@ -462,8 +499,8 @@ export default function VisualBuilder({ onBack, projectName = 'Website Principal
       };
     } else if (kind === 'pricing') {
       newBlock = {
-        id,
-        kind,
+        ...newBlock,
+        layoutVariant: 'grid',
         pricingItems: [
           { title: 'Roteiro Essencial', price: 'R$ 2.400', description: 'Pacote com hospedagem, transfer e 3 passeios principais.', features: ['Hospedagem 3 estrelas', 'Transfer aeroporto', 'Suporte digital'] },
           { title: 'Experiência Premium', price: 'R$ 4.900', description: 'Curadoria completa com resorts de luxo, guias privativos e gastronomia inclusa.', features: ['Hospedagem 5 estrelas', 'Transfer privativo', 'Acompanhamento de guia', 'Seguro viagem VIP'] }
@@ -471,8 +508,9 @@ export default function VisualBuilder({ onBack, projectName = 'Website Principal
       };
     } else if (kind === 'gallery') {
       newBlock = {
-        id,
-        kind,
+        ...newBlock,
+        layoutVariant: 'grid',
+        imageUrl: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&auto=format&fit=crop&q=60',
         images: [
           'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&auto=format&fit=crop&q=60',
           'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=800&auto=format&fit=crop&q=60',
@@ -481,8 +519,8 @@ export default function VisualBuilder({ onBack, projectName = 'Website Principal
       };
     } else if (kind === 'packages') {
       newBlock = {
-        id,
-        kind
+        ...newBlock,
+        layoutVariant: 'grid'
       };
     }
 
@@ -876,24 +914,188 @@ export default function VisualBuilder({ onBack, projectName = 'Website Principal
 
                       {selectedBlock.kind === 'gallery' && (
                         <div className="space-y-4">
-                          <label className="text-[10px] text-zinc-500 uppercase font-semibold block">Fotos da Galeria (URLs)</label>
+                          <label className="text-[10px] text-zinc-500 uppercase font-semibold block">Fotos da Galeria</label>
                           {(selectedBlock.images || []).map((img, idx) => (
-                            <div key={idx} className="space-y-2 p-2 bg-zinc-950 border border-zinc-800 rounded-xl">
-                              <input
-                                type="text"
+                            <div key={idx} className="space-y-2 relative border border-zinc-800 rounded-2xl p-2 bg-zinc-950">
+                              <div className="flex justify-between items-center mb-1 px-1">
+                                <span className="text-[9px] text-zinc-400 font-bold uppercase">Foto #{idx + 1}</span>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const nextImages = (selectedBlock.images || []).filter((_, i) => i !== idx);
+                                    handleUpdateBlock({ ...selectedBlock, images: nextImages });
+                                  }}
+                                  className="text-[9px] text-red-500 hover:text-red-400 font-semibold"
+                                >
+                                  Remover
+                                </button>
+                              </div>
+                              <MediaPicker
+                                label={`Selecionar Imagem`}
                                 value={img}
-                                placeholder="URL da foto"
-                                onChange={(e) => {
-                                  const next = [...(selectedBlock.images || [])];
-                                  next[idx] = e.target.value;
-                                  handleUpdateBlock({ ...selectedBlock, images: next });
+                                onChange={(url) => {
+                                  const nextImages = [...(selectedBlock.images || [])];
+                                  nextImages[idx] = url;
+                                  handleUpdateBlock({ ...selectedBlock, images: nextImages });
                                 }}
-                                className="w-full bg-zinc-900 border border-zinc-850 text-[11px] rounded-lg p-2 focus:border-vj-green text-white"
                               />
                             </div>
                           ))}
+                          <Button
+                            type="button"
+                            onClick={() => {
+                              const nextImages = [...(selectedBlock.images || []), ''];
+                              handleUpdateBlock({ ...selectedBlock, images: nextImages });
+                            }}
+                            className="w-full mt-2 bg-zinc-800 hover:bg-zinc-700 text-[10px] uppercase font-bold tracking-wider h-8 rounded-lg"
+                          >
+                            Adicionar Foto
+                          </Button>
                         </div>
                       )}
+                      
+                      {/* Advanced styling & layout section */}
+                      <div className="pt-4 border-t border-zinc-800 space-y-4 text-left">
+                        <h4 className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Estilo & Layout</h4>
+                        
+                        <div>
+                          <label className="text-[10px] text-zinc-500 uppercase font-semibold">Variante de Layout</label>
+                          <select
+                            value={selectedBlock.layoutVariant || 'default'}
+                            onChange={(e) => handleUpdateBlock({ ...selectedBlock, layoutVariant: e.target.value })}
+                            className="w-full mt-1 bg-zinc-950 border border-zinc-800 text-xs rounded-lg p-2 focus:border-vj-green text-white"
+                          >
+                            <option value="default">Padrão Limpo</option>
+                            {selectedBlock.kind === 'hero' && (
+                              <>
+                                <option value="split">Imagem Dividida (Split)</option>
+                                <option value="fullscreen">Tela Cheia (Fullscreen)</option>
+                                <option value="glass">Card Moderno Flutuante</option>
+                              </>
+                            )}
+                            {selectedBlock.kind === 'features' && (
+                              <>
+                                <option value="grid">Grade Simples (3 colunas)</option>
+                                <option value="timeline">Timeline Horizontal</option>
+                                <option value="list">Lista com Ícones</option>
+                              </>
+                            )}
+                            {selectedBlock.kind === 'contact' && (
+                              <>
+                                <option value="standard">Fale Conosco (2 colunas)</option>
+                                <option value="footer">Rodapé Minimalista</option>
+                              </>
+                            )}
+                            {selectedBlock.kind === 'text' && (
+                              <>
+                                <option value="centered">Foco Centralizado</option>
+                                <option value="twocol">Duas Colunas Editorial</option>
+                                <option value="blockquote">Citação em Destaque</option>
+                              </>
+                            )}
+                            {selectedBlock.kind === 'testimonials' && (
+                              <>
+                                <option value="grid">Grade de Cards</option>
+                                <option value="list">Lista Linear</option>
+                              </>
+                            )}
+                            {selectedBlock.kind === 'faq' && (
+                              <>
+                                <option value="accordion">Lista Sanfona (Accordion)</option>
+                                <option value="grid">Grade (2 colunas)</option>
+                              </>
+                            )}
+                            {selectedBlock.kind === 'pricing' && (
+                              <>
+                                <option value="grid">Grade de Planos</option>
+                                <option value="vip">Card VIP Destacado</option>
+                              </>
+                            )}
+                            {selectedBlock.kind === 'gallery' && (
+                              <>
+                                <option value="grid">Grade (3 colunas)</option>
+                                <option value="masonry">Mosaico (Masonry)</option>
+                              </>
+                            )}
+                            {selectedBlock.kind === 'packages' && (
+                              <>
+                                <option value="grid">Grade de Viagens</option>
+                                <option value="list">Lista Vertical</option>
+                              </>
+                            )}
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="text-[10px] text-zinc-500 uppercase font-semibold">Alinhamento do Texto</label>
+                          <div className="flex gap-2 mt-1">
+                            {(['left', 'center', 'right'] as const).map((alignOpt) => (
+                              <button
+                                key={alignOpt}
+                                type="button"
+                                onClick={() => handleUpdateBlock({ ...selectedBlock, align: alignOpt })}
+                                className={`flex-1 py-1 px-2 border rounded-md text-[10px] uppercase font-bold transition-colors ${
+                                  (selectedBlock.align || 'center') === alignOpt 
+                                    ? 'bg-zinc-800 border-vj-green text-white' 
+                                    : 'bg-zinc-950 border-zinc-800 text-zinc-500 hover:text-zinc-300'
+                                }`}
+                              >
+                                {alignOpt === 'left' ? 'Esquerda' : alignOpt === 'center' ? 'Centro' : 'Direita'}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="text-[10px] text-zinc-500 uppercase font-semibold">Espaçamento Vertical</label>
+                          <select
+                            value={selectedBlock.paddingY || 'normal'}
+                            onChange={(e) => handleUpdateBlock({ ...selectedBlock, paddingY: e.target.value as any })}
+                            className="w-full mt-1 bg-zinc-950 border border-zinc-800 text-xs rounded-lg p-2 focus:border-vj-green text-white"
+                          >
+                            <option value="compact">Compacto (py-6)</option>
+                            <option value="normal">Normal (py-12)</option>
+                            <option value="cozy">Confortável (py-20)</option>
+                            <option value="heroic">Heróico / Grande (py-28)</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="text-[10px] text-zinc-500 uppercase font-semibold">Estilo de Fundo</label>
+                          <select
+                            value={selectedBlock.bgPattern || 'flat'}
+                            onChange={(e) => handleUpdateBlock({ ...selectedBlock, bgPattern: e.target.value as any })}
+                            className="w-full mt-1 bg-zinc-950 border border-zinc-800 text-xs rounded-lg p-2 focus:border-vj-green text-white"
+                          >
+                            <option value="flat">Plano / Sólido</option>
+                            <option value="gradient">Gradiente Suave</option>
+                            <option value="glass">Efeito Vidro (Glassmorphism)</option>
+                            <option value="border">Com Borda Fina</option>
+                          </select>
+                        </div>
+
+                        {(selectedBlock.kind === 'hero' || selectedBlock.kind === 'gallery') && (
+                          <div className="pt-2">
+                            <MediaPicker
+                              label={selectedBlock.kind === 'hero' ? 'Imagem de Fundo / Split' : 'Adicionar Foto à Galeria'}
+                              value={selectedBlock.imageUrl || (selectedBlock.kind === 'gallery' && selectedBlock.images?.[0]) || ''}
+                              onChange={(url) => {
+                                if (selectedBlock.kind === 'hero') {
+                                  handleUpdateBlock({ ...selectedBlock, imageUrl: url });
+                                } else if (selectedBlock.kind === 'gallery') {
+                                  const nextImages = [...(selectedBlock.images || [])];
+                                  if (nextImages.length > 0) {
+                                    nextImages[0] = url;
+                                  } else {
+                                    nextImages.push(url);
+                                  }
+                                  handleUpdateBlock({ ...selectedBlock, images: nextImages, imageUrl: url });
+                                }
+                              }}
+                            />
+                          </div>
+                        )}
+                      </div>
                     </div>
                   ) : (
                     <p className="text-zinc-500 text-xs italic">Selecione um bloco no canvas ou no menu para editá-lo.</p>
@@ -1018,156 +1220,282 @@ export default function VisualBuilder({ onBack, projectName = 'Website Principal
 
               {/* Dynamic visual preview based on state blocks */}
               <div className="p-8 space-y-12">
-                {blocks.map((block) => (
-                  <div 
-                    key={block.id} 
-                    onClick={() => { setSelectedBlockId(block.id); setActiveTab('edit'); }}
-                    className={cn(
-                      "relative group p-4 rounded-xl transition-all border border-transparent",
-                      selectedBlockId === block.id 
-                        ? "border-vj-green bg-zinc-800/30" 
-                        : "border-dashed hover:border-vj-green/40 hover:bg-zinc-800/10 cursor-pointer"
-                    )}
-                  >
-                    {block.kind === 'hero' && (
-                      <div className="text-center py-10 space-y-4">
-                        <h2 className="text-2xl md:text-3xl font-black tracking-tight max-w-xl mx-auto text-white">
-                          {block.title}
-                        </h2>
-                        <p className="text-sm text-zinc-400 max-w-md mx-auto">
-                          {block.subtitle}
-                        </p>
-                        <Button className="bg-vj-green text-zinc-950 hover:bg-green-600 rounded-xl h-10 px-6 font-bold text-xs">
-                          Falar Conosco
-                        </Button>
-                      </div>
-                    )}
+                {blocks.map((block) => {
+                  const isSelected = selectedBlockId === block.id;
+                  
+                  // Resolve style properties dynamically for OMEGA v6.5
+                  const alignClass = 
+                    block.align === 'left' ? 'text-left' :
+                    block.align === 'right' ? 'text-right' :
+                    'text-center';
+                    
+                  const paddingClass =
+                    block.paddingY === 'compact' ? 'py-4 px-4' :
+                    block.paddingY === 'cozy' ? 'py-16 px-6' :
+                    block.paddingY === 'heroic' ? 'py-24 px-8' :
+                    'py-10 px-4'; // normal
+                    
+                  const bgClass =
+                    block.bgPattern === 'gradient' ? 'bg-gradient-to-br from-zinc-900 via-zinc-950 to-zinc-900 border border-zinc-800' :
+                    block.bgPattern === 'glass' ? 'bg-zinc-900/40 backdrop-blur-md border border-white/5 shadow-xl' :
+                    block.bgPattern === 'border' ? 'bg-transparent border border-zinc-800' :
+                    'bg-zinc-900/20 border border-transparent'; // flat
+                  
+                  const primaryColor = organization?.primary_color || '#2563EB';
 
-                    {block.kind === 'features' && (
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        {block.items?.map((item, i) => (
-                          <div key={i} className="p-4 bg-zinc-950/40 border border-zinc-800 rounded-xl text-center">
-                            <p className="text-xs font-semibold text-zinc-300">{item}</p>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    {block.kind === 'contact' && (
-                      <div className="p-6 bg-zinc-950 border border-zinc-800 rounded-xl flex flex-col md:flex-row items-center justify-between gap-4">
-                        <div>
-                          <p className="text-xs font-bold text-white">Deseja falar com um especialista?</p>
-                          <p className="text-[10px] text-zinc-500">Estamos de prontidão para desenhar a sua viagem.</p>
-                        </div>
-                        <div className="flex gap-4 text-xs font-mono text-zinc-300">
-                          <span>✉ {block.email}</span>
-                          <span>☏ {block.phone}</span>
-                        </div>
-                      </div>
-                    )}
-
-                    {block.kind === 'text' && (
-                      <div className="py-6 text-zinc-300 text-sm leading-relaxed text-center max-w-2xl mx-auto">
-                        <p>{block.content}</p>
-                      </div>
-                    )}
-
-                    {block.kind === 'testimonials' && (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {(block.testimonials || []).map((t, i) => (
-                          <div key={i} className="p-4 bg-zinc-950/40 border border-zinc-800 rounded-xl text-left space-y-2">
-                            <p className="text-xs text-zinc-400 italic">"{t.quote}"</p>
-                            <div>
-                              <p className="text-[10px] font-bold text-white">{t.author}</p>
-                              {t.role && <p className="text-[8px] text-zinc-500">{t.role}</p>}
+                  return (
+                    <div 
+                      key={block.id} 
+                      onClick={() => { setSelectedBlockId(block.id); setActiveTab('edit'); }}
+                      className={cn(
+                        "relative group rounded-2xl transition-all border",
+                        isSelected 
+                          ? "border-vj-green bg-zinc-800/30" 
+                          : "border-dashed hover:border-vj-green/40 hover:bg-zinc-800/10 cursor-pointer",
+                        paddingClass,
+                        bgClass,
+                        alignClass
+                      )}
+                    >
+                      {block.kind === 'hero' && (
+                        <>
+                          {block.layoutVariant === 'split' ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center text-left">
+                              <div className="space-y-4">
+                                <h2 className="text-2xl md:text-3xl font-black tracking-tight text-white leading-tight">
+                                  {block.title}
+                                </h2>
+                                <p className="text-sm text-zinc-400">
+                                  {block.subtitle}
+                                </p>
+                                <Button className="bg-vj-green text-zinc-950 hover:bg-green-600 rounded-xl h-10 px-6 font-bold text-xs">
+                                  Falar Conosco
+                                </Button>
+                              </div>
+                              <div className="aspect-video rounded-xl overflow-hidden border border-zinc-800 bg-zinc-900 shadow-lg">
+                                <img src={block.imageUrl || 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&auto=format&fit=crop&q=60'} alt="Hero" className="w-full h-full object-cover" />
+                              </div>
                             </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
+                          ) : block.layoutVariant === 'fullscreen' ? (
+                            <div className="relative rounded-2xl overflow-hidden py-16 px-6 bg-cover bg-center text-center" style={{ backgroundImage: `url(${block.imageUrl || 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1080&auto=format&fit=crop&q=80'})` }}>
+                              <div className="absolute inset-0 bg-black/60 z-0" />
+                              <div className="relative z-10 max-w-xl mx-auto bg-zinc-900/80 backdrop-blur-md border border-white/10 p-6 rounded-2xl space-y-4">
+                                <h2 className="text-xl md:text-2xl font-black text-white leading-tight">{block.title}</h2>
+                                <p className="text-xs text-zinc-300">{block.subtitle}</p>
+                                <Button className="bg-vj-green text-zinc-950 hover:bg-green-600 rounded-xl h-9 px-5 font-bold text-xs">Falar Conosco</Button>
+                              </div>
+                            </div>
+                          ) : block.layoutVariant === 'glass' ? (
+                            <div className="max-w-xl mx-auto bg-white/5 border border-white/10 backdrop-blur-xl p-8 rounded-2xl space-y-4 shadow-2xl">
+                              <h2 className="text-2xl md:text-3xl font-black text-white leading-tight">{block.title}</h2>
+                              <p className="text-sm text-zinc-300">{block.subtitle}</p>
+                              <Button className="bg-vj-green text-zinc-950 hover:bg-green-600 rounded-xl h-10 px-6 font-bold text-xs">Falar Conosco</Button>
+                            </div>
+                          ) : (
+                            <div className="space-y-4">
+                              <h2 className="text-2xl md:text-3xl font-black tracking-tight max-w-xl mx-auto text-white leading-tight">
+                                {block.title}
+                              </h2>
+                              <p className="text-sm text-zinc-400 max-w-md mx-auto">
+                                {block.subtitle}
+                              </p>
+                              <Button className="bg-vj-green text-zinc-950 hover:bg-green-600 rounded-xl h-10 px-6 font-bold text-xs">
+                                Falar Conosco
+                              </Button>
+                            </div>
+                          )}
+                        </>
+                      )}
 
-                    {block.kind === 'faq' && (
-                      <div className="space-y-3 text-left">
-                        <h4 className="text-xs font-bold text-vj-green uppercase tracking-wide">Dúvidas Frequentes</h4>
-                        <div className="space-y-2">
-                          {(block.faqItems || []).map((faq, i) => (
-                            <div key={i} className="p-3 bg-zinc-950/20 border border-zinc-850 rounded-xl">
-                              <p className="text-xs font-bold text-white mb-1">Q: {faq.question}</p>
-                              <p className="text-[11px] text-zinc-400">A: {faq.answer}</p>
+                      {block.kind === 'features' && (
+                        <>
+                          {block.layoutVariant === 'list' ? (
+                            <div className="space-y-3 max-w-md mx-auto text-left">
+                              {block.items?.map((item, i) => (
+                                <div key={i} className="flex items-center gap-3 p-3 bg-zinc-950/60 border border-zinc-850 rounded-xl">
+                                  <div className="h-5 w-5 bg-vj-green/20 rounded-full flex items-center justify-center text-vj-green shrink-0 font-bold">✓</div>
+                                  <p className="text-xs font-semibold text-zinc-200">{item}</p>
+                                </div>
+                              ))}
+                            </div>
+                          ) : block.layoutVariant === 'timeline' ? (
+                            <div className="flex flex-col md:flex-row items-center gap-4 text-left">
+                              {block.items?.map((item, i) => (
+                                <div key={i} className="flex-1 p-4 bg-zinc-950/40 border border-zinc-850 rounded-xl relative">
+                                  <span className="absolute -top-3 left-4 bg-zinc-850 text-vj-green text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full border border-zinc-800">Passo {i+1}</span>
+                                  <p className="text-xs font-semibold text-zinc-300 mt-1">{item}</p>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                              {block.items?.map((item, i) => (
+                                <div key={i} className="p-4 bg-zinc-950/40 border border-zinc-800 rounded-xl text-center">
+                                  <p className="text-xs font-semibold text-zinc-300">{item}</p>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </>
+                      )}
+
+                      {block.kind === 'contact' && (
+                        <>
+                          {block.layoutVariant === 'footer' ? (
+                            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-[10px] text-zinc-500 w-full font-mono border-t border-zinc-800/80 pt-4">
+                              <span>© {organization?.name || 'Agência'} · Todos os direitos reservados.</span>
+                              <div className="flex gap-4">
+                                <span>✉ {block.email}</span>
+                                <span>☏ {block.phone}</span>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+                              <div className="text-left">
+                                <p className="text-xs font-bold text-white">Deseja falar com um especialista?</p>
+                                <p className="text-[10px] text-zinc-500">Estamos de prontidão para desenhar a sua viagem.</p>
+                              </div>
+                              <div className="flex gap-4 text-xs font-mono text-zinc-300">
+                                <span>✉ {block.email}</span>
+                                <span>☏ {block.phone}</span>
+                              </div>
+                            </div>
+                          )}
+                        </>
+                      )}
+
+                      {block.kind === 'text' && (
+                        <>
+                          {block.layoutVariant === 'twocol' ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left text-zinc-300 text-xs md:text-sm">
+                              <p>{block.content}</p>
+                              <p className="text-zinc-400 border-l border-zinc-800 pl-4 italic">Descubra novos destinos com suporte total de ponta a ponta feito por especialistas que amam o que fazem.</p>
+                            </div>
+                          ) : block.layoutVariant === 'blockquote' ? (
+                            <div className="border-l-4 border-vj-green pl-6 py-2 text-left italic">
+                              <p className="text-sm md:text-base text-zinc-200 max-w-xl font-serif">"{block.content}"</p>
+                            </div>
+                          ) : (
+                            <div className="max-w-2xl mx-auto text-zinc-300 text-sm leading-relaxed">
+                              <p>{block.content}</p>
+                            </div>
+                          )}
+                        </>
+                      )}
+
+                      {block.kind === 'testimonials' && (
+                        <div className={block.layoutVariant === 'list' ? 'space-y-4 max-w-xl mx-auto' : 'grid grid-cols-1 md:grid-cols-2 gap-4'}>
+                          {(block.testimonials || []).map((t, i) => (
+                            <div key={i} className="p-4 bg-zinc-950/40 border border-zinc-800 rounded-xl text-left space-y-2">
+                              <p className="text-xs text-zinc-400 italic">"{t.quote}"</p>
+                              <div>
+                                <p className="text-[10px] font-bold text-white">{t.author}</p>
+                                {t.role && <p className="text-[8px] text-zinc-500">{t.role}</p>}
+                              </div>
                             </div>
                           ))}
                         </div>
-                      </div>
-                    )}
+                      )}
 
-                    {block.kind === 'pricing' && (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
-                        {(block.pricingItems || []).map((p, i) => (
-                          <div key={i} className="p-4 bg-zinc-950 border border-zinc-850 rounded-xl flex flex-col justify-between">
-                            <div>
-                              <h4 className="text-xs font-bold text-white mb-1">{p.title}</h4>
-                              <p className="text-[10px] text-zinc-400 mb-2">{p.description}</p>
-                            </div>
-                            <div className="pt-2 border-t border-zinc-800 flex justify-between items-baseline mt-4">
-                              <span className="text-[10px] text-zinc-500">Valor sugerido</span>
-                              <span className="text-sm font-black text-vj-green">{p.price}</span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    {block.kind === 'gallery' && (
-                      <div className="grid grid-cols-3 gap-2">
-                        {(block.images || []).map((img, i) => (
-                          <div key={i} className="aspect-video rounded-lg overflow-hidden border border-zinc-800 bg-zinc-900">
-                            <img src={img} alt="Galeria" className="w-full h-full object-cover" />
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    {block.kind === 'packages' && (
-                      <div className="space-y-4 text-left">
-                        <div className="flex justify-between items-center border-b border-zinc-800 pb-2">
-                          <h4 className="text-xs font-bold text-vj-green uppercase tracking-wide flex items-center gap-1.5">
-                            <Compass size={14} /> Pacotes de Viagem Disponíveis
-                          </h4>
-                          <span className="text-[9px] text-zinc-500 font-mono bg-zinc-900 border border-zinc-800 px-2 py-0.5 rounded">
-                            Banco de Dados Ativo
-                          </span>
-                        </div>
-                        {realTrips && realTrips.length > 0 ? (
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {realTrips.slice(0, 4).map((trip) => (
-                              <div key={trip.id} className="p-4 bg-zinc-950/40 border border-zinc-850 rounded-xl flex flex-col justify-between hover:border-vj-green/40 transition-colors">
-                                <div>
-                                  <div className="flex justify-between items-start gap-2 mb-1">
-                                    <h5 className="text-xs font-bold text-white leading-tight line-clamp-1">{trip.title}</h5>
-                                    {trip.is_public && (
-                                      <span className="text-[8px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-1.5 py-0.5 rounded font-mono">Público</span>
-                                    )}
-                                  </div>
-                                  <p className="text-[10px] text-zinc-500 flex items-center gap-1"><MapPin size={10} /> {trip.destination || 'A definir'}</p>
-                                </div>
-                                <div className="pt-2 border-t border-zinc-800 flex justify-between items-baseline mt-4">
-                                  <span className="text-[9px] text-zinc-500 flex items-center gap-1"><Calendar size={10} /> {trip.departure_date ? new Date(trip.departure_date).toLocaleDateString('pt-BR') : 'A definir'}</span>
-                                  <span className="text-xs font-black text-vj-green">
-                                    {trip.currency} {trip.price_per_pax.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                                  </span>
-                                </div>
+                      {block.kind === 'faq' && (
+                        <div className="space-y-3 text-left">
+                          <h4 className="text-xs font-bold text-vj-green uppercase tracking-wide">Dúvidas Frequentes</h4>
+                          <div className={block.layoutVariant === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 gap-3' : 'space-y-2'}>
+                            {(block.faqItems || []).map((faq, i) => (
+                              <div key={i} className="p-3 bg-zinc-950/20 border border-zinc-850 rounded-xl">
+                                <p className="text-xs font-bold text-white mb-1">Q: {faq.question}</p>
+                                <p className="text-[11px] text-zinc-400 font-medium">A: {faq.answer}</p>
                               </div>
                             ))}
                           </div>
-                        ) : (
-                          <div className="p-6 bg-zinc-950/30 border border-dashed border-zinc-800 rounded-xl text-center text-xs text-zinc-500 italic">
-                            Nenhum pacote de viagem cadastrado no CRM. Cadastre em "Viagens em Grupo" para exibir aqui.
+                        </div>
+                      )}
+
+                      {block.kind === 'pricing' && (
+                        <>
+                          {block.layoutVariant === 'vip' ? (
+                            <div className="max-w-sm mx-auto p-5 bg-gradient-to-b from-zinc-900 to-zinc-950 border border-amber-500/25 rounded-2xl relative shadow-xl text-center">
+                              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-amber-500/10 border border-amber-500/30 text-amber-400 text-[8px] font-black uppercase tracking-wider px-3 py-1 rounded-full border border-amber-500/20">Destaque VIP</div>
+                              {block.pricingItems?.[1] && (
+                                <div className="space-y-3">
+                                  <h4 className="text-sm font-bold text-white">{block.pricingItems[1].title}</h4>
+                                  <p className="text-[10px] text-zinc-400">{block.pricingItems[1].description}</p>
+                                  <div className="text-2xl font-black text-amber-400">{block.pricingItems[1].price}</div>
+                                  <Button className="w-full bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold text-xs h-9 rounded-xl">Reservar Agora</Button>
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
+                              {(block.pricingItems || []).map((p, i) => (
+                                <div key={i} className="p-4 bg-zinc-950 border border-zinc-850 rounded-xl flex flex-col justify-between">
+                                  <div>
+                                    <h4 className="text-xs font-bold text-white mb-1">{p.title}</h4>
+                                    <p className="text-[10px] text-zinc-400 mb-2">{p.description}</p>
+                                  </div>
+                                  <div className="pt-2 border-t border-zinc-800 flex justify-between items-baseline mt-4">
+                                    <span className="text-[10px] text-zinc-500">Valor sugerido</span>
+                                    <span className="text-sm font-black text-vj-green">{p.price}</span>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </>
+                      )}
+
+                      {block.kind === 'gallery' && (
+                        <div className={block.layoutVariant === 'masonry' ? 'columns-2 md:columns-3 gap-2 space-y-2' : 'grid grid-cols-3 gap-2'}>
+                          {(block.images || []).map((img, i) => (
+                            <div key={i} className={cn("rounded-lg overflow-hidden border border-zinc-800 bg-zinc-900", block.layoutVariant === 'masonry' && "break-inside-avoid mb-2")}>
+                              <img src={img} alt="Galeria" className="w-full h-full object-cover" />
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {block.kind === 'packages' && (
+                        <div className="space-y-4 text-left">
+                          <div className="flex justify-between items-center border-b border-zinc-800 pb-2">
+                            <h4 className="text-xs font-bold text-vj-green uppercase tracking-wide flex items-center gap-1.5">
+                              <Compass size={14} /> Pacotes de Viagem Disponíveis
+                            </h4>
+                            <span className="text-[9px] text-zinc-500 font-mono bg-zinc-900 border border-zinc-800 px-2 py-0.5 rounded">
+                              Banco de Dados Ativo
+                            </span>
                           </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                ))}
+                          {realTrips && realTrips.length > 0 ? (
+                            <div className={block.layoutVariant === 'list' ? 'space-y-3' : 'grid grid-cols-1 md:grid-cols-2 gap-4'}>
+                              {realTrips.slice(0, 4).map((trip) => (
+                                <div key={trip.id} className="p-4 bg-zinc-950/40 border border-zinc-850 rounded-xl flex flex-col justify-between hover:border-vj-green/40 transition-colors">
+                                  <div>
+                                    <div className="flex justify-between items-start gap-2 mb-1">
+                                      <h5 className="text-xs font-bold text-white leading-tight line-clamp-1">{trip.title}</h5>
+                                      {trip.is_public && (
+                                        <span className="text-[8px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-1.5 py-0.5 rounded font-mono">Público</span>
+                                      )}
+                                    </div>
+                                    <p className="text-[10px] text-zinc-500 flex items-center gap-1"><MapPin size={10} /> {trip.destination || 'A definir'}</p>
+                                  </div>
+                                  <div className="pt-2 border-t border-zinc-800 flex justify-between items-baseline mt-4">
+                                    <span className="text-[9px] text-zinc-500 flex items-center gap-1"><Calendar size={10} /> {trip.departure_date ? new Date(trip.departure_date).toLocaleDateString('pt-BR') : 'A definir'}</span>
+                                    <span className="text-xs font-black text-vj-green">
+                                      {trip.currency} {trip.price_per_pax.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                    </span>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="p-6 bg-zinc-950/30 border border-dashed border-zinc-800 rounded-xl text-center text-xs text-zinc-500 italic">
+                              Nenhum pacote de viagem cadastrado no CRM. Cadastre em "Viagens em Grupo" para exibir aqui.
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { AppLayout } from '@/components/AppLayout';
 import { 
   useNewsFeeds, useCreateUserFeed, useUpdateUserFeed, useDeleteUserFeed,
@@ -7,7 +7,7 @@ import {
 import { 
   Newspaper, Settings, RefreshCw, Rss, History, Plus, 
   Trash2, ToggleLeft, ToggleRight, Check, Eye, Edit, Save,
-  X, AlertCircle, TrendingUp, HelpCircle
+  X, AlertCircle, TrendingUp, HelpCircle, Loader2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,16 +19,46 @@ import { useAuthStore } from '@/stores/authStore';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Skeleton } from '@/components/ui/skeleton';
+import { supabase } from '@/integrations/supabase/client';
+import { MediaPicker } from '@/components/builder/MediaPicker';
 
 export default function NewsCMS() {
   const { toast } = useToast();
-  const { roles } = useAuthStore();
+  const { roles, user } = useAuthStore();
   const isSuperAdmin = roles.includes('super_admin');
 
   const [activeTab, setActiveTab] = useState<'articles' | 'feeds' | 'syncs'>('articles');
   const [selectedArticle, setSelectedArticle] = useState<any | null>(null);
   const [isFeedModalOpen, setIsFeedModalOpen] = useState(false);
   const [editingFeed, setEditingFeed] = useState<any | null>(null);
+
+  const [versions, setVersions] = useState<any[]>([]);
+  const [loadingVersions, setLoadingVersions] = useState(false);
+
+  const fetchVersions = async (articleId: string) => {
+    try {
+      setLoadingVersions(true);
+      const { data, error } = await supabase
+        .from('news_article_versions')
+        .select('*')
+        .eq('article_id', articleId)
+        .order('version_number', { ascending: false });
+      if (error) throw error;
+      setVersions(data || []);
+    } catch (err) {
+      console.error('Error fetching article versions:', err);
+    } finally {
+      setLoadingVersions(false);
+    }
+  };
+
+  useEffect(() => {
+    if (selectedArticle?.id) {
+      fetchVersions(selectedArticle.id);
+    } else {
+      setVersions([]);
+    }
+  }, [selectedArticle?.id]);
 
   // States do formulário de feed
   const [feedName, setFeedName] = useState('');
@@ -160,8 +190,107 @@ export default function NewsCMS() {
       onSuccess: (data: any) => {
         toast({ title: 'Artigo atualizado!' });
         setSelectedArticle(data);
+
+        // Fetch last version number to determine next version index
+        supabase
+          .from('news_article_versions')
+          .select('version_number')
+          .eq('article_id', articleId)
+          .order('version_number', { ascending: false })
+          .limit(1)
+          .then(({ data: verData, error: verErr }) => {
+            if (verErr) {
+              console.error('Error fetching last version number:', verErr);
+              return;
+            }
+            const nextVer = verData && verData.length > 0 ? (verData[0].version_number + 1) : 1;
+
+            supabase
+              .from('news_article_versions')
+              .insert({
+                article_id: articleId,
+                version_number: nextVer,
+                title: data.title || '',
+                raw_excerpt: data.raw_excerpt || '',
+                raw_content: data.raw_content || '',
+                image_url: data.image_url || '',
+                ai_summary: data.ai_summary || '',
+                ai_short_summary: data.ai_short_summary || '',
+                ai_bullets: data.ai_bullets || [],
+                ai_tags: data.ai_tags || [],
+                ai_category: data.ai_category || 'geral',
+                ai_sentiment: data.ai_sentiment || 'neutral',
+                ai_relevance_score: data.ai_relevance_score || 50,
+                ai_travel_agency_insight: data.ai_travel_agency_insight || '',
+                ai_recommended_action: data.ai_recommended_action || '',
+                status: data.status || 'draft',
+                is_featured: data.is_featured || false,
+                created_by: user?.id || null
+              })
+              .then(({ error: insertErr }) => {
+                if (insertErr) {
+                  console.error('Error inserting article version:', insertErr);
+                } else {
+                  fetchVersions(articleId);
+                }
+              });
+          });
       }
     });
+  };
+
+  const handleRestoreVersion = async (version: any) => {
+    if (confirm(`Tem certeza que deseja restaurar a versão #${version.version_number} deste artigo?`)) {
+      const updates = {
+        title: version.title,
+        raw_excerpt: version.raw_excerpt,
+        raw_content: version.raw_content,
+        image_url: version.image_url,
+        ai_summary: version.ai_summary,
+        ai_short_summary: version.ai_short_summary,
+        ai_bullets: version.ai_bullets,
+        ai_tags: version.ai_tags,
+        ai_category: version.ai_category,
+        ai_sentiment: version.ai_sentiment,
+        ai_relevance_score: version.ai_relevance_score,
+        ai_travel_agency_insight: version.ai_travel_agency_insight,
+        ai_recommended_action: version.ai_recommended_action,
+        status: version.status,
+        is_featured: version.is_featured
+      };
+      
+      updateArticleMut.mutate({
+        id: version.article_id,
+        updates
+      }, {
+        onSuccess: (data: any) => {
+          toast({ title: `Versão #${version.version_number} restaurada com sucesso!` });
+          setSelectedArticle(data);
+          
+          // Insert a new version snapshot tracking this restore action
+          supabase
+            .from('news_article_versions')
+            .select('version_number')
+            .eq('article_id', version.article_id)
+            .order('version_number', { ascending: false })
+            .limit(1)
+            .then(({ data: verData }) => {
+              const nextVer = verData && verData.length > 0 ? (verData[0].version_number + 1) : 1;
+              supabase
+                .from('news_article_versions')
+                .insert({
+                  article_id: version.article_id,
+                  version_number: nextVer,
+                  ...updates,
+                  created_by: user?.id || null
+                })
+                .then(() => {
+                  fetchVersions(version.article_id);
+                });
+            });
+        }
+      });
+    }
   };
 
   return (
@@ -587,23 +716,11 @@ export default function NewsCMS() {
 
                   {/* Imagem de Capa */}
                   <div className="space-y-2">
-                    <span className="text-xs font-bold text-zinc-500 uppercase">Imagem de Capa (URL)</span>
-                    <Input
-                      defaultValue={selectedArticle.image_url || ''}
-                      placeholder="URL da imagem (ex: https://...)"
-                      className="h-10 text-xs"
-                      onBlur={(e) => handleSaveArticleEdits(selectedArticle.id, { image_url: e.target.value })}
+                    <MediaPicker
+                      label="Imagem de Capa"
+                      value={selectedArticle.image_url || ''}
+                      onChange={(url) => handleSaveArticleEdits(selectedArticle.id, { image_url: url })}
                     />
-                    {selectedArticle.image_url && (
-                      <div className="relative mt-2 border border-zinc-100 rounded-2xl overflow-hidden bg-zinc-50 max-h-32">
-                        <img 
-                          src={selectedArticle.image_url} 
-                          alt="Capa do Artigo" 
-                          className="w-full h-full object-cover max-h-32"
-                          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                        />
-                      </div>
-                    )}
                   </div>
 
                   {/* Resumo completo da IA */}
@@ -640,6 +757,40 @@ export default function NewsCMS() {
                       onBlur={(e) => handleSaveArticleEdits(selectedArticle.id, { ai_recommended_action: e.target.value })}
                     />
                   </div>
+                </div>
+
+                {/* Histórico de Versões */}
+                <div className="pt-6 border-t border-zinc-100">
+                  <h4 className="text-xs font-bold text-zinc-500 uppercase mb-3 flex items-center gap-1.5">
+                    <History className="w-3.5 h-3.5 text-zinc-400" /> Histórico de Versões
+                  </h4>
+                  {loadingVersions ? (
+                    <div className="flex items-center gap-2 py-2">
+                      <Loader2 className="w-4 h-4 animate-spin text-zinc-400" />
+                      <span className="text-xs text-zinc-400 font-semibold">Buscando backups...</span>
+                    </div>
+                  ) : versions.length === 0 ? (
+                    <p className="text-xs text-zinc-400 italic">Nenhuma versão anterior gravada para este artigo.</p>
+                  ) : (
+                    <div className="space-y-2 max-h-40 overflow-y-auto pr-1">
+                      {versions.map((ver) => (
+                        <div key={ver.id} className="p-2.5 bg-zinc-50 border border-zinc-100 rounded-xl flex items-center justify-between text-xs hover:border-zinc-200 transition-all">
+                          <div>
+                            <p className="font-bold text-zinc-800">Versão #{ver.version_number}</p>
+                            <p className="text-[10px] text-zinc-400">Salva em {new Date(ver.created_at).toLocaleString('pt-BR')}</p>
+                          </div>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleRestoreVersion(ver)}
+                            className="h-7 text-[10px] font-bold text-vj-green hover:text-emerald-700 hover:bg-emerald-50 px-2 rounded-lg"
+                          >
+                            Restaurar
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 <div className="pt-4 flex justify-end">

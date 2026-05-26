@@ -2,8 +2,19 @@ import { useState, useEffect } from 'react';
 import { useParams, Link, useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import { Loader2, Mail, Phone, MapPin, Globe, Compass, ArrowRight, ShieldCheck, Camera, Share2, Calendar } from 'lucide-react';
 import { logger } from '@/utils/logger';
+
+const sanitizeHref = (url: string | undefined): string => {
+  if (!url) return '#';
+  const trimmed = url.trim();
+  if (trimmed.toLowerCase().startsWith('javascript:')) {
+    logger.warn(`[SECURITY] Blocked javascript: XSS attempt in public render: ${url}`);
+    return '#';
+  }
+  return url;
+};
 
 interface BuilderBlock {
   id: string;
@@ -18,6 +29,13 @@ interface BuilderBlock {
   faqItems?: { question: string; answer: string }[];
   pricingItems?: { title: string; price: string; description?: string; features?: string[] }[];
   images?: string[];
+  layoutVariant?: string;
+  align?: 'left' | 'center' | 'right';
+  paddingY?: 'compact' | 'normal' | 'cozy' | 'heroic';
+  bgPattern?: 'flat' | 'gradient' | 'glass' | 'border';
+  buttonStyle?: 'solid' | 'outline' | 'glass';
+  imageUrl?: string;
+  videoUrl?: string;
 }
 
 export default function PublicSiteView() {
@@ -385,85 +403,200 @@ export default function PublicSiteView() {
             return null;
           }
 
+          // Resolve style properties dynamically for OMEGA v6.5
+          const alignClass = 
+            block.align === 'left' ? 'text-left' :
+            block.align === 'right' ? 'text-right' :
+            'text-center';
+            
+          const paddingClass =
+            block.paddingY === 'compact' ? 'py-4 px-4' :
+            block.paddingY === 'cozy' ? 'py-16 px-6' :
+            block.paddingY === 'heroic' ? 'py-24 px-8' :
+            'py-10 px-4'; // normal
+            
+          const bgClass =
+            block.bgPattern === 'gradient' ? 'bg-gradient-to-br from-zinc-900 via-zinc-950 to-zinc-900 border border-zinc-800' :
+            block.bgPattern === 'glass' ? 'bg-zinc-900/40 backdrop-blur-md border border-white/5 shadow-xl' :
+            block.bgPattern === 'border' ? 'bg-transparent border border-zinc-800' :
+            'bg-zinc-900/20 border border-transparent'; // flat
+
           return (
-            <section key={block.id} className="animate-in fade-in slide-in-from-bottom-6 duration-700">
+            <section 
+              key={block.id} 
+              className={cn(
+                "animate-in fade-in slide-in-from-bottom-6 duration-700 rounded-2xl border",
+                paddingClass,
+                bgClass,
+                alignClass
+              )}
+            >
               {block.kind === 'hero' && (
-                <div className="text-center py-16 space-y-6">
-                  <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tight max-w-3xl mx-auto leading-none text-white">
-                    {block.title}
-                  </h1>
-                  <p className="text-base md:text-lg text-zinc-400 max-w-2xl mx-auto leading-relaxed">
-                    {block.subtitle}
-                  </p>
-                  <div className="flex items-center justify-center gap-4 pt-4">
-                    <a href="#contact">
-                      <Button 
-                        className="font-bold text-sm px-8 h-12 rounded-xl"
-                        style={{ backgroundColor: primaryColor, color: '#09090b' }}
-                      >
-                        {projectType === 'blog' ? 'Acompanhar Blog' : 'Solicitar Roteiro'}
-                      </Button>
-                    </a>
-                    <Link to={`/portal/${organization.slug}`}>
-                      <Button variant="outline" className="border-zinc-800 bg-transparent text-zinc-300 hover:bg-zinc-900 rounded-xl h-12 px-6">
-                        Acessar Minha Viagem
-                      </Button>
-                    </Link>
-                  </div>
-                </div>
+                <>
+                  {block.layoutVariant === 'split' ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center text-left">
+                      <div className="space-y-4">
+                        <h2 className="text-3xl md:text-4xl font-black tracking-tight text-white leading-tight">
+                          {block.title}
+                        </h2>
+                        <p className="text-sm md:text-base text-zinc-400">
+                          {block.subtitle}
+                        </p>
+                        <a href={sanitizeHref('#contact')}>
+                          <Button className="text-zinc-950 hover:bg-green-600 rounded-xl h-10 px-6 font-bold text-xs" style={{ backgroundColor: primaryColor }}>
+                            Falar Conosco
+                          </Button>
+                        </a>
+                      </div>
+                      <div className="aspect-video rounded-xl overflow-hidden border border-zinc-800 bg-zinc-900 shadow-lg">
+                        <img src={block.imageUrl || 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&auto=format&fit=crop&q=60'} alt="Hero" className="w-full h-full object-cover" />
+                      </div>
+                    </div>
+                  ) : block.layoutVariant === 'fullscreen' ? (
+                    <div className="relative rounded-2xl overflow-hidden py-16 px-6 bg-cover bg-center text-center" style={{ backgroundImage: `url(${block.imageUrl || 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1080&auto=format&fit=crop&q=80'})` }}>
+                      <div className="absolute inset-0 bg-black/60 z-0" />
+                      <div className="relative z-10 max-w-xl mx-auto bg-zinc-900/80 backdrop-blur-md border border-white/10 p-6 rounded-2xl space-y-4">
+                        <h2 className="text-2xl md:text-3xl font-black text-white leading-tight">{block.title}</h2>
+                        <p className="text-xs text-zinc-300">{block.subtitle}</p>
+                        <a href={sanitizeHref('#contact')}>
+                          <Button className="text-zinc-950 hover:bg-green-600 rounded-xl h-9 px-5 font-bold text-xs" style={{ backgroundColor: primaryColor }}>Falar Conosco</Button>
+                        </a>
+                      </div>
+                    </div>
+                  ) : block.layoutVariant === 'glass' ? (
+                    <div className="max-w-xl mx-auto bg-white/5 border border-white/10 backdrop-blur-xl p-8 rounded-2xl space-y-4 shadow-2xl">
+                      <h2 className="text-3xl md:text-4xl font-black text-white leading-tight">{block.title}</h2>
+                      <p className="text-sm text-zinc-300">{block.subtitle}</p>
+                      <a href={sanitizeHref('#contact')}>
+                        <Button className="text-zinc-950 hover:bg-green-600 rounded-xl h-10 px-6 font-bold text-xs" style={{ backgroundColor: primaryColor }}>Falar Conosco</Button>
+                      </a>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      <h2 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tight max-w-3xl mx-auto leading-none text-white">
+                        {block.title}
+                      </h2>
+                      <p className="text-base md:text-lg text-zinc-400 max-w-2xl mx-auto leading-relaxed">
+                        {block.subtitle}
+                      </p>
+                      <div className="flex items-center justify-center gap-4 pt-4">
+                        <a href={sanitizeHref('#contact')}>
+                          <Button 
+                            className="font-bold text-sm px-8 h-12 rounded-xl text-zinc-950"
+                            style={{ backgroundColor: primaryColor }}
+                          >
+                            {projectType === 'blog' ? 'Acompanhar Blog' : 'Solicitar Roteiro'}
+                          </Button>
+                        </a>
+                        <Link to={`/portal/${organization.slug}`}>
+                          <Button variant="outline" className="border-zinc-800 bg-transparent text-zinc-300 hover:bg-zinc-900 rounded-xl h-12 px-6">
+                            Acessar Minha Viagem
+                          </Button>
+                        </Link>
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
 
               {block.kind === 'features' && (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  {block.items?.map((item, idx) => (
-                    <div key={idx} className="p-6 bg-zinc-900/40 border border-zinc-800/80 rounded-2xl relative overflow-hidden group hover:border-zinc-700 transition-colors">
-                      <div className="absolute top-0 right-0 w-24 h-24 blur-[40px] rounded-full pointer-events-none opacity-20" style={{ backgroundColor: primaryColor }} />
-                      <Compass className="w-8 h-8 mb-4" style={{ color: primaryColor }} />
-                      <p className="text-sm font-bold text-white mb-2">{item}</p>
-                      <p className="text-xs text-zinc-500 leading-relaxed">
-                        Compromisso com excelência, segurança, pontualidade e experiências inesquecíveis.
-                      </p>
+                <>
+                  {block.layoutVariant === 'list' ? (
+                    <div className="space-y-3 max-w-md mx-auto text-left">
+                      {block.items?.map((item, i) => (
+                        <div key={i} className="flex items-center gap-3 p-3 bg-zinc-950/60 border border-zinc-850 rounded-xl">
+                          <div className="h-5 w-5 bg-vj-green/20 rounded-full flex items-center justify-center text-vj-green shrink-0 font-bold">✓</div>
+                          <p className="text-xs font-semibold text-zinc-200">{item}</p>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
+                  ) : block.layoutVariant === 'timeline' ? (
+                    <div className="flex flex-col md:flex-row items-center gap-4 text-left">
+                      {block.items?.map((item, i) => (
+                        <div key={i} className="flex-1 p-4 bg-zinc-950/40 border border-zinc-850 rounded-xl relative">
+                          <span className="absolute -top-3 left-4 bg-zinc-850 text-vj-green text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full border border-zinc-800">Passo {i+1}</span>
+                          <p className="text-xs font-semibold text-zinc-300 mt-1">{item}</p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      {block.items?.map((item, idx) => (
+                        <div key={idx} className="p-6 bg-zinc-900/40 border border-zinc-800/80 rounded-2xl relative overflow-hidden group hover:border-zinc-700 transition-colors text-center">
+                          <div className="absolute top-0 right-0 w-24 h-24 blur-[40px] rounded-full pointer-events-none opacity-20" style={{ backgroundColor: primaryColor }} />
+                          <Compass className="w-8 h-8 mb-4 mx-auto" style={{ color: primaryColor }} />
+                          <p className="text-sm font-bold text-white mb-2">{item}</p>
+                          <p className="text-xs text-zinc-500 leading-relaxed">
+                            Compromisso com excelência, segurança, pontualidade e experiências inesquecíveis.
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </>
               )}
 
               {block.kind === 'contact' && (
-                <div id="contact" className="p-8 bg-zinc-900/60 border border-zinc-800/80 rounded-3xl flex flex-col md:flex-row items-center justify-between gap-8 relative overflow-hidden">
-                  <div className="space-y-2 text-center md:text-left">
-                    <h3 className="text-xl font-bold text-white">Pronto para a sua próxima aventura?</h3>
-                    <p className="text-xs text-zinc-500 max-w-md">
-                      Fale diretamente com nossa equipe e desenhe sua viagem com quem entende do assunto.
-                    </p>
-                  </div>
+                <>
+                  {block.layoutVariant === 'footer' ? (
+                    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-[10px] text-zinc-500 w-full font-mono border-t border-zinc-900 pt-4">
+                      <span>© {organization?.name || 'Agência'} · Todos os direitos reservados.</span>
+                      <div className="flex gap-4">
+                        {block.email && <span>✉ <a href={sanitizeHref(`mailto:${block.email}`)} className="hover:underline">{block.email}</a></span>}
+                        {block.phone && <span>☏ <a href={sanitizeHref(`https://wa.me/${block.phone.replace(/\D/g, '')}`)} target="_blank" rel="noopener noreferrer" className="hover:underline">{block.phone}</a></span>}
+                      </div>
+                    </div>
+                  ) : (
+                    <div id="contact" className="p-8 bg-zinc-900/60 border border-zinc-800/80 rounded-3xl flex flex-col md:flex-row items-center justify-between gap-8 relative overflow-hidden text-left w-full">
+                      <div className="space-y-2">
+                        <h3 className="text-xl font-bold text-white">Pronto para a sua próxima aventura?</h3>
+                        <p className="text-xs text-zinc-500 max-w-md">
+                          Fale diretamente com nossa equipe e desenhe sua viagem com quem entende do assunto.
+                        </p>
+                      </div>
 
-                  <div className="flex flex-col sm:flex-row gap-4 shrink-0 font-mono text-xs w-full md:w-auto">
-                    {block.email && (
-                      <a href={`mailto:${block.email}`} className="flex items-center gap-3 p-4 bg-zinc-950 border border-zinc-800 hover:border-zinc-700 rounded-2xl justify-center transition-colors">
-                        <Mail size={16} style={{ color: primaryColor }} />
-                        <span>{block.email}</span>
-                      </a>
-                    )}
-                    {block.phone && (
-                      <a href={`https://wa.me/${block.phone.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-4 bg-zinc-950 border border-zinc-800 hover:border-zinc-700 rounded-2xl justify-center transition-colors">
-                        <Phone size={16} className="text-green-400" />
-                        <span>{block.phone}</span>
-                      </a>
-                    )}
-                  </div>
-                </div>
+                      <div className="flex flex-col sm:flex-row gap-4 shrink-0 font-mono text-xs w-full md:w-auto">
+                        {block.email && (
+                          <a href={sanitizeHref(`mailto:${block.email}`)} className="flex items-center gap-3 p-4 bg-zinc-950 border border-zinc-800 hover:border-zinc-700 rounded-2xl justify-center transition-colors">
+                            <Mail size={16} style={{ color: primaryColor }} />
+                            <span>{block.email}</span>
+                          </a>
+                        )}
+                        {block.phone && (
+                          <a href={sanitizeHref(`https://wa.me/${block.phone.replace(/\D/g, '')}`)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-4 bg-zinc-950 border border-zinc-800 hover:border-zinc-700 rounded-2xl justify-center transition-colors">
+                            <Phone size={16} className="text-green-400" />
+                            <span>{block.phone}</span>
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
 
               {block.kind === 'text' && (
-                <div className="py-8 text-zinc-300 text-sm md:text-base leading-relaxed text-center max-w-3xl mx-auto border-t border-zinc-900">
-                  <p className="whitespace-pre-line">{block.content}</p>
-                </div>
+                <>
+                  {block.layoutVariant === 'twocol' ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left text-zinc-300 text-xs md:text-sm">
+                      <p className="whitespace-pre-line">{block.content}</p>
+                      <p className="text-zinc-400 border-l border-zinc-800 pl-4 italic">Descubra novos destinos com suporte total de ponta a ponta feito por especialistas que amam o que fazem.</p>
+                    </div>
+                  ) : block.layoutVariant === 'blockquote' ? (
+                    <div className="border-l-4 border-vj-green pl-6 py-2 text-left italic">
+                      <p className="text-sm md:text-base text-zinc-200 max-w-xl font-serif">"{block.content}"</p>
+                    </div>
+                  ) : (
+                    <div className="max-w-3xl mx-auto text-zinc-300 text-sm md:text-base leading-relaxed">
+                      <p className="whitespace-pre-line">{block.content}</p>
+                    </div>
+                  )}
+                </>
               )}
 
               {block.kind === 'testimonials' && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className={block.layoutVariant === 'list' ? 'space-y-4 max-w-xl mx-auto' : 'grid grid-cols-1 md:grid-cols-2 gap-6 text-left'}>
                   {(block.testimonials || []).map((t, idx) => (
-                    <div key={idx} className="p-6 bg-zinc-900/20 border border-zinc-800/80 rounded-2xl text-left space-y-4">
+                    <div key={idx} className="p-6 bg-zinc-900/20 border border-zinc-800/80 rounded-2xl space-y-4">
                       <p className="text-sm text-zinc-300 italic">"{t.quote}"</p>
                       <div>
                         <p className="text-xs font-bold text-white">{t.author}</p>
@@ -479,7 +612,7 @@ export default function PublicSiteView() {
                   <h3 className="text-lg font-bold text-white border-b border-zinc-900 pb-2 flex items-center gap-2">
                     <Compass size={18} style={{ color: primaryColor }} /> Perguntas Frequentes
                   </h3>
-                  <div className="space-y-4">
+                  <div className={block.layoutVariant === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 gap-4' : 'space-y-4'}>
                     {(block.faqItems || []).map((faq, idx) => (
                       <div key={idx} className="p-5 bg-zinc-900/40 border border-zinc-800 rounded-2xl">
                         <h4 className="text-sm font-bold text-white mb-2">Q: {faq.question}</h4>
@@ -491,26 +624,42 @@ export default function PublicSiteView() {
               )}
 
               {block.kind === 'pricing' && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
-                  {(block.pricingItems || []).map((p, idx) => (
-                    <div key={idx} className="p-6 bg-zinc-900/40 border border-zinc-800 rounded-2xl flex flex-col justify-between hover:border-zinc-700 transition-colors">
-                      <div>
-                        <h4 className="text-sm font-bold text-white mb-2">{p.title}</h4>
-                        <p className="text-xs text-zinc-400 leading-relaxed mb-4">{p.description}</p>
-                      </div>
-                      <div className="pt-4 border-t border-zinc-850 flex justify-between items-baseline mt-4">
-                        <span className="text-[10px] text-zinc-500 uppercase font-mono">Valor Estimado</span>
-                        <span className="text-lg font-black text-white" style={{ color: primaryColor }}>{p.price}</span>
-                      </div>
+                <>
+                  {block.layoutVariant === 'vip' ? (
+                    <div className="max-w-sm mx-auto p-5 bg-gradient-to-b from-zinc-900 to-zinc-950 border border-amber-500/25 rounded-2xl relative shadow-xl text-center">
+                      <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-amber-500/10 border border-amber-500/30 text-amber-400 text-[8px] font-black uppercase tracking-wider px-3 py-1 rounded-full border border-amber-500/20">Destaque VIP</div>
+                      {block.pricingItems?.[1] && (
+                        <div className="space-y-3">
+                          <h4 className="text-sm font-bold text-white">{block.pricingItems[1].title}</h4>
+                          <p className="text-[10px] text-zinc-400">{block.pricingItems[1].description}</p>
+                          <div className="text-2xl font-black text-amber-400">{block.pricingItems[1].price}</div>
+                          <Button className="w-full bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold text-xs h-9 rounded-xl">Reservar Agora</Button>
+                        </div>
+                      )}
                     </div>
-                  ))}
-                </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
+                      {(block.pricingItems || []).map((p, idx) => (
+                        <div key={idx} className="p-6 bg-zinc-900/40 border border-zinc-800 rounded-2xl flex flex-col justify-between hover:border-zinc-700 transition-colors">
+                          <div>
+                            <h4 className="text-sm font-bold text-white mb-2">{p.title}</h4>
+                            <p className="text-xs text-zinc-400 leading-relaxed mb-4">{p.description}</p>
+                          </div>
+                          <div className="pt-4 border-t border-zinc-850 flex justify-between items-baseline mt-4">
+                            <span className="text-[10px] text-zinc-500 uppercase font-mono">Valor Estimado</span>
+                            <span className="text-lg font-black text-white" style={{ color: primaryColor }}>{p.price}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </>
               )}
 
               {block.kind === 'gallery' && (
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className={block.layoutVariant === 'masonry' ? 'columns-2 md:columns-3 gap-2 space-y-2' : 'grid grid-cols-1 sm:grid-cols-3 gap-4'}>
                   {(block.images || []).map((img, idx) => (
-                    <div key={idx} className="aspect-video rounded-2xl overflow-hidden border border-zinc-800 bg-zinc-900 group">
+                    <div key={idx} className={cn("rounded-2xl overflow-hidden border border-zinc-800 bg-zinc-900 group", block.layoutVariant === 'masonry' && "break-inside-avoid mb-2")}>
                       <img 
                         src={img} 
                         alt="Galeria de Viagem" 
@@ -530,11 +679,11 @@ export default function PublicSiteView() {
                     </h3>
                   </div>
                   {trips && trips.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className={block.layoutVariant === 'list' ? 'space-y-4' : 'grid grid-cols-1 md:grid-cols-2 gap-6'}>
                       {trips.map((trip) => (
                         <Link 
                           key={trip.id} 
-                          to={`/g/${trip.slug || trip.id}`}
+                          to={sanitizeHref(`/g/${trip.slug || trip.id}`)}
                           className="p-5 bg-zinc-900/40 border border-zinc-800 rounded-2xl flex flex-col justify-between hover:border-zinc-700 transition-all group duration-300"
                         >
                           <div>

@@ -95,6 +95,7 @@ import { SectionPricingTableBlock } from './SectionPricingTableBlock';
 import { SectionLogoCloudBlock } from './SectionLogoCloudBlock';
 import { SectionCallToActionBlock } from './SectionCallToActionBlock';
 import { SectionFaqAccordionBlock } from './SectionFaqAccordionBlock';
+import { FeatureAdvancedGridBlock } from './FeatureAdvancedGridBlock';
 
 // Galleries & Media
 import { GalleryMasonryBlock } from './GalleryMasonryBlock';
@@ -107,6 +108,7 @@ import { CarouselTestimonialsBlock } from './CarouselTestimonialsBlock';
 import { CarouselLogosBlock } from './CarouselLogosBlock';
 import { GalleryBeforeAfterBlock } from './GalleryBeforeAfterBlock';
 import { MediaDocumentViewerBlock } from './MediaDocumentViewerBlock';
+import { MediaInteractiveMapBlock } from './MediaInteractiveMapBlock';
 
 // Commerce & Cards
 import { CardProductBlock } from './CardProductBlock';
@@ -218,6 +220,7 @@ export function registerAllBlocks() {
   BlockRegistry.register(SectionLogoCloudBlock);
   BlockRegistry.register(SectionCallToActionBlock);
   BlockRegistry.register(SectionFaqAccordionBlock);
+  BlockRegistry.register(FeatureAdvancedGridBlock);
 
   // Galleries & Media
   BlockRegistry.register(GalleryMasonryBlock);
@@ -230,6 +233,7 @@ export function registerAllBlocks() {
   BlockRegistry.register(CarouselLogosBlock);
   BlockRegistry.register(GalleryBeforeAfterBlock);
   BlockRegistry.register(MediaDocumentViewerBlock);
+  BlockRegistry.register(MediaInteractiveMapBlock);
 
   // Commerce & Cards
   BlockRegistry.register(CardProductBlock);

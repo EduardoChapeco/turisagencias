@@ -1,0 +1,778 @@
+=== CREATED TABLES ===
+- activities
+- activity_pills
+- admin_pins
+- ai_agents
+- ai_keys_pool
+- ai_tasks
+- airline_checkin_registry
+- airports
+- automation_executions
+- b2b_credentials
+- booking_installments
+- bookings
+- builder_projects
+- builder_versions
+- bus_layouts
+- bus_seat_assignments
+- chat_sessions
+- checklist_items
+- checklists
+- client_identities
+- client_travel_credits
+- clients
+- communication_rules
+- contract_signatures
+- contract_templates
+- contracts
+- corporate_policies
+- destination_guides
+- destination_tags
+- destinations
+- email_inbound
+- email_messages
+- email_tracking_logs
+- experiences
+- external_entities
+- financial_suppliers
+- financial_transactions
+- flight_amenities
+- flight_segments
+- flights
+- global_keys
+- group_bookings
+- group_clients
+- group_installments
+- group_pricing
+- group_trip_days
+- group_trips
+- guide_pages
+- hotel_reviews
+- hotels_bank
+- itineraries
+- itinerary_days
+- itinerary_items
+- itinerary_leads
+- itinerary_stops
+- kanban_boards
+- kanban_cards
+- kanban_checklist_items
+- kanban_checklists
+- kanban_columns
+- kanban_notes
+- kanban_tags
+- map_distances
+- map_points
+- media_assets
+- media_items
+- memory_contexts
+- news_article_versions
+- notifications
+- operator_snapshots
+- organizations
+- payments
+- places
+- policy_cache
+- portal_ai_photos
+- proactive_alerts
+- profiles
+- public_sites
+- quotations
+- quote_chips
+- quote_destinations
+- quote_experiences
+- quote_hotels
+- quote_includes
+- quote_price_items
+- quote_transfers
+- route_stops
+- seat_blocks
+- subscription_plans
+- team_members
+- ticket_attachments
+- ticket_events
+- ticket_messages
+- tickets
+- tips
+- travel_group_members
+- travel_groups
+- traveler_documents
+- traveler_info_pages
+- travelers
+- trip_documents
+- trip_flights
+- trip_travelers
+- trips
+- user_roles
+- vouchers
+- wa_conversation_logs
+- wa_session_metrics
+- weather_data
+
+=== RLS POLICIES ===
+Table: admin_pins | Policy: No direct read access to pins
+Table: admin_pins | Policy: Super admins can manage pins
+Table: ai_agents | Policy: Users manage agents in own org
+Table: ai_agents | Policy: Users manage agents in own org
+Table: ai_agents | Policy: Users view agents in own org
+Table: ai_agents | Policy: Users view agents in own org
+Table: ai_keys_pool | Policy: ai_keys_pool_delete
+Table: ai_keys_pool | Policy: ai_keys_pool_delete
+Table: ai_keys_pool | Policy: ai_keys_pool_insert
+Table: ai_keys_pool | Policy: ai_keys_pool_insert
+Table: ai_keys_pool | Policy: ai_keys_pool_select
+Table: ai_keys_pool | Policy: ai_keys_pool_select
+Table: ai_keys_pool | Policy: ai_keys_pool_update
+Table: ai_keys_pool | Policy: ai_keys_pool_update
+Table: ai_tasks | Policy: Users manage tasks in own org
+Table: ai_tasks | Policy: Users manage tasks in own org
+Table: ai_tasks | Policy: Users view tasks in own org
+Table: ai_tasks | Policy: Users view tasks in own org
+Table: ai_tasks | Policy: Users view tasks in own org
+Table: airline_checkin_registry | Policy: airline_checkin_registry_all_policy
+Table: airline_checkin_registry | Policy: airline_checkin_registry_select_policy
+Table: airports | Policy: Airports are readable by all authenticated users
+Table: automation_executions | Policy: Organizações podem ver suas próprias execuções de automação
+Table: b2b_credentials | Policy: Users can manage their org B2B credentials
+Table: b2b_credentials | Policy: Users can manage their org B2B credentials
+Table: booking_installments | Policy: org manages installments via booking
+Table: booking_installments | Policy: org manages installments via booking
+Table: booking_installments | Policy: public read installments via booking
+Table: bookings | Policy: Org admins can manage bookings
+Table: bookings | Policy: Org admins can manage bookings
+Table: bookings | Policy: Org members can view bookings
+Table: bookings | Policy: Org members can view bookings
+Table: bookings | Policy: Users can create bookings in own org
+Table: bookings | Policy: Users can create bookings in own org
+Table: bookings | Policy: Users can delete bookings in own org
+Table: bookings | Policy: Users can delete bookings in own org
+Table: bookings | Policy: Users can update bookings in own org
+Table: bookings | Policy: Users can update bookings in own org
+Table: bookings | Policy: Users can view bookings in own org
+Table: bookings | Policy: Users can view bookings in own org
+Table: bookings | Policy: Users create bookings in own org
+Table: bookings | Policy: Users create bookings in own org
+Table: bookings | Policy: Users update bookings in own org
+Table: bookings | Policy: Users update bookings in own org
+Table: bookings | Policy: Users view bookings in own org
+Table: bookings | Policy: Users view bookings in own org
+Table: builder_projects | Policy: builder_projects_all_policy
+Table: builder_projects | Policy: builder_projects_select_policy
+Table: builder_versions | Policy: builder_versions_all_policy
+Table: builder_versions | Policy: builder_versions_select_policy
+Table: bus_layouts | Policy: org members manage bus_layouts
+Table: bus_layouts | Policy: org members manage bus_layouts
+Table: bus_seat_assignments | Policy: org manages seats via trip
+Table: bus_seat_assignments | Policy: org manages seats via trip
+Table: bus_seat_assignments | Policy: public read seats of published trips
+Table: checklist_items | Policy: Users can create checklist items via checklist org
+Table: checklist_items | Policy: Users can create checklist items via checklist org
+Table: checklist_items | Policy: Users can create items via checklist org
+Table: checklist_items | Policy: Users can create items via checklist org
+Table: checklist_items | Policy: Users can delete checklist items via checklist org
+Table: checklist_items | Policy: Users can delete checklist items via checklist org
+Table: checklist_items | Policy: Users can delete items via checklist org
+Table: checklist_items | Policy: Users can delete items via checklist org
+Table: checklist_items | Policy: Users can update checklist items via checklist org
+Table: checklist_items | Policy: Users can update checklist items via checklist org
+Table: checklist_items | Policy: Users can update items via checklist org
+Table: checklist_items | Policy: Users can update items via checklist org
+Table: checklist_items | Policy: Users can view checklist items via checklist org
+Table: checklist_items | Policy: Users can view checklist items via checklist org
+Table: checklist_items | Policy: Users can view items via checklist org
+Table: checklist_items | Policy: Users can view items via checklist org
+Table: checklists | Policy: Users can create checklists in own org
+Table: checklists | Policy: Users can create checklists in own org
+Table: checklists | Policy: Users can create checklists in own org
+Table: checklists | Policy: Users can delete checklists in own org
+Table: checklists | Policy: Users can delete checklists in own org
+Table: checklists | Policy: Users can delete checklists in own org
+Table: checklists | Policy: Users can update checklists in own org
+Table: checklists | Policy: Users can update checklists in own org
+Table: checklists | Policy: Users can update checklists in own org
+Table: checklists | Policy: Users can view checklists in own org
+Table: checklists | Policy: Users can view checklists in own org
+Table: checklists | Policy: Users can view checklists in own org
+Table: client_identities | Policy: org members can manage client_identities
+Table: client_identities | Policy: org members can manage client_identities
+Table: clients | Policy: Users can create clients in own org
+Table: clients | Policy: Users can create clients in own org
+Table: clients | Policy: Users can create clients in own org
+Table: clients | Policy: Users can delete clients in own org
+Table: clients | Policy: Users can delete clients in own org
+Table: clients | Policy: Users can delete clients in own org
+Table: clients | Policy: Users can update clients in own org
+Table: clients | Policy: Users can update clients in own org
+Table: clients | Policy: Users can update clients in own org
+Table: clients | Policy: Users can view clients in own org
+Table: clients | Policy: Users can view clients in own org
+Table: clients | Policy: Users can view clients in own org
+Table: communication_rules | Policy: org members can manage communication_rules
+Table: communication_rules | Policy: org members can manage communication_rules
+Table: contract_signatures | Policy: org reads contract_signatures
+Table: contract_signatures | Policy: org reads contract_signatures
+Table: contract_templates | Policy: org members can manage contract_templates
+Table: contract_templates | Policy: org members can manage contract_templates
+Table: contracts | Policy: contracts_org_select
+Table: contracts | Policy: contracts_org_write
+Table: corporate_policies | Policy: Admins can manage their org corporate_policies
+Table: corporate_policies | Policy: Admins can manage their org corporate_policies
+Table: corporate_policies | Policy: Users can read their org corporate_policies
+Table: corporate_policies | Policy: Users can read their org corporate_policies
+Table: destination_guides | Policy: destination_guides_delete
+Table: destination_guides | Policy: destination_guides_delete
+Table: destination_guides | Policy: destination_guides_insert
+Table: destination_guides | Policy: destination_guides_insert
+Table: destination_guides | Policy: destination_guides_select
+Table: destination_guides | Policy: destination_guides_select
+Table: destination_guides | Policy: destination_guides_update
+Table: destination_guides | Policy: destination_guides_update
+Table: email_messages | Policy: Users can insert emails to their organization
+Table: email_messages | Policy: Users can update emails of their organization
+Table: email_messages | Policy: Users can view emails of their organization
+Table: email_tracking_logs | Policy: Users can view tracking logs for their org
+Table: email_tracking_logs | Policy: Users can view tracking logs for their org
+Table: experiences | Policy: Users can manage experiences in own org
+Table: experiences | Policy: Users can manage experiences in own org
+Table: experiences | Policy: experiences_delete
+Table: experiences | Policy: experiences_delete
+Table: experiences | Policy: experiences_insert
+Table: experiences | Policy: experiences_insert
+Table: experiences | Policy: experiences_select
+Table: experiences | Policy: experiences_select
+Table: experiences | Policy: experiences_update
+Table: experiences | Policy: experiences_update
+Table: external_entities | Policy: org members can manage external_entities
+Table: external_entities | Policy: org members can manage external_entities
+Table: financial_suppliers | Policy: org members can manage financial_suppliers
+Table: financial_suppliers | Policy: org members can manage financial_suppliers
+Table: financial_transactions | Policy: org members can manage financial_transactions
+Table: financial_transactions | Policy: org members can manage financial_transactions
+Table: flight_amenities | Policy: Anon can view flight_amenities
+Table: flight_amenities | Policy: Auth can modify flight_amenities
+Table: flight_amenities | Policy: Auth can modify flight_amenities
+Table: flight_amenities | Policy: Auth can view flight_amenities
+Table: flight_amenities | Policy: Auth can view flight_amenities
+Table: flight_segments | Policy: Anon can view flight_segments
+Table: flight_segments | Policy: Auth can modify flight_segments
+Table: flight_segments | Policy: Auth can modify flight_segments
+Table: flight_segments | Policy: Auth can view flight_segments
+Table: flight_segments | Policy: Auth can view flight_segments
+Table: global_keys | Policy: Apenas super_admin pode gerenciar global_keys
+Table: group_bookings | Policy: org members manage group_bookings
+Table: group_bookings | Policy: org members manage group_bookings
+Table: group_bookings | Policy: public can create bookings for published trips
+Table: group_bookings | Policy: public read booking by token
+Table: group_bookings | Policy: public read booking by token
+Table: group_clients | Policy: group_clients_all
+Table: group_clients | Policy: group_clients_select
+Table: group_installments | Policy: group_installments_all
+Table: group_installments | Policy: group_installments_select
+Table: group_pricing | Policy: group_pricing_all
+Table: group_pricing | Policy: group_pricing_select
+Table: group_trip_days | Policy: org manages days via parent
+Table: group_trip_days | Policy: org manages days via parent
+Table: group_trip_days | Policy: public read days of published trips
+Table: group_trips | Policy: org members manage group_trips
+Table: group_trips | Policy: org members manage group_trips
+Table: group_trips | Policy: public read published group_trips
+Table: guide_pages | Policy: Anon can view public guide_pages
+Table: guide_pages | Policy: Auth can manage guide_pages
+Table: guide_pages | Policy: Auth can manage guide_pages
+Table: hotel_reviews | Policy: Users can manage their org hotel reviews
+Table: hotel_reviews | Policy: Users can manage their org hotel reviews
+Table: hotels_bank | Policy: Users can create hotels in own org
+Table: hotels_bank | Policy: Users can create hotels in own org
+Table: hotels_bank | Policy: Users can create hotels in own org
+Table: hotels_bank | Policy: Users can delete hotels in own org
+Table: hotels_bank | Policy: Users can delete hotels in own org
+Table: hotels_bank | Policy: Users can delete hotels in own org
+Table: hotels_bank | Policy: Users can update hotels in own org
+Table: hotels_bank | Policy: Users can update hotels in own org
+Table: hotels_bank | Policy: Users can update hotels in own org
+Table: hotels_bank | Policy: Users can view hotels in own org
+Table: hotels_bank | Policy: Users can view hotels in own org
+Table: hotels_bank | Policy: Users can view hotels in own org
+Table: itineraries | Policy: Anon reads valid token
+Table: itineraries | Policy: org members manage itineraries
+Table: itineraries | Policy: org members manage itineraries
+Table: itinerary_items | Policy: Anon can view itinerary_items
+Table: itinerary_items | Policy: Auth can modify itinerary_items
+Table: itinerary_items | Policy: Auth can modify itinerary_items
+Table: itinerary_items | Policy: Auth can view itinerary_items
+Table: itinerary_items | Policy: Auth can view itinerary_items
+Table: itinerary_stops | Policy: org members manage itinerary_stops
+Table: itinerary_stops | Policy: org members manage itinerary_stops
+Table: kanban_boards | Policy: Users can create boards in own org
+Table: kanban_boards | Policy: Users can create boards in own org
+Table: kanban_boards | Policy: Users can create kanban boards in own org
+Table: kanban_boards | Policy: Users can create kanban boards in own org
+Table: kanban_boards | Policy: Users can delete boards in own org
+Table: kanban_boards | Policy: Users can delete boards in own org
+Table: kanban_boards | Policy: Users can delete kanban boards in own org
+Table: kanban_boards | Policy: Users can delete kanban boards in own org
+Table: kanban_boards | Policy: Users can update boards in own org
+Table: kanban_boards | Policy: Users can update boards in own org
+Table: kanban_boards | Policy: Users can update kanban boards in own org
+Table: kanban_boards | Policy: Users can update kanban boards in own org
+Table: kanban_boards | Policy: Users can view boards in own org
+Table: kanban_boards | Policy: Users can view boards in own org
+Table: kanban_boards | Policy: Users can view kanban boards in own org
+Table: kanban_boards | Policy: Users can view kanban boards in own org
+Table: kanban_boards | Policy: kanban_boards_delete
+Table: kanban_boards | Policy: kanban_boards_delete
+Table: kanban_boards | Policy: kanban_boards_insert
+Table: kanban_boards | Policy: kanban_boards_insert
+Table: kanban_boards | Policy: kanban_boards_select
+Table: kanban_boards | Policy: kanban_boards_select
+Table: kanban_boards | Policy: kanban_boards_update
+Table: kanban_boards | Policy: kanban_boards_update
+Table: kanban_cards | Policy: Users can create cards via board org
+Table: kanban_cards | Policy: Users can create cards via board org
+Table: kanban_cards | Policy: Users can create kanban cards in own org
+Table: kanban_cards | Policy: Users can create kanban cards in own org
+Table: kanban_cards | Policy: Users can delete cards via board org
+Table: kanban_cards | Policy: Users can delete cards via board org
+Table: kanban_cards | Policy: Users can delete kanban cards in own org
+Table: kanban_cards | Policy: Users can delete kanban cards in own org
+Table: kanban_cards | Policy: Users can update cards via board org
+Table: kanban_cards | Policy: Users can update cards via board org
+Table: kanban_cards | Policy: Users can update kanban cards in own org
+Table: kanban_cards | Policy: Users can update kanban cards in own org
+Table: kanban_cards | Policy: Users can view cards via board org
+Table: kanban_cards | Policy: Users can view cards via board org
+Table: kanban_cards | Policy: Users can view kanban cards in own org
+Table: kanban_cards | Policy: Users can view kanban cards in own org
+Table: kanban_cards | Policy: kanban_cards_delete
+Table: kanban_cards | Policy: kanban_cards_delete
+Table: kanban_cards | Policy: kanban_cards_insert
+Table: kanban_cards | Policy: kanban_cards_insert
+Table: kanban_cards | Policy: kanban_cards_select
+Table: kanban_cards | Policy: kanban_cards_select
+Table: kanban_cards | Policy: kanban_cards_update
+Table: kanban_cards | Policy: kanban_cards_update
+Table: kanban_checklist_items | Policy: kanban_checklist_items_delete
+Table: kanban_checklist_items | Policy: kanban_checklist_items_delete
+Table: kanban_checklist_items | Policy: kanban_checklist_items_insert
+Table: kanban_checklist_items | Policy: kanban_checklist_items_insert
+Table: kanban_checklist_items | Policy: kanban_checklist_items_select
+Table: kanban_checklist_items | Policy: kanban_checklist_items_select
+Table: kanban_checklist_items | Policy: kanban_checklist_items_update
+Table: kanban_checklist_items | Policy: kanban_checklist_items_update
+Table: kanban_checklist_items | Policy: kanban_checklist_items_via_checklist
+Table: kanban_checklist_items | Policy: kanban_checklist_items_via_checklist
+Table: kanban_checklists | Policy: kanban_checklists_delete
+Table: kanban_checklists | Policy: kanban_checklists_delete
+Table: kanban_checklists | Policy: kanban_checklists_insert
+Table: kanban_checklists | Policy: kanban_checklists_insert
+Table: kanban_checklists | Policy: kanban_checklists_org
+Table: kanban_checklists | Policy: kanban_checklists_org
+Table: kanban_checklists | Policy: kanban_checklists_select
+Table: kanban_checklists | Policy: kanban_checklists_select
+Table: kanban_checklists | Policy: kanban_checklists_update
+Table: kanban_checklists | Policy: kanban_checklists_update
+Table: kanban_columns | Policy: Users can create columns via board org
+Table: kanban_columns | Policy: Users can create columns via board org
+Table: kanban_columns | Policy: Users can create kanban columns in own org
+Table: kanban_columns | Policy: Users can create kanban columns in own org
+Table: kanban_columns | Policy: Users can delete columns via board org
+Table: kanban_columns | Policy: Users can delete columns via board org
+Table: kanban_columns | Policy: Users can delete kanban columns in own org
+Table: kanban_columns | Policy: Users can delete kanban columns in own org
+Table: kanban_columns | Policy: Users can update columns via board org
+Table: kanban_columns | Policy: Users can update columns via board org
+Table: kanban_columns | Policy: Users can update kanban columns in own org
+Table: kanban_columns | Policy: Users can update kanban columns in own org
+Table: kanban_columns | Policy: Users can view columns via board org
+Table: kanban_columns | Policy: Users can view columns via board org
+Table: kanban_columns | Policy: Users can view kanban columns in own org
+Table: kanban_columns | Policy: Users can view kanban columns in own org
+Table: kanban_columns | Policy: kanban_columns_delete
+Table: kanban_columns | Policy: kanban_columns_delete
+Table: kanban_columns | Policy: kanban_columns_insert
+Table: kanban_columns | Policy: kanban_columns_insert
+Table: kanban_columns | Policy: kanban_columns_select
+Table: kanban_columns | Policy: kanban_columns_select
+Table: kanban_columns | Policy: kanban_columns_update
+Table: kanban_columns | Policy: kanban_columns_update
+Table: kanban_notes | Policy: kanban_notes_delete
+Table: kanban_notes | Policy: kanban_notes_delete
+Table: kanban_notes | Policy: kanban_notes_insert
+Table: kanban_notes | Policy: kanban_notes_insert
+Table: kanban_notes | Policy: kanban_notes_org
+Table: kanban_notes | Policy: kanban_notes_org
+Table: kanban_notes | Policy: kanban_notes_select
+Table: kanban_notes | Policy: kanban_notes_select
+Table: kanban_notes | Policy: kanban_notes_update
+Table: kanban_notes | Policy: kanban_notes_update
+Table: kanban_tags | Policy: kanban_tags_delete
+Table: kanban_tags | Policy: kanban_tags_delete
+Table: kanban_tags | Policy: kanban_tags_insert
+Table: kanban_tags | Policy: kanban_tags_insert
+Table: kanban_tags | Policy: kanban_tags_org
+Table: kanban_tags | Policy: kanban_tags_org
+Table: kanban_tags | Policy: kanban_tags_select
+Table: kanban_tags | Policy: kanban_tags_select
+Table: kanban_tags | Policy: kanban_tags_update
+Table: kanban_tags | Policy: kanban_tags_update
+Table: media_assets | Policy: org members delete media assets
+Table: media_assets | Policy: org members delete media assets
+Table: media_assets | Policy: org members insert media assets
+Table: media_assets | Policy: org members insert media assets
+Table: media_assets | Policy: org members update media assets
+Table: media_assets | Policy: org members update media assets
+Table: media_assets | Policy: org members view media assets
+Table: media_assets | Policy: org members view media assets
+Table: memory_contexts | Policy: org members can manage memory_contexts
+Table: memory_contexts | Policy: org members can manage memory_contexts
+Table: news_article_versions | Policy: news_article_versions_all_policy
+Table: news_article_versions | Policy: news_article_versions_select_policy
+Table: notifications | Policy: Service role can insert notifications
+Table: notifications | Policy: Users can delete own notifications
+Table: notifications | Policy: Users can update own notifications
+Table: notifications | Policy: Users can update own notifications
+Table: notifications | Policy: Users can view own notifications
+Table: notifications | Policy: Users can view own notifications
+Table: operator_snapshots | Policy: org members can manage operator_snapshots
+Table: operator_snapshots | Policy: org members can manage operator_snapshots
+Table: organizations | Policy: Authenticated users can create orgs
+Table: organizations | Policy: Org admins can update own org
+Table: organizations | Policy: Org admins can update own org
+Table: organizations | Policy: Org admins can update own org
+Table: organizations | Policy: Users can view own org
+Table: organizations | Policy: Users can view own org
+Table: organizations | Policy: Users can view own org
+Table: organizations | Policy: Users can view own org
+Table: organizations | Policy: Users without org can create one
+Table: organizations | Policy: Users without org can create one
+Table: organizations | Policy: Users without org can create one
+Table: organizations | Policy: orgs_admin_update
+Table: organizations | Policy: orgs_admin_update
+Table: organizations | Policy: orgs_admin_update
+Table: organizations | Policy: orgs_insert
+Table: organizations | Policy: orgs_insert
+Table: organizations | Policy: orgs_insert
+Table: organizations | Policy: orgs_member_select
+Table: organizations | Policy: orgs_member_select
+Table: organizations | Policy: orgs_select
+Table: organizations | Policy: orgs_select
+Table: organizations | Policy: orgs_select
+Table: organizations | Policy: orgs_super_delete
+Table: organizations | Policy: orgs_update
+Table: organizations | Policy: orgs_update
+Table: organizations | Policy: orgs_update
+Table: payments | Policy: Anon can upload proof via token
+Table: payments | Policy: Org admins can manage payments
+Table: payments | Policy: Org admins can manage payments
+Table: payments | Policy: Org members can view payments
+Table: payments | Policy: Org members can view payments
+Table: payments | Policy: Users can create payments in own org
+Table: payments | Policy: Users can create payments in own org
+Table: payments | Policy: Users can delete payments in own org
+Table: payments | Policy: Users can delete payments in own org
+Table: payments | Policy: Users can update payments in own org
+Table: payments | Policy: Users can update payments in own org
+Table: payments | Policy: Users can view payments in own org
+Table: payments | Policy: Users can view payments in own org
+Table: payments | Policy: Users manage payments in own org
+Table: payments | Policy: Users manage payments in own org
+Table: payments | Policy: Users view payments in own org
+Table: payments | Policy: Users view payments in own org
+Table: policy_cache | Policy: Users can manage policy cache in own org
+Table: policy_cache | Policy: Users can manage policy cache in own org
+Table: policy_cache | Policy: policy_cache_delete
+Table: policy_cache | Policy: policy_cache_delete
+Table: policy_cache | Policy: policy_cache_insert
+Table: policy_cache | Policy: policy_cache_insert
+Table: policy_cache | Policy: policy_cache_select
+Table: policy_cache | Policy: policy_cache_select
+Table: policy_cache | Policy: policy_cache_update
+Table: policy_cache | Policy: policy_cache_update
+Table: proactive_alerts | Policy: org members can manage proactive_alerts
+Table: proactive_alerts | Policy: org members can manage proactive_alerts
+Table: profiles | Policy: Master agencies can view child agencies profiles
+Table: profiles | Policy: Users can insert own profile
+Table: profiles | Policy: Users can insert own profile
+Table: profiles | Policy: Users can update own profile
+Table: profiles | Policy: Users can update own profile
+Table: profiles | Policy: Users can view own profile
+Table: profiles | Policy: Users can view own profile
+Table: profiles | Policy: Users can view own profile
+Table: profiles | Policy: profiles_delete
+Table: profiles | Policy: profiles_delete
+Table: profiles | Policy: profiles_insert
+Table: profiles | Policy: profiles_insert
+Table: profiles | Policy: profiles_own_insert
+Table: profiles | Policy: profiles_own_select
+Table: profiles | Policy: profiles_own_select
+Table: profiles | Policy: profiles_own_update
+Table: profiles | Policy: profiles_select
+Table: profiles | Policy: profiles_select
+Table: profiles | Policy: profiles_select
+Table: profiles | Policy: profiles_select
+Table: profiles | Policy: profiles_update
+Table: profiles | Policy: profiles_update
+Table: public_sites | Policy: public_sites_all_policy
+Table: public_sites | Policy: public_sites_select_policy
+Table: quotations | Policy: Anon quotes valid token
+Table: quotations | Policy: Users can create quotations in own org
+Table: quotations | Policy: Users can create quotations in own org
+Table: quotations | Policy: Users can create quotations in own org
+Table: quotations | Policy: Users can delete quotations in own org
+Table: quotations | Policy: Users can delete quotations in own org
+Table: quotations | Policy: Users can delete quotations in own org
+Table: quotations | Policy: Users can update quotations in own org
+Table: quotations | Policy: Users can update quotations in own org
+Table: quotations | Policy: Users can update quotations in own org
+Table: quotations | Policy: Users can view quotations in own org
+Table: quotations | Policy: Users can view quotations in own org
+Table: quotations | Policy: Users can view quotations in own org
+Table: quote_experiences | Policy: Users can manage quote experiences in own org
+Table: quote_experiences | Policy: Users can manage quote experiences in own org
+Table: quote_transfers | Policy: Users can manage quote transfers in own org
+Table: quote_transfers | Policy: Users can manage quote transfers in own org
+Table: route_stops | Policy: Anon can view public route_stops
+Table: route_stops | Policy: Auth can manage route_stops
+Table: route_stops | Policy: Auth can manage route_stops
+Table: seat_blocks | Policy: seat_blocks_all
+Table: seat_blocks | Policy: seat_blocks_select
+Table: subscription_plans | Policy: Apenas masters podem editar planos
+Table: subscription_plans | Policy: Only super admins can modify subscription plans
+Table: subscription_plans | Policy: Planos sao publicos para leitura
+Table: team_members | Policy: org members manage team_members
+Table: team_members | Policy: org members manage team_members
+Table: ticket_attachments | Policy: ticket_attachments_delete
+Table: ticket_attachments | Policy: ticket_attachments_delete
+Table: ticket_attachments | Policy: ticket_attachments_insert
+Table: ticket_attachments | Policy: ticket_attachments_insert
+Table: ticket_attachments | Policy: ticket_attachments_select
+Table: ticket_attachments | Policy: ticket_attachments_select
+Table: ticket_events | Policy: ticket_events_insert
+Table: ticket_events | Policy: ticket_events_insert
+Table: ticket_events | Policy: ticket_events_select
+Table: ticket_events | Policy: ticket_events_select
+Table: ticket_messages | Policy: Users can create messages via ticket org
+Table: ticket_messages | Policy: Users can create messages via ticket org
+Table: ticket_messages | Policy: Users can create ticket messages via ticket org
+Table: ticket_messages | Policy: Users can create ticket messages via ticket org
+Table: ticket_messages | Policy: Users can delete messages via ticket org
+Table: ticket_messages | Policy: Users can delete messages via ticket org
+Table: ticket_messages | Policy: Users can delete ticket messages via ticket org
+Table: ticket_messages | Policy: Users can delete ticket messages via ticket org
+Table: ticket_messages | Policy: Users can update ticket messages via ticket org
+Table: ticket_messages | Policy: Users can update ticket messages via ticket org
+Table: ticket_messages | Policy: Users can view messages via ticket org
+Table: ticket_messages | Policy: Users can view messages via ticket org
+Table: ticket_messages | Policy: Users can view ticket messages via ticket org
+Table: ticket_messages | Policy: Users can view ticket messages via ticket org
+Table: tickets | Policy: Users can create tickets in own org
+Table: tickets | Policy: Users can create tickets in own org
+Table: tickets | Policy: Users can create tickets in own org
+Table: tickets | Policy: Users can delete tickets in own org
+Table: tickets | Policy: Users can delete tickets in own org
+Table: tickets | Policy: Users can delete tickets in own org
+Table: tickets | Policy: Users can update tickets in own org
+Table: tickets | Policy: Users can update tickets in own org
+Table: tickets | Policy: Users can update tickets in own org
+Table: tickets | Policy: Users can view tickets in own org
+Table: tickets | Policy: Users can view tickets in own org
+Table: tickets | Policy: Users can view tickets in own org
+Table: travel_group_members | Policy: Users can create members via group org
+Table: travel_group_members | Policy: Users can create members via group org
+Table: travel_group_members | Policy: Users can create members via group org
+Table: travel_group_members | Policy: Users can delete members via group org
+Table: travel_group_members | Policy: Users can delete members via group org
+Table: travel_group_members | Policy: Users can delete members via group org
+Table: travel_group_members | Policy: Users can view members via group org
+Table: travel_group_members | Policy: Users can view members via group org
+Table: travel_group_members | Policy: Users can view members via group org
+Table: travel_groups | Policy: Users can create groups in own org
+Table: travel_groups | Policy: Users can create groups in own org
+Table: travel_groups | Policy: Users can create groups in own org
+Table: travel_groups | Policy: Users can delete groups in own org
+Table: travel_groups | Policy: Users can delete groups in own org
+Table: travel_groups | Policy: Users can delete groups in own org
+Table: travel_groups | Policy: Users can update groups in own org
+Table: travel_groups | Policy: Users can update groups in own org
+Table: travel_groups | Policy: Users can update groups in own org
+Table: travel_groups | Policy: Users can view groups in own org
+Table: travel_groups | Policy: Users can view groups in own org
+Table: travel_groups | Policy: Users can view groups in own org
+Table: traveler_documents | Policy: Users can create docs in own org
+Table: traveler_documents | Policy: Users can create docs in own org
+Table: traveler_documents | Policy: Users can create docs in own org
+Table: traveler_documents | Policy: Users can delete docs in own org
+Table: traveler_documents | Policy: Users can delete docs in own org
+Table: traveler_documents | Policy: Users can delete docs in own org
+Table: traveler_documents | Policy: Users can update docs in own org
+Table: traveler_documents | Policy: Users can update docs in own org
+Table: traveler_documents | Policy: Users can update docs in own org
+Table: traveler_documents | Policy: Users can view docs in own org
+Table: traveler_documents | Policy: Users can view docs in own org
+Table: traveler_documents | Policy: Users can view docs in own org
+Table: traveler_info_pages | Policy: traveler_info_pages_org
+Table: traveler_info_pages | Policy: traveler_info_pages_org
+Table: traveler_info_pages | Policy: traveler_info_pages_public_read
+Table: travelers | Policy: Users can create travelers in own org
+Table: travelers | Policy: Users can create travelers in own org
+Table: travelers | Policy: Users can create travelers in own org
+Table: travelers | Policy: Users can delete travelers in own org
+Table: travelers | Policy: Users can delete travelers in own org
+Table: travelers | Policy: Users can delete travelers in own org
+Table: travelers | Policy: Users can update travelers in own org
+Table: travelers | Policy: Users can update travelers in own org
+Table: travelers | Policy: Users can update travelers in own org
+Table: travelers | Policy: Users can view travelers in own org
+Table: travelers | Policy: Users can view travelers in own org
+Table: travelers | Policy: Users can view travelers in own org
+Table: trip_documents | Policy: Clients can view visible trip documents by email
+Table: trip_documents | Policy: Users can create docs via trip org
+Table: trip_documents | Policy: Users can create docs via trip org
+Table: trip_documents | Policy: Users can create trip documents in own org
+Table: trip_documents | Policy: Users can create trip documents in own org
+Table: trip_documents | Policy: Users can delete docs via trip org
+Table: trip_documents | Policy: Users can delete docs via trip org
+Table: trip_documents | Policy: Users can delete trip documents in own org
+Table: trip_documents | Policy: Users can delete trip documents in own org
+Table: trip_documents | Policy: Users can update docs via trip org
+Table: trip_documents | Policy: Users can update docs via trip org
+Table: trip_documents | Policy: Users can update trip documents in own org
+Table: trip_documents | Policy: Users can update trip documents in own org
+Table: trip_documents | Policy: Users can view docs via trip org
+Table: trip_documents | Policy: Users can view docs via trip org
+Table: trip_documents | Policy: Users can view trip documents in own org
+Table: trip_documents | Policy: Users can view trip documents in own org
+Table: trip_flights | Policy: Clients can view own trip flights by email
+Table: trip_flights | Policy: Users can create flights via trip org
+Table: trip_flights | Policy: Users can create flights via trip org
+Table: trip_flights | Policy: Users can create trip flights in own org
+Table: trip_flights | Policy: Users can create trip flights in own org
+Table: trip_flights | Policy: Users can delete flights via trip org
+Table: trip_flights | Policy: Users can delete flights via trip org
+Table: trip_flights | Policy: Users can delete trip flights in own org
+Table: trip_flights | Policy: Users can delete trip flights in own org
+Table: trip_flights | Policy: Users can update flights via trip org
+Table: trip_flights | Policy: Users can update flights via trip org
+Table: trip_flights | Policy: Users can update trip flights in own org
+Table: trip_flights | Policy: Users can update trip flights in own org
+Table: trip_flights | Policy: Users can view flights via trip org
+Table: trip_flights | Policy: Users can view flights via trip org
+Table: trip_flights | Policy: Users can view trip flights in own org
+Table: trip_flights | Policy: Users can view trip flights in own org
+Table: trip_travelers | Policy: Clients can view own trip travelers by email
+Table: trip_travelers | Policy: Users can create trip travelers in own org
+Table: trip_travelers | Policy: Users can create trip travelers in own org
+Table: trip_travelers | Policy: Users can create trip travelers via trip org
+Table: trip_travelers | Policy: Users can create trip travelers via trip org
+Table: trip_travelers | Policy: Users can delete trip travelers in own org
+Table: trip_travelers | Policy: Users can delete trip travelers in own org
+Table: trip_travelers | Policy: Users can delete trip travelers via trip org
+Table: trip_travelers | Policy: Users can delete trip travelers via trip org
+Table: trip_travelers | Policy: Users can update trip travelers in own org
+Table: trip_travelers | Policy: Users can update trip travelers in own org
+Table: trip_travelers | Policy: Users can update trip travelers via trip org
+Table: trip_travelers | Policy: Users can update trip travelers via trip org
+Table: trip_travelers | Policy: Users can view trip travelers in own org
+Table: trip_travelers | Policy: Users can view trip travelers in own org
+Table: trip_travelers | Policy: Users can view trip travelers via trip org
+Table: trip_travelers | Policy: Users can view trip travelers via trip org
+Table: trips | Policy: Clients can view own trips by email
+Table: trips | Policy: Users can create trips in own org
+Table: trips | Policy: Users can create trips in own org
+Table: trips | Policy: Users can create trips in own org
+Table: trips | Policy: Users can delete trips in own org
+Table: trips | Policy: Users can delete trips in own org
+Table: trips | Policy: Users can delete trips in own org
+Table: trips | Policy: Users can update trips in own org
+Table: trips | Policy: Users can update trips in own org
+Table: trips | Policy: Users can update trips in own org
+Table: trips | Policy: Users can view trips in own org
+Table: trips | Policy: Users can view trips in own org
+Table: trips | Policy: Users can view trips in own org
+Table: user_roles | Policy: Users can view own roles
+Table: user_roles | Policy: Users can view own roles
+Table: user_roles | Policy: user_roles_delete
+Table: user_roles | Policy: user_roles_delete
+Table: user_roles | Policy: user_roles_insert
+Table: user_roles | Policy: user_roles_insert
+Table: user_roles | Policy: user_roles_own_insert
+Table: user_roles | Policy: user_roles_own_select
+Table: user_roles | Policy: user_roles_select
+Table: user_roles | Policy: user_roles_select
+Table: vouchers | Policy: vouchers_org_select
+Table: vouchers | Policy: vouchers_org_write
+Table: wa_conversation_logs | Policy: org members can manage wa_conversation_logs
+Table: wa_conversation_logs | Policy: org members can manage wa_conversation_logs
+Table: wa_session_metrics | Policy: org members can manage wa_session_metrics
+Table: wa_session_metrics | Policy: org members can manage wa_session_metrics
+
+=== TRIGGERS ===
+Table: admin_pins | Trigger: handle_admin_pins_updated_at
+Table: ai_agents | Trigger: update_ai_agents_updated_at
+Table: ai_keys_pool | Trigger: set_ai_keys_pool_updated_at
+Table: ai_tasks | Trigger: update_ai_tasks_updated_at
+Table: bookings | Trigger: update_bookings_updated_at
+Table: bookings | Trigger: update_bookings_updated_at
+Table: bus_layouts | Trigger: trg_bus_layouts_updated
+Table: chat_sessions | Trigger: update_chat_sessions_updated_at
+Table: checklists | Trigger: update_checklists_updated_at
+Table: client_identities | Trigger: update_client_identities_updated_at
+Table: client_travel_credits | Trigger: update_client_travel_credits_updated_at
+Table: clients | Trigger: update_clients_updated_at
+Table: communication_rules | Trigger: update_communication_rules_updated_at
+Table: contract_templates | Trigger: update_contract_templates_updated_at
+Table: destination_guides | Trigger: set_destination_guides_updated_at
+Table: experiences | Trigger: update_experiences_updated_at
+Table: external_entities | Trigger: update_external_entities_updated_at
+Table: financial_suppliers | Trigger: update_financial_suppliers_updated_at
+Table: financial_transactions | Trigger: update_financial_transactions_updated_at
+Table: group_bookings | Trigger: trg_group_bookings_updated
+Table: group_clients | Trigger: trg_group_clients_updated_at
+Table: group_installments | Trigger: trg_group_installments_updated_at
+Table: group_installments | Trigger: trg_update_group_client_status_del
+Table: group_pricing | Trigger: trg_group_pricing_updated_at
+Table: group_trips | Trigger: trg_group_trips_updated
+Table: hotels_bank | Trigger: update_hotels_bank_updated_at
+Table: hotels_bank | Trigger: update_hotels_bank_updated_at
+Table: itineraries | Trigger: update_itineraries_updated_at
+Table: kanban_boards | Trigger: update_kanban_boards_updated_at
+Table: kanban_boards | Trigger: update_kanban_boards_updated_at
+Table: kanban_cards | Trigger: update_kanban_cards_updated_at
+Table: kanban_cards | Trigger: update_kanban_cards_updated_at
+Table: kanban_columns | Trigger: update_kanban_columns_updated_at
+Table: kanban_notes | Trigger: set_kanban_notes_updated_at
+Table: media_assets | Trigger: update_media_assets_updated_at
+Table: memory_contexts | Trigger: update_memory_contexts_updated_at
+Table: operator_snapshots | Trigger: update_operator_snapshots_updated_at
+Table: organizations | Trigger: trg_seed_kanban_for_new_org
+Table: organizations | Trigger: update_organizations_updated_at
+Table: organizations | Trigger: update_organizations_updated_at
+Table: payments | Trigger: update_payments_updated_at
+Table: payments | Trigger: update_payments_updated_at
+Table: portal_ai_photos | Trigger: update_portal_ai_photos_updated_at
+Table: proactive_alerts | Trigger: update_proactive_alerts_updated_at
+Table: profiles | Trigger: trg_notify_onboarding_completed
+Table: profiles | Trigger: trg_promote_first_user
+Table: profiles | Trigger: update_profiles_updated_at
+Table: profiles | Trigger: update_profiles_updated_at
+Table: quotations | Trigger: trg_generate_quotation_code
+Table: quotations | Trigger: trg_generate_quotation_code
+Table: quotations | Trigger: trg_notify_quotation_viewed
+Table: quotations | Trigger: update_quotations_updated_at
+Table: seat_blocks | Trigger: trg_seat_blocks_updated_at
+Table: team_members | Trigger: update_team_members_updated_at
+Table: ticket_messages | Trigger: tr_update_ticket_interaction
+Table: ticket_messages | Trigger: trg_ticket_message_interaction
+Table: tickets | Trigger: trg_generate_ticket_code
+Table: tickets | Trigger: trg_ticket_status_event
+Table: tickets | Trigger: update_tickets_updated_at
+Table: tickets | Trigger: update_tickets_updated_at
+Table: travel_groups | Trigger: update_travel_groups_updated_at
+Table: traveler_documents | Trigger: update_traveler_documents_updated_at
+Table: traveler_info_pages | Trigger: set_traveler_info_pages_updated_at
+Table: travelers | Trigger: trg_notify_traveler_form_completed
+Table: travelers | Trigger: update_travelers_updated_at
+Table: trip_flights | Trigger: update_trip_flights_updated_at
+Table: trips | Trigger: update_trips_updated_at
+Table: trips | Trigger: update_trips_updated_at
+Table: wa_session_metrics | Trigger: update_wa_session_metrics_updated_at

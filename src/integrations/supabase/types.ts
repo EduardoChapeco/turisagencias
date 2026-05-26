@@ -65,6 +65,7 @@ export type Database = {
           current_version_id: string | null
           created_at: string
           updated_at: string
+          view_count: number
         }
         Insert: {
           id?: string
@@ -75,6 +76,7 @@ export type Database = {
           current_version_id?: string | null
           created_at?: string
           updated_at?: string
+          view_count?: number
         }
         Update: {
           id?: string
@@ -85,6 +87,7 @@ export type Database = {
           current_version_id?: string | null
           created_at?: string
           updated_at?: string
+          view_count?: number
         }
         Relationships: [
           {

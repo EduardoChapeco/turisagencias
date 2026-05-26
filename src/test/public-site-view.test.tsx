@@ -6,10 +6,12 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import PublicSiteView from '@/pages/PublicSiteView';
 
 const mockFrom = vi.fn();
+const mockRpc = vi.fn().mockResolvedValue({ data: null, error: null });
 
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: {
     from: (table: string) => mockFrom(table),
+    rpc: (name: string, args: any) => mockRpc(name, args),
   },
 }));
 
@@ -39,6 +41,7 @@ describe('PublicSiteView - Dynamic Renderer OM-001', () => {
     mockFrom.mockReturnValue({
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
+      order: vi.fn().mockReturnThis(),
       maybeSingle: () => new Promise(() => {}), // Never resolves to keep loading state active
     });
 
@@ -51,6 +54,7 @@ describe('PublicSiteView - Dynamic Renderer OM-001', () => {
     mockFrom.mockReturnValue({
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
+      order: vi.fn().mockReturnThis(),
       maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
     });
 
@@ -75,6 +79,7 @@ describe('PublicSiteView - Dynamic Renderer OM-001', () => {
         return {
           select: vi.fn().mockReturnThis(),
           eq: vi.fn().mockReturnThis(),
+          order: vi.fn().mockReturnThis(),
           maybeSingle: vi.fn().mockResolvedValue({ data: mockOrg, error: null }),
         };
       }
@@ -82,6 +87,7 @@ describe('PublicSiteView - Dynamic Renderer OM-001', () => {
       return {
         select: vi.fn().mockReturnThis(),
         eq: vi.fn().mockReturnThis(),
+        order: vi.fn().mockReturnThis(),
         maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
       };
     });
@@ -141,6 +147,7 @@ describe('PublicSiteView - Dynamic Renderer OM-001', () => {
         return {
           select: vi.fn().mockReturnThis(),
           eq: vi.fn().mockReturnThis(),
+          order: vi.fn().mockReturnThis(),
           maybeSingle: vi.fn().mockResolvedValue({ data: mockOrg, error: null }),
         };
       }
@@ -148,6 +155,7 @@ describe('PublicSiteView - Dynamic Renderer OM-001', () => {
         return {
           select: vi.fn().mockReturnThis(),
           eq: vi.fn().mockReturnThis(),
+          order: vi.fn().mockReturnThis(),
           maybeSingle: vi.fn().mockResolvedValue({ data: mockProject, error: null }),
         };
       }
@@ -155,12 +163,14 @@ describe('PublicSiteView - Dynamic Renderer OM-001', () => {
         return {
           select: vi.fn().mockReturnThis(),
           eq: vi.fn().mockReturnThis(),
+          order: vi.fn().mockReturnThis(),
           maybeSingle: vi.fn().mockResolvedValue({ data: mockVersion, error: null }),
         };
       }
       return {
         select: vi.fn().mockReturnThis(),
         eq: vi.fn().mockReturnThis(),
+        order: vi.fn().mockReturnThis(),
         maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
       };
     });
@@ -209,6 +219,7 @@ describe('PublicSiteView - Dynamic Renderer OM-001', () => {
         return {
           select: vi.fn().mockReturnThis(),
           eq: vi.fn().mockReturnThis(),
+          order: vi.fn().mockReturnThis(),
           maybeSingle: vi.fn().mockResolvedValue({ data: mockOrg, error: null }),
         };
       }
@@ -216,6 +227,7 @@ describe('PublicSiteView - Dynamic Renderer OM-001', () => {
         return {
           select: vi.fn().mockReturnThis(),
           eq: vi.fn().mockReturnThis(),
+          order: vi.fn().mockReturnThis(),
           maybeSingle: vi.fn().mockResolvedValue({ data: mockProject, error: null }),
         };
       }
@@ -223,12 +235,14 @@ describe('PublicSiteView - Dynamic Renderer OM-001', () => {
         return {
           select: vi.fn().mockReturnThis(),
           eq: vi.fn().mockReturnThis(),
+          order: vi.fn().mockReturnThis(),
           maybeSingle: vi.fn().mockResolvedValue({ data: mockVersion, error: null }),
         };
       }
       return {
         select: vi.fn().mockReturnThis(),
         eq: vi.fn().mockReturnThis(),
+        order: vi.fn().mockReturnThis(),
         maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
       };
     });
@@ -278,6 +292,7 @@ describe('PublicSiteView - Dynamic Renderer OM-001', () => {
         return {
           select: vi.fn().mockReturnThis(),
           eq: vi.fn().mockReturnThis(),
+          order: vi.fn().mockReturnThis(),
           maybeSingle: vi.fn().mockResolvedValue({ data: mockOrg, error: null }),
         };
       }
@@ -285,6 +300,7 @@ describe('PublicSiteView - Dynamic Renderer OM-001', () => {
         return {
           select: vi.fn().mockReturnThis(),
           eq: vi.fn().mockReturnThis(),
+          order: vi.fn().mockReturnThis(),
           maybeSingle: vi.fn().mockResolvedValue({ data: mockProject, error: null }),
         };
       }
@@ -292,12 +308,14 @@ describe('PublicSiteView - Dynamic Renderer OM-001', () => {
         return {
           select: vi.fn().mockReturnThis(),
           eq: vi.fn().mockReturnThis(),
+          order: vi.fn().mockReturnThis(),
           maybeSingle: vi.fn().mockResolvedValue({ data: mockVersion, error: null }),
         };
       }
       return {
         select: vi.fn().mockReturnThis(),
         eq: vi.fn().mockReturnThis(),
+        order: vi.fn().mockReturnThis(),
         maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
       };
     });

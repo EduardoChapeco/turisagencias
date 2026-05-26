@@ -16,9 +16,12 @@ interface VisualBuilderProps {
   initialProjectType?: 'website' | 'linkbio' | 'blog';
 }
 
+import { useGroupTrips } from '@/hooks/useGroupTrips';
+import { Compass, Calendar, MapPin, Sparkles } from 'lucide-react';
+
 interface BuilderBlock {
   id: string;
-  kind: 'hero' | 'features' | 'contact' | 'text' | 'testimonials' | 'faq' | 'pricing' | 'gallery';
+  kind: 'hero' | 'features' | 'contact' | 'text' | 'testimonials' | 'faq' | 'pricing' | 'gallery' | 'packages';
   title?: string;
   subtitle?: string;
   items?: string[];
@@ -34,6 +37,7 @@ interface BuilderBlock {
 export default function VisualBuilder({ onBack, projectName = 'Website Principal', initialProjectType }: VisualBuilderProps) {
   const { organization, user } = useAuthStore();
   const { toast } = useToast();
+  const { data: realTrips } = useGroupTrips();
   const [viewport, setViewport] = useState<ViewportMode>('desktop');
   const [isPreview, setIsPreview] = useState(false);
   const [activeTab, setActiveTab] = useState<'blocks' | 'settings' | 'edit'>('blocks');
@@ -57,6 +61,8 @@ export default function VisualBuilder({ onBack, projectName = 'Website Principal
   const [slug, setSlug] = useState('home');
   const [metaTitle, setMetaTitle] = useState('Minha Agência - Home');
   const [metaDescription, setMetaDescription] = useState('Roteiros personalizados e exclusivos.');
+  const [generatingSeo, setGeneratingSeo] = useState(false);
+  const [viewCount, setViewCount] = useState(0);
 
   // Blocks source of truth
   const [blocks, setBlocks] = useState<BuilderBlock[]>([]);
@@ -88,6 +94,7 @@ export default function VisualBuilder({ onBack, projectName = 'Website Principal
 
         if (projectData) {
           setProjectId(projectData.id);
+          setViewCount(projectData.view_count || 0);
           
           // 2. Fetch latest version snapshot
           const { data: versionData, error: versionError } = await supabase
@@ -280,6 +287,66 @@ export default function VisualBuilder({ onBack, projectName = 'Website Principal
     });
   };
 
+  const handleSuggestSEO = async () => {
+    if (!organization) return;
+    setGeneratingSeo(true);
+    try {
+      const name = organization.name || 'Minha Agência';
+      const slogan = (organization.brand_kit as any)?.slogan || '';
+      const focus = (organization.brand_kit as any)?.focus || 'Viagens boutique e personalizadas';
+      const bio = (organization.brand_kit as any)?.bioCurta || '';
+
+      let suggestedTitle = '';
+      let suggestedDesc = '';
+
+      if (projectType === 'website') {
+        suggestedTitle = `${name} | ${slogan || 'Roteiros de Viagem Personalizados'}`;
+        suggestedDesc = `Descubra os melhores destinos com a ${name}. ${bio || slogan || 'Oferecemos curadoria exclusiva, consultoria especializada e suporte completo para a viagem dos seus sonhos.'} Especialistas em viagens de ${focus}.`;
+      } else if (projectType === 'linkbio') {
+        suggestedTitle = `${name} | Links e Contato Oficial`;
+        suggestedDesc = `Fale com a equipe da ${name} no WhatsApp, explore nosso site oficial, redes sociais e planeje sua próxima viagem de ${focus} conosco.`;
+      } else {
+        suggestedTitle = `Blog de Viagens | ${name}`;
+        suggestedDesc = `Dicas de turismo, roteiros de luxo e guias de viagem exclusivos por ${name}. Encontre inspiração para sua próxima aventura de ${focus}.`;
+      }
+
+      // Try invoking Edge Function for AI refinement if configured
+      try {
+        const { data, error } = await supabase.functions.invoke('suggest-seo', {
+          body: {
+            name,
+            slogan,
+            focus,
+            bio,
+            projectType,
+            currentTitle: metaTitle,
+            currentDesc: metaDescription
+          }
+        });
+        if (data && data.title && data.description) {
+          suggestedTitle = data.title;
+          suggestedDesc = data.description;
+        }
+      } catch (aiErr) {
+        logger.warn('AI SEO generation bypassed or unavailable, using fallback parser:', aiErr);
+      }
+
+      setMetaTitle(suggestedTitle.slice(0, 60));
+      setMetaDescription(suggestedDesc.slice(0, 160));
+      setIsDirty(true);
+      
+      toast({
+        title: "SEO Otimizado",
+        description: "Metatags geradas com sucesso baseadas na identidade da sua agência!",
+        variant: "default",
+      });
+    } catch (err) {
+      logger.error('Error suggesting SEO tags:', err);
+    } finally {
+      setGeneratingSeo(false);
+    }
+  };
+
   // Publish / Save Mutation
   const handlePublish = async () => {
     if (!organization?.id || !user?.id) return;
@@ -364,7 +431,7 @@ export default function VisualBuilder({ onBack, projectName = 'Website Principal
     setIsDirty(true);
   };
 
-  const handleAddBlock = (kind: 'hero' | 'features' | 'contact' | 'text' | 'testimonials' | 'faq' | 'pricing' | 'gallery') => {
+  const handleAddBlock = (kind: 'hero' | 'features' | 'contact' | 'text' | 'testimonials' | 'faq' | 'pricing' | 'gallery' | 'packages') => {
     const id = `${kind}-${Date.now()}`;
     let newBlock: BuilderBlock = { id, kind };
     if (kind === 'hero') {
@@ -412,6 +479,11 @@ export default function VisualBuilder({ onBack, projectName = 'Website Principal
           'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800&auto=format&fit=crop&q=60'
         ]
       };
+    } else if (kind === 'packages') {
+      newBlock = {
+        id,
+        kind
+      };
     }
 
     setBlocks(prev => [...prev, newBlock]);
@@ -451,7 +523,7 @@ export default function VisualBuilder({ onBack, projectName = 'Website Principal
                 <option value="blog">✍️ Blog / CMS</option>
               </select>
             </div>
-            <p className="text-[10px] text-zinc-500">Versão v1.0.{versionNumber} (Snapshot JSON)</p>
+            <p className="text-[10px] text-zinc-500">Versão v1.0.{versionNumber} (Snapshot JSON) • {viewCount} visualizações</p>
           </div>
         </div>
 
@@ -570,7 +642,8 @@ export default function VisualBuilder({ onBack, projectName = 'Website Principal
                       { label: 'Depoimentos', kind: 'testimonials' },
                       { label: 'Perguntas Freq.', kind: 'faq' },
                       { label: 'Catálogo/Preços', kind: 'pricing' },
-                      { label: 'Galeria Fotos', kind: 'gallery' }
+                      { label: 'Galeria Fotos', kind: 'gallery' },
+                      { label: 'Pacotes Reais', kind: 'packages' }
                     ].map((btn) => (
                       <button
                         key={btn.label}
@@ -858,6 +931,20 @@ export default function VisualBuilder({ onBack, projectName = 'Website Principal
                         className="w-full mt-1 bg-zinc-950 border border-zinc-800 text-xs rounded-lg p-2 h-20 focus:border-vj-green text-white" 
                       />
                     </div>
+                    <Button 
+                      type="button"
+                      variant="outline" 
+                      onClick={handleSuggestSEO}
+                      disabled={generatingSeo}
+                      className="w-full text-xs font-semibold h-9 rounded-xl border-zinc-850 hover:bg-zinc-900 gap-1.5 flex items-center justify-center text-vj-green"
+                    >
+                      {generatingSeo ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin text-vj-green" />
+                      ) : (
+                        <Sparkles className="w-3.5 h-3.5 text-vj-green animate-pulse" />
+                      )}
+                      Sugerir SEO via IA
+                    </Button>
                   </div>
                 </div>
               )}
@@ -1037,6 +1124,46 @@ export default function VisualBuilder({ onBack, projectName = 'Website Principal
                             <img src={img} alt="Galeria" className="w-full h-full object-cover" />
                           </div>
                         ))}
+                      </div>
+                    )}
+
+                    {block.kind === 'packages' && (
+                      <div className="space-y-4 text-left">
+                        <div className="flex justify-between items-center border-b border-zinc-800 pb-2">
+                          <h4 className="text-xs font-bold text-vj-green uppercase tracking-wide flex items-center gap-1.5">
+                            <Compass size={14} /> Pacotes de Viagem Disponíveis
+                          </h4>
+                          <span className="text-[9px] text-zinc-500 font-mono bg-zinc-900 border border-zinc-800 px-2 py-0.5 rounded">
+                            Banco de Dados Ativo
+                          </span>
+                        </div>
+                        {realTrips && realTrips.length > 0 ? (
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {realTrips.slice(0, 4).map((trip) => (
+                              <div key={trip.id} className="p-4 bg-zinc-950/40 border border-zinc-850 rounded-xl flex flex-col justify-between hover:border-vj-green/40 transition-colors">
+                                <div>
+                                  <div className="flex justify-between items-start gap-2 mb-1">
+                                    <h5 className="text-xs font-bold text-white leading-tight line-clamp-1">{trip.title}</h5>
+                                    {trip.is_public && (
+                                      <span className="text-[8px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-1.5 py-0.5 rounded font-mono">Público</span>
+                                    )}
+                                  </div>
+                                  <p className="text-[10px] text-zinc-500 flex items-center gap-1"><MapPin size={10} /> {trip.destination || 'A definir'}</p>
+                                </div>
+                                <div className="pt-2 border-t border-zinc-800 flex justify-between items-baseline mt-4">
+                                  <span className="text-[9px] text-zinc-500 flex items-center gap-1"><Calendar size={10} /> {trip.departure_date ? new Date(trip.departure_date).toLocaleDateString('pt-BR') : 'A definir'}</span>
+                                  <span className="text-xs font-black text-vj-green">
+                                    {trip.currency} {trip.price_per_pax.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                  </span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="p-6 bg-zinc-950/30 border border-dashed border-zinc-800 rounded-xl text-center text-xs text-zinc-500 italic">
+                            Nenhum pacote de viagem cadastrado no CRM. Cadastre em "Viagens em Grupo" para exibir aqui.
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>

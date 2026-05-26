@@ -2,12 +2,12 @@ import { useState, useEffect } from 'react';
 import { useParams, Link, useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { Loader2, Mail, Phone, MapPin, Globe, Compass, ArrowRight, ShieldCheck, Camera, Share2 } from 'lucide-react';
+import { Loader2, Mail, Phone, MapPin, Globe, Compass, ArrowRight, ShieldCheck, Camera, Share2, Calendar } from 'lucide-react';
 import { logger } from '@/utils/logger';
 
 interface BuilderBlock {
   id: string;
-  kind: 'hero' | 'features' | 'contact' | 'text' | 'testimonials' | 'faq' | 'pricing' | 'gallery';
+  kind: 'hero' | 'features' | 'contact' | 'text' | 'testimonials' | 'faq' | 'pricing' | 'gallery' | 'packages';
   title?: string;
   subtitle?: string;
   items?: string[];
@@ -28,6 +28,7 @@ export default function PublicSiteView() {
   const [designTokens, setDesignTokens] = useState<any>({});
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [trips, setTrips] = useState<any[]>([]);
 
   // Detect project type based on sub-route
   const projectType = location.pathname.endsWith('/bio') 
@@ -115,6 +116,21 @@ export default function PublicSiteView() {
 
         setOrganization(orgData);
 
+        // Fetch public group trips for this organization
+        const { data: tripsData, error: tripsError } = await supabase
+          .from('group_trips')
+          .select('*')
+          .eq('org_id', orgData.id)
+          .eq('is_public', true)
+          .eq('status', 'published')
+          .order('departure_date', { ascending: true });
+
+        if (tripsError) {
+          logger.error('Error fetching public group trips:', tripsError);
+        } else {
+          setTrips(tripsData || []);
+        }
+
         // 2. Fetch project matching type
         const { data: projectData, error: projectError } = await supabase
           .from('builder_projects')
@@ -124,6 +140,14 @@ export default function PublicSiteView() {
           .maybeSingle();
 
         if (projectError) throw projectError;
+
+        if (projectData) {
+          supabase.rpc('increment_project_view', { p_project_id: projectData.id }).then(() => {
+            logger.info(`[ANALYTICS] Project view incremented: ${projectData.id}`);
+          }).catch(err => {
+            logger.error('Error incrementing project view:', err);
+          });
+        }
 
         if (projectData && projectData.current_version_id) {
           // 3. Fetch version snapshot
@@ -356,7 +380,7 @@ export default function PublicSiteView() {
         
         {blocks.map((block) => {
           // Fallback defensivo para blocos desconhecidos ou inválidos
-          if (!block || !['hero', 'features', 'contact', 'text', 'testimonials', 'faq', 'pricing', 'gallery'].includes(block.kind)) {
+          if (!block || !['hero', 'features', 'contact', 'text', 'testimonials', 'faq', 'pricing', 'gallery', 'packages'].includes(block.kind)) {
             logger.warn(`PublicSiteView: Bloco desconhecido ou nulo ignorado no renderizador público: ${block?.kind || 'undefined'}`);
             return null;
           }
@@ -495,6 +519,57 @@ export default function PublicSiteView() {
                       />
                     </div>
                   ))}
+                </div>
+              )}
+
+              {block.kind === 'packages' && (
+                <div className="space-y-6 text-left">
+                  <div className="flex justify-between items-center border-b border-zinc-900 pb-2">
+                    <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                      <Compass size={18} style={{ color: primaryColor }} /> Nossos Pacotes de Viagem
+                    </h3>
+                  </div>
+                  {trips && trips.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {trips.map((trip) => (
+                        <Link 
+                          key={trip.id} 
+                          to={`/g/${trip.slug || trip.id}`}
+                          className="p-5 bg-zinc-900/40 border border-zinc-800 rounded-2xl flex flex-col justify-between hover:border-zinc-700 transition-all group duration-300"
+                        >
+                          <div>
+                            {trip.cover_image_url && (
+                              <div className="aspect-video rounded-xl overflow-hidden mb-4 bg-zinc-950 border border-zinc-800/80">
+                                <img 
+                                  src={trip.cover_image_url} 
+                                  alt={trip.title} 
+                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                                />
+                              </div>
+                            )}
+                            <div className="space-y-1">
+                              <h4 className="text-base font-bold text-white leading-snug line-clamp-2 group-hover:text-vj-green transition-colors">{trip.title}</h4>
+                              <p className="text-xs text-zinc-500 flex items-center gap-1">
+                                <MapPin size={12} /> {trip.destination || 'A definir'}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="pt-4 border-t border-zinc-850 flex justify-between items-baseline mt-4">
+                            <span className="text-xs text-zinc-500 flex items-center gap-1">
+                              <Calendar size={12} /> {trip.departure_date ? new Date(trip.departure_date).toLocaleDateString('pt-BR') : 'A definir'}
+                            </span>
+                            <span className="text-base font-black text-vj-green">
+                              {trip.currency || 'R$'} {(trip.price_per_pax || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                            </span>
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="p-8 bg-zinc-900/10 border border-dashed border-zinc-800 rounded-2xl text-center text-sm text-zinc-500 italic">
+                      Nenhum pacote de viagem ativo no momento.
+                    </div>
+                  )}
                 </div>
               )}
             </section>

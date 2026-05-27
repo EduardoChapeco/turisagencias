@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Building2, Plus, Trash2, Users, FileText, Database, Webhook, Activity, CreditCard, Columns, Brain, Lock, MapPin, Search, ChevronDown, Check, X, Plane, FileSearch, ShieldCheck, Cpu, Key, Mail, Bus, KeyRound, AlertCircle, Settings as SettingsIcon } from 'lucide-react';
+import { Building2, Plus, Trash2, Users, FileText, Database, Webhook, Activity, CreditCard, Columns, Brain, Lock, MapPin, Search, ChevronDown, Check, X, Plane, FileSearch, ShieldCheck, Cpu, Key, Mail, Bus, KeyRound, AlertCircle, Settings as SettingsIcon, FileSpreadsheet, BookOpen } from 'lucide-react';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -137,7 +137,7 @@ export default function Settings() {
                   { id: 'billing',      label: 'Assinatura',       icon: CreditCard },
                   { id: 'integrations', label: 'Portais B2B',      icon: Mail },
                   { id: 'csv-import',   label: 'Importador CSV',   icon: FileSpreadsheet },
-                  { id: 'guides',       label: 'Guias',            icon: Book },
+                  { id: 'guides',       label: 'Guias',            icon: BookOpen },
                   { id: 'hotels',       label: 'Hotéis',           icon: Building2 },
                   { id: 'destinations', label: 'Destinos',         icon: MapPin },
                   { id: 'bus',          label: 'Frotas',           icon: Bus },

@@ -57,7 +57,8 @@ export function useContractRecords() {
     queryKey: [QK, organization?.id],
     queryFn: async () => {
       if (!organization?.id) return [];
-      const { data, error } = await supabase
+      const db = supabase as any;
+      const { data, error } = await db
         .from('contracts')
         .select('*')
         .eq('org_id', organization.id)
@@ -81,7 +82,8 @@ export function useCreateContractRecord() {
       const randPart = Math.random().toString(36).substring(2, 6).toUpperCase();
       const numero = payload.numero || `CT-${datePart}-${randPart}`;
 
-      const { data, error } = await supabase
+      const db = supabase as any;
+      const { data, error } = await db
         .from('contracts')
         .insert({ ...payload, org_id: organization.id, numero, status: payload.status ?? 'emitido' })
         .select()
@@ -104,7 +106,8 @@ export function useUpdateContractRecord() {
   return useMutation({
     mutationFn: async ({ id, ...payload }: ContractRecordUpsert & { id: string }) => {
       if (!organization?.id) throw new Error('Organização não autenticada');
-      const { data: current, error: fetchErr } = await supabase
+      const db = supabase as any;
+      const { data: current, error: fetchErr } = await db
         .from('contracts')
         .select('status')
         .eq('id', id)
@@ -116,7 +119,7 @@ export function useUpdateContractRecord() {
         throw new Error('Não é permitido alterar um contrato já assinado.');
       }
 
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from('contracts')
         .update(payload)
         .eq('id', id)
@@ -141,7 +144,8 @@ export function useDeleteContractRecord() {
   return useMutation({
     mutationFn: async (id: string) => {
       if (!organization?.id) throw new Error('Organização não autenticada');
-      const { data: current, error: fetchErr } = await supabase
+      const db = supabase as any;
+      const { data: current, error: fetchErr } = await db
         .from('contracts')
         .select('status')
         .eq('id', id)
@@ -153,7 +157,7 @@ export function useDeleteContractRecord() {
         throw new Error('Não é permitido excluir um contrato já assinado.');
       }
 
-      const { error } = await supabase
+      const { error } = await db
         .from('contracts')
         .delete()
         .eq('id', id)

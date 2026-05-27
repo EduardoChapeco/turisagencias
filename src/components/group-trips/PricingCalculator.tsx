@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useSaveGroupPricing, useGroupPricing, DEFAULT_PRICING_INPUTS, GroupPricingInputs } from '@/hooks/useGroupPricing';
 import { useSeatBlocks } from '@/hooks/useSeatBlocks';
-import { Plane, Hotel, ShieldCheck, MapPin, Bus, Calculator, Save, AlertCircle, Percent } from 'lucide-react';
+import { Plane, Hotel, ShieldCheck, MapPin, Bus, Calculator, Save, AlertCircle, Percent, BarChart2 } from 'lucide-react';
 
 interface PricingCalculatorProps {
   groupTripId: string;

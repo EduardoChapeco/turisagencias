@@ -7,7 +7,12 @@ import { cn } from '@/lib/utils';
 import { BuilderNode } from './types';
 
 export function BuilderSidebar() {
-  const { activeTab, setActiveTab, selectedNodeId, nodes, addNode, updateNode } = useBuilderStore();
+  const activeTab = useBuilderStore(state => state.activeTab);
+  const setActiveTab = useBuilderStore(state => state.setActiveTab);
+  const selectedNodeId = useBuilderStore(state => state.selectedNodeId);
+  const nodes = useBuilderStore(state => state.nodes);
+  const addNode = useBuilderStore(state => state.addNode);
+  const updateNode = useBuilderStore(state => state.updateNode);
 
   const handleDragStart = (e: React.DragEvent, type: string) => {
     e.dataTransfer.setData('blockType', type);
@@ -171,7 +176,7 @@ export function BuilderSidebar() {
   };
 
   return (
-    <aside className="w-80 bg-[#0A0A0A] border-r border-zinc-800 flex flex-col h-full overflow-hidden shrink-0">
+    <aside className="w-64 md:w-72 bg-[#0A0A0A] border-r border-zinc-800 flex flex-col h-full overflow-hidden shrink-0 z-10">
       {/* Tabs */}
       <div className="flex border-b border-zinc-800 p-2 gap-1 bg-black/20">
         <Button

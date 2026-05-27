@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 export const ParagraphBlock: BlockDef = {
   type: 'paragraph',
   label: 'Paragraph',
-  category: 'content',
+  category: 'typography',
   icon: Type,
   defaultProps: {
     text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
@@ -21,20 +21,21 @@ export const ParagraphBlock: BlockDef = {
     fontSize: '16px',
     lineHeight: '1.5',
   },
-  renderComponent: ({ block, updateBlock }) => {
+  renderComponent: ({ node }) => {
     return (
-      <p style={block.styles}>
+      <p style={node.styles}>
         <EditableText
-          text={block.props.text}
-          onChange={(newText) => updateBlock(block.id, { props: { ...block.props, text: newText } })}
+          nodeId={node.id}
+          propKey="text"
+          value={node.props.text}
           placeholder="Enter paragraph text..."
         />
       </p>
     );
   },
-  settingsComponent: ({ block, updateBlock }) => {
+  settingsComponent: ({ node, onChange }) => {
     const handleStyleChange = (key: string, value: any) => {
-      updateBlock(block.id, { styles: { ...block.styles, [key]: value } });
+      onChange({ styles: { ...node.styles, [key]: value } });
     };
 
     return (
@@ -43,7 +44,7 @@ export const ParagraphBlock: BlockDef = {
           <Label>Alignment</Label>
           <select 
             className="w-full p-2 border rounded-md text-sm"
-            value={block.styles.textAlign}
+            value={node.styles.textAlign}
             onChange={(e) => handleStyleChange('textAlign', e.target.value)}
           >
             <option value="left">Left</option>
@@ -56,7 +57,7 @@ export const ParagraphBlock: BlockDef = {
           <Label>Font Size</Label>
           <Input 
             type="text"
-            value={block.styles.fontSize}
+            value={node.styles.fontSize}
             onChange={(e) => handleStyleChange('fontSize', e.target.value)}
             placeholder="e.g. 16px"
           />
@@ -65,7 +66,7 @@ export const ParagraphBlock: BlockDef = {
           <Label>Color</Label>
           <Input 
             type="color"
-            value={block.styles.color}
+            value={node.styles.color}
             onChange={(e) => handleStyleChange('color', e.target.value)}
           />
         </div>

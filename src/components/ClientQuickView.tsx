@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useSignedUrl } from '@/hooks/useSignedUrl';
+import { B2CDigitalJourney } from '@/components/crm/B2CDigitalJourney';
 
 function DocumentLink({ url }: { url: string }) {
   const { url: signedUrl, loading } = useSignedUrl(url);
@@ -59,6 +60,7 @@ export function ClientQuickView({ clientId, open, onClose, onEdit }: ClientQuick
         { id: 'perfil', label: 'Perfil' },
         { id: 'docs', label: 'Documentos' },
         { id: 'preferencias', label: 'Preferências' },
+        { id: 'jornada', label: 'Jornada Digital' },
         { id: 'portal', label: 'Portal' },
       ]}
       footer={
@@ -188,6 +190,10 @@ export function ClientQuickView({ clientId, open, onClose, onEdit }: ClientQuick
                   </div>
                 )}
               </div>
+            )}
+
+            {activeSection === 'jornada' && (
+              <B2CDigitalJourney clientId={clientId!} />
             )}
 
             {activeSection === 'portal' && (

@@ -4,6 +4,7 @@ import { BedDouble, Users } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { EditableText } from '../core/EditableText';
+import { ArrayField } from '../core/ArrayField';
 
 export const TravelRoomingPreviewBlock: BlockDef = {
   type: 'travel-rooming-preview',
@@ -76,7 +77,7 @@ export const TravelRoomingPreviewBlock: BlockDef = {
 
   settingsComponent: ({ node, onChange }) => {
     return (
-      <div className="space-y-4">
+      <div className="space-y-6">
         <div className="space-y-2">
           <Label className="text-[10px] uppercase text-zinc-500 font-bold">Título</Label>
           <Input 
@@ -85,6 +86,17 @@ export const TravelRoomingPreviewBlock: BlockDef = {
             className="bg-zinc-900 border-zinc-800 text-white text-sm h-9"
           />
         </div>
+        
+        <ArrayField
+          title="Quartos (Rooming)"
+          items={node.props.rooms || []}
+          onChange={(rooms) => onChange({ props: { ...node.props, rooms } })}
+          defaultItem={{ type: 'Duplo Standard', passengers: 'Nome dos Passageiros' }}
+          schema={[
+            { key: 'type', label: 'Tipo de Quarto (Ex: Casal, Duplo, Triplo)', type: 'text' },
+            { key: 'passengers', label: 'Passageiros Alocados', type: 'text' }
+          ]}
+        />
       </div>
     );
   }

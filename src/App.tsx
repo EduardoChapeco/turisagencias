@@ -10,6 +10,7 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { Toaster as Sonner } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { useAuthStore } from '@/stores/authStore';
+import { AdminMasterLayout } from '@/app/layouts/AdminMasterLayout';
 
 const Dashboard = lazy(() => import('./pages/Index'));
 const Login = lazy(() => import('./pages/Login'));
@@ -53,14 +54,22 @@ const PortalAiPhotos = lazy(() => import('./pages/PortalAiPhotos'));
 const Payments = lazy(() => import('./pages/finance/Payments'));
 const Suppliers = lazy(() => import('./pages/finance/Suppliers'));
 const Transactions = lazy(() => import('./pages/finance/Transactions'));
+const CommissionsPanel = lazy(() => import('./pages/finance/CommissionsPanel'));
+const MyCommissions = lazy(() => import('./pages/finance/MyCommissions'));
 const PendingCancellations = lazy(() => import('./pages/finance/PendingCancellations'));
 const ContractTemplates = lazy(() => import('./pages/legal/ContractTemplates'));
 const ContractRecords  = lazy(() => import('./pages/ContractRecords'));
+const SignatureCertificate = lazy(() => import('./pages/legal/SignatureCertificate'));
 const Vouchers         = lazy(() => import('./pages/Vouchers'));
 const Automations = lazy(() => import('./pages/automations/Automations'));
 const Team = lazy(() => import('./pages/admin/Team'));
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
 const AdminAgencyDetail = lazy(() => import('./pages/admin/AdminAgencyDetail'));
+const CommissionReports = lazy(() => import('./pages/admin/CommissionReports'));
+const SupportAdmin = lazy(() => import('./pages/admin/SupportAdmin'));
+const BlogAdmin = lazy(() => import('./pages/admin/BlogAdmin'));
+const HelpCenter = lazy(() => import('./pages/HelpCenter'));
+const BlogPublic = lazy(() => import('./pages/BlogPublic'));
 
 const RadarPortal = lazy(() => import('./pages/RadarPortal'));
 const GlobalRadarMap = lazy(() => import('./pages/GlobalRadarMap'));
@@ -162,6 +171,14 @@ function AdminRole({ children }: { children: React.ReactNode }) {
   );
 }
 
+function SuperAdminRole({ children }: { children: React.ReactNode }) {
+  return (
+    <RoleGuard allow={['super_admin']}>
+      {children}
+    </RoleGuard>
+  );
+}
+
 const App = () => (
   <ErrorBoundary>
   <QueryClientProvider client={queryClient}>
@@ -188,7 +205,10 @@ const App = () => (
               <Route path="/portal/:org_slug" element={<PortalLogin />} />
               <Route path="/portal/t/:token/checkin" element={<TravelerCheckinPortal />} />
               <Route path="/noticias/:slug" element={<PublicNewsArticle />} />
+              <Route path="/:org_slug/ajuda" element={<HelpCenter />} />
+              <Route path="/:org_slug/blog" element={<BlogPublic />} />
               <Route path="/p/:token" element={<PublicProposal />} />
+              <Route path="/certificate/:hash" element={<SignatureCertificate />} />
               <Route path="/portal/:org_slug/home" element={<ProtectedRoute><PortalHome /></ProtectedRoute>} />
               <Route path="/portal/:org_slug/trip/:id" element={<ProtectedRoute><PortalTripDetail /></ProtectedRoute>} />
               <Route path="/portal/:org_slug/trip/:trip_id/ai-photos" element={<ProtectedRoute><PortalAiPhotos /></ProtectedRoute>} />
@@ -220,6 +240,16 @@ const App = () => (
               <Route path="/ai-dashboard" element={<ProtectedWithOrg><AdminRole><AiDashboard /></AdminRole></ProtectedWithOrg>} />
               <Route path="/settings" element={<ProtectedWithOrg><TripsRole><Settings /></TripsRole></ProtectedWithOrg>} />
               <Route path="/site-builder" element={<ProtectedWithOrg><TripsRole><SiteBuilderPage /></TripsRole></ProtectedWithOrg>} />
+              <Route path="/app/group-trips" element={<ProtectedWithOrg><TripsRole><GroupTrips /></TripsRole></ProtectedWithOrg>} />
+              <Route path="/app/group-trips/:id" element={<ProtectedWithOrg><TripsRole><GroupDashboard /></TripsRole></ProtectedWithOrg>} />
+
+              {/* Finance / Commissions */}
+              <Route path="/app/finance/payments" element={<ProtectedWithOrg><AdminRole><Payments /></AdminRole></ProtectedWithOrg>} />
+              <Route path="/app/finance/suppliers" element={<ProtectedWithOrg><AdminRole><Suppliers /></AdminRole></ProtectedWithOrg>} />
+              <Route path="/app/finance/transactions" element={<ProtectedWithOrg><AdminRole><Transactions /></AdminRole></ProtectedWithOrg>} />
+              <Route path="/app/finance/commissions" element={<ProtectedWithOrg><AdminRole><CommissionsPanel /></AdminRole></ProtectedWithOrg>} />
+              <Route path="/app/my-commissions" element={<ProtectedWithOrg><TripsRole><MyCommissions /></TripsRole></ProtectedWithOrg>} />
+              <Route path="/app/finance/pending-cancellations" element={<ProtectedWithOrg><AdminRole><PendingCancellations /></AdminRole></ProtectedWithOrg>} />
               <Route path="/portal-manager" element={<ProtectedWithOrg><TripsRole><PortalManagerPage /></TripsRole></ProtectedWithOrg>} />
               <Route path="/integrations" element={<Navigate to="/settings?tab=integrations" replace />} />
               
@@ -234,8 +264,11 @@ const App = () => (
               <Route path="/vouchers"  element={<ProtectedWithOrg><TripsRole><Vouchers /></TripsRole></ProtectedWithOrg>} />
               <Route path="/automations" element={<ProtectedWithOrg><AdminRole><Automations /></AdminRole></ProtectedWithOrg>} />
               <Route path="/team" element={<Navigate to="/settings?tab=agents" replace />} />
-              <Route path="/admin/dashboard" element={<ProtectedWithOrg><AdminRole><AdminDashboard /></AdminRole></ProtectedWithOrg>} />
-              <Route path="/admin/agencies/:id" element={<ProtectedWithOrg><AdminRole><AdminAgencyDetail /></AdminRole></ProtectedWithOrg>} />
+              <Route path="/admin/dashboard" element={<AdminMasterLayout><AdminDashboard /></AdminMasterLayout>} />
+              <Route path="/admin/agencies/:id" element={<AdminMasterLayout><AdminAgencyDetail /></AdminMasterLayout>} />
+              <Route path="/admin/commissions" element={<ProtectedWithOrg><AdminRole><CommissionReports /></AdminRole></ProtectedWithOrg>} />
+              <Route path="/admin/support" element={<ProtectedWithOrg><TripsRole><SupportAdmin /></TripsRole></ProtectedWithOrg>} />
+              <Route path="/admin/blog" element={<ProtectedWithOrg><AdminRole><BlogAdmin /></AdminRole></ProtectedWithOrg>} />
 
               {/* CRM */}
               <Route path="/guides" element={<Navigate to="/settings?tab=guides" replace />} />

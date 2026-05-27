@@ -3,6 +3,7 @@ import { BlockDef } from '../core/types';
 import { HelpCircle } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import { ArrayField } from '../core/ArrayField';
 import {
   Accordion,
   AccordionContent,
@@ -62,23 +63,36 @@ export const FaqBlock: BlockDef = {
 
   settingsComponent: ({ node, onChange }) => {
     return (
-      <div className="space-y-4">
-        <div className="space-y-2">
-          <Label className="text-[10px] uppercase text-zinc-500 font-bold">Título</Label>
-          <Input 
-            value={node.props.title || ''} 
-            onChange={e => onChange({ props: { ...node.props, title: e.target.value } })}
-            className="bg-zinc-900 border-zinc-800 text-white text-sm"
-          />
+      <div className="space-y-6">
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label className="text-[10px] uppercase text-zinc-500 font-bold">Título</Label>
+            <Input 
+              value={node.props.title || ''} 
+              onChange={e => onChange({ props: { ...node.props, title: e.target.value } })}
+              className="bg-zinc-900 border-zinc-800 text-white text-sm"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label className="text-[10px] uppercase text-zinc-500 font-bold">Subtítulo</Label>
+            <Input 
+              value={node.props.subtitle || ''} 
+              onChange={e => onChange({ props: { ...node.props, subtitle: e.target.value } })}
+              className="bg-zinc-900 border-zinc-800 text-white text-sm"
+            />
+          </div>
         </div>
-        <div className="space-y-2">
-          <Label className="text-[10px] uppercase text-zinc-500 font-bold">Subtítulo</Label>
-          <Input 
-            value={node.props.subtitle || ''} 
-            onChange={e => onChange({ props: { ...node.props, subtitle: e.target.value } })}
-            className="bg-zinc-900 border-zinc-800 text-white text-sm"
-          />
-        </div>
+
+        <ArrayField
+          title="Perguntas Frequentes (FAQ)"
+          items={node.props.faqs || []}
+          onChange={(faqs) => onChange({ props: { ...node.props, faqs } })}
+          defaultItem={{ q: 'Nova Pergunta?', a: 'Resposta detalhada...' }}
+          schema={[
+            { key: 'q', label: 'Pergunta', type: 'text' },
+            { key: 'a', label: 'Resposta', type: 'textarea' }
+          ]}
+        />
       </div>
     );
   }

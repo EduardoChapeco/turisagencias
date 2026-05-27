@@ -167,7 +167,7 @@ export function ProposalAiImportSheet({ open, onClose, onSuccess }: ProposalAiIm
 
     try {
       // 1. Mapear o JSON revisado para o content_schema estruturado de blocos
-      const contentBlocks = [
+      const contentBlocks: any[] = [
         {
           id: `hero-${Date.now()}`,
           type: 'hero',

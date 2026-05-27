@@ -27,7 +27,7 @@ export function BrandSquadLive({ orgId, primaryColor, onComplete }: BrandSquadLi
         .maybeSingle();
       
       if (data?.execution_log && Array.isArray(data.execution_log)) {
-        setLogs(data.execution_log);
+        setLogs(data.execution_log as any);
       }
       if (data?.status === 'completed' || data?.status === 'failed') {
         setCompleted(true);
@@ -46,7 +46,7 @@ export function BrandSquadLive({ orgId, primaryColor, onComplete }: BrandSquadLi
       }, (payload) => {
         const row = payload.new as any;
         if (row.execution_log && Array.isArray(row.execution_log)) {
-          setLogs(row.execution_log);
+          setLogs(row.execution_log as any);
         }
         if (row.status === 'completed' || row.status === 'failed') {
           setCompleted(true);

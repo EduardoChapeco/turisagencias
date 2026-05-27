@@ -19,7 +19,7 @@ serve(async (req) => {
     )
 
     const payload = await req.json()
-    const { org_id, site_id, page_id, block_id, source, formData, utm } = payload
+    const { org_id, site_id, page_id, block_id, source, formData, utm, shadowToken } = payload
 
     if (!org_id || !formData) {
       return new Response(JSON.stringify({ error: 'Missing required fields' }), {
@@ -73,6 +73,16 @@ serve(async (req) => {
           .from('builder_form_submissions')
           .update({ lead_id })
           .eq('id', submission.id)
+          
+        // Elevate shadow profile from anonymous visitor to CRM Lead
+        if (shadowToken) {
+          // We need to use service role key since anon can't update another table easily or we just use the anon client 
+          // (Anon is allowed to update their own profile WHERE id = shadowToken based on our new policy).
+          await supabaseClient
+            .from('b2c_shadow_profiles')
+            .update({ converted_client_id: lead_id })
+            .eq('id', shadowToken)
+        }
       }
     }
 

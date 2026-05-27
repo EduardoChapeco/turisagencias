@@ -1,28 +1,61 @@
 import React from 'react';
-import { PanelRight } from 'lucide-react';
+import { LayoutPanelLeft } from 'lucide-react';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 
 export const LayoutSidebarRightBlock = {
   type: 'layout_sidebar_right',
   category: 'layout',
-  label: 'Sidebar Right',
-  icon: PanelRight,
-  renderComponent: (props: any) => {
+  label: 'Sidebar Right Layout',
+  icon: LayoutPanelLeft,
+  acceptsChildren: true,
+  defaultProps: {
+    sidebarWidth: '300px',
+    gap: '24px'
+  },
+  defaultStyles: {
+    padding: '24px 0',
+    backgroundColor: 'transparent'
+  },
+  renderComponent: ({ node, children }) => {
     return (
-      <div className="flex flex-col md:flex-row gap-4 p-4 w-full">
-        <div className="w-full md:w-3/4 border-2 border-dashed border-gray-300 p-4 min-h-[200px] flex items-center justify-center text-gray-400">
-          Main Content (3/4)
-        </div>
-        <div className="w-full md:w-1/4 border-2 border-dashed border-gray-300 p-4 min-h-[200px] flex items-center justify-center text-gray-400">
-          Sidebar (1/4)
-        </div>
+      <div 
+        style={{
+          ...node.styles,
+          display: 'grid',
+          gridTemplateColumns: `1fr ${node.props?.sidebarWidth || '300px'}`,
+          gap: node.props?.gap || '24px'
+        }}
+        className="w-full relative"
+      >
+        {children || (
+          <div className="col-span-2 p-8 border-2 border-dashed border-gray-300 text-center text-gray-400 bg-gray-50 rounded flex flex-col gap-2">
+            <LayoutPanelLeft className="mx-auto opacity-50 transform rotate-180" size={32} />
+            <span>Arraste componentes para dentro deste layout (Conteúdo Principal + Sidebar)</span>
+          </div>
+        )}
       </div>
     );
   },
-  settingsComponent: (props: any) => {
+  settingsComponent: ({ node, onChange }) => {
     return (
       <div className="p-4 space-y-4">
-        <div className="text-sm font-medium">Right Sidebar Settings</div>
-        <div className="text-sm text-gray-500">Configure sidebar width and breakpoint.</div>
+        <div className="space-y-2">
+          <Label>Largura da Sidebar</Label>
+          <Input 
+            value={node.props?.sidebarWidth || '300px'}
+            onChange={(e) => onChange({ props: { ...node.props, sidebarWidth: e.target.value } })}
+            placeholder="Ex: 300px ou 25%"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label>Espaçamento (Gap)</Label>
+          <Input 
+            value={node.props?.gap || '24px'}
+            onChange={(e) => onChange({ props: { ...node.props, gap: e.target.value } })}
+            placeholder="Ex: 24px"
+          />
+        </div>
       </div>
     );
   }

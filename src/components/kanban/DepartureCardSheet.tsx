@@ -175,7 +175,7 @@ function CheckinCartoesSection({ card }: { card: DepartureCardData }) {
   // Campos locais para PNR/LastName que deveriam vir da tabela de bilhetes
   const [locator, setLocator] = useState(meta.flight_locator ?? '');
   const [lastName, setLastName] = useState('');
-  const [airline, setAirline] = useState(meta.airline_iata ?? meta.airline_name ?? '');
+  const [airline, setAirline] = useState((meta as any).airline_iata ?? meta.airline_name ?? '');
 
   // Magic Portal Link State
   const [portalLoading, setPortalLoading] = useState(false);
@@ -190,7 +190,8 @@ function CheckinCartoesSection({ card }: { card: DepartureCardData }) {
   const fetchPasses = async () => {
     setLoadingPasses(true);
     try {
-      const { data, error } = await supabase
+      const db = supabase as any;
+      const { data, error } = await db
         .from('boarding_pass_documents')
         .select('*')
         .eq('trip_id', card.id);
@@ -225,7 +226,8 @@ function CheckinCartoesSection({ card }: { card: DepartureCardData }) {
       if (!orgId) throw new Error("ID da organização não encontrado no perfil.");
 
       // 3. Insert into boarding_pass_documents
-      const { error: dbError } = await supabase
+      const db = supabase as any;
+      const { error: dbError } = await db
         .from('boarding_pass_documents')
         .insert({
           org_id: orgId,
@@ -268,7 +270,8 @@ function CheckinCartoesSection({ card }: { card: DepartureCardData }) {
       // Delete storage file
       await supabase.storage.from(pass.storage_bucket).remove([pass.storage_path]);
       // Delete database record
-      const { error } = await supabase
+      const db = supabase as any;
+      const { error } = await db
         .from('boarding_pass_documents')
         .delete()
         .eq('id', pass.id);
@@ -282,8 +285,8 @@ function CheckinCartoesSection({ card }: { card: DepartureCardData }) {
   const saveMetaLocally = async () => {
      await updateCard.mutateAsync({
         id: card.id,
-        meta: { ...meta, flight_locator: locator, airline_iata: airline, airline_name: airline },
-        metadata: { ...meta, flight_locator: locator, airline_iata: airline, airline_name: airline },
+        meta: { ...meta, flight_locator: locator, airline_iata: airline, airline_name: airline } as any,
+        metadata: { ...meta, flight_locator: locator, airline_iata: airline, airline_name: airline } as any,
      } as any);
   };
 

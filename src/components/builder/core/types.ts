@@ -3,10 +3,10 @@ import React from 'react';
 export type ViewportMode = 'desktop' | 'tablet' | 'mobile';
 
 // The new Node Tree structure for nested blocks
-export interface BuilderNode {
+export interface BuilderNode<P = Record<string, any>> {
   id: string;
   type: string; // references BlockDef.type
-  props: Record<string, any>; // specific props like title, items, email
+  props: P; // specific props like title, items, email
   styles: Record<string, any>; // global style rules (margins, padding, colors)
   children?: BuilderNode[]; // for nested layouts (grids, containers)
 }
@@ -21,30 +21,37 @@ export interface BlockStyles {
   textColor?: string;
   textAlign?: 'left' | 'center' | 'right';
   customClasses?: string;
+  color?: string;
+  height?: string;
+  width?: string;
+  padding?: string;
 }
 
-export type BlockCategory = 'layout' | 'typography' | 'media' | 'interactive' | 'cms' | 'premium';
+export type BlockCategory = 'layout' | 'typography' | 'media' | 'interactive' | 'cms' | 'premium' | 'advanced' | 'forms' | 'travel' | 'hero';
 
 // The definition of a specific block type
-export interface BlockDef {
+export interface BlockDef<P = Record<string, any>> {
   type: string;
   label: string;
   category: BlockCategory;
   icon?: React.ElementType; // Lucide icon
   
   // Default values when the block is dropped
-  defaultProps: Record<string, any>;
-  defaultStyles: BlockStyles;
+  defaultProps?: P;
+  defaultStyles?: BlockStyles;
   
   // Renders the actual block on the canvas
-  renderComponent: React.FC<{ node: BuilderNode }>;
+  renderComponent: React.FC<{ node: BuilderNode<P>, children?: React.ReactNode }>;
   
   // Renders the specific configuration form in the sidebar
   settingsComponent: React.FC<{ 
-    node: BuilderNode; 
-    onChange: (updates: Partial<BuilderNode>) => void 
+    node: BuilderNode<P>; 
+    onChange: (updates: Partial<BuilderNode<P>>) => void 
   }>;
   
   // Whether this block can accept children (like a grid or section)
   acceptsChildren?: boolean;
+
+  // Whether this block takes care of rendering its own children
+  rendersChildrenNatively?: boolean;
 }

@@ -8,12 +8,30 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useAuthStore } from '@/stores/authStore';
 import { useTeamMembers, useInviteAgent, useUpdateMemberRole } from '@/hooks/useSettings';
 import type { AppRole } from '@/types';
+import { supabase } from '@/integrations/supabase/client';
 
 export function AgentesTab() {
   const { data: members, isLoading } = useTeamMembers();
   const inviteAgent = useInviteAgent();
   const updateRole = useUpdateMemberRole();
   const { profile } = useAuthStore();
+  const [updatingCommission, setUpdatingCommission] = useState<string | null>(null);
+
+  const handleUpdateCommission = async (profileId: string, model: string) => {
+    setUpdatingCommission(profileId);
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ commission_plan: model } as any)
+        .eq('id', profileId);
+      if (error) throw error;
+      // Idealmente recarregaria os members via invalidateQueries
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setUpdatingCommission(null);
+    }
+  };
 
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState<AppRole>('agent');
@@ -84,6 +102,26 @@ export function AgentesTab() {
                   <p className="text-sm font-bold truncate">{m.first_name ?? m.email}</p>
                   <p className="text-[10px] text-muted-foreground uppercase tracking-widest">{roleLabel(m.role)}</p>
                 </div>
+                
+                {m.role === 'agent' && (
+                  <div className="mr-2">
+                    <Select 
+                      defaultValue={(m as any).commission_plan || 'standard'} 
+                      onValueChange={(val) => handleUpdateCommission(m.id, val)}
+                      disabled={updatingCommission === m.id}
+                    >
+                      <SelectTrigger className="h-8 text-xs border-zinc-200 w-[110px]">
+                        <SelectValue placeholder="Comissão" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="standard" className="text-xs">Padrão (10%)</SelectItem>
+                        <SelectItem value="gold" className="text-xs">Ouro (15%)</SelectItem>
+                        <SelectItem value="basic" className="text-xs">Básico (5%)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+
                 {profile?.id !== m.id && (
                    <Button variant="ghost" size="icon" className="h-8 w-8 text-zinc-400" onClick={() => updateRole.mutate({ profileId: m.id, userId: m.user_id, is_active: !m.is_active })}>
                      {m.is_active ? <UserX size={14} /> : <UserCheck size={14} className="text-vj-green" />}

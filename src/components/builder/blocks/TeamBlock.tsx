@@ -1,7 +1,7 @@
 import { BlockDef } from '../core/types';
 import { EditableText } from '../core/EditableText';
 import { Users } from 'lucide-react';
-import { Label } from '@/components/ui/label';
+import { ArrayField } from '../core/ArrayField';
 
 export const TeamBlock: BlockDef = {
   type: 'TeamBlock',
@@ -48,12 +48,19 @@ export const TeamBlock: BlockDef = {
       </div>
     );
   },
-  settingsComponent: () => (
-    <div className="space-y-4">
-      <div className="space-y-2">
-        <Label>Settings</Label>
-        <p className="text-xs text-muted-foreground">Edit names and roles directly on the canvas. Avatars can be changed in code.</p>
-      </div>
+  settingsComponent: ({ node, onChange }) => (
+    <div className="space-y-6">
+      <ArrayField
+        title="Membros da Equipe"
+        items={node.props.members || []}
+        onChange={(members) => onChange({ props: { ...node.props, members } })}
+        defaultItem={{ name: 'Novo Membro', role: 'Cargo', avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026024d' }}
+        schema={[
+          { key: 'name', label: 'Nome', type: 'text' },
+          { key: 'role', label: 'Cargo', type: 'text' },
+          { key: 'avatar', label: 'URL da Foto (Avatar)', type: 'url' }
+        ]}
+      />
     </div>
   ),
 };

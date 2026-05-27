@@ -4,6 +4,7 @@ import { Route } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { EditableText } from '../core/EditableText';
+import { ArrayField } from '../core/ArrayField';
 
 export const TravelItineraryTimelineBlock: BlockDef = {
   type: 'travel-itinerary-timeline',
@@ -64,7 +65,7 @@ export const TravelItineraryTimelineBlock: BlockDef = {
 
   settingsComponent: ({ node, onChange }) => {
     return (
-      <div className="space-y-4">
+      <div className="space-y-6">
         <div className="space-y-2">
           <Label className="text-[10px] uppercase text-zinc-500 font-bold">Título do Itinerário</Label>
           <Input 
@@ -73,6 +74,18 @@ export const TravelItineraryTimelineBlock: BlockDef = {
             className="bg-zinc-900 border-zinc-800 text-white text-sm h-9"
           />
         </div>
+        
+        <ArrayField
+          title="Dias do Roteiro"
+          items={node.props.days || []}
+          onChange={(days) => onChange({ props: { ...node.props, days } })}
+          defaultItem={{ day: 'Novo Dia', title: 'Título do Dia', description: 'Atividades e horários.' }}
+          schema={[
+            { key: 'day', label: 'Rótulo (ex: Dia 1, 14h00)', type: 'text' },
+            { key: 'title', label: 'Título', type: 'text' },
+            { key: 'description', label: 'Descrição da Atividade', type: 'textarea' }
+          ]}
+        />
       </div>
     );
   }

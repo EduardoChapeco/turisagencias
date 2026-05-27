@@ -64,7 +64,8 @@ export default function PublicTravelerForm() {
           return;
         }
 
-        const traveler = data[0];
+        // Cast to `any` — the RPC return type in generated types doesn't include all fields yet (e.g. `rg`)
+        const traveler: any = data[0];
         
         if (traveler.form_completed_at) {
           setAlreadyCompleted(true);

@@ -4,6 +4,7 @@ import { CheckCircle2, XCircle, ListChecks } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { EditableText } from '../core/EditableText';
+import { ArrayField } from '../core/ArrayField';
 
 export const TravelIncludedNotIncludedBlock: BlockDef = {
   type: 'travel-included',
@@ -14,16 +15,16 @@ export const TravelIncludedNotIncludedBlock: BlockDef = {
   defaultProps: {
     title: 'What\'s included',
     included: [
-      'Round-trip flights',
-      '4 nights in 5-star hotel',
-      'Daily breakfast',
-      'Airport transfers'
+      { text: 'Passagens aéreas ida e volta' },
+      { text: '4 noites em hotel 5 estrelas' },
+      { text: 'Café da manhã diário' },
+      { text: 'Transfer aeroporto/hotel' }
     ],
     notIncluded: [
-      'Travel insurance',
-      'Personal expenses',
-      'Optional tours',
-      'Visa fees'
+      { text: 'Seguro viagem' },
+      { text: 'Despesas pessoais' },
+      { text: 'Passeios opcionais' },
+      { text: 'Taxas de visto' }
     ]
   },
   
@@ -55,10 +56,10 @@ export const TravelIncludedNotIncludedBlock: BlockDef = {
                 Included
               </h3>
               <ul className="space-y-4">
-                {included?.map((item: string, i: number) => (
+                {included?.map((item: any, i: number) => (
                   <li key={i} className="flex items-start gap-3">
                     <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
-                    <span className="text-zinc-700">{item}</span>
+                    <span className="text-zinc-700">{item.text || item}</span>
                   </li>
                 ))}
               </ul>
@@ -69,10 +70,10 @@ export const TravelIncludedNotIncludedBlock: BlockDef = {
                 Not Included
               </h3>
               <ul className="space-y-4">
-                {notIncluded?.map((item: string, i: number) => (
+                {notIncluded?.map((item: any, i: number) => (
                   <li key={i} className="flex items-start gap-3">
                     <XCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
-                    <span className="text-zinc-700">{item}</span>
+                    <span className="text-zinc-700">{item.text || item}</span>
                   </li>
                 ))}
               </ul>
@@ -85,7 +86,7 @@ export const TravelIncludedNotIncludedBlock: BlockDef = {
 
   settingsComponent: ({ node, onChange }) => {
     return (
-      <div className="space-y-4">
+      <div className="space-y-6">
         <div className="space-y-2">
           <Label className="text-[10px] uppercase text-zinc-500 font-bold">Título</Label>
           <Input 
@@ -94,6 +95,22 @@ export const TravelIncludedNotIncludedBlock: BlockDef = {
             className="bg-zinc-900 border-zinc-800 text-white text-sm h-9"
           />
         </div>
+
+        <ArrayField
+          title="Itens Inclusos"
+          items={node.props.included || []}
+          onChange={(included) => onChange({ props: { ...node.props, included } })}
+          defaultItem={{ text: 'Novo Item' }}
+          schema={[{ key: 'text', label: 'Item Incluso', type: 'text' }]}
+        />
+
+        <ArrayField
+          title="Itens Não Inclusos"
+          items={node.props.notIncluded || []}
+          onChange={(notIncluded) => onChange({ props: { ...node.props, notIncluded } })}
+          defaultItem={{ text: 'Novo Item' }}
+          schema={[{ key: 'text', label: 'Item Não Incluso', type: 'text' }]}
+        />
       </div>
     );
   }

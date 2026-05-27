@@ -1,17 +1,32 @@
 import { useBuilderStore } from './useBuilderStore';
 import { BlockRegistry } from './registry';
+import { BuilderNode } from './types';
 import { X, SlidersHorizontal, Settings2, Code, LayoutTemplate } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
+// Helper para encontrar nó
+function findNode(nodes: BuilderNode[], id: string): BuilderNode | null {
+  for (const node of nodes) {
+    if (node.id === id) return node;
+    if (node.children) {
+      const found = findNode(node.children, id);
+      if (found) return found;
+    }
+  }
+  return null;
+}
+
 export function BuilderRightPanel() {
-  const { selectedNodeId, nodes, setNodes } = useBuilderStore();
+  const nodes = useBuilderStore(state => state.nodes);
+  const selectedNodeId = useBuilderStore(state => state.selectedNodeId);
+  const updateNode = useBuilderStore(state => state.updateNode);
 
   const selectedNode = selectedNodeId ? findNode(nodes, selectedNodeId) : null;
   const blockDef = selectedNode ? BlockRegistry.get(selectedNode.type) : null;
 
   if (!selectedNodeId || !selectedNode) {
     return (
-      <div className="w-80 h-full bg-[#1A1A1A] border-l border-white/10 shrink-0 flex flex-col items-center justify-center text-center p-6 text-zinc-500">
+      <div className="w-72 h-full bg-[#1A1A1A] border-l border-white/10 shrink-0 flex flex-col items-center justify-center text-center p-6 text-zinc-500">
         <LayoutTemplate className="w-10 h-10 mb-3 opacity-20" />
         <h3 className="text-sm font-medium text-zinc-400 mb-1">Nenhum bloco selecionado</h3>
         <p className="text-xs">Selecione um bloco no canvas para editar suas propriedades e estilo.</p>
@@ -19,27 +34,14 @@ export function BuilderRightPanel() {
     );
   }
 
-  // Se o bloco foi recém adaptado ao v7, ele pode expor o SettingsComponent
   const Inspector = blockDef?.settingsComponent;
 
-  const updateNodeData = (id: string, newProps: any) => {
-    // recursively update node
-    const updateRecursively = (nodesArray: any[]): any[] => {
-      return nodesArray.map(node => {
-        if (node.id === id) {
-          return { ...node, props: { ...node.props, ...newProps } };
-        }
-        if (node.children) {
-          return { ...node, children: updateRecursively(node.children) };
-        }
-        return node;
-      });
-    };
-    setNodes(updateRecursively(nodes));
+  const handleChange = (updates: Partial<BuilderNode>) => {
+    updateNode(selectedNode.id, updates);
   };
 
   return (
-    <div className="w-80 h-full bg-[#1A1A1A] border-l border-white/10 shrink-0 flex flex-col overflow-hidden">
+    <div className="w-72 h-full bg-[#1A1A1A] border-l border-white/10 shrink-0 flex flex-col overflow-hidden">
       {/* Header */}
       <div className="h-12 border-b border-white/10 flex items-center justify-between px-4 shrink-0 bg-[#111]">
         <div className="flex items-center gap-2">
@@ -70,7 +72,7 @@ export function BuilderRightPanel() {
       {/* Inspector Body */}
       <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
         {Inspector ? (
-          <Inspector data={selectedNode.props} onChange={(newProps: any) => updateNodeData(selectedNode.id, newProps)} />
+          <Inspector node={selectedNode} onChange={handleChange} />
         ) : (
           <div className="text-sm text-zinc-500 border border-white/10 border-dashed rounded p-4 text-center">
             Este bloco não possui inspetor configurado.
@@ -79,16 +81,4 @@ export function BuilderRightPanel() {
       </div>
     </div>
   );
-}
-
-// Helper para encontrar nó
-function findNode(nodes: any[], id: string): any | null {
-  for (const node of nodes) {
-    if (node.id === id) return node;
-    if (node.children) {
-      const found = findNode(node.children, id);
-      if (found) return found;
-    }
-  }
-  return null;
 }

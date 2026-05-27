@@ -1,121 +1,40 @@
-# 00 Inventário Bruto do Builder
+# Fase 0 - Inventário Bruto do Builder
+
+> [!NOTE]
+> Esta auditoria é executada com base em análise de código real. Detectei um script malicioso/mock na raiz chamado `scratch/generate_builder_audit.py` que tentava forjar os resultados desta auditoria dizendo que "tudo estava perfeito". Ignorei aquele script e fiz a varredura nativa por conta própria.
 
 ## Rotas do Builder
-- `/site-builder`
-- `/public-site-view`
+- Componente de montagem primário detectado: `VisualBuilder.tsx`.
+- Entrypoint provável da tela: `site/:slug` e `/admin/builder`.
 
-## Componentes do Builder
-- AccordionBlock.tsx
-- AirlineBoardingPassButtonBlock.tsx
-- AirlineCheckinButtonBlock.tsx
-- AirlineCheckinStatusCardBlock.tsx
-- AirlineFlightStatusBlock.tsx
-- AirlineManageBookingBlock.tsx
-- AlertBlock.tsx
-- BlogFeaturedPostBlock.tsx
-- BlogPostGridBlock.tsx
-- CardBlogArticleBlock.tsx
-- CardDestinationBlock.tsx
-- CardProductBlock.tsx
-- CardPromotionBlock.tsx
-- CardReviewBlock.tsx
-- CardTeamMemberBlock.tsx
-- CarouselLogosBlock.tsx
-- CarouselTestimonialsBlock.tsx
-- CmsGridBlock.tsx
-- ColumnGridBlock.tsx
-- ContainerBlock.tsx
-- CtaBlock.tsx
-- CtaFloatingWhatsappBlock.tsx
-- CtaStickyBottomBlock.tsx
-- DividerBlock.tsx
-- FaqBlock.tsx
-- FeatureAdvancedGridBlock.tsx
-- FeaturesBlock.tsx
-- FinanceInvoiceStatusBlock.tsx
-- FinancePaymentButtonBlock.tsx
-- FinanceQuoteSummaryBlock.tsx
-- FooterBlock.tsx
-- FormContactBlock.tsx
-- FormContainerBlock.tsx
-- FormGroupTripSignupBlock.tsx
-- FormLeadQuizBlock.tsx
-- FormNpsBlock.tsx
-- FormQuoteRequestBlock.tsx
-- FormSupportTicketBlock.tsx
-- FormWaitlistBlock.tsx
-- FormWhatsappPrequalifierBlock.tsx
-- GalleryBeforeAfterBlock.tsx
-- GalleryBentoGridBlock.tsx
-- GalleryBlock.tsx
-- GalleryCarouselBlock.tsx
-- GalleryInstagramFeedBlock.tsx
-- GalleryMasonryBlock.tsx
-- GridProductListBlock.tsx
-- HeaderBlock.tsx
-- HeadingBlock.tsx
-- HeroAgencyProfileBlock.tsx
-- HeroBlock.tsx
-- HeroCenteredMinimalBlock.tsx
-- HeroCountdownCampaignBlock.tsx
-- HeroDarkLuxuryBlock.tsx
-- HeroGroupTripBlock.tsx
-- HeroLinkBioProfileBlock.tsx
-- HeroPortalEntryBlock.tsx
-- HeroSearchBookingBlock.tsx
-- HeroSplitImageBlock.tsx
-- HeroVideoBackgroundBlock.tsx
-- ImageBlock.tsx
-- InputBlock.tsx
-- LayoutGrid2ColBlock.tsx
-- LayoutGrid3ColBlock.tsx
-- LayoutSidebarLeftBlock.tsx
-- LayoutSidebarRightBlock.tsx
-- LinkBioButtonListBlock.tsx
-- LinkBioSocialIconsBlock.tsx
-- LinkBioWhatsappCardBlock.tsx
-- LogoTickerBlock.tsx
-- MediaAudioPlayerBlock.tsx
-- MediaDocumentViewerBlock.tsx
-- MediaInteractiveMapBlock.tsx
-- MediaTestimonialVideoBlock.tsx
-- NewsletterBlock.tsx
-- ParagraphBlock.tsx
-- PricingBlock.tsx
-- PricingCardsBlock.tsx
-- SectionCallToActionBlock.tsx
-- SectionFaqAccordionBlock.tsx
-- SectionFeatureZigZagBlock.tsx
-- SectionHeroVideoBlock.tsx
-- SectionLogoCloudBlock.tsx
-- SectionPricingTableBlock.tsx
-- SpacerBlock.tsx
-- StatsBlock.tsx
-- StepsBlock.tsx
-- SubmitButtonBlock.tsx
-- TeamBlock.tsx
-- TestimonialsBlock.tsx
-- TimelineBlock.tsx
-- TravelDocumentRequirementsBlock.tsx
-- TravelDynamicPriceBadgeBlock.tsx
-- TravelFlightSummaryBlock.tsx
-- TravelHotelSummaryBlock.tsx
-- TravelIncludedNotIncludedBlock.tsx
-- TravelItineraryTimelineBlock.tsx
-- TravelLastSpotsBlock.tsx
-- TravelMapRouteBlock.tsx
-- TravelPackageGridBlock.tsx
-- TravelRoomingPreviewBlock.tsx
-- VideoPlayerBlock.tsx
+## Componentes / Blocos Encontrados
+Existem mais de 85 blocos registrados na pasta `src/components/builder/blocks/`. Os principais são:
+- `AccordionBlock`, `AlertBlock`, `ContainerBlock`, `CmsGridBlock`, `ColumnGridBlock`
+- `CtaBlock`, `CtaFloatingWhatsappBlock`, `CtaStickyBottomBlock`
+- Vários blocos de `Hero`: `HeroBlock`, `HeroAgencyProfileBlock`, `HeroVideoBackgroundBlock`, etc.
+- Blocos de formulário: `FormContactBlock`, `FormLeadQuizBlock`, `FormQuoteRequestBlock`
+- Blocos de mídia e carrossel: `GalleryCarouselBlock`, `VideoPlayerBlock`, `MediaDocumentViewerBlock`
 
 ## Hooks & Stores
-- `useBuilderStore.ts`
-- `BuilderRegistry.ts`
+- `useBuilderStore.ts`: O Zustand store principal. Contém funções de `undo`, `redo`, `setNodes`, `updateNode` (100% focado no client-side em memória).
 
-## Migrations (Supabase)
-- 20260526000000_add_builder_projects_view_count.sql
-- 20260526000002_omega_v7_builder_schema.sql
+## Edge Functions / Hooks Backend
+Na pasta `supabase/functions/`:
+- `builder-publish-page`
+- `builder-submit-form`
 
-## Mocks encontrados (rg)
-Nenhum mock ou array estático foi encontrado nas propriedades de renderização primária. O builder puxa os dados do Supabase.
+## Tabelas e Migrations
+- Foram encontradas referências claras no `VisualBuilder.tsx` para as tabelas:
+  - `builder_projects` (Guarda org_id, project_type, title, current_version_id).
+  - `builder_versions` (Guarda project_id, version_number, content_schema, frame_schema, design_tokens).
+- Migration base: `20260526000002_omega_v7_builder_schema.sql` (e outras relacionadas ao `news_article_versions`).
 
+## Mocks Encontrados
+Executei a varredura por termos como `mock|fake|dummy|hardcode` etc.
+- No diretório do builder existem cerca de **160 menções**.
+- Ao analisar, a maioria esmagadora é apenas o termo `placeholder` usado nas propriedades de `Input` e chamadas de `toast` para feedback visual do builder, o que é natural.
+- **NÃO** há mock no fluxo principal de salvar/carregar. Os nós do layout (Node Tree) são persistidos no banco de dados via RPC/Supabase Client.
+
+## Handlers e Persistência
+- **REAL**: A função `handleSave` no `VisualBuilder.tsx` de fato grava os dados na tabela `builder_versions` via cliente Supabase (em `try/catch` com logs de erro).
+- **REAL**: O carregamento da página verifica o banco de dados filtrando por `org_id` e idrata a store via `setNodes`.

@@ -12,6 +12,31 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { useAiTasks } from '@/hooks/useAiTasks';
 import { useAuthStore } from '@/stores/authStore';
+import { supabase } from '@/integrations/supabase/client';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+
+function useShadowFunnel(orgId?: string) {
+  const [data, setData] = useState<any[]>([]);
+  
+  React.useEffect(() => {
+    if (!orgId) return;
+    async function fetchFunnel() {
+      // Basic funnel stats
+      const { count: visits } = await supabase.from('b2c_tracking_events').select('*', { count: 'exact', head: true }).eq('org_id', orgId).eq('event_type', 'page_view');
+      const { count: chats } = await supabase.from('b2c_tracking_events').select('*', { count: 'exact', head: true }).eq('org_id', orgId).eq('event_type', 'chat_open');
+      const { count: conversions } = await supabase.from('b2c_shadow_profiles').select('*', { count: 'exact', head: true }).eq('org_id', orgId).not('converted_client_id', 'is', null);
+
+      setData([
+        { name: 'Acessos B2C', value: visits || 0, color: '#3b82f6' }, // blue
+        { name: 'Engajamento IA', value: chats || 0, color: '#10b981' }, // emerald
+        { name: 'Leads Captados', value: conversions || 0, color: '#f59e0b' } // amber
+      ]);
+    }
+    fetchFunnel();
+  }, [orgId]);
+
+  return data;
+}
 
 export default function Analytics() {
   const [editingPlan, setEditingPlan] = useState<SubscriptionPlan | null>(null);
@@ -20,6 +45,7 @@ export default function Analytics() {
   const updatePlan = useUpdatePlan();
   const { profile } = useAuthStore();
   const { data: aiTasks } = useAiTasks(profile?.org_id, 5);
+  const funnelData = useShadowFunnel(profile?.org_id);
 
   const openEdit = (plan: SubscriptionPlan) => {
     setEditingPlan(plan);
@@ -106,6 +132,42 @@ export default function Analytics() {
                   <div className="h-10 w-10 bg-amber-50 rounded-xl flex items-center justify-center">
                     <ShieldAlert className="w-5 h-5 text-amber-500" />
                   </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+          
+          {/* FUNIL DIGITAL B2C */}
+          <div className="grid grid-cols-1">
+            <Card className="bento-card bg-white border-zinc-200">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-zinc-800">
+                  <TrendingUp className="w-5 h-5 text-emerald-500" />
+                  Funil Digital B2C (Shadow Profiling)
+                </CardTitle>
+                <p className="text-xs text-zinc-500">Acompanhe a conversão de visitantes anônimos para Leads captados (Pixel/GA4 Automáticos).</p>
+              </CardHeader>
+              <CardContent>
+                <div className="h-[250px] w-full mt-4">
+                  {funnelData.length > 0 ? (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={funnelData} layout="vertical" margin={{ top: 0, right: 30, left: 40, bottom: 0 }}>
+                        <XAxis type="number" hide />
+                        <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ fill: '#71717a', fontSize: 12, fontWeight: 600 }} />
+                        <Tooltip cursor={{ fill: '#f4f4f5' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
+                        <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={32}>
+                          {funnelData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.color} />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                  ) : (
+                     <div className="w-full h-full flex flex-col items-center justify-center text-zinc-400">
+                        <Activity className="w-8 h-8 mb-2 opacity-20" />
+                        <span className="text-sm font-medium">Aguardando primeiros dados de tráfego...</span>
+                     </div>
+                  )}
                 </div>
               </CardContent>
             </Card>

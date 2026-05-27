@@ -5,6 +5,14 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Loader2, Mail, Phone, MapPin, Globe, Compass, ArrowRight, ShieldCheck, Camera, Share2, Calendar } from 'lucide-react';
 import { logger } from '@/utils/logger';
+import { BlockRegistry } from '@/components/builder/core/registry';
+import { registerAllBlocks } from '@/components/builder/blocks';
+import { useBuilderStore } from '@/components/builder/core/useBuilderStore';
+import { useB2CTracker } from '@/hooks/useB2CTracker';
+import { PublicB2CChat } from '@/components/ai/PublicB2CChat';
+import { GlobalAnalytics } from '@/components/analytics/GlobalAnalytics';
+
+registerAllBlocks();
 
 const sanitizeHref = (url: string | undefined): string => {
   if (!url) return '#';
@@ -70,6 +78,9 @@ export default function PublicSiteView() {
   const [notFound, setNotFound] = useState(false);
   const [trips, setTrips] = useState<any[]>([]);
   const [activeTestimonialIdx, setActiveTestimonialIdx] = useState<Record<string, number>>({});
+
+  // Initialize Shadow Tracker
+  useB2CTracker({ orgId: organization?.id, enabled: !!organization?.id && !loading });
 
   // Detect project type based on sub-route
   const projectType = location.pathname.endsWith('/bio') 
@@ -172,7 +183,50 @@ export default function PublicSiteView() {
           setTrips(tripsData || []);
         }
 
-        // 2. Fetch project matching type
+        // 2. Fetch new architecture first (VisualBuilder)
+        // NOTE: builder_sites / builder_pages / builder_page_versions tables are real in DB
+        // but not yet reflected in generated types.ts — cast to any until next type regen.
+        const db = supabase as any;
+        const { data: siteData } = await db
+          .from('builder_sites')
+          .select('id')
+          .eq('org_id', orgData.id)
+          .eq('type', projectType)
+          .maybeSingle();
+
+        if (siteData) {
+          const { data: pageData } = await db
+            .from('builder_pages')
+            .select('*')
+            .eq('site_id', siteData.id)
+            .eq('slug', 'home')
+            .maybeSingle();
+
+          if (pageData && pageData.published_version_id) {
+            const { data: versionData } = await db
+              .from('builder_page_versions')
+              .select('*')
+              .eq('id', pageData.published_version_id)
+              .maybeSingle();
+
+            if (versionData && versionData.status === 'published') {
+              const contentJson = typeof versionData.content_json === 'string'
+                ? JSON.parse(versionData.content_json)
+                : versionData.content_json;
+
+              if (Array.isArray(contentJson) && contentJson.length > 0) {
+                setBlocks(contentJson as any);
+                if (versionData.seo_json && (versionData.seo_json as any).design_tokens) {
+                  setDesignTokens((versionData.seo_json as any).design_tokens);
+                }
+                setLoading(false);
+                return; // Early return to skip legacy fallback
+              }
+            }
+          }
+        }
+
+        // 3. Fallback to legacy project type (Old Builder)
         const { data: projectData, error: projectError } = await supabase
           .from('builder_projects')
           .select('*')
@@ -183,15 +237,14 @@ export default function PublicSiteView() {
         if (projectError) throw projectError;
 
         if (projectData) {
-          supabase.rpc('increment_project_view', { p_project_id: projectData.id }).then(() => {
-            logger.info(`[ANALYTICS] Project view incremented: ${projectData.id}`);
-          }).catch(err => {
-            logger.error('Error incrementing project view:', err);
-          });
+          // Fire-and-forget analytics — use any cast since rpc type list is auto-generated
+          db.rpc('increment_project_view', { p_project_id: projectData.id })
+            .then(() => { logger.info(`[ANALYTICS] Project view incremented: ${projectData.id}`); })
+            .catch((err: unknown) => { logger.error('Error incrementing project view:', err); });
         }
 
         if (projectData && projectData.current_version_id) {
-          // 3. Fetch version snapshot
+          // 4. Fetch legacy version snapshot
           const { data: versionData, error: versionError } = await supabase
             .from('builder_versions')
             .select('*')
@@ -224,6 +277,11 @@ export default function PublicSiteView() {
 
     fetchSiteData();
   }, [slug, projectType]);
+
+  // Force isPreview to true so EditableText works correctly in readonly mode
+  useEffect(() => {
+    useBuilderStore.getState().setIsPreview(true);
+  }, []);
 
   if (loading) {
     return (
@@ -419,8 +477,17 @@ export default function PublicSiteView() {
       {/* Main Blocks Render */}
       <main className="max-w-4xl mx-auto px-6 py-12 space-y-20 relative z-10">
         
-        {blocks.map((block) => {
-          // Fallback defensivo para blocos desconhecidos ou inválidos
+        {blocks.map((block: any) => {
+          // NEW ARCHITECTURE: Render block via BlockRegistry if it has a valid 'type'
+          if (block.type && BlockRegistry.get(block.type)) {
+            const blockDef = BlockRegistry.get(block.type);
+            if (blockDef) {
+              const RenderComponent = blockDef.renderComponent;
+              return <RenderComponent key={block.id} node={block} />;
+            }
+          }
+
+          // Fallback defensivo para blocos desconhecidos ou inválidos (Legacy)
           if (!block || !['hero', 'features', 'contact', 'text', 'testimonials', 'faq', 'pricing', 'gallery', 'packages'].includes(block.kind)) {
             logger.warn(`PublicSiteView: Bloco desconhecido ou nulo ignorado no renderizador público: ${block?.kind || 'undefined'}`);
             return null;
@@ -440,7 +507,7 @@ export default function PublicSiteView() {
             
           const bgClass =
             block.bgPattern === 'gradient' ? 'bg-gradient-to-br from-zinc-900 via-zinc-950 to-zinc-900 border border-zinc-800' :
-            block.bgPattern === 'glass' ? 'bg-zinc-900/40 backdrop-blur-md border border-white/5 shadow-xl' :
+            block.bgPattern === 'glass' ? 'bg-zinc-900/40 backdrop-blur-md border border-white/5' :
             block.bgPattern === 'border' ? 'bg-transparent border border-zinc-800' :
             'bg-zinc-900/20 border border-transparent'; // flat
 
@@ -474,7 +541,7 @@ export default function PublicSiteView() {
                           </Button>
                         </a>
                       </div>
-                      <div className="aspect-video rounded-xl overflow-hidden border border-zinc-800 bg-zinc-900 shadow-lg">
+                      <div className="aspect-video rounded-xl overflow-hidden border border-zinc-800 bg-zinc-900">
                         <img src={block.imageUrl || 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&auto=format&fit=crop&q=60'} alt="Hero" className="w-full h-full object-cover" />
                       </div>
                     </div>
@@ -498,7 +565,7 @@ export default function PublicSiteView() {
                       </div>
                     </div>
                   ) : block.layoutVariant === 'glass' ? (
-                    <div className="max-w-xl mx-auto bg-white/5 border border-white/10 backdrop-blur-xl p-8 rounded-2xl space-y-4 shadow-2xl">
+                    <div className="max-w-xl mx-auto bg-white/5 border border-white/10 backdrop-blur-xl p-8 rounded-2xl space-y-4">
                       <h2 className="text-3xl md:text-4xl font-black text-white leading-tight">{block.title}</h2>
                       <p className="text-sm text-zinc-300">{block.subtitle}</p>
                       <a href={sanitizeHref(block.ctaUrl || '#contact')}>
@@ -747,7 +814,7 @@ export default function PublicSiteView() {
               {block.kind === 'pricing' && (
                 <>
                   {block.layoutVariant === 'vip' ? (
-                    <div className="max-w-sm mx-auto p-5 bg-gradient-to-b from-zinc-900 to-zinc-950 border border-amber-500/25 rounded-2xl relative shadow-xl text-center">
+                    <div className="max-w-sm mx-auto p-5 bg-gradient-to-b from-zinc-900 to-zinc-950 border border-amber-500/25 rounded-2xl relative text-center">
                       <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-amber-500/10 border border-amber-500/30 text-amber-400 text-[8px] font-black uppercase tracking-wider px-3 py-1 rounded-full border border-amber-500/20">Destaque VIP</div>
                       {block.pricingItems?.[1] && (
                         <div className="space-y-3">
@@ -903,6 +970,18 @@ export default function PublicSiteView() {
       <footer className="py-12 bg-zinc-950 border-t border-zinc-900 text-center text-xs text-zinc-600">
         <p>© 2026 {organization.name}. Desenvolvido com segurança técnica e integridade no Turis Agências.</p>
       </footer>
+      
+      {/* AI Public Agent Chat Widget */}
+      {organization?.id && <PublicB2CChat orgId={organization.id} />}
+      
+      {/* Global Analytics Script Injection */}
+      {organization?.settings?.tracking_pixels && (
+        <GlobalAnalytics 
+          facebookPixelId={organization.settings.tracking_pixels.facebook}
+          googleAnalyticsId={organization.settings.tracking_pixels.google_analytics}
+          gtmId={organization.settings.tracking_pixels.gtm}
+        />
+      )}
     </div>
   );
 }

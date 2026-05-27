@@ -1,263 +1,122 @@
-import {
-  corsHeaders,
-  createServiceClient,
-  resolveExtensionContext,
-  verifyExtensionRequestSession,
-} from '../_shared/extension.ts';
-import { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.6"
 
-type ChatMessage = {
-  role: string;
-  content: string;
-};
-
-interface AiConfig {
-  key: string;
-  provider: string;
-  baseUrl: string;
-  model: string;
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-async function getAiConfig(supabaseClient: SupabaseClient, orgId: string): Promise<AiConfig | null> {
-  if (orgId) {
-    const { data: keys } = await supabaseClient
-      .from('ai_keys_pool')
-      .select('id, provider, api_key, model')
-      .eq('org_id', orgId)
-      .eq('is_active', true)
-      .order('created_at', { ascending: true });
-
-    if (keys && keys.length > 0) {
-      const idx = Math.floor(Date.now() / 1000) % keys.length;
-      const keyEntry = keys[idx];
-      const provider = String(keyEntry.provider || '').toLowerCase();
-      const model = keyEntry.model || null;
-
-      if (provider === 'openrouter') {
-        return {
-          key: keyEntry.api_key,
-          provider: 'openrouter',
-          baseUrl: 'https://openrouter.ai/api/v1',
-          model: model || 'google/gemini-2.5-flash',
-        };
-      }
-      if (provider === 'gemini' || provider === 'google') {
-        return {
-          key: keyEntry.api_key,
-          provider: 'gemini',
-          baseUrl: 'https://generativelanguage.googleapis.com/v1beta/openai',
-          model: model || 'gemini-2.5-flash',
-        };
-      }
-      if (provider === 'groq') {
-        return {
-          key: keyEntry.api_key,
-          provider: 'groq',
-          baseUrl: 'https://api.groq.com/openai/v1',
-          model: model || 'llama3-70b-8192',
-        };
-      }
-      if (provider === 'openai') {
-        return {
-          key: keyEntry.api_key,
-          provider: 'openai',
-          baseUrl: 'https://api.openai.com/v1',
-          model: model || 'gpt-4o',
-        };
-      }
-
-      return {
-        key: keyEntry.api_key,
-        provider: 'openrouter',
-        baseUrl: 'https://openrouter.ai/api/v1',
-        model: model || 'google/gemini-2.5-flash',
-      };
-    }
-  }
-
-  // Fallback: Chaves globais (usando service role client)
-  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-  const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-  if (supabaseUrl && supabaseServiceKey) {
-    const { createClient } = await import("https://esm.sh/@supabase/supabase-js@2.39.3");
-    const serviceClient = createClient(supabaseUrl, supabaseServiceKey);
-    const { data: globalKeys } = await serviceClient
-      .from('global_keys')
-      .select('id, provider, api_key')
-      .eq('is_active', true)
-      .order('created_at', { ascending: true });
-
-    if (globalKeys && globalKeys.length > 0) {
-      const idx = Math.floor(Date.now() / 1000) % globalKeys.length;
-      const keyEntry = globalKeys[idx];
-      const provider = String(keyEntry.provider || '').toLowerCase();
-      if (provider === 'openrouter') return { key: keyEntry.api_key, provider: 'openrouter', baseUrl: 'https://openrouter.ai/api/v1', model: 'google/gemini-2.5-flash' };
-      if (provider === 'gemini' || provider === 'google') return { key: keyEntry.api_key, provider: 'gemini', baseUrl: 'https://generativelanguage.googleapis.com/v1beta/openai', model: 'gemini-2.5-flash' };
-      if (provider === 'groq') return { key: keyEntry.api_key, provider: 'groq', baseUrl: 'https://api.groq.com/openai/v1', model: 'llama3-70b-8192' };
-      if (provider === 'openai') return { key: keyEntry.api_key, provider: 'openai', baseUrl: 'https://api.openai.com/v1', model: 'gpt-4o' };
-      return { key: keyEntry.api_key, provider: 'openrouter', baseUrl: 'https://openrouter.ai/api/v1', model: 'google/gemini-2.5-flash' };
-    }
-  }
-
-  const lovableKey = Deno.env.get('LOVABLE_API_KEY');
-  if (lovableKey) {
-    return {
-      key: lovableKey,
-      provider: 'lovable',
-      baseUrl: 'https://ai.gateway.lovable.dev/v1',
-      model: 'google/gemini-2.5-flash',
-    };
-  }
-
-  return null;
-}
-
-function buildSystemPrompt(context: string) {
-  return `Voce e o assistente inteligente do Turis Agencias, plataforma especializada para agencias de viagens.
-
-Sua missao: ajudar agentes a gerenciar cotacoes, roteiros, clientes e operacoes de viagem com precisao e agilidade.
-
-Suas capacidades:
-- Analisar e comparar cotacoes de viagem
-- Sugerir melhores opcoes de voo
-- Apoiar logistica de destinos gateway
-- Calcular markups e tarifas
-- Preparar textos para WhatsApp e emails profissionais
-- Interpretar regras e protocolos da agencia
-
-Tom: profissional, direto, prestativo.${context}`;
-}
-
-async function buildKnowledgeContext(supabaseClient: SupabaseClient, orgId: string, message: string, aiConfig: AiConfig): Promise<string> {
-  let context = '';
-
-  try {
-    let queryEmbedding: number[] | null = null;
-
-    if (aiConfig.provider === 'gemini' || aiConfig.provider === 'google') {
-      const embRes = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent?key=${aiConfig.key}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ content: { parts: [{ text: message }] } }),
-        },
-      );
-
-      if (embRes.ok) {
-        const embData = await embRes.json();
-        queryEmbedding = embData.embedding?.values || null;
-      } else {
-        const err = await embRes.text();
-        console.warn('[ai-chat-agent] Falha ao gerar embedding:', err);
-      }
-    }
-
-    const { data: kbData } = queryEmbedding
-      ? await supabaseClient.rpc('match_documents', {
-          query_embedding: queryEmbedding,
-          match_threshold: 0.5,
-          match_count: 5,
-          filter_org_id: orgId,
-        })
-      : await supabaseClient
-          .from('ai_knowledge_base')
-          .select('content')
-          .eq('org_id', orgId)
-          .limit(5);
-
-    if (kbData && kbData.length > 0) {
-      context =
-        '\n\nCONHECIMENTO DA AGENCIA (use como base para suas respostas):\n' +
-        (kbData as Array<{ content: string }>).map((d) => d.content).join('\n---\n');
-    }
-  } catch (ragError) {
-    console.error('[ai-chat-agent] Erro no RAG (nao critico):', ragError);
-  }
-
-  return context;
-}
-
-async function callProvider(aiConfig: AiConfig, messages: ChatMessage[]): Promise<string> {
-  const response = await fetch(`${aiConfig.baseUrl}/chat/completions`, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${aiConfig.key}`,
-      'Content-Type': 'application/json',
-      ...(aiConfig.provider === 'openrouter'
-        ? {
-            'HTTP-Referer': 'https://turisagencias.pages.dev',
-            'X-Title': 'Turis Agencias',
-          }
-        : {}),
-    },
-    body: JSON.stringify({
-      model: aiConfig.model,
-      messages,
-      max_tokens: 4096,
-      temperature: 0.7,
-    }),
-  });
-
-  if (!response.ok) {
-    const errorBody = await response.text();
-    console.error(`[ai-chat-agent] AI API error (${aiConfig.provider}):`, response.status, errorBody.slice(0, 300));
-    if (response.status === 429) throw new Error('Rate limit atingido. Tente novamente em instantes ou cadastre mais chaves no Pool de IA.');
-    if (response.status === 402) throw new Error('Creditos insuficientes na chave de IA configurada.');
-    throw new Error(`Erro no provedor de IA (${response.status})`);
-  }
-
-  const aiResult = await response.json();
-  return aiResult.choices?.[0]?.message?.content ||
-    'Desculpe, nao consegui processar a resposta. Tente novamente.';
-}
-
-Deno.serve(async (req) => {
+serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+    return new Response('ok', { headers: corsHeaders })
   }
 
   try {
-    const context = await resolveExtensionContext(req);
-    if (req.headers.get('x-extension-session')) {
-      await verifyExtensionRequestSession(req, context);
+    const { orgId, shadowToken, message, history } = await req.json()
+
+    if (!orgId || !message) {
+      throw new Error("Missing orgId or message")
     }
 
-    const { message, conversation_history = [] } = await req.json();
-    if (!message) throw new Error('Mensagem nao fornecida');
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    const supabase = createClient(supabaseUrl, supabaseKey)
 
-    const supabaseClient = createServiceClient();
-    const orgId = context.orgId;
-    const aiConfig = await getAiConfig(supabaseClient, orgId);
-    if (!aiConfig) {
-      throw new Error('Nenhuma chave de IA configurada. Acesse Configuracoes e adicione uma chave no Pool de IA.');
+    // 1. Fetch organization name
+    const { data: orgData } = await supabase
+      .from('organizations')
+      .select('name')
+      .eq('id', orgId)
+      .single()
+
+    const orgName = orgData?.name || "nossa agência"
+
+    // 2. Fetch shadow profile browsing history (last 5 visited pages/scrolls)
+    let contextStr = "O visitante é anônimo e acabou de chegar."
+    if (shadowToken) {
+      const { data: trackingEvents } = await supabase
+        .from('b2c_tracking_events')
+        .select('event_type, page_title, created_at')
+        .eq('shadow_id', shadowToken)
+        .order('created_at', { ascending: false })
+        .limit(5)
+
+      if (trackingEvents && trackingEvents.length > 0) {
+        contextStr = `Histórico de navegação recente deste visitante no site:\n${trackingEvents.map(e => `- Viu a página: ${e.page_title} (${e.event_type})`).join('\n')}`
+      }
     }
 
-    const knowledgeContext = await buildKnowledgeContext(supabaseClient, orgId, message, aiConfig);
-    const systemPrompt = buildSystemPrompt(knowledgeContext);
-    const safeHistory = Array.isArray(conversation_history)
-      ? (conversation_history as ChatMessage[])
-          .filter((item) => item && typeof item.role === 'string' && typeof item.content === 'string')
-          .slice(-8)
-      : [];
+    // 3. Fetch RAG Knowledge Base (Mocking vector search for now)
+    // Normally we would use OpenAI embeddings and pgvector here
+    const { data: knowledge } = await supabase
+      .from('ai_knowledge_base')
+      .select('title, content')
+      .eq('org_id', orgId)
+      .limit(3)
+    
+    let knowledgeStr = ""
+    if (knowledge && knowledge.length > 0) {
+      knowledgeStr = `\nBase de Conhecimento da Agência:\n${knowledge.map(k => `${k.title}: ${k.content}`).join('\n')}`
+    }
 
-    const llmResponse = await callProvider(aiConfig, [
+    // 4. Construct System Prompt with strict B2C boundaries
+    const systemPrompt = `Você é o Assistente Virtual Oficial da agência de viagens "${orgName}".
+SEU OBJETIVO: Ajudar clientes a planejar viagens, responder dúvidas sobre destinos e guiar até a conversão.
+
+INSTRUÇÕES CRÍTICAS E DE SEGURANÇA:
+1. Você está falando com um Lead (potencial cliente) da agência, NÃO com o dono da agência.
+2. NUNCA mencione que você tem acesso a um sistema de CRM, Kanban, Faturamento, Comissões ou Marcação de Lucro (Markup).
+3. Se perguntarem sobre margem de lucro, fornecedores B2B (como consolidadoras) ou dados de outros clientes, você DEVE negar educadamente e dizer que essas informações são internas.
+4. Responda de forma curta, prestativa e calorosa. Use emojis moderadamente.
+5. Se não souber a resposta, direcione o cliente para entrar em contato com um agente humano pelo WhatsApp ou formulário.
+
+CONTEXTO DO CLIENTE:
+${contextStr}
+${knowledgeStr}
+`
+    // Call OpenAI API
+    const openAiKey = Deno.env.get('OPENAI_API_KEY')
+    if (!openAiKey) {
+      throw new Error("OpenAI API key missing")
+    }
+
+    const messages = [
       { role: 'system', content: systemPrompt },
-      ...safeHistory,
-      { role: 'user', content: String(message) },
-    ]);
+      ...(history || []).map((m: any) => ({ role: m.role, content: m.content })),
+      { role: 'user', content: message }
+    ]
 
-    return new Response(
-      JSON.stringify({ role: 'assistant', content: llmResponse }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 },
-    );
+    const res = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openAiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages,
+        temperature: 0.5,
+        max_tokens: 500
+      })
+    })
+
+    const aiData = await res.json()
+    if (aiData.error) {
+       throw new Error(aiData.error.message)
+    }
+
+    const reply = aiData.choices[0].message.content
+
+    return new Response(JSON.stringify({ reply }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    })
+
   } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    const status = message === 'Unauthorized' ? 401 : 400;
-    console.error('[ai-chat-agent] Erro:', message);
-    return new Response(
-      JSON.stringify({ error: message }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status },
-    );
+    const err = error instanceof Error ? error.message : String(error)
+    console.error("AI Chat Agent Error:", err)
+    return new Response(JSON.stringify({ error: err }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 400
+    })
   }
-});
+})

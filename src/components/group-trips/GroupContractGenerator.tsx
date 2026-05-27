@@ -174,7 +174,7 @@ export function GroupContractGenerator({ groupTripId }: GroupContractGeneratorPr
             {/* DADOS DAS PARTES */}
             <div className="space-y-4 mb-8 text-sm">
               <p>
-                <strong>CONTRATADA (AGÊNCIA):</strong> {organization?.name}, CNPJ: {organization?.cnpj || '___.___.___/____-__'}, com sede em {organization?.address ? (organization.address as any).city : '_________'}, doravante denominada simplesmente CONTRATADA.
+                <strong>CONTRATADA (AGÊNCIA):</strong> {organization?.name}, CNPJ: {(organization as any)?.cnpj || '___.___.___/____-__'}, com sede em {organization?.address ? (organization.address as any).city : '_________'}, doravante denominada simplesmente CONTRATADA.
               </p>
               <p>
                 <strong>CONTRATANTE (CLIENTE):</strong> {selectedClient.nome_completo}, CPF: {selectedClient.cpf || '___.___.___-__'}, RG: {selectedClient.rg || '___________'}, nascido(a) em {selectedClient.nascimento ? new Date(selectedClient.nascimento).toLocaleDateString('pt-BR') : '__/__/____'}, doravante denominado simplesmente CONTRATANTE.

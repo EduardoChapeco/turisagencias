@@ -3,6 +3,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { processOcr, VOUCHER_PROMPT } from '@/lib/ocr';
+import { useAuthStore } from '@/stores/authStore';
 import { Upload, Download, Smartphone, Plane, Hotel, Navigation } from 'lucide-react';
 import { toast } from 'sonner';
 import html2canvas from 'html2canvas';
@@ -12,6 +13,8 @@ interface VoucherPipelineProps {
 }
 
 export function VoucherPipeline({ groupTripId }: VoucherPipelineProps) {
+  const { organization } = useAuthStore();
+  const AGENCY_NAME = organization?.name || 'Turis Agências';
   const [isExtracting, setIsExtracting] = useState(false);
   const [isRendering, setIsRendering] = useState(false);
   const [voucherData, setVoucherData] = useState<any>(null);
@@ -176,7 +179,7 @@ export function VoucherPipeline({ groupTripId }: VoucherPipelineProps) {
 
             {/* Footer */}
             <div className="p-6 text-center border-t border-white/10 bg-[#0F1C2E]">
-              <p className="text-[#D4A017] font-serif font-bold italic">Excelência Tour</p>
+              <p className="text-[#D4A017] font-serif font-bold italic">{AGENCY_NAME}</p>
               <p className="text-[10px] text-white/40 mt-1 uppercase tracking-widest">Excelência em cada detalhe</p>
             </div>
           </div>

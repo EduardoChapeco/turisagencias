@@ -18,16 +18,16 @@ export const DividerBlock: BlockDef = {
     marginBottom: '24px',
     width: '100%',
   },
-  renderComponent: ({ block }) => {
+  renderComponent: ({ node }) => {
     return (
       <div style={{ padding: '4px 0' }}>
-        <hr style={block.styles} />
+        <hr style={node.styles} />
       </div>
     );
   },
-  settingsComponent: ({ block, updateBlock }) => {
+  settingsComponent: ({ node, onChange }) => {
     const handleStyleChange = (key: string, value: any) => {
-      updateBlock(block.id, { styles: { ...block.styles, [key]: value } });
+      onChange({ styles: { ...node.styles, [key]: value } });
     };
 
     return (
@@ -36,7 +36,7 @@ export const DividerBlock: BlockDef = {
           <Label>Thickness</Label>
           <Input 
             type="text"
-            value={block.styles.borderTopWidth}
+            value={node.styles.borderTopWidth}
             onChange={(e) => handleStyleChange('borderTopWidth', e.target.value)}
             placeholder="e.g. 1px"
           />
@@ -45,7 +45,7 @@ export const DividerBlock: BlockDef = {
           <Label>Style</Label>
           <select 
             className="w-full p-2 border rounded-md text-sm"
-            value={block.styles.borderTopStyle}
+            value={node.styles.borderTopStyle}
             onChange={(e) => handleStyleChange('borderTopStyle', e.target.value)}
           >
             <option value="solid">Solid</option>
@@ -57,7 +57,7 @@ export const DividerBlock: BlockDef = {
           <Label>Color</Label>
           <Input 
             type="color"
-            value={block.styles.borderTopColor}
+            value={node.styles.borderTopColor}
             onChange={(e) => handleStyleChange('borderTopColor', e.target.value)}
           />
         </div>
@@ -65,7 +65,7 @@ export const DividerBlock: BlockDef = {
           <Label>Margin Top</Label>
           <Input 
             type="text"
-            value={block.styles.marginTop}
+            value={node.styles.marginTop}
             onChange={(e) => handleStyleChange('marginTop', e.target.value)}
             placeholder="e.g. 24px"
           />
@@ -74,7 +74,7 @@ export const DividerBlock: BlockDef = {
           <Label>Margin Bottom</Label>
           <Input 
             type="text"
-            value={block.styles.marginBottom}
+            value={node.styles.marginBottom}
             onChange={(e) => handleStyleChange('marginBottom', e.target.value)}
             placeholder="e.g. 24px"
           />

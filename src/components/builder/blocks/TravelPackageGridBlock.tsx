@@ -4,6 +4,7 @@ import { Grid } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { EditableText } from '../core/EditableText';
+import { ArrayField } from '../core/ArrayField';
 
 export const TravelPackageGridBlock: BlockDef = {
   type: 'travel-package-grid',
@@ -61,7 +62,7 @@ export const TravelPackageGridBlock: BlockDef = {
 
   settingsComponent: ({ node, onChange }) => {
     return (
-      <div className="space-y-4">
+      <div className="space-y-6">
         <div className="space-y-2">
           <Label className="text-[10px] uppercase text-zinc-500 font-bold">Título da Seção</Label>
           <Input 
@@ -70,9 +71,18 @@ export const TravelPackageGridBlock: BlockDef = {
             className="bg-zinc-900 border-zinc-800 text-white text-sm h-9"
           />
         </div>
-        <div className="text-xs text-zinc-500">
-          Nota: A edição dos pacotes será adicionada no painel avançado.
-        </div>
+        
+        <ArrayField
+          title="Pacotes de Viagem"
+          items={node.props.packages || []}
+          onChange={(packages) => onChange({ props: { ...node.props, packages } })}
+          defaultItem={{ title: 'Novo Pacote', price: '$999', image: 'https://images.unsplash.com/photo-1514282401047-d79a71a590e8?w=800&q=80' }}
+          schema={[
+            { key: 'title', label: 'Nome do Destino / Pacote', type: 'text' },
+            { key: 'price', label: 'Preço Formatado (ex: $1,200 ou Sob Consulta)', type: 'text' },
+            { key: 'image', label: 'URL da Imagem de Capa', type: 'url' }
+          ]}
+        />
       </div>
     );
   }

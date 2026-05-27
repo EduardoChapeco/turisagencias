@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useCreateVoucher, useUpdateVoucher } from '@/hooks/useVouchers';
+import { useAuthStore } from '@/stores/authStore';
 import { toast } from 'sonner';
 import {
     FileUp, Loader2, AlertCircle, Plane, MapPin, Building,
@@ -12,9 +13,6 @@ import {
 } from 'lucide-react';
 
 const apiKey = "";
-
-// Logo Oficial Hardcoded com link direto para a imagem transparente
-const AGENCY_LOGO = "https://i.ibb.co/N2PDyTFv/Chat-GPT-Image-24-de-abr-de-2026-14-09-06.png";
 
 const INITIAL_DATA = {
     destino: "",
@@ -32,6 +30,10 @@ const INITIAL_DATA = {
 export default function VoucherMasterPipeline({ onClose, initialData }: { onClose?: () => void, initialData?: any }) {
     const createVoucher = useCreateVoucher();
     const updateVoucher = useUpdateVoucher();
+    // Dynamic org data — replaces all hardcoded 'Excelência Tour'
+    const { organization } = useAuthStore();
+    const AGENCY_LOGO = (organization as any)?.logo_url || null;
+    const AGENCY_NAME = organization?.name || 'Turis Agências';
     const [loading, setLoading] = useState(false);
     const [data, setData] = useState(INITIAL_DATA);
     const [hasData, setHasData] = useState(false);
@@ -106,7 +108,7 @@ export default function VoucherMasterPipeline({ onClose, initialData }: { onClos
     const convertToBase64 = (file) => {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
-            reader.onload = (event) => resolve(event.target.result.split(',')[1]);
+            reader.onload = (event) => resolve((event.target as any).result.split(',')[1]);
             reader.onerror = (error) => reject(error);
             reader.readAsDataURL(file);
         });
@@ -123,7 +125,7 @@ export default function VoucherMasterPipeline({ onClose, initialData }: { onClos
             files.forEach(f => formData.append('files', f));
             
             const systemPrompt = `
-      Você é a inteligência artificial central da Excelência Tour. Seu papel é atuar como Motor OCR e Analista de Dados de pacotes de viagem.
+      Você é a inteligência artificial central da agência ${AGENCY_NAME}. Seu papel é atuar como Motor OCR e Analista de Dados de pacotes de viagem.
       Analise o documento do passageiro (FRT, Orinter, CVC) e extraia um JSON canônico perfeito.
 
       REGRAS PÉTREAS (INTRANSÍVEIS):
@@ -140,7 +142,7 @@ export default function VoucherMasterPipeline({ onClose, initialData }: { onClos
             formData.append('prompt', systemPrompt);
 
             const { data: { session } } = await supabase.auth.getSession();
-            const response = await fetch(`${supabase.supabaseUrl}/functions/v1/ocr-extractor`, {
+            const response = await fetch(`${(supabase as any).supabaseUrl}/functions/v1/ocr-extractor`, {
                 method: 'POST',
                 headers: { Authorization: `Bearer ${session?.access_token}` },
                 body: formData
@@ -371,7 +373,7 @@ export default function VoucherMasterPipeline({ onClose, initialData }: { onClos
             text += `⚠️ *Observações Importantes:*\n${data.observacoes}\n\n`;
         }
 
-        text += `A *Excelência Tour* deseja a vocês uma viagem incrível! Qualquer dúvida, estamos à disposição. 🥂`;
+        text += `A *${AGENCY_NAME}* deseja a vocês uma viagem incrível! Qualquer dúvida, estamos à disposição. 🥂`;
         return text;
     };
 
@@ -406,7 +408,7 @@ export default function VoucherMasterPipeline({ onClose, initialData }: { onClos
       <html lang="pt-BR">
       <head>
         <meta charset="UTF-8">
-        <title>Documento Oficial - Excelência Tour</title>
+        <title>Documento Oficial - {AGENCY_NAME}</title>
         ${scriptStart}
         <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
         <style>
@@ -449,7 +451,7 @@ export default function VoucherMasterPipeline({ onClose, initialData }: { onClos
     };
 
     const exportPages = async (ref, prefix) => {
-        if (!window.html2canvas || !ref.current) return;
+        if (!(window as any).html2canvas || !ref.current) return;
         setLoading(true);
         setLoadingMessage("Gerando imagens em Qualidade 8K...");
 
@@ -462,7 +464,7 @@ export default function VoucherMasterPipeline({ onClose, initialData }: { onClos
                 pageEl.scrollIntoView({ behavior: 'instant', block: 'start' });
                 await new Promise(r => setTimeout(r, 150));
 
-                const canvas = await window.html2canvas(pageEl, {
+                const canvas = await (window as any).html2canvas(pageEl, {
                     scale: 3, // Ultra Qualidade, mas sem sobrecarregar a memória do browser
                     useCORS: true,
                     allowTaint: true,
@@ -486,7 +488,7 @@ export default function VoucherMasterPipeline({ onClose, initialData }: { onClos
     };
 
     const exportPDF = async (ref, fileName) => {
-        if (!window.html2canvas || !window.jspdf || !ref.current) {
+        if (!(window as any).html2canvas || !(window as any).jspdf || !ref.current) {
             alert("As bibliotecas de exportação ainda estão carregando. Tente novamente em 2 segundos.");
             return;
         }
@@ -495,7 +497,7 @@ export default function VoucherMasterPipeline({ onClose, initialData }: { onClos
         setLoadingMessage("Gerando PDF Oficial Ultra Seguro...");
 
         try {
-            const { jsPDF } = window.jspdf;
+            const { jsPDF } = (window as any).jspdf;
             const pages = ref.current.querySelectorAll('.story-page');
             let pdf = null;
 
@@ -506,7 +508,7 @@ export default function VoucherMasterPipeline({ onClose, initialData }: { onClos
                 pageEl.scrollIntoView({ behavior: 'instant', block: 'start' });
                 await new Promise(r => setTimeout(r, 150));
 
-                const canvas = await window.html2canvas(pageEl, {
+                const canvas = await (window as any).html2canvas(pageEl, {
                     scale: 3,
                     useCORS: true,
                     allowTaint: true,
@@ -547,12 +549,12 @@ export default function VoucherMasterPipeline({ onClose, initialData }: { onClos
         <div className= "flex items-center gap-4 mb-8 shrink-0" >
         <img 
         src={ AGENCY_LOGO }
-    alt = "Excelência Tour"
+    alt = {AGENCY_NAME}
     className = "h-10 w-auto object-contain drop-shadow-sm"
     crossOrigin = "anonymous"
     onError = {(e) => {
-        e.target.style.display = 'none';
-        e.target.nextSibling.style.display = 'flex';
+        (e.target as any).style.display = 'none';
+        (e.target as any).nextSibling.style.display = 'flex';
     }
 } 
       />
@@ -562,7 +564,7 @@ export default function VoucherMasterPipeline({ onClose, initialData }: { onClos
         <Plane size={ 20 } className = "text-white" />
             </div>
             < div >
-            <h1 className="text-xl font-display font-bold text-white uppercase leading-none tracking-wide" > Excelência Tour </h1>
+            <h1 className="text-xl font-display font-bold text-white uppercase leading-none tracking-wide" >{AGENCY_NAME}</h1>
                 < p className = "text-[9px] text-[#6EC3EC] font-bold uppercase tracking-[0.2em] mt-1" > Guia Oficial de Embarque </p>
                     </div>
                     </div>
@@ -604,7 +606,7 @@ return (
                 { sidebarOpen?<ChevronLeft size = { 20 }/> : <ChevronRight size={ 20 }/>}
 </button>
     < div className = "flex items-center gap-3" >
-        <img src={ AGENCY_LOGO } alt = "Excelência Tour" className = "h-7 w-auto object-contain hidden sm:block" crossOrigin = "anonymous" />
+        <img src={ AGENCY_LOGO } alt = {AGENCY_NAME} className = "h-7 w-auto object-contain hidden sm:block" crossOrigin = "anonymous" />
             </div>
             </div>
 
@@ -987,7 +989,7 @@ placeholder = "Regras, dicas ou avisos úteis..."
                                         </div>
                                         </div>
                                         < div className = "text-center mt-auto pt-6 border-t border-white/10" >
-                                            <p className="text-[10px] text-white/50 uppercase tracking-widest font-bold" > Documento Oficial de Viagem • Excelência Tour </p>
+                                            <p className="text-[10px] text-white/50 uppercase tracking-widest font-bold" > Documento Oficial de Viagem • {AGENCY_NAME} </p>
                                                 </div>
                                                 </div>
                                                 </div>
@@ -1042,7 +1044,7 @@ placeholder = "Regras, dicas ou avisos úteis..."
 </div>
 
     < div className = "text-center mt-auto pt-6 border-t border-[#1A2B47]/10" >
-        <p className="text-[10px] text-[#1A2B47]/40 uppercase tracking-widest font-medium" > Documento Oficial de Viagem • Excelência Tour </p>
+        <p className="text-[10px] text-[#1A2B47]/40 uppercase tracking-widest font-medium" > Documento Oficial de Viagem • {AGENCY_NAME} </p>
             </div>
             </div>
             </div>
@@ -1093,7 +1095,7 @@ placeholder = "Regras, dicas ou avisos úteis..."
                                 </div>
 
                                 < div className = "text-center mt-auto pt-6 border-t border-[#1A2B47]/10" >
-                                    <p className="text-[10px] text-[#1A2B47]/40 uppercase tracking-widest font-medium" > Documento Oficial de Viagem • Excelência Tour </p>
+                                    <p className="text-[10px] text-[#1A2B47]/40 uppercase tracking-widest font-medium" > Documento Oficial de Viagem • {AGENCY_NAME} </p>
                                         </div>
                                         </div>
                                         </div>
@@ -1156,7 +1158,7 @@ placeholder = "Regras, dicas ou avisos úteis..."
 </div>
 
     < div className = "text-center mt-auto pt-6 border-t border-[#1A2B47]/10" >
-        <p className="text-[10px] text-[#1A2B47]/40 uppercase tracking-widest font-medium" > Documento Oficial de Viagem • Excelência Tour </p>
+        <p className="text-[10px] text-[#1A2B47]/40 uppercase tracking-widest font-medium" > Documento Oficial de Viagem • {AGENCY_NAME} </p>
             </div>
             </div>
             </div>
@@ -1220,7 +1222,7 @@ placeholder = "Regras, dicas ou avisos úteis..."
 </div>
 
     < div className = "text-center mt-auto pt-6 border-t border-[#1A2B47]/10" >
-        <p className="text-[10px] text-[#1A2B47]/40 uppercase tracking-widest font-medium" > Documento Oficial de Viagem • Excelência Tour </p>
+        <p className="text-[10px] text-[#1A2B47]/40 uppercase tracking-widest font-medium" > Documento Oficial de Viagem • {AGENCY_NAME} </p>
             </div>
             </div>
             </div>
@@ -1269,7 +1271,7 @@ placeholder = "Regras, dicas ou avisos úteis..."
 </div>
 
     < div className = "text-center mt-auto pt-6 border-t border-white/20" >
-        <p className="text-[10px] text-white/40 uppercase tracking-widest font-medium" > Documento Oficial de Viagem • Excelência Tour </p>
+        <p className="text-[10px] text-white/40 uppercase tracking-widest font-medium" > Documento Oficial de Viagem • {AGENCY_NAME} </p>
             </div>
             </div>
             </div>
@@ -1344,7 +1346,7 @@ placeholder = "Regras, dicas ou avisos úteis..."
                         </div>
 
                         < div className = "text-center mt-auto pt-6 border-t border-white/10" >
-                            <p className="text-[10px] text-white/40 uppercase tracking-widest font-medium" > Equipe Excelência Tour Chapecó </p>
+                            <p className="text-[10px] text-white/40 uppercase tracking-widest font-medium" > Equipe {AGENCY_NAME} </p>
                                 </div>
                                 </div>
                                 </div>
@@ -1404,7 +1406,7 @@ placeholder = "Regras, dicas ou avisos úteis..."
 
                         < div className = "text-center mt-auto pt-6 border-t border-white/10" >
                             <p className="text-sm font-bold text-white mb-1" > Desejamos uma viagem incrível! </p>
-                                < p className = "text-[10px] text-white/40 uppercase tracking-widest font-medium" > Equipe Excelência Tour Chapecó </p>
+                                < p className = "text-[10px] text-white/40 uppercase tracking-widest font-medium" > Equipe {AGENCY_NAME} </p>
                                     </div>
                                     </div>
                                     </div>
@@ -1460,7 +1462,7 @@ placeholder = "Regras, dicas ou avisos úteis..."
 </div>
 
     < div className = "text-center mt-auto pt-6 border-t border-white/10" >
-        <p className="text-[10px] text-white/40 uppercase tracking-widest font-medium" > Documento de Apoio • Excelência Tour </p>
+        <p className="text-[10px] text-white/40 uppercase tracking-widest font-medium" > Documento de Apoio • {AGENCY_NAME} </p>
             </div>
             </div>
             </div>
@@ -1520,7 +1522,7 @@ placeholder = "Regras, dicas ou avisos úteis..."
                                                                                                                                 </div>
 
                                                                                                                                 < div className = "text-center mt-auto pt-6 border-t border-[#1A2B47]/10" >
-                                                                                                                                    <p className="text-[10px] text-[#1A2B47]/40 uppercase tracking-widest font-medium" > Documento de Apoio • Excelência Tour </p>
+                                                                                                                                    <p className="text-[10px] text-[#1A2B47]/40 uppercase tracking-widest font-medium" > Documento de Apoio • {AGENCY_NAME} </p>
                                                                                                                                         </div>
                                                                                                                                         </div>
                                                                                                                                         </div>
@@ -1564,7 +1566,7 @@ const SectionTitle = ({ icon, title }) => (
         </h2>
 );
 
-const InputField = ({ label, value, onChange, placeholder, noLabel }) => (
+const InputField = ({ label, value, onChange, placeholder, noLabel }: { label?: string; value: any; onChange: (v: any) => void; placeholder?: string; noLabel?: boolean }) => (
     <div className= "w-full" >
     {!noLabel && <label className="text-[9px] font-bold uppercase tracking-[0.15em] text-[#8BA3BB] mb-1.5 block" > { label } </label>}
 <input 

@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 export const AlertBlock: BlockDef = {
   type: 'AlertBlock',
   label: 'Alert Banner',
-  category: 'content',
+  category: 'typography',
   icon: AlertCircle,
   defaultProps: {
     variant: 'info', // 'info', 'success', 'warning', 'error'
@@ -18,8 +18,8 @@ export const AlertBlock: BlockDef = {
     padding: '1rem 2rem',
     backgroundColor: 'transparent',
   },
-  renderComponent: ({ block, updateBlock }) => {
-    const { variant, title, message } = block.props;
+  renderComponent: ({ node }) => {
+    const { variant, title, message } = node.props;
 
     const variants = {
       info: {
@@ -61,27 +61,27 @@ export const AlertBlock: BlockDef = {
         <div className="flex-1">
           <EditableText
             value={title}
-            onChange={(val) => updateBlock(block.id, { props: { ...block.props, title: val } })}
+            onChange={(val) => onChange({ props: { ...node.props, title: val } })}
             className={`font-semibold mb-1 ${currentVariant.text}`}
           />
           <EditableText
             value={message}
-            onChange={(val) => updateBlock(block.id, { props: { ...block.props, message: val } })}
+            onChange={(val) => onChange({ props: { ...node.props, message: val } })}
             className={`text-sm opacity-90 ${currentVariant.text}`}
           />
         </div>
       </div>
     );
   },
-  settingsComponent: ({ block, updateBlock }) => {
+  settingsComponent: ({ node, onChange }) => {
     return (
       <div className="space-y-4">
         <div className="space-y-2">
           <Label>Alert Type</Label>
           <select
             className="flex h-9 w-full items-center justify-between rounded-md border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm ring-offset-white placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-950 disabled:cursor-not-allowed disabled:opacity-50"
-            value={block.props.variant}
-            onChange={(e) => updateBlock(block.id, { props: { ...block.props, variant: e.target.value } })}
+            value={node.props.variant}
+            onChange={(e) => onChange({ props: { ...node.props, variant: e.target.value } })}
           >
             <option value="info">Info (Blue)</option>
             <option value="success">Success (Green)</option>

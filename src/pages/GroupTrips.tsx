@@ -21,7 +21,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { MediaField } from '@/components/ui/MediaField';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
-import { Users, MapPin, Calendar, ExternalLink, Trash2, Eye, FileSignature } from 'lucide-react';
+import { Users, MapPin, Calendar, ExternalLink, Trash2, Eye } from 'lucide-react';
 import { LocationCombobox } from '@/components/ui/LocationCombobox';
 // ─── Tag/chip list editor ────────────────────────────────────────────────────
 function ChipListEditor({

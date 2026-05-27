@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 export const HeadingBlock: BlockDef = {
   type: 'heading',
   label: 'Heading',
-  category: 'content',
+  category: 'typography',
   icon: Heading,
   defaultProps: {
     level: 'h2',
@@ -22,25 +22,26 @@ export const HeadingBlock: BlockDef = {
     fontSize: '24px',
     fontWeight: '700',
   },
-  renderComponent: ({ block, updateBlock }) => {
-    const { level, text } = block.props;
+  renderComponent: ({ node }) => {
+    const { level, text } = node.props;
     const Tag = level as keyof JSX.IntrinsicElements;
     return (
-      <Tag style={block.styles}>
+      <Tag style={node.styles}>
         <EditableText
-          text={text}
-          onChange={(newText) => updateBlock(block.id, { props: { ...block.props, text: newText } })}
+          nodeId={node.id}
+          propKey="text"
+          value={text}
           placeholder="Enter heading..."
         />
       </Tag>
     );
   },
-  settingsComponent: ({ block, updateBlock }) => {
+  settingsComponent: ({ node, onChange }) => {
     const handlePropChange = (key: string, value: any) => {
-      updateBlock(block.id, { props: { ...block.props, [key]: value } });
+      onChange({ props: { ...node.props, [key]: value } });
     };
     const handleStyleChange = (key: string, value: any) => {
-      updateBlock(block.id, { styles: { ...block.styles, [key]: value } });
+      onChange({ styles: { ...node.styles, [key]: value } });
     };
 
     return (
@@ -49,7 +50,7 @@ export const HeadingBlock: BlockDef = {
           <Label>Tag Level</Label>
           <select 
             className="w-full p-2 border rounded-md text-sm"
-            value={block.props.level}
+            value={node.props.level}
             onChange={(e) => handlePropChange('level', e.target.value)}
           >
             <option value="h1">Heading 1</option>
@@ -64,7 +65,7 @@ export const HeadingBlock: BlockDef = {
           <Label>Alignment</Label>
           <select 
             className="w-full p-2 border rounded-md text-sm"
-            value={block.styles.textAlign}
+            value={node.styles.textAlign}
             onChange={(e) => handleStyleChange('textAlign', e.target.value)}
           >
             <option value="left">Left</option>
@@ -77,7 +78,7 @@ export const HeadingBlock: BlockDef = {
           <Label>Color</Label>
           <Input 
             type="color"
-            value={block.styles.color}
+            value={node.styles.color}
             onChange={(e) => handleStyleChange('color', e.target.value)}
           />
         </div>

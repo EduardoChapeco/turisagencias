@@ -1,71 +1,83 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { FoldVertical, ChevronDown } from 'lucide-react';
 import { BlockDef } from '../core/types';
 import { EditableText } from '../core/EditableText';
+import { ArrayField } from '../core/ArrayField';
+import { useBuilderStore } from '../core/useBuilderStore';
+import { BuilderNode } from '../core/types';
+
+// Helper para encontrar props de um nó na árvore
+function findNodeProps(nodes: BuilderNode[], nodeId: string): Record<string, any> {
+  for (const n of nodes) {
+    if (n.id === nodeId) return n.props;
+    if (n.children) {
+      const found = findNodeProps(n.children, nodeId);
+      if (found) return found;
+    }
+  }
+  return {};
+}
 
 export const AccordionBlock: BlockDef = {
   type: 'AccordionBlock',
   label: 'Accordion',
-  category: 'content',
+  category: 'interactive',
   icon: FoldVertical,
   defaultProps: {
-    title: 'Frequently Asked Questions',
+    title: 'Perguntas Frequentes',
     items: [
       {
         id: '1',
-        question: 'What is the refund policy?',
-        answer: 'We offer a 30-day money-back guarantee for all our products. If you are not satisfied, contact our support team.',
+        question: 'Qual é a política de reembolso?',
+        answer: 'Oferecemos 30 dias de garantia de devolução de dinheiro. Entre em contato com nosso suporte.',
       },
       {
         id: '2',
-        question: 'Do you offer technical support?',
-        answer: 'Yes, we provide 24/7 technical support via email and chat for all premium plans.',
+        question: 'Vocês oferecem suporte técnico?',
+        answer: 'Sim, fornecemos suporte 24/7 via email e chat para todos os planos premium.',
       },
       {
         id: '3',
-        question: 'Can I upgrade my plan later?',
-        answer: 'Absolutely! You can upgrade or downgrade your plan at any time from your account settings.',
+        question: 'Posso atualizar meu plano depois?',
+        answer: 'Absolutamente! Você pode atualizar ou rebaixar seu plano a qualquer momento nas configurações da conta.',
       }
     ],
   },
   defaultStyles: {
-    padding: '4rem 2rem',
-    backgroundColor: '#ffffff',
+    paddingTop: 'py-16',
+    paddingBottom: 'pb-16',
+    backgroundColor: 'bg-white',
   },
-  renderComponent: ({ block, updateBlock }) => {
-    const { title, items } = block.props;
+  renderComponent: ({ node }) => {
+    const { title, items } = node.props;
+    const updateNode = useBuilderStore(state => state.updateNode);
+    const nodes = useBuilderStore(state => state.nodes);
 
-    const updateItem = (index: number, key: string, value: string) => {
-      const newItems = [...items];
+    const updateItem = useCallback((index: number, key: string, value: string) => {
+      const currentProps = findNodeProps(nodes, node.id);
+      const newItems = [...(currentProps.items || [])];
       newItems[index] = { ...newItems[index], [key]: value };
-      updateBlock(block.id, { props: { ...block.props, items: newItems } });
-    };
+      updateNode(node.id, { props: { ...currentProps, items: newItems } });
+    }, [nodes, node.id, updateNode]);
 
     return (
-      <div className="max-w-3xl mx-auto">
+      <div className="max-w-3xl mx-auto px-6 py-12">
         <EditableText
+          nodeId={node.id}
+          propKey="title"
           value={title}
-          onChange={(val) => updateBlock(block.id, { props: { ...block.props, title: val } })}
-          className="text-3xl font-bold text-slate-900 mb-8 text-center"
+          className="text-3xl font-bold text-slate-900 mb-8 text-center block"
         />
         
-        <div className="space-y-4">
+        <div className="space-y-3">
           {items.map((item: any, index: number) => (
-            <details key={item.id} className="group border border-slate-200 rounded-xl bg-white [&_summary::-webkit-details-marker]:hidden">
+            <details key={item.id || index} className="group border border-slate-200 rounded-xl bg-white [&_summary::-webkit-details-marker]:hidden">
               <summary className="flex items-center justify-between p-6 cursor-pointer text-slate-900 font-medium">
-                <EditableText
-                  value={item.question}
-                  onChange={(val) => updateItem(index, 'question', val)}
-                  className="w-full mr-4"
-                />
+                <span className="w-full mr-4 font-semibold text-vj-txt">{item.question}</span>
                 <ChevronDown className="w-5 h-5 text-slate-500 transition-transform duration-300 group-open:rotate-180 flex-shrink-0" />
               </summary>
               <div className="px-6 pb-6 text-slate-600 text-base leading-relaxed border-t border-slate-100 pt-4">
-                <EditableText
-                  value={item.answer}
-                  onChange={(val) => updateItem(index, 'answer', val)}
-                  className="w-full"
-                />
+                {item.answer}
               </div>
             </details>
           ))}
@@ -73,21 +85,19 @@ export const AccordionBlock: BlockDef = {
       </div>
     );
   },
-  settingsComponent: ({ block, updateBlock }) => {
-    const { items } = block.props;
-
+  settingsComponent: ({ node, onChange }) => {
     return (
-      <div className="space-y-4">
-        <p className="text-sm text-slate-500 mb-4">Edit questions and answers directly in the builder by expanding the accordion items.</p>
-        <button 
-          onClick={() => {
-            const newItems = [...items, { id: Date.now().toString(), question: 'New Question', answer: 'New Answer' }];
-            updateBlock(block.id, { props: { ...block.props, items: newItems } });
-          }}
-          className="w-full py-2 px-4 bg-slate-100 text-slate-900 rounded-md font-medium text-sm hover:bg-slate-200 transition-colors"
-        >
-          + Add Accordion Item
-        </button>
+      <div className="space-y-6">
+        <ArrayField
+          title="Itens do Accordion"
+          items={node.props.items || []}
+          onChange={(items) => onChange({ props: { ...node.props, items } })}
+          defaultItem={{ question: 'Nova Pergunta', answer: 'Nova Resposta' }}
+          schema={[
+            { key: 'question', label: 'Título / Pergunta', type: 'text' },
+            { key: 'answer', label: 'Conteúdo / Resposta', type: 'textarea' }
+          ]}
+        />
       </div>
     );
   },

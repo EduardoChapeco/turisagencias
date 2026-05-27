@@ -3,6 +3,8 @@ import { BlockDef } from '../core/types';
 import { Mail } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import { useSubmitForm } from '../hooks/useSubmitForm';
+import { Loader2, CheckCircle2 } from 'lucide-react';
 
 export const FormWaitlistBlock: BlockDef = {
   type: 'formWaitlist',
@@ -27,17 +29,35 @@ export const FormWaitlistBlock: BlockDef = {
     const { title, subtitle, buttonText } = node.props;
     const { paddingTop, paddingBottom, backgroundColor, textColor } = node.styles;
     
+    // Motor Real de Supabase
+    const { handleSubmit, isSubmitting, isSuccess } = useSubmitForm({ 
+      blockId: node.id, 
+      source: 'Waitlist Form' 
+    });
+    
     return (
       <section className={`${paddingTop} ${paddingBottom} ${backgroundColor} ${textColor} px-6 text-center`}>
         <div className="max-w-md mx-auto">
           <h2 className="text-3xl font-bold mb-3">{title}</h2>
           <p className="opacity-80 mb-8">{subtitle}</p>
-          <form className="w-full flex flex-col sm:flex-row gap-3" onSubmit={(e) => e.preventDefault()}>
-            <Input type="email" placeholder="Seu melhor e-mail" className="h-12 bg-white" />
-            <button className="px-6 py-3 bg-zinc-950 text-white font-bold rounded-lg hover:bg-zinc-800 transition-colors whitespace-nowrap">
-              {buttonText}
-            </button>
-          </form>
+          
+          {isSuccess ? (
+            <div className="w-full p-4 border border-emerald-200 bg-emerald-50 rounded-lg text-emerald-700 flex items-center justify-center gap-2 font-medium">
+              <CheckCircle2 className="w-5 h-5" />
+              Você está na lista de espera!
+            </div>
+          ) : (
+            <form className="w-full flex flex-col sm:flex-row gap-3" onSubmit={handleSubmit}>
+              <Input name="email" type="email" required placeholder="Seu melhor e-mail" className="h-12 bg-white flex-1" />
+              <button 
+                type="submit"
+                disabled={isSubmitting}
+                className="px-6 py-3 bg-zinc-950 text-white font-bold rounded-lg hover:bg-zinc-800 transition-colors whitespace-nowrap flex items-center justify-center disabled:opacity-50"
+              >
+                {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : buttonText}
+              </button>
+            </form>
+          )}
         </div>
       </section>
     );

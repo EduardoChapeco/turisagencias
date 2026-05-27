@@ -6,9 +6,12 @@ import {
   Key, Trash2, Plus, Sparkles, Folder, CheckCircle2, AlertTriangle, 
   HelpCircle, Settings, Layers, Lock, FileText, Eye, Info
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { useAuthStore } from '@/stores/authStore';
+import { supabase as rawSupabase } from '@/integrations/supabase/client';
+import { ExtendedSupabaseClient } from '@/integrations/supabase/extendedTypes';
+const supabase = rawSupabase as unknown as ExtendedSupabaseClient;
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { RoleGuard } from '@/components/RoleGuard';
 import { Label } from '@/components/ui/label';
@@ -25,10 +28,20 @@ export default function AdminDashboard() {
   const [apiKey, setApiKey] = useState('');
   const [isAddingKey, setIsAddingKey] = useState(false);
 
-  // Form states for creating organization
   const [newAgencyName, setNewAgencyName] = useState('');
   const [newAgencySlug, setNewAgencySlug] = useState('');
   const [isCreatingAgency, setIsCreatingAgency] = useState(false);
+  const { isMasterAuthenticated } = useAuthStore();
+  const navigate = useNavigate();
+
+  React.useEffect(() => {
+    if (!isMasterAuthenticated) {
+      toast.error('Autenticação de fator duplo (PIN) obrigatória.');
+      navigate('/admin/login', { replace: true });
+    }
+  }, [isMasterAuthenticated, navigate]);
+
+  if (!isMasterAuthenticated) return null;
 
   const { data: stats, isLoading } = useQuery({
     queryKey: ['admin_dashboard_stats'],
@@ -36,7 +49,7 @@ export default function AdminDashboard() {
       const [orgsRes, usersRes, tasksRes] = await Promise.all([
         supabase.from('organizations').select('id', { count: 'exact', head: true }),
         supabase.from('profiles').select('id', { count: 'exact', head: true }),
-        supabase.from('ai_tasks' as any).select('id', { count: 'exact', head: true }).eq('status', 'running'),
+        supabase.from('ai_tasks').select('id', { count: 'exact', head: true }).eq('status', 'running'),
       ]);
       
       return {
@@ -74,7 +87,7 @@ export default function AdminDashboard() {
     queryKey: ['admin_global_keys'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('global_keys' as any)
+        .from('global_keys')
         .select('*')
         .order('created_at', { ascending: false });
       if (error) throw error;
@@ -87,7 +100,7 @@ export default function AdminDashboard() {
     queryFn: async () => {
       try {
         const { data, error } = await supabase
-          .from('ai_decision_logs' as any)
+          .from('ai_decision_logs')
           .select('*')
           .order('created_at', { ascending: false })
           .limit(20);
@@ -134,7 +147,7 @@ export default function AdminDashboard() {
     setIsAddingKey(true);
     try {
       const { error } = await supabase
-        .from('global_keys' as any)
+        .from('global_keys')
         .insert({ provider, api_key: apiKey, is_active: true });
 
       if (error) throw error;
@@ -152,7 +165,7 @@ export default function AdminDashboard() {
     if (!confirm('Deseja excluir esta chave global? O processamento utilizará os pools das orgs.')) return;
     try {
       const { error } = await supabase
-        .from('global_keys' as any)
+        .from('global_keys')
         .delete()
         .eq('id', id);
 

@@ -14,18 +14,18 @@ export const SpacerBlock: BlockDef = {
     height: '32px',
     width: '100%',
   },
-  renderComponent: ({ block }) => {
+  renderComponent: ({ node }) => {
     return (
       <div 
-        style={block.styles} 
+        style={node.styles} 
         className="empty:bg-transparent transition-colors hover:bg-blue-50/50 rounded-sm"
         title="Spacer Block"
       />
     );
   },
-  settingsComponent: ({ block, updateBlock }) => {
+  settingsComponent: ({ node, onChange }) => {
     const handleStyleChange = (key: string, value: any) => {
-      updateBlock(block.id, { styles: { ...block.styles, [key]: value } });
+      onChange({ styles: { ...node.styles, [key]: value } });
     };
 
     return (
@@ -34,7 +34,7 @@ export const SpacerBlock: BlockDef = {
           <Label>Height</Label>
           <Input 
             type="text"
-            value={block.styles.height}
+            value={node.styles.height}
             onChange={(e) => handleStyleChange('height', e.target.value)}
             placeholder="e.g. 32px"
           />

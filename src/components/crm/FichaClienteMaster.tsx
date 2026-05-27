@@ -23,10 +23,10 @@ type Viajante = {
 
 const DEFAULT_AVATAR = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23cbd5e1'%3E%3Ccircle cx='12' cy='8' r='4'/%3E%3Cpath d='M12 14c-4.42 0-8 2-8 6v1h16v-1c0-4-3.58-6-8-6z'/%3E%3C/svg%3E";
 
-const OCR_PROMPT = `Você é o Auditor Especialista em OCR da Excelência Tour. Sua função é analisar Contratos de Viagem (Orinter, FRT, etc), Recibos e Vouchers e extrair os dados.
+const OCR_PROMPT_TEMPLATE = (agencyName: string) => `Você é o Auditor Especialista em OCR da ${agencyName}. Sua função é analisar Contratos de Viagem (Orinter, FRT, etc), Recibos e Vouchers e extrair os dados.
 REGRAS DE EXTRAÇÃO CIRÚRGICAS:
 1. HIGIENE DE NOMES: O OCR cola palavras. Se ler "VALDECIRONIOMOSKI", corrija.
-2. REGRA ANTI-AGÊNCIA: Você NUNCA deve extrair a agência como cliente. IGNORE SUMARIAMENTE os nomes "Evellyn dos Santos", "Evelyn dos Santos", "Excelência Tour" ou a palavra "Faturado".
+2. REGRA ANTI-AGÊNCIA: Você NUNCA deve extrair a agência como cliente. IGNORE SUMARIAMENTE os nomes que correspondam ao nome da agência ou a palavra "Faturado".
 3. PAGANTES: Mapeie na array "pagantes" apenas os clientes REAIS que compraram o pacote.
 4. VIAJANTES/ACOMPANHANTES: Mapeie TODOS os passageiros que vão viajar na array "viajantes".
 5. SANITIZAÇÃO TOTAL: NUNCA use as palavras "null", "undefined". Se não encontrou, retorne "".
@@ -35,6 +35,7 @@ Retorne ESTRITAMENTE o JSON: { "pagantes": [...], "viajantes": [...] }`;
 export function FichaClienteMaster() {
   const { toast } = useToast();
   const { organization, user } = useAuthStore();
+  const AGENCY_NAME = organization?.name || 'Turis Agências';
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -88,13 +89,13 @@ export function FichaClienteMaster() {
     try {
       const formData = new FormData();
       Array.from(files).forEach((f) => formData.append('files', f));
-      formData.append('prompt', OCR_PROMPT);
+      formData.append('prompt', OCR_PROMPT_TEMPLATE(AGENCY_NAME));
 
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error("Usuário não autenticado");
 
-      // Roteamento para a Edge Function de IA (Mockado para UI fluida até a edge estar 100%)
-      const res = await fetch(`${supabase.supabaseUrl}/functions/v1/ocr-extractor`, {
+      // Chama a Edge Function de OCR. Requer que `ocr-extractor` esteja deployada no Supabase.
+      const res = await fetch(`${(supabase as any).supabaseUrl}/functions/v1/ocr-extractor`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${session.access_token}` },
         body: formData
@@ -138,7 +139,7 @@ export function FichaClienteMaster() {
 
     try {
       // Busca o board de vendas para criar cards
-      const { data: board } = await supabase
+      const { data: board } = await (supabase as any)
         .from('kanban_boards')
         .select('id, kanban_columns(id, name, position)')
         .eq('org_id', organization.id)
@@ -154,7 +155,7 @@ export function FichaClienteMaster() {
         let clientId: string | null = null;
 
         if (cpfClean) {
-          const { data: existing } = await supabase
+          const { data: existing } = await (supabase as any)
             .from('clients')
             .select('id')
             .eq('org_id', organization.id)
@@ -164,7 +165,7 @@ export function FichaClienteMaster() {
         }
 
         if (!clientId) {
-          const { data: newClient, error: clientErr } = await supabase
+          const { data: newClient, error: clientErr } = await (supabase as any)
             .from('clients')
             .insert({
               org_id: organization.id,
@@ -191,7 +192,7 @@ export function FichaClienteMaster() {
         if (clientId && viajantes.length > 0) {
           for (const viaj of viajantes) {
             if (!viaj.nome.trim()) continue;
-            const { error: travelerErr } = await supabase
+            const { error: travelerErr } = await (supabase as any)
               .from('travelers')
               .insert({
                 org_id: organization.id,
@@ -213,7 +214,7 @@ export function FichaClienteMaster() {
 
         // Cria card no Kanban se tiver board
         if (board?.id && firstColumn?.id) {
-          await supabase.from('kanban_cards').insert({
+          await (supabase as any).from('kanban_cards').insert({
             board_id: board.id,
             column_id: firstColumn.id,
             org_id: organization.id,
@@ -260,7 +261,7 @@ export function FichaClienteMaster() {
         pdf.addImage(canvas.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, pdfW, imgH);
       }
 
-      pdf.save(`FichaCliente_${pagantes[0]?.nome || 'Excelencia'}.pdf`);
+      pdf.save(`FichaCliente_${pagantes[0]?.nome || AGENCY_NAME}.pdf`);
       toast({ title: 'PDF Gerado!', description: 'Arquivo baixado com sucesso.' });
     } catch (e: any) {
       toast({ title: 'Erro no PDF', description: e.message, variant: 'destructive' });
@@ -275,7 +276,7 @@ export function FichaClienteMaster() {
         <div className="flex items-center gap-4">
           <div>
             <h1 className="font-black text-base text-slate-900 tracking-tight">Ficha de Clientes (Base Master)</h1>
-            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Excelência Tour • Enterprise 11</span>
+            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{AGENCY_NAME} • Enterprise</span>
           </div>
         </div>
 
@@ -414,7 +415,7 @@ export function FichaClienteMaster() {
              <div key={`pag-${i}`} className="a4-ficha-page bg-white w-[800px] h-[1131px] p-16 shadow-xl shrink-0 flex flex-col border border-slate-200 relative">
                 <div className="border-b-2 border-black pb-4 mb-8 flex justify-between items-end">
                   <div>
-                    <h1 className="text-[26px] font-black uppercase text-black leading-none tracking-tighter">Excelência Tour</h1>
+                    <h1 className="text-[26px] font-black uppercase text-black leading-none tracking-tighter">{AGENCY_NAME}</h1>
                     <p className="text-[10px] font-bold text-slate-500 tracking-[0.2em] mt-1">FICHA CADASTRAL B2C • PAGANTE #{i+1}</p>
                   </div>
                   <div className="text-[11px] font-black text-indigo-600 font-mono">EMISSÃO: {new Date().toLocaleDateString()}</div>
@@ -439,7 +440,7 @@ export function FichaClienteMaster() {
                 </div>
 
                 <div className="mt-auto border-t border-black pt-4 text-center text-[9px] font-bold text-slate-500">
-                  DOCUMENTO CONFIDENCIAL PROTEGIDO PELA LEI GERAL DE PROTEÇÃO DE DADOS (LGPD).<br/>GERADO VIA PLATAFORMA CENTRAL EXCELÊNCIA TOUR.
+                  DOCUMENTO CONFIDENCIAL PROTEGIDO PELA LEI GERAL DE PROTEÇÃO DE DADOS (LGPD).<br/>GERADO VIA PLATAFORMA {AGENCY_NAME}.
                 </div>
              </div>
            ))}
@@ -448,7 +449,7 @@ export function FichaClienteMaster() {
              <div className="a4-ficha-page bg-white w-[800px] h-[1131px] p-16 shadow-xl shrink-0 flex flex-col border border-slate-200 relative">
                 <div className="border-b-2 border-black pb-4 mb-8 flex justify-between items-end">
                   <div>
-                    <h1 className="text-[26px] font-black uppercase text-black leading-none tracking-tighter">Excelência Tour</h1>
+                    <h1 className="text-[26px] font-black uppercase text-black leading-none tracking-tighter">{AGENCY_NAME}</h1>
                     <p className="text-[10px] font-bold text-slate-500 tracking-[0.2em] mt-1">FICHA DE VIAJANTES • LISTA DE EMBARQUE</p>
                   </div>
                 </div>

@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import {
   Monitor, Tablet, Smartphone, Eye, Save,
-  ArrowLeft, Loader2, Undo, Redo, Globe
+  ArrowLeft, Loader2, Undo, Redo, Globe, ExternalLink
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -40,8 +40,9 @@ export default function VisualBuilder({
     isPreview, setIsPreview,
     isDirty, markSaved,
     undo, redo, history,
-    projectId, projectType, slug, metaTitle, metaDescription,
+    siteId, pageId, projectType, slug, metaTitle, metaDescription,
     setProjectMeta,
+    isSavingDraft, setIsSavingDraft, lastSavedAt, setLastSavedAt
   } = useBuilderStore();
 
   // Set project type on mount
@@ -61,64 +62,80 @@ export default function VisualBuilder({
 
       try {
         setLoading(true);
+        // Cast to any — builder_sites/pages/versions tables are real in DB but
+        // not yet reflected in the auto-generated supabase types.ts.
+        const db = supabase as any;
 
-        // 1. Find or note if there's an existing project for this org + type
-        const { data: projectData } = await supabase
-          .from('builder_projects')
-          .select('*')
+        // 1. Find existing Site for this org + type
+        const { data: siteData } = await db
+          .from('builder_sites')
+          .select('id')
           .eq('org_id', organization.id)
-          .eq('project_type', projectType)
+          .eq('type', projectType)
           .maybeSingle();
 
-        if (projectData) {
-          setProjectMeta({ projectId: projectData.id });
+        let currentSiteId = siteData?.id || null;
+        let currentPageId = null;
 
-          // 2. Load the latest published version
-          const versionQuery = projectData.current_version_id
-            ? supabase
-                .from('builder_versions')
-                .select('*')
-                .eq('id', projectData.current_version_id)
-                .maybeSingle()
-            : supabase
-                .from('builder_versions')
-                .select('*')
-                .eq('project_id', projectData.id)
-                .order('version_number', { ascending: false })
-                .limit(1)
-                .maybeSingle();
+        if (currentSiteId) {
+          // 2. Find the default page (home) for this site
+          const { data: pageData } = await db
+            .from('builder_pages')
+            .select('*')
+            .eq('site_id', currentSiteId)
+            .eq('slug', 'home') // Assuming single page editor defaults to home
+            .maybeSingle();
 
-          const { data: versionData } = await versionQuery;
+          if (pageData) {
+            currentPageId = pageData.id;
 
-          if (versionData) {
-            // content_schema may be an array (Node Tree) or a stringified JSON
-            const contentSchema = typeof versionData.content_schema === 'string'
-              ? JSON.parse(versionData.content_schema)
-              : versionData.content_schema;
+            // 3. Load the latest published version
+            const versionQuery = pageData.published_version_id
+              ? db
+                  .from('builder_page_versions')
+                  .select('*')
+                  .eq('id', pageData.published_version_id)
+                  .maybeSingle()
+              : db
+                  .from('builder_page_versions')
+                  .select('*')
+                  .eq('page_id', pageData.id)
+                  .order('version_number', { ascending: false })
+                  .limit(1)
+                  .maybeSingle();
 
-            if (Array.isArray(contentSchema) && contentSchema.length > 0) {
-              setNodes(contentSchema as any);
+            const { data: versionData } = await versionQuery;
+
+            if (versionData) {
+              const contentJson = typeof versionData.content_json === 'string'
+                ? JSON.parse(versionData.content_json)
+                : versionData.content_json;
+
+              if (Array.isArray(contentJson) && contentJson.length > 0) {
+                setNodes(contentJson as any);
+              }
+
+              const seoJson = (versionData.seo_json as any) || {};
+              setProjectMeta({
+                siteId: currentSiteId,
+                pageId: currentPageId,
+                slug: pageData.slug || 'home',
+                metaTitle: seoJson.metaTitle || pageData.title || organization.name,
+                metaDescription: seoJson.metaDescription || '',
+              });
+            } else {
+              setProjectMeta({ siteId: currentSiteId, pageId: currentPageId });
+              setNodes([]);
             }
-
-            const frameSchema = (versionData.frame_schema as any) || {};
-            setProjectMeta({
-              slug: frameSchema.slug || 'home',
-              metaTitle: frameSchema.metaTitle || organization.name,
-              metaDescription: frameSchema.metaDescription || '',
-            });
           } else {
-            // No version yet – set defaults
-            setProjectMeta({
-              slug: organization.slug || 'home',
-              metaTitle: organization.name,
-              metaDescription: '',
-            });
+            setProjectMeta({ siteId: currentSiteId, pageId: null });
             setNodes([]);
           }
         } else {
-          // No project exists yet – set defaults
+          // No site exists yet
           setProjectMeta({
-            projectId: null,
+            siteId: null,
+            pageId: null,
             slug: organization.slug || 'home',
             metaTitle: organization.name,
             metaDescription: '',
@@ -138,74 +155,174 @@ export default function VisualBuilder({
     loadProject();
   }, [organization?.id, projectType]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // ─── Autosave Draft ────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!isDirty || !organization?.id || !user?.id || !siteId || !pageId) return;
+
+    const timer = setTimeout(async () => {
+      try {
+        setIsSavingDraft(true);
+        const db = supabase as any;
+        // 1. Get latest version to see if we update or insert draft
+        const { data: lastVersion } = await db
+          .from('builder_page_versions')
+          .select('id, version_number, status')
+          .eq('page_id', pageId)
+          .order('version_number', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        let targetVersionNumber = (lastVersion?.version_number ?? 0);
+        if (targetVersionNumber === 0 || lastVersion?.status === 'published') {
+           targetVersionNumber += 1; // Needs new draft version
+        }
+
+        const payload = {
+          org_id: organization.id,
+          page_id: pageId,
+          version_number: targetVersionNumber,
+          content_json: nodes as any,
+          seo_json: { metaTitle, metaDescription } as any,
+          settings_json: {} as any,
+          status: 'draft',
+          created_by: user.id,
+        };
+
+        if (lastVersion && lastVersion.status === 'draft') {
+           // Update existing draft
+           await db.from('builder_page_versions').update(payload).eq('id', lastVersion.id);
+        } else {
+           // Insert new draft
+           await db.from('builder_page_versions').insert(payload);
+        }
+
+        setLastSavedAt(new Date().toISOString());
+      } catch (err) {
+        logger.error('Autosave failed', err);
+      } finally {
+        setIsSavingDraft(false);
+      }
+    }, 3000); // 3 seconds debounce
+
+    return () => clearTimeout(timer);
+  }, [nodes, isDirty, organization, user, siteId, pageId, metaTitle, metaDescription]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // ─── Save / Publish ─────────────────────────────────────────────────────────
   const handleSave = useCallback(async () => {
     if (!organization?.id || !user?.id) return;
     setSaving(true);
 
     try {
-      // 1. Upsert the builder_project row
-      let currentProjectId = projectId;
+      let currentSiteId = siteId;
+      let currentPageId = pageId;
+      const db = supabase as any;
 
-      if (!currentProjectId) {
-        const { data: newProject, error: projectErr } = await supabase
-          .from('builder_projects')
+      // 1. Ensure Site exists
+      if (!currentSiteId) {
+        const { data: newSite, error: siteErr } = await db
+          .from('builder_sites')
           .insert({
             org_id: organization.id,
-            project_type: projectType,
-            title: projectName,
+            type: projectType,
+            name: projectName,
+            slug: organization.slug || projectType,
+            status: 'published'
           })
           .select('id')
           .single();
 
-        if (projectErr) throw projectErr;
-        currentProjectId = newProject.id;
-        setProjectMeta({ projectId: currentProjectId });
+        if (siteErr) throw siteErr;
+        currentSiteId = newSite.id;
       }
 
-      // 2. Get the next version number
-      const { data: lastVersion } = await supabase
-        .from('builder_versions')
-        .select('version_number')
-        .eq('project_id', currentProjectId)
+      // 2. Ensure Page exists
+      if (!currentPageId) {
+        const { data: newPage, error: pageErr } = await db
+          .from('builder_pages')
+          .insert({
+            org_id: organization.id,
+            site_id: currentSiteId,
+            title: metaTitle || projectName,
+            slug: slug || 'home',
+            page_type: 'home',
+            status: 'draft',
+            created_by: user.id
+          })
+          .select('id')
+          .single();
+
+        if (pageErr) throw pageErr;
+        currentPageId = newPage.id;
+      }
+
+      setProjectMeta({ siteId: currentSiteId, pageId: currentPageId });
+
+      // 3. Get the latest version
+      const db3 = supabase as any;
+      const { data: lastVersion } = await db3
+        .from('builder_page_versions')
+        .select('id, version_number, status')
+        .eq('page_id', currentPageId)
         .order('version_number', { ascending: false })
         .limit(1)
         .maybeSingle();
 
-      const nextVersionNumber = (lastVersion?.version_number ?? 0) + 1;
+      let newVersionId;
+      let nextVersionNumber = lastVersion?.version_number ?? 1;
 
-      // 3. Insert new version (the full Node Tree)
-      const { data: newVersion, error: versionErr } = await supabase
-        .from('builder_versions')
-        .insert({
-          project_id: currentProjectId,
-          version_number: nextVersionNumber,
-          content_schema: nodes as any,   // The full Node Tree
-          frame_schema: { slug, metaTitle, metaDescription } as any,
-          design_tokens: {} as any,
-          status: 'published',
-          created_by: user.id,
-        })
-        .select('id')
-        .single();
+      // 4. Update draft to published, or insert new published version
+      if (lastVersion?.status === 'draft') {
+         const { data: updatedVersion, error: versionErr } = await db3
+           .from('builder_page_versions')
+           .update({
+             content_json: nodes as any,
+             seo_json: { metaTitle, metaDescription } as any,
+             status: 'published',
+             created_by: user.id
+           })
+           .eq('id', lastVersion.id)
+           .select('id')
+           .single();
+         if (versionErr) throw versionErr;
+         newVersionId = updatedVersion.id;
+      } else {
+         nextVersionNumber = (lastVersion?.version_number ?? 0) + 1;
+         const { data: newVersion, error: versionErr } = await db3
+           .from('builder_page_versions')
+           .insert({
+             org_id: organization.id,
+             page_id: currentPageId,
+             version_number: nextVersionNumber,
+             content_json: nodes as any,
+             seo_json: { metaTitle, metaDescription } as any,
+             status: 'published',
+             created_by: user.id,
+           })
+           .select('id')
+           .single();
+         if (versionErr) throw versionErr;
+         newVersionId = newVersion.id;
+      }
 
-      if (versionErr) throw versionErr;
-
-      // 4. Update the project's current_version_id pointer
-      const { error: updateErr } = await supabase
-        .from('builder_projects')
+      // 5. Update the page's published_version_id
+      const { error: updateErr } = await (supabase as any)
+        .from('builder_pages')
         .update({
-          current_version_id: newVersion.id,
+          published_version_id: newVersionId,
+          status: 'published',
           updated_at: new Date().toISOString(),
+          updated_by: user.id
         })
-        .eq('id', currentProjectId);
+        .eq('id', currentPageId);
 
       if (updateErr) throw updateErr;
 
       markSaved();
+      setLastSavedAt(new Date().toISOString());
+      
       toast({
         title: '✓ Publicado com sucesso!',
-        description: `Versão ${nextVersionNumber} • ${new Date().toLocaleTimeString('pt-BR')}`,
+        description: `Versão ${nextVersionNumber} atualizada • ${new Date().toLocaleTimeString('pt-BR')}`,
       });
     } catch (e: any) {
       logger.error('VisualBuilder: Save failed', e);
@@ -213,7 +330,7 @@ export default function VisualBuilder({
     } finally {
       setSaving(false);
     }
-  }, [organization, user, projectId, projectType, projectName, nodes, slug, metaTitle, metaDescription, markSaved, setProjectMeta, toast]);
+  }, [organization, user, siteId, pageId, projectType, projectName, nodes, slug, metaTitle, metaDescription, markSaved, setProjectMeta, setLastSavedAt, toast]);
 
   // ─── Loading state ───────────────────────────────────────────────────────────
   if (loading) {
@@ -317,33 +434,35 @@ export default function VisualBuilder({
           </Button>
 
           {/* Visit live site */}
-          {!isDirty && projectId && (
+          {!isDirty && siteId && (
             <a
               href={publicUrl}
               target="_blank"
-              rel="noopener noreferrer"
-              className="hidden sm:flex h-8 items-center gap-1.5 px-3 rounded-md text-xs font-medium text-zinc-400 hover:text-white hover:bg-white/10 transition-all"
+              rel="noreferrer"
+              className="text-xs text-zinc-500 hover:text-vj-green flex items-center gap-1"
             >
-              <Globe className="w-3.5 h-3.5" />
-              Ver site
+              <ExternalLink className="w-3 h-3" />
+              Live
             </a>
           )}
 
-          {/* Publish */}
-          {!isPreview && (
-            <Button
-              size="sm"
-              className="h-8 bg-vj-green text-zinc-950 font-bold hover:bg-vj-green/90 text-xs gap-1.5 ml-1"
+          <div className="flex items-center gap-3">
+            {isSavingDraft ? (
+               <span className="text-[10px] uppercase font-bold text-zinc-400 hidden sm:inline-block">Salvando...</span>
+            ) : lastSavedAt ? (
+               <span className="text-[10px] uppercase font-bold text-zinc-500 hidden sm:inline-block">Salvo {new Date(lastSavedAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute:'2-digit' })}</span>
+            ) : null}
+            
+            <Button 
               onClick={handleSave}
-              disabled={saving || !isDirty}
+              disabled={saving}
+              size="sm"
+              className="bg-vj-green hover:bg-[#b0f531] text-zinc-950 font-bold"
             >
-              {saving
-                ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                : <Save className="w-3.5 h-3.5" />
-              }
-              {saving ? 'Publicando...' : 'Publicar'}
+              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4 sm:mr-2" />}
+              <span className="hidden sm:inline-block">{saving ? 'Publicando...' : 'Publicar'}</span>
             </Button>
-          )}
+          </div>
         </div>
       </header>
 

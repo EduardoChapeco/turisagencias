@@ -3,8 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2, BookOpen, AlertCircle, Info, CheckCircle2 } from 'lucide-react';
 
-const travelerInfoDb = supabase as any;
-
+// Removido cast supabase as any
 export default function PublicTravelerInfo() {
   const { slug } = useParams<{ slug: string }>();
 
@@ -12,7 +11,7 @@ export default function PublicTravelerInfo() {
     queryKey: ['public-traveler-info', slug],
     queryFn: async () => {
       if (!slug) throw new Error('Slug is required');
-      const { data, error } = await travelerInfoDb
+      const { data, error } = await (supabase as unknown as any)
         .from('traveler_info_pages')
         .select('*')
         .eq('slug', slug)

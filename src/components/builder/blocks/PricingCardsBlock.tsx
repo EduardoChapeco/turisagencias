@@ -2,8 +2,7 @@ import React from 'react';
 import { CreditCard, Check } from 'lucide-react';
 import { BlockDef } from '../core/types';
 import { EditableText } from '../core/EditableText';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
+import { ArrayField } from '../core/ArrayField';
 
 export const PricingCardsBlock: BlockDef = {
   type: 'PricingCardsBlock',
@@ -48,13 +47,13 @@ export const PricingCardsBlock: BlockDef = {
     padding: '4rem 2rem',
     backgroundColor: '#ffffff',
   },
-  renderComponent: ({ block, updateBlock }) => {
-    const { cards } = block.props;
+  renderComponent: ({ node }) => {
+    const { cards } = node.props;
 
     const updateCard = (index: number, key: string, value: any) => {
       const newCards = [...cards];
       newCards[index] = { ...newCards[index], [key]: value };
-      updateBlock(block.id, { props: { ...block.props, cards: newCards } });
+      onChange({ props: { ...node.props, cards: newCards } });
     };
 
     return (
@@ -119,47 +118,32 @@ export const PricingCardsBlock: BlockDef = {
       </div>
     );
   },
-  settingsComponent: ({ block, updateBlock }) => {
-    const { cards } = block.props;
-
-    const updateCard = (index: number, key: string, value: any) => {
-      const newCards = [...cards];
-      newCards[index] = { ...newCards[index], [key]: value };
-      updateBlock(block.id, { props: { ...block.props, cards: newCards } });
-    };
-
+  settingsComponent: ({ node, onChange }) => {
     return (
       <div className="space-y-6">
-        {cards.map((card: any, index: number) => (
-          <div key={card.id} className="p-4 border rounded-lg bg-slate-50 space-y-4">
-            <h4 className="font-medium text-sm">Card {index + 1}</h4>
-            <div className="space-y-2">
-              <Label>Button Text</Label>
-              <Input
-                value={card.buttonText}
-                onChange={(e) => updateCard(index, 'buttonText', e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Features (one per line)</Label>
-              <textarea
-                className="flex min-h-[80px] w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm ring-offset-white placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                value={card.features}
-                onChange={(e) => updateCard(index, 'features', e.target.value)}
-              />
-            </div>
-            <div className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                id={`recommended-${card.id}`}
-                checked={card.recommended}
-                onChange={(e) => updateCard(index, 'recommended', e.target.checked)}
-                className="rounded border-slate-300"
-              />
-              <Label htmlFor={`recommended-${card.id}`}>Recommended Badge</Label>
-            </div>
-          </div>
-        ))}
+        <ArrayField
+          title="Planos de Preço"
+          items={node.props.cards || []}
+          onChange={(cards) => onChange({ props: { ...node.props, cards } })}
+          defaultItem={{
+            title: 'Novo Plano',
+            price: '$99',
+            period: '/mês',
+            description: 'Descrição curta',
+            features: 'Feature 1\nFeature 2',
+            buttonText: 'Assinar',
+            recommended: false
+          }}
+          schema={[
+            { key: 'title', label: 'Nome do Plano', type: 'text' },
+            { key: 'price', label: 'Preço', type: 'text' },
+            { key: 'period', label: 'Período (ex: /mês)', type: 'text' },
+            { key: 'description', label: 'Descrição', type: 'textarea' },
+            { key: 'features', label: 'Recursos (1 por linha)', type: 'textarea' },
+            { key: 'buttonText', label: 'Texto do Botão', type: 'text' },
+            { key: 'recommended', label: 'Destacar como Recomendado?', type: 'boolean' }
+          ]}
+        />
       </div>
     );
   },

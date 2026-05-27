@@ -17,15 +17,15 @@ export const ColumnGridBlock: BlockDef = {
     padding: '16px 0',
     width: '100%',
   },
-  renderComponent: ({ block, updateBlock }) => {
-    const { columns, gap } = block.props;
+  renderComponent: ({ node }) => {
+    const { columns, gap } = node.props;
     
     const colsArray = Array.from({ length: columns });
 
     return (
       <div 
         style={{
-          ...block.styles,
+          ...node.styles,
           display: 'grid',
           gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
           gap: gap || '16px',
@@ -42,12 +42,12 @@ export const ColumnGridBlock: BlockDef = {
       </div>
     );
   },
-  settingsComponent: ({ block, updateBlock }) => {
+  settingsComponent: ({ node, onChange }) => {
     const handlePropChange = (key: string, value: any) => {
-      updateBlock(block.id, { props: { ...block.props, [key]: value } });
+      onChange({ props: { ...node.props, [key]: value } });
     };
     const handleStyleChange = (key: string, value: any) => {
-      updateBlock(block.id, { styles: { ...block.styles, [key]: value } });
+      onChange({ styles: { ...node.styles, [key]: value } });
     };
 
     return (
@@ -56,7 +56,7 @@ export const ColumnGridBlock: BlockDef = {
           <Label>Number of Columns</Label>
           <select 
             className="w-full p-2 border rounded-md text-sm"
-            value={block.props.columns}
+            value={node.props.columns}
             onChange={(e) => handlePropChange('columns', parseInt(e.target.value, 10))}
           >
             <option value={2}>2 Columns</option>
@@ -68,7 +68,7 @@ export const ColumnGridBlock: BlockDef = {
           <Label>Gap</Label>
           <Input 
             type="text"
-            value={block.props.gap}
+            value={node.props.gap}
             onChange={(e) => handlePropChange('gap', e.target.value)}
             placeholder="e.g. 16px"
           />
@@ -77,7 +77,7 @@ export const ColumnGridBlock: BlockDef = {
           <Label>Padding</Label>
           <Input 
             type="text"
-            value={block.styles.padding}
+            value={node.styles.padding}
             onChange={(e) => handleStyleChange('padding', e.target.value)}
             placeholder="e.g. 16px 0"
           />

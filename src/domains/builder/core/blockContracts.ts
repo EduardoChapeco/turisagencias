@@ -5,9 +5,9 @@ import React from 'react';
 export const baseBlockSchema = z.object({
   id: z.string(),
   type: z.string(),
-  props: z.record(z.any()),
-  styles: z.record(z.any()).optional(),
-  bindings: z.record(z.string()).optional(), // DB column bindings
+  props: z.record(z.string(), z.any()),
+  styles: z.record(z.string(), z.any()).optional(),
+  bindings: z.record(z.string(), z.string()).optional(), // DB column bindings
 });
 
 export type BlockData = z.infer<typeof baseBlockSchema>;

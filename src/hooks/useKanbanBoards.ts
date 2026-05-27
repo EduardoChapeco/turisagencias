@@ -277,6 +277,9 @@ export function useUpdateKanbanCard() {
       assigned_to?: string | null;
       meta?: Record<string, any> | null;
       metadata?: Record<string, any> | null;
+      priority?: string | null;
+      due_date?: string | null;
+      ticket_id?: string | null;
     }) => {
       const finalUpdates: Record<string, unknown> = { ...updates };
       if (finalUpdates.metadata !== undefined) {

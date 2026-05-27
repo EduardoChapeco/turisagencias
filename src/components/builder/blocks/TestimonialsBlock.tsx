@@ -3,6 +3,7 @@ import { BlockDef } from '../core/types';
 import { MessageSquareQuote } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import { ArrayField } from '../core/ArrayField';
 
 export const TestimonialsBlock: BlockDef = {
   type: 'testimonials',
@@ -54,7 +55,7 @@ export const TestimonialsBlock: BlockDef = {
 
   settingsComponent: ({ node, onChange }) => {
     return (
-      <div className="space-y-4">
+      <div className="space-y-6">
         <div className="space-y-2">
           <Label className="text-[10px] uppercase text-zinc-500 font-bold">Título</Label>
           <Input 
@@ -63,6 +64,18 @@ export const TestimonialsBlock: BlockDef = {
             className="bg-zinc-900 border-zinc-800 text-white text-sm"
           />
         </div>
+        
+        <ArrayField
+          title="Depoimentos"
+          items={node.props.testimonials || []}
+          onChange={(testimonials) => onChange({ props: { ...node.props, testimonials } })}
+          defaultItem={{ quote: 'Novo depoimento', author: 'Nome', role: 'Cliente' }}
+          schema={[
+            { key: 'quote', label: 'Citação', type: 'textarea' },
+            { key: 'author', label: 'Autor', type: 'text' },
+            { key: 'role', label: 'Cargo / Papel', type: 'text' }
+          ]}
+        />
       </div>
     );
   }

@@ -20,46 +20,7 @@ export default function AdminLogin() {
     return <Navigate to="/login" replace />;
   }
 
-  // If already authenticated via PIN, show the actual admin dashboard
-  if (isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-zinc-950 text-white p-8">
-        <div className="max-w-6xl mx-auto">
-          <div className="flex items-center gap-4 mb-8">
-            <div className="w-12 h-12 rounded-2xl bg-red-500/20 flex items-center justify-center border border-red-500/30">
-              <ShieldAlert className="text-red-500" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-black">Centro de Comando Global</h1>
-              <p className="text-zinc-400 text-sm">Acesso nível Deus ativado.</p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
-              <h2 className="font-semibold text-lg mb-4">Métricas Globais</h2>
-              <p className="text-zinc-500 text-sm">Dashboard em construção (Sprint E)</p>
-            </div>
-            <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
-              <h2 className="font-semibold text-lg mb-4">Gestão de Orgs</h2>
-              <p className="text-zinc-500 text-sm">Controle de clientes em construção (Sprint E)</p>
-            </div>
-            <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6">
-              <h2 className="font-semibold text-lg mb-4">Motor de IA</h2>
-              <p className="text-zinc-500 text-sm">Monitor de esquadrões em construção (Sprint E)</p>
-            </div>
-          </div>
-          
-          <Button 
-            className="mt-8 bg-zinc-800 hover:bg-zinc-700"
-            onClick={() => setIsAuthenticated(false)}
-          >
-            Encerrar Sessão Global
-          </Button>
-        </div>
-      </div>
-    );
-  }
+  // Removed inline dashboard. Redirects handled on success.
 
   const handlePinSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,8 +54,9 @@ export default function AdminLogin() {
       } else if (!data?.success) {
         toast({ title: 'Acesso Negado', description: 'PIN incorreto ou usuário não autorizado.', variant: 'destructive' });
       } else {
-        setIsAuthenticated(true);
-        toast({ title: 'Acesso Liberado', description: 'Bem-vindo ao Centro de Comando.' });
+        useAuthStore.getState().setMasterAuthenticated(true);
+        toast({ title: 'Acesso Liberado', description: 'Redirecionando para o Centro de Comando...' });
+        navigate('/admin/dashboard');
       }
     } catch (err: any) {
       toast({ title: 'Erro de comunicação', description: err.message, variant: 'destructive' });

@@ -52,8 +52,8 @@ export default function AdminAgencyDetail() {
         email: org.email || '',
         phone: org.phone || '',
         handle: org.handle || '',
-        subscription_plan: org.subscription_plan || 'free',
-        status: org.status || 'active',
+        subscription_plan: (org as any).subscription_plan || 'free',
+        status: (org as any).status || 'active',
         is_active: org.is_active ?? true,
       });
     }
@@ -63,7 +63,7 @@ export default function AdminAgencyDetail() {
     mutationFn: async (values: typeof form) => {
       const { error } = await supabase
         .from('organizations')
-        .update(values)
+        .update(values as any)
         .eq('id', id);
       
       if (error) throw error;

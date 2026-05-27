@@ -1,5 +1,6 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { useBuilderStore } from './useBuilderStore';
+import { BuilderNode } from './types';
 
 interface EditableTextProps {
   nodeId: string;
@@ -8,6 +9,8 @@ interface EditableTextProps {
   as?: React.ElementType;
   className?: string;
   placeholder?: string;
+  onChange?: (val: any) => void;
+  multiline?: boolean;
 }
 
 export function EditableText({ 
@@ -16,14 +19,34 @@ export function EditableText({
   value, 
   as: Component = 'span', 
   className,
-  placeholder = 'Digite aqui...' 
+  placeholder = 'Digite aqui...',
+  onChange,
+  multiline
 }: EditableTextProps) {
-  const { updateNode, selectedNodeId, isPreview } = useBuilderStore();
+  const updateNode = useBuilderStore(state => state.updateNode);
+  const isPreview = useBuilderStore(state => state.isPreview);
+  const isSelected = useBuilderStore(state => state.selectedNodeId === nodeId);
+  const nodes = useBuilderStore(state => state.nodes);
+
   const [isEditing, setIsEditing] = useState(false);
   const elementRef = useRef<HTMLElement>(null);
   
-  const isSelected = selectedNodeId === nodeId;
   const content = value || placeholder;
+
+  // Find current node props for merging (prevents overwriting sibling props)
+  const findNodeProps = useCallback(() => {
+    const findInTree = (list: BuilderNode[]): Record<string, any> | null => {
+      for (const n of list) {
+        if (n.id === nodeId) return n.props;
+        if (n.children) {
+          const found = findInTree(n.children);
+          if (found) return found;
+        }
+      }
+      return null;
+    };
+    return findInTree(nodes) ?? {};
+  }, [nodes, nodeId]);
 
   useEffect(() => {
     // Sync external value changes if not actively editing
@@ -36,7 +59,8 @@ export function EditableText({
     setIsEditing(false);
     const newValue = e.target.innerText;
     if (newValue !== value) {
-      updateNode(nodeId, { props: { [propKey]: newValue } });
+      const currentProps = findNodeProps();
+      updateNode(nodeId, { props: { ...currentProps, [propKey]: newValue } });
     }
   };
 
@@ -44,7 +68,6 @@ export function EditableText({
     if (isPreview) return;
     e.stopPropagation();
     setIsEditing(true);
-    // Focus and select all
     setTimeout(() => {
       if (elementRef.current) {
         elementRef.current.focus();

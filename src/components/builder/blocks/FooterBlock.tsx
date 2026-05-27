@@ -2,7 +2,7 @@ import React from 'react';
 import { PanelBottom } from 'lucide-react';
 import { BlockDef } from '../core/types';
 import { EditableText } from '../core/EditableText';
-import { Label } from '@/components/ui/label';
+import { ArrayField } from '../core/ArrayField';
 
 export const FooterBlock: BlockDef = {
   type: 'FooterBlock',
@@ -24,8 +24,8 @@ export const FooterBlock: BlockDef = {
     backgroundColor: '#fafafa',
     borderTop: '1px solid #f1f5f9',
   },
-  renderComponent: ({ block, updateBlock }) => {
-    const { brandName, description, copyright, columns } = block.props;
+  renderComponent: ({ node }) => {
+    const { brandName, description, copyright, columns } = node.props;
 
     return (
       <footer className="max-w-7xl mx-auto w-full">
@@ -33,12 +33,12 @@ export const FooterBlock: BlockDef = {
           <div className="lg:col-span-2 pr-8">
             <EditableText
               value={brandName}
-              onChange={(val) => updateBlock(block.id, { props: { ...block.props, brandName: val } })}
+              onChange={(val) => onChange({ props: { ...node.props, brandName: val } })}
               className="text-2xl font-bold text-slate-900 tracking-tight mb-4"
             />
             <EditableText
               value={description}
-              onChange={(val) => updateBlock(block.id, { props: { ...block.props, description: val } })}
+              onChange={(val) => onChange({ props: { ...node.props, description: val } })}
               className="text-sm text-slate-500 leading-relaxed max-w-sm"
             />
           </div>
@@ -61,7 +61,7 @@ export const FooterBlock: BlockDef = {
         <div className="pt-8 border-t border-slate-200 flex flex-col md:flex-row items-center justify-between gap-4">
           <EditableText
             value={copyright}
-            onChange={(val) => updateBlock(block.id, { props: { ...block.props, copyright: val } })}
+            onChange={(val) => onChange({ props: { ...node.props, copyright: val } })}
             className="text-sm text-slate-400"
           />
           <div className="flex gap-4">
@@ -74,38 +74,19 @@ export const FooterBlock: BlockDef = {
       </footer>
     );
   },
-  settingsComponent: ({ block, updateBlock }) => {
-    const { columns } = block.props;
-
-    const updateColumn = (index: number, key: string, value: string) => {
-      const newCols = [...columns];
-      newCols[index] = { ...newCols[index], [key]: value };
-      updateBlock(block.id, { props: { ...block.props, columns: newCols } });
-    };
-
+  settingsComponent: ({ node, onChange }) => {
     return (
       <div className="space-y-6">
-        {columns.map((col: any, index: number) => (
-          <div key={col.id} className="space-y-3 p-4 border rounded-lg bg-slate-50">
-            <Label className="text-xs font-semibold uppercase text-slate-500">Column {index + 1}</Label>
-            <div className="space-y-2">
-              <Label>Title</Label>
-              <input
-                className="flex h-9 w-full rounded-md border border-slate-200 bg-white px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-950"
-                value={col.title}
-                onChange={(e) => updateColumn(index, 'title', e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Links (one per line)</Label>
-              <textarea
-                className="flex min-h-[80px] w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-950"
-                value={col.links}
-                onChange={(e) => updateColumn(index, 'links', e.target.value)}
-              />
-            </div>
-          </div>
-        ))}
+        <ArrayField
+          title="Colunas do Rodapé (Menus)"
+          items={node.props.columns || []}
+          onChange={(columns) => onChange({ props: { ...node.props, columns } })}
+          defaultItem={{ title: 'Nova Coluna', links: 'Link 1\nLink 2\nLink 3' }}
+          schema={[
+            { key: 'title', label: 'Título da Coluna (ex: Produto, Empresa)', type: 'text' },
+            { key: 'links', label: 'Links (1 por linha)', type: 'textarea' }
+          ]}
+        />
       </div>
     );
   },

@@ -147,7 +147,7 @@ export function useUpdateNewsArticle() {
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<NewsArticle> }) => {
       const { data, error } = await supabase
         .from('news_articles')
-        .update(updates)
+        .update(updates as any)
         .eq('id', id)
         .select()
         .single();

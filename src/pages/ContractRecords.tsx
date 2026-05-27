@@ -405,7 +405,7 @@ export default function ContractRecords() {
                       const p = pg as Record<string, unknown>;
                       return (
                         <div key={i} className="border-b border-gray-200 py-2">
-                          <p>{String(p.nome ?? '')} — CPF: {String(p.cpf ?? '')} — {p.parcelas ?? 1}x — R$ {p.valor ?? 0} — {String(p.formaPagamento ?? '')}</p>
+                          <p>{String(p.nome ?? '')} — CPF: {String(p.cpf ?? '')} — {String(p.parcelas ?? 1)}x — R$ {String(p.valor ?? 0)} — {String(p.formaPagamento ?? '')}</p>
                         </div>
                       );
                     })}

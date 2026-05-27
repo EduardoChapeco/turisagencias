@@ -38,7 +38,8 @@ export default function NewsCMS() {
   const fetchVersions = async (articleId: string) => {
     try {
       setLoadingVersions(true);
-      const { data, error } = await supabase
+      const db = supabase as any;
+      const { data, error } = await db
         .from('news_article_versions')
         .select('*')
         .eq('article_id', articleId)
@@ -192,7 +193,8 @@ export default function NewsCMS() {
         setSelectedArticle(data);
 
         // Fetch last version number to determine next version index
-        supabase
+        const db = supabase as any;
+        db
           .from('news_article_versions')
           .select('version_number')
           .eq('article_id', articleId)
@@ -205,7 +207,7 @@ export default function NewsCMS() {
             }
             const nextVer = verData && verData.length > 0 ? (verData[0].version_number + 1) : 1;
 
-            supabase
+            db
               .from('news_article_versions')
               .insert({
                 article_id: articleId,
@@ -268,7 +270,8 @@ export default function NewsCMS() {
           setSelectedArticle(data);
           
           // Insert a new version snapshot tracking this restore action
-          supabase
+          const db = supabase as any;
+          db
             .from('news_article_versions')
             .select('version_number')
             .eq('article_id', version.article_id)
@@ -276,7 +279,7 @@ export default function NewsCMS() {
             .limit(1)
             .then(({ data: verData }) => {
               const nextVer = verData && verData.length > 0 ? (verData[0].version_number + 1) : 1;
-              supabase
+              db
                 .from('news_article_versions')
                 .insert({
                   article_id: version.article_id,

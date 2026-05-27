@@ -34,7 +34,7 @@ function HeaderBar() {
 
   return (
     <>
-      <header className="z-50 flex h-[60px] shrink-0 items-center gap-3 border-b border-vj-border bg-white/90 px-4 lg:px-5 backdrop-blur-xl">
+      <header className="z-40 flex h-[60px] shrink-0 items-center gap-3 border-b border-zinc-200 bg-white px-4 lg:px-5">
 
         {/* Esquerda: sidebar trigger + label da página + ⓘ */}
         <div className="flex items-center gap-2.5 flex-1 min-w-0">
@@ -147,19 +147,16 @@ export function AppLayout({ children, fullHeight }: { children: React.ReactNode;
     <PageInfoProvider>
       <SidebarProvider>
         <PageHeaderPortalContext.Provider value={pageHeaderTarget}>
-          <div className="flex h-[100dvh] min-h-[100dvh] w-full overflow-hidden bg-background text-foreground selection:bg-vj-green/20 no-scrollbar">
+          <div className="flex h-[100dvh] min-h-[100dvh] w-full overflow-hidden bg-zinc-50 text-zinc-900 selection:bg-vj-green/20 no-scrollbar">
             <AppSidebar />
 
             <div className="flex min-w-0 flex-1 flex-col overflow-hidden relative no-scrollbar">
               <HeaderBar />
 
-              <main className={`min-h-0 flex-1 relative flex flex-col no-scrollbar ${fullHeight ? 'overflow-hidden' : 'overflow-y-auto'}`}>
+              <main className={`min-h-0 flex-1 relative flex flex-col no-scrollbar ${fullHeight ? 'overflow-hidden' : 'overflow-y-auto overflow-x-hidden'}`}>
                 <div className={`mx-auto w-full min-h-0 animate-in fade-in duration-500 ${fullHeight ? 'flex flex-1 flex-col p-4 lg:p-6' : 'max-w-[1600px] p-5 lg:p-8'}`}>
                   {children}
                 </div>
-                {!fullHeight && (
-                  <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-vj-green/5 rounded-full blur-[120px] -z-10 opacity-20 pointer-events-none" />
-                )}
               </main>
             </div>
           </div>

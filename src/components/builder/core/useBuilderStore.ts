@@ -8,7 +8,8 @@ interface HistoryState {
 
 interface BuilderState {
   // Configs
-  projectId: string | null;
+  siteId: string | null;
+  pageId: string | null;
   projectType: 'website' | 'linkbio' | 'blog';
   slug: string;
   metaTitle: string;
@@ -26,6 +27,8 @@ interface BuilderState {
   // History & Dirty state
   history: HistoryState;
   isDirty: boolean;
+  isSavingDraft: boolean;
+  lastSavedAt: string | null;
 
   // Actions
   setNodes: (nodes: BuilderNode[]) => void;
@@ -38,7 +41,9 @@ interface BuilderState {
   setViewport: (viewport: ViewportMode) => void;
   setActiveTab: (tab: 'blocks' | 'settings' | 'edit') => void;
   setIsPreview: (isPreview: boolean) => void;
-  setProjectMeta: (meta: Partial<Pick<BuilderState, 'slug' | 'metaTitle' | 'metaDescription' | 'projectId' | 'projectType'>>) => void;
+  setProjectMeta: (meta: Partial<Pick<BuilderState, 'slug' | 'metaTitle' | 'metaDescription' | 'siteId' | 'pageId' | 'projectType'>>) => void;
+  setIsSavingDraft: (isSaving: boolean) => void;
+  setLastSavedAt: (dateIso: string) => void;
   
   undo: () => void;
   redo: () => void;
@@ -112,8 +117,11 @@ const insertNodeAt = (nodes: BuilderNode[], parentId: string | null, node: Build
   });
 };
 
+let lastHistoryPushTime = 0;
+
 export const useBuilderStore = create<BuilderState>((set, get) => ({
-  projectId: null,
+  siteId: null,
+  pageId: null,
   projectType: 'website',
   slug: 'home',
   metaTitle: '',
@@ -128,17 +136,26 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
   
   history: { past: [], future: [] },
   isDirty: false,
+  isSavingDraft: false,
+  lastSavedAt: null,
 
   setNodes: (nodes) => set((state) => {
-    // Only push to history if different
     const currentStr = JSON.stringify(state.nodes);
     const newStr = JSON.stringify(nodes);
     if (currentStr === newStr) return {};
 
+    const now = Date.now();
+    // Se a última edição no histórico foi há menos de 1.5 segundos, nós substituímos o último frame 
+    // em vez de criar milhares de frames para cada letra digitada num EditableText. (Prevenção de Memory Leak)
+    const shouldReplaceLast = state.history.past.length > 0 && (now - lastHistoryPushTime < 1500);
+    lastHistoryPushTime = now;
+
     return {
       nodes,
       history: {
-        past: [...state.history.past, clone(state.nodes)].slice(-50), // keep last 50
+        past: shouldReplaceLast 
+          ? [...state.history.past.slice(0, -1), clone(state.nodes)]
+          : [...state.history.past, clone(state.nodes)].slice(-50), // keep last 50
         future: []
       },
       isDirty: true
@@ -235,7 +252,9 @@ export const useBuilderStore = create<BuilderState>((set, get) => ({
   setActiveTab: (tab) => set({ activeTab: tab }),
   setIsPreview: (isPreview) => set({ isPreview, selectedNodeId: isPreview ? null : get().selectedNodeId }),
   
-  setProjectMeta: (meta) => set((state) => ({ ...meta, isDirty: true })),
+  setProjectMeta: (meta) => set((state) => ({ ...state, ...meta, isDirty: true })),
+  setIsSavingDraft: (isSavingDraft) => set({ isSavingDraft }),
+  setLastSavedAt: (lastSavedAt) => set({ lastSavedAt }),
 
   undo: () => set((state) => {
     const { past, future } = state.history;

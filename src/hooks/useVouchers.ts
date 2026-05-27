@@ -42,7 +42,8 @@ export function useVouchers() {
   return useQuery<VoucherRecord[]>({
     queryKey: [QK, organization?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const db = supabase as any;
+      const { data, error } = await db
         .from('vouchers')
         .select('*')
         .order('created_at', { ascending: false });
@@ -58,7 +59,8 @@ export function useCreateVoucher() {
 
   return useMutation({
     mutationFn: async (payload: VoucherUpsert) => {
-      const { data, error } = await supabase
+      const db = supabase as any;
+      const { data, error } = await db
         .from('vouchers')
         .insert(payload)
         .select()
@@ -79,7 +81,8 @@ export function useUpdateVoucher() {
 
   return useMutation({
     mutationFn: async ({ id, ...payload }: VoucherUpsert & { id: string }) => {
-      const { data, error } = await supabase
+      const db = supabase as any;
+      const { data, error } = await db
         .from('vouchers')
         .update(payload)
         .eq('id', id)
@@ -101,7 +104,8 @@ export function useDeleteVoucher() {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from('vouchers').delete().eq('id', id);
+      const db = supabase as any;
+      const { error } = await db.from('vouchers').delete().eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => {

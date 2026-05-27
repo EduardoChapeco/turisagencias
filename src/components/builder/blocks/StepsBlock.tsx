@@ -1,7 +1,7 @@
 import { BlockDef } from '../core/types';
 import { EditableText } from '../core/EditableText';
 import { ListOrdered } from 'lucide-react';
-import { Label } from '@/components/ui/label';
+import { ArrayField } from '../core/ArrayField';
 
 export const StepsBlock: BlockDef = {
   type: 'StepsBlock',
@@ -48,12 +48,18 @@ export const StepsBlock: BlockDef = {
       </div>
     );
   },
-  settingsComponent: () => (
-    <div className="space-y-4">
-      <div className="space-y-2">
-        <Label>Settings</Label>
-        <p className="text-xs text-muted-foreground">Edit titles and descriptions directly on the canvas.</p>
-      </div>
+  settingsComponent: ({ node, onChange }) => (
+    <div className="space-y-6">
+      <ArrayField
+        title="Passo a Passo"
+        items={node.props.steps || []}
+        onChange={(steps) => onChange({ props: { ...node.props, steps } })}
+        defaultItem={{ title: 'Novo Passo', description: 'Descreva a etapa aqui.' }}
+        schema={[
+          { key: 'title', label: 'Título do Passo', type: 'text' },
+          { key: 'description', label: 'Descrição do Passo', type: 'textarea' }
+        ]}
+      />
     </div>
   ),
 };

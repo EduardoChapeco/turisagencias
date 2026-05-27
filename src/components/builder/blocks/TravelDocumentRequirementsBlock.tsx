@@ -4,6 +4,7 @@ import { FileText, AlertCircle } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { EditableText } from '../core/EditableText';
+import { ArrayField } from '../core/ArrayField';
 
 export const TravelDocumentRequirementsBlock: BlockDef = {
   type: 'travel-document-requirements',
@@ -15,10 +16,10 @@ export const TravelDocumentRequirementsBlock: BlockDef = {
     title: 'Required Documents',
     description: 'Please ensure you have all the necessary documents before your trip.',
     requirements: [
-      'Passport valid for at least 6 months beyond date of return',
-      'Tourist Visa (can be obtained on arrival)',
-      'Yellow Fever Vaccination Certificate',
-      'Travel Insurance Policy'
+      { text: 'Passaporte válido por pelo menos 6 meses' },
+      { text: 'Visto de Turista (pode ser obtido na chegada)' },
+      { text: 'Certificado de Vacinação contra Febre Amarela' },
+      { text: 'Apólice de Seguro Viagem' }
     ]
   },
   
@@ -55,10 +56,10 @@ export const TravelDocumentRequirementsBlock: BlockDef = {
               className="text-amber-800 mb-6"
             />
             <ul className="space-y-3">
-              {requirements?.map((req: string, i: number) => (
+              {requirements?.map((req: any, i: number) => (
                 <li key={i} className="flex items-start gap-3 bg-white/60 p-4 rounded-xl border border-amber-100">
                   <FileText className="w-5 h-5 text-amber-600 shrink-0" />
-                  <span className="font-medium text-amber-950">{req}</span>
+                  <span className="font-medium text-amber-950">{req.text || req}</span>
                 </li>
               ))}
             </ul>
@@ -70,7 +71,7 @@ export const TravelDocumentRequirementsBlock: BlockDef = {
 
   settingsComponent: ({ node, onChange }) => {
     return (
-      <div className="space-y-4">
+      <div className="space-y-6">
         <div className="space-y-2">
           <Label className="text-[10px] uppercase text-zinc-500 font-bold">Título</Label>
           <Input 
@@ -79,6 +80,16 @@ export const TravelDocumentRequirementsBlock: BlockDef = {
             className="bg-zinc-900 border-zinc-800 text-white text-sm h-9"
           />
         </div>
+        
+        <ArrayField
+          title="Documentos Necessários"
+          items={node.props.requirements || []}
+          onChange={(requirements) => onChange({ props: { ...node.props, requirements } })}
+          defaultItem={{ text: 'Novo Documento' }}
+          schema={[
+            { key: 'text', label: 'Nome do Documento / Requisito', type: 'text' }
+          ]}
+        />
       </div>
     );
   }

@@ -19,8 +19,8 @@ export const HeaderBlock: BlockDef = {
     backgroundColor: '#ffffff',
     borderBottom: '1px solid #f1f5f9',
   },
-  renderComponent: ({ block, updateBlock }) => {
-    const { logoText, links, buttonText } = block.props;
+  renderComponent: ({ node }) => {
+    const { logoText, links, buttonText } = node.props;
     const navLinks = links.split('\n').filter((l: string) => l.trim() !== '');
 
     return (
@@ -31,7 +31,7 @@ export const HeaderBlock: BlockDef = {
           </div>
           <EditableText
             value={logoText}
-            onChange={(val) => updateBlock(block.id, { props: { ...block.props, logoText: val } })}
+            onChange={(val) => onChange({ props: { ...node.props, logoText: val } })}
             className="text-xl font-bold text-slate-900 tracking-tight"
           />
         </div>
@@ -59,15 +59,15 @@ export const HeaderBlock: BlockDef = {
       </header>
     );
   },
-  settingsComponent: ({ block, updateBlock }) => {
+  settingsComponent: ({ node, onChange }) => {
     return (
       <div className="space-y-4">
         <div className="space-y-2">
           <Label>Navigation Links (one per line)</Label>
           <textarea
             className="flex min-h-[120px] w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm ring-offset-white placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-            value={block.props.links}
-            onChange={(e) => updateBlock(block.id, { props: { ...block.props, links: e.target.value } })}
+            value={node.props.links}
+            onChange={(e) => onChange({ props: { ...node.props, links: e.target.value } })}
           />
         </div>
       </div>

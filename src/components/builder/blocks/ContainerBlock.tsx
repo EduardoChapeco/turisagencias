@@ -19,18 +19,18 @@ export const ContainerBlock: BlockDef = {
     borderRadius: '8px',
     width: '100%',
   },
-  renderComponent: ({ block }) => {
+  renderComponent: ({ node }) => {
     return (
-      <div style={block.styles}>
+      <div style={node.styles}>
         <div className="min-h-[100px] border-2 border-dashed border-blue-200 bg-blue-50/30 rounded flex items-center justify-center text-blue-400 text-sm">
           Container (Drop blocks here)
         </div>
       </div>
     );
   },
-  settingsComponent: ({ block, updateBlock }) => {
+  settingsComponent: ({ node, onChange }) => {
     const handleStyleChange = (key: string, value: any) => {
-      updateBlock(block.id, { styles: { ...block.styles, [key]: value } });
+      onChange({ styles: { ...node.styles, [key]: value } });
     };
 
     return (
@@ -39,7 +39,7 @@ export const ContainerBlock: BlockDef = {
           <Label>Background Color</Label>
           <Input 
             type="color"
-            value={block.styles.backgroundColor}
+            value={node.styles.backgroundColor}
             onChange={(e) => handleStyleChange('backgroundColor', e.target.value)}
           />
         </div>
@@ -47,7 +47,7 @@ export const ContainerBlock: BlockDef = {
           <Label>Padding</Label>
           <Input 
             type="text"
-            value={block.styles.padding}
+            value={node.styles.padding}
             onChange={(e) => handleStyleChange('padding', e.target.value)}
             placeholder="e.g. 24px"
           />
@@ -56,7 +56,7 @@ export const ContainerBlock: BlockDef = {
           <Label>Border Width</Label>
           <Input 
             type="text"
-            value={block.styles.borderWidth}
+            value={node.styles.borderWidth}
             onChange={(e) => handleStyleChange('borderWidth', e.target.value)}
             placeholder="e.g. 1px"
           />
@@ -65,7 +65,7 @@ export const ContainerBlock: BlockDef = {
           <Label>Border Color</Label>
           <Input 
             type="color"
-            value={block.styles.borderColor}
+            value={node.styles.borderColor}
             onChange={(e) => handleStyleChange('borderColor', e.target.value)}
           />
         </div>
@@ -73,7 +73,7 @@ export const ContainerBlock: BlockDef = {
           <Label>Border Radius</Label>
           <Input 
             type="text"
-            value={block.styles.borderRadius}
+            value={node.styles.borderRadius}
             onChange={(e) => handleStyleChange('borderRadius', e.target.value)}
             placeholder="e.g. 8px"
           />

@@ -23,10 +23,12 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
-function SortableBlock({ node }: { node: BuilderNode }) {
-  const { selectedNodeId, setSelectedNodeId, removeNode } = useBuilderStore();
+const SortableBlock = React.memo(function SortableBlock({ node }: { node: BuilderNode }) {
+  const isSelected = useBuilderStore(state => state.selectedNodeId === node.id);
+  const setSelectedNodeId = useBuilderStore(state => state.setSelectedNodeId);
+  const removeNode = useBuilderStore(state => state.removeNode);
+  
   const blockDef = BlockRegistry.get(node.type);
-  const isSelected = selectedNodeId === node.id;
 
   const {
     attributes,
@@ -46,25 +48,43 @@ function SortableBlock({ node }: { node: BuilderNode }) {
   const RenderComponent = blockDef.renderComponent;
 
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className={cn(
-        "relative group transition-all ring-inset cursor-pointer",
-        isSelected ? "ring-2 ring-vj-green z-10" : "hover:ring-1 hover:ring-zinc-400"
-      )}
-      onClick={(e) => {
-        e.stopPropagation();
-        setSelectedNodeId(node.id);
-      }}
-    >
-      {/* Block Controls (Absolute positioned, visible on hover/select) */}
-      <div className={cn(
-        "absolute -top-3 left-1/2 -translate-x-1/2 bg-vj-green text-zinc-950 px-3 py-1 text-[10px] font-bold rounded-full opacity-0 transition-opacity z-20 flex items-center gap-2 shadow-lg",
-        (isSelected || "group-hover:opacity-100") && "opacity-100"
-      )}>
-        <span {...attributes} {...listeners} className="cursor-grab hover:text-white px-1">:: Drag</span>
-        <span className="capitalize">{blockDef.label}</span>
+      <div
+        ref={setNodeRef}
+        style={style}
+        tabIndex={0}
+        role="region"
+        aria-label={`Bloco de ${blockDef.label}`}
+        className={cn(
+          "relative group transition-all ring-inset cursor-pointer outline-none focus-visible:ring-4 focus-visible:ring-vj-green/50",
+          isSelected ? "ring-2 ring-vj-green z-10" : "hover:ring-1 hover:ring-zinc-400"
+        )}
+        onClick={(e) => {
+          e.stopPropagation();
+          setSelectedNodeId(node.id);
+        }}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            e.stopPropagation();
+            setSelectedNodeId(node.id);
+          }
+        }}
+      >
+        {/* Block Controls (Absolute positioned, visible on hover/select) */}
+        <div className={cn(
+          "absolute -top-3 left-1/2 -translate-x-1/2 bg-vj-green text-zinc-950 px-3 py-1 text-[10px] font-bold rounded-full opacity-0 transition-opacity z-20 flex items-center gap-2 shadow-lg",
+          (isSelected || "group-hover:opacity-100") && "opacity-100",
+          "focus-within:opacity-100"
+        )}>
+          <button 
+            {...attributes} 
+            {...listeners} 
+            className="cursor-grab hover:text-white px-1 outline-none focus-visible:ring-2 focus-visible:ring-white rounded"
+            aria-label={`Arrastar bloco de ${blockDef.label}`}
+          >
+            :: Drag
+          </button>
+          <span className="capitalize">{blockDef.label}</span>
         <button 
           onClick={(e) => { e.stopPropagation(); removeNode(node.id); }}
           className="hover:text-red-900 ml-1"
@@ -74,18 +94,19 @@ function SortableBlock({ node }: { node: BuilderNode }) {
       </div>
 
       <div className="pointer-events-none relative z-0">
-        <RenderComponent node={node} />
-        {node.children && node.children.length > 0 && (
-          <div className="pl-4 mt-4 border-l-2 border-dashed border-zinc-200">
-             {node.children.map(childNode => (
-               <SortableBlock key={childNode.id} node={childNode} />
-             ))}
-          </div>
-        )}
+        <RenderComponent node={node}>
+          {node.children && node.children.length > 0 && (
+            <div className="w-full h-full min-h-[50px]">
+               {node.children.map(childNode => (
+                 <SortableBlock key={childNode.id} node={childNode} />
+               ))}
+            </div>
+          )}
+        </RenderComponent>
       </div>
     </div>
   );
-}
+});
 
 export function BuilderCanvas() {
   const { nodes, setNodes, viewport, setSelectedNodeId } = useBuilderStore();

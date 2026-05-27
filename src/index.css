@@ -7,384 +7,404 @@
 @tailwind utilities;
 
 @layer base {
-  :root {
-    /* ── TURIS OMEGA V6 CORE PALETTE ── */
-    --vj-bg: #FAFAFA;
-    --vj-bg-dark: #0F172A;
-    --vj-white: #ffffff;
-    --vj-surface: #ffffff;
+ :root {
+ /* ── TURIS OMEGA V6 CORE PALETTE ── */
+ --vj-bg: #FAFAFA;
+ --vj-bg-dark: #0F172A;
+ --vj-white: #ffffff;
+ --vj-surface: #ffffff;
 
-    /* Typography colors */
-    --vj-txt: #111827;
-    --vj-txt2: #475569;
-    --vj-txt3: #64748B;
+ /* Typography colors */
+ --vj-txt: #111827;
+ --vj-txt2: #475569;
+ --vj-txt3: #64748B;
 
-    /* Accent & Action colors */
-    --vj-green: #2563EB;        /* Primary action is now Blue */
-    --vj-green-bg: #EFF6FF;     /* bg-primary-subtle */
-    --vj-primary: #2563EB;
-    --vj-primary-bg: #EFF6FF;
-    --vj-orange: #D97706;       /* Warning is Amber */
-    --vj-orange-bg: #FEF3C7;
-    --vj-blue: #2563EB;
-    --vj-blue-bg: #EFF6FF;
-    --vj-red: #DC2626;          /* Danger is Red */
-    --vj-red-bg: #FEE2E2;
-    --vj-yellow: #D97706;
+ /* Accent & Action colors */
+ --vj-green: #2563EB; /* Primary action is now Blue */
+ --vj-green-bg: #EFF6FF; /* bg-primary-subtle */
+ --vj-primary: #2563EB;
+ --vj-primary-bg: #EFF6FF;
+ --vj-orange: #D97706; /* Warning is Amber */
+ --vj-orange-bg: #FEF3C7;
+ --vj-blue: #2563EB;
+ --vj-blue-bg: #EFF6FF;
+ --vj-red: #DC2626; /* Danger is Red */
+ --vj-red-bg: #FEE2E2;
+ --vj-yellow: #D97706;
 
-    /* Borders */
-    --vj-border: #DDE3EA;       /* border-subtle */
-    --vj-border2: #CBD5E1;      /* border-strong */
-    --vj-border-light: rgba(221, 227, 234, 0.5);
+ /* Borders */
+ --vj-border: #DDE3EA; /* border-subtle */
+ --vj-border2: #CBD5E1; /* border-strong */
+ --vj-border-light: rgba(221, 227, 234, 0.5);
 
-    /* Radius */
-    --radius: 12px;
-    --r-xl: 16px;
-    --r-2xl: 24px;
+ /* Radius */
+ --radius: 12px;
+ --r-xl: 16px;
+ --r-2xl: 24px;
 
-    /* shadcn/ui tokens */
-    --background: 0 0% 98%;
-    --foreground: 220 13% 11%;
-    --card: 0 0% 100%;
-    --card-foreground: 220 13% 11%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 220 13% 11%;
-    --primary: 221 83% 53%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 210 18% 96%;
-    --secondary-foreground: 220 13% 11%;
-    --muted: 210 18% 96%;
-    --muted-foreground: 215 16% 47%;
-    --accent: 210 20% 96%;
-    --accent-foreground: 220 13% 11%;
-    --destructive: 0 72% 51%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 212 20% 89%;
-    --input: 212 20% 89%;
-    --ring: 221 83% 53%;
-  }
+ /* shadcn/ui tokens */
+ --background: 0 0% 98%;
+ --foreground: 220 13% 11%;
+ --card: 0 0% 100%;
+ --card-foreground: 220 13% 11%;
+ --popover: 0 0% 100%;
+ --popover-foreground: 220 13% 11%;
+ --primary: 221 83% 53%;
+ --primary-foreground: 0 0% 100%;
+ --secondary: 210 18% 96%;
+ --secondary-foreground: 220 13% 11%;
+ --muted: 210 18% 96%;
+ --muted-foreground: 215 16% 47%;
+ --accent: 210 20% 96%;
+ --accent-foreground: 220 13% 11%;
+ --destructive: 0 72% 51%;
+ --destructive-foreground: 0 0% 100%;
+ --border: 212 20% 89%;
+ --input: 212 20% 89%;
+ --ring: 221 83% 53%;
 
-  .dark {
-    --vj-bg: #0F172A;
-    --vj-bg-dark: #09090B;
-    --vj-white: #000000;
-    --vj-surface: #1E293B;
-    --vj-txt: #F8FAFC;
-    --vj-txt2: #94A3B8;
-    --vj-txt3: #64748B;
-    --vj-green: #3B82F6;
-    --vj-green-bg: rgba(59, 130, 246, 0.1);
-    --vj-primary: #3B82F6;
-    --vj-primary-bg: rgba(59, 130, 246, 0.1);
-    --vj-orange: #F59E0B;
-    --vj-orange-bg: rgba(245, 158, 11, 0.1);
-    --vj-blue: #3B82F6;
-    --vj-blue-bg: rgba(59, 130, 246, 0.1);
-    --vj-red: #EF4444;
-    --vj-red-bg: rgba(239, 68, 68, 0.1);
-    --vj-yellow: #F59E0B;
-    --vj-border: #334155;
-    --vj-border2: #475569;
-    --vj-border-light: rgba(51, 65, 85, 0.5);
-    --background: 222 47% 11%;
-    --foreground: 210 37% 96%;
-    --card: 222 47% 11%;
-    --card-foreground: 210 37% 96%;
-    --popover: 222 47% 11%;
-    --popover-foreground: 210 37% 96%;
-    --primary: 217 91% 60%;
-    --primary-foreground: 222 47% 11%;
-    --secondary: 217 32% 17%;
-    --secondary-foreground: 210 37% 96%;
-    --muted: 217 32% 17%;
-    --muted-foreground: 215 20% 65%;
-    --accent: 217 32% 17%;
-    --accent-foreground: 210 37% 96%;
-    --destructive: 0 63% 31%;
-    --destructive-foreground: 210 37% 96%;
-    --border: 217 32% 17%;
-    --input: 217 32% 17%;
-    --ring: 217 91% 60%;
-  }
+ /* Sidebar Tokens */
+ --sidebar-background: 0 0% 100%; /* Pure white for flat design */
+ --sidebar-foreground: 220 13% 11%;
+ --sidebar-primary: 221 83% 53%;
+ --sidebar-primary-foreground: 0 0% 100%;
+ --sidebar-accent: 210 20% 96%;
+ --sidebar-accent-foreground: 220 13% 11%;
+ --sidebar-border: 212 20% 89%;
+ --sidebar-ring: 221 83% 53%;
+ }
 
-  /* ── GLOBAL RESET ── */
-  *, *::before, *::after {
-    border-color: var(--vj-border);
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-  }
+ .dark {
+ --vj-bg: #0F172A;
+ --vj-bg-dark: #09090B;
+ --vj-white: #000000;
+ --vj-surface: #1E293B;
+ --vj-txt: #F8FAFC;
+ --vj-txt2: #94A3B8;
+ --vj-txt3: #64748B;
+ --vj-green: #3B82F6;
+ --vj-green-bg: rgba(59, 130, 246, 0.1);
+ --vj-primary: #3B82F6;
+ --vj-primary-bg: rgba(59, 130, 246, 0.1);
+ --vj-orange: #F59E0B;
+ --vj-orange-bg: rgba(245, 158, 11, 0.1);
+ --vj-blue: #3B82F6;
+ --vj-blue-bg: rgba(59, 130, 246, 0.1);
+ --vj-red: #EF4444;
+ --vj-red-bg: rgba(239, 68, 68, 0.1);
+ --vj-yellow: #F59E0B;
+ --vj-border: #334155;
+ --vj-border2: #475569;
+ --vj-border-light: rgba(51, 65, 85, 0.5);
+ --background: 222 47% 11%;
+ --foreground: 210 37% 96%;
+ --card: 222 47% 11%;
+ --card-foreground: 210 37% 96%;
+ --popover: 222 47% 11%;
+ --popover-foreground: 210 37% 96%;
+ --primary: 217 91% 60%;
+ --primary-foreground: 222 47% 11%;
+ --secondary: 217 32% 17%;
+ --secondary-foreground: 210 37% 96%;
+ --muted: 217 32% 17%;
+ --muted-foreground: 215 20% 65%;
+ --accent: 217 32% 17%;
+ --accent-foreground: 210 37% 96%;
+ --destructive: 0 63% 31%;
+ --destructive-foreground: 210 37% 96%;
+ --border: 217 32% 17%;
+ --input: 217 32% 17%;
+ --ring: 217 91% 60%;
 
-  /* Permite box-shadow apenas em overlays/dropdowns */
-  [data-radix-popper-content-wrapper],
-  [role="dialog"],
-  [role="tooltip"],
-  [role="listbox"],
-  .leaflet-popup-content-wrapper,
-  .kanban-card-dragging {
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12) !important;
-  }
+ /* Sidebar Tokens Dark */
+ --sidebar-background: 222 47% 11%;
+ --sidebar-foreground: 210 37% 96%;
+ --sidebar-primary: 217 91% 60%;
+ --sidebar-primary-foreground: 222 47% 11%;
+ --sidebar-accent: 217 32% 17%;
+ --sidebar-accent-foreground: 210 37% 96%;
+ --sidebar-border: 217 32% 17%;
+ --sidebar-ring: 217 91% 60%;
+ }
 
-  html, body {
-    height: 100%;
-    background-color: var(--vj-bg);
-    color: var(--vj-txt);
-    font-family: "Inter", sans-serif;
-    -webkit-font-smoothing: antialiased;
-    font-size: 14px;
-    line-height: 1.6;
-  }
+ /* ── GLOBAL RESET ── */
+ *, *::before, *::after {
+ border-color: var(--vj-border);
+ box-sizing: border-box;
+ margin: 0;
+ padding: 0;
+ }
 
-  h1, h2, h3, h4, h5, h6 {
-    font-family: 'Inter', sans-serif;
-    font-weight: 700;
-    letter-spacing: -0.025em;
-  }
+ /* Permite box-shadow apenas em overlays/dropdowns */
+ [data-radix-popper-content-wrapper],
+ [role="dialog"],
+ [role="tooltip"],
+ [role="listbox"],
+ .leaflet-popup-content-wrapper,
+ .kanban-card-dragging {
+ box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12) !important;
+ }
 
-  ::-webkit-scrollbar { display: none !important; }
-  * { scrollbar-width: none !important; -ms-overflow-style: none !important; }
+ html, body {
+ height: 100%;
+ background-color: var(--vj-bg);
+ color: var(--vj-txt);
+ font-family: "Inter", sans-serif;
+ -webkit-font-smoothing: antialiased;
+ font-size: 14px;
+ line-height: 1.6;
+ }
+
+ h1, h2, h3, h4, h5, h6 {
+ font-family: 'Inter', sans-serif;
+ font-weight: 700;
+ letter-spacing: -0.025em;
+ }
+
+ ::-webkit-scrollbar { display: none !important; }
+ * { scrollbar-width: none !important; -ms-overflow-style: none !important; }
 }
 
 @layer components {
 
-  /* ════════════════════════════════════════════
-     PAGE HEADER — INLINE, PADRÃO ÚNICO
-     Sem título no conteúdo — só ⓘ + badge + botões
-  ════════════════════════════════════════════ */
-  .page-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.75rem;
-    margin-bottom: 1.25rem;
-    flex-wrap: wrap;
-    min-height: 36px;
-  }
+ /* ════════════════════════════════════════════
+ PAGE HEADER — INLINE, PADRÃO ÚNICO
+ Sem título no conteúdo — só ⓘ + badge + botões
+ ════════════════════════════════════════════ */
+ .page-header {
+ display: flex;
+ align-items: center;
+ justify-content: space-between;
+ gap: 0.75rem;
+ margin-bottom: 1.25rem;
+ flex-wrap: wrap;
+ min-height: 36px;
+ }
 
-  .page-header-left {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    min-width: 0;
-    flex: 1;
-  }
+ .page-header-left {
+ display: flex;
+ align-items: center;
+ gap: 0.5rem;
+ min-width: 0;
+ flex: 1;
+ }
 
-  .page-header-breadcrumb {
-    display: flex;
-    align-items: center;
-    gap: 0.375rem;
-    font-size: 10px;
-    font-weight: 700;
-    color: var(--vj-txt3);
-    text-transform: uppercase;
-    letter-spacing: 0.15em;
-    opacity: 0.6;
-  }
+ .page-header-breadcrumb {
+ display: flex;
+ align-items: center;
+ gap: 0.375rem;
+ font-size: 10px;
+ font-weight: 700;
+ color: var(--vj-txt3);
+ text-transform: uppercase;
+ letter-spacing: 0.15em;
+ opacity: 0.6;
+ }
 
-  /* Botões de ação: nunca cortam, sempre visíveis */
-  .page-header-actions {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    flex-shrink: 0;
-    flex-wrap: wrap;
-  }
+ /* Botões de ação: nunca cortam, sempre visíveis */
+ .page-header-actions {
+ display: flex;
+ align-items: center;
+ gap: 0.5rem;
+ flex-shrink: 0;
+ flex-wrap: wrap;
+ }
 
-  /* ════════════════════════════════════════════
-     GLASS CARD & GLASS BUTTON (NOW FLAT)
-  ════════════════════════════════════════════ */
-  .glass-card {
-    background: white;
-    border: 1px solid var(--vj-border);
-  }
+ /* ════════════════════════════════════════════
+ GLASS CARD & GLASS BUTTON (NOW FLAT)
+ ════════════════════════════════════════════ */
+ .glass-card {
+ background: white;
+ border: 1px solid var(--vj-border);
+ }
 
-  .glass-button {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    height: 2.5rem;
-    padding: 0 1rem;
-    border-radius: 0.5rem;
-    font-weight: 600;
-    font-size: 0.875rem;
-    border: 1px solid var(--vj-border);
-    background-color: white;
-    color: var(--vj-txt);
-    transition: all 0.2s ease;
-    cursor: pointer;
-  }
-  .glass-button:hover {
-    border-color: var(--vj-green);
-    background-color: var(--vj-green-bg);
-    color: var(--vj-green);
-  }
+ .glass-button {
+ display: inline-flex;
+ align-items: center;
+ justify-content: center;
+ height: 2.5rem;
+ padding: 0 1rem;
+ border-radius: 0.5rem;
+ font-weight: 600;
+ font-size: 0.875rem;
+ border: 1px solid var(--vj-border);
+ background-color: white;
+ color: var(--vj-txt);
+ transition: all 0.2s ease;
+ cursor: pointer;
+ }
+ .glass-button:hover {
+ border-color: var(--vj-green);
+ background-color: var(--vj-green-bg);
+ color: var(--vj-green);
+ }
 
-  /* ════════════════════════════════════════════
-     PREMIUM BUTTON — CTA principal
-  ════════════════════════════════════════════ */
-  .premium-button {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    height: 2.5rem;
-    padding: 0 1.25rem;
-    border-radius: 0.5rem;
-    font-weight: 700;
-    font-size: 0.875rem;
-    color: white;
-    background-color: var(--vj-green);
-    transition: all 0.2s ease;
-    cursor: pointer;
-    border: none;
-  }
-  .premium-button:hover {
-    background-color: rgba(34, 197, 94, 0.9);
-  }
+ /* ════════════════════════════════════════════
+ PREMIUM BUTTON — CTA principal
+ ════════════════════════════════════════════ */
+ .premium-button {
+ display: inline-flex;
+ align-items: center;
+ justify-content: center;
+ height: 2.5rem;
+ padding: 0 1.25rem;
+ border-radius: 0.5rem;
+ font-weight: 700;
+ font-size: 0.875rem;
+ color: white;
+ background-color: var(--vj-green);
+ transition: all 0.2s ease;
+ cursor: pointer;
+ border: none;
+ }
+ .premium-button:hover {
+ background-color: rgba(34, 197, 94, 0.9);
+ }
 
-  /* ════════════════════════════════════════════
-     BENTO CARD — NOW FLAT CARD
-  ════════════════════════════════════════════ */
-  .bento-card {
-    position: relative;
-    border-radius: 0.75rem;
-    border: 1px solid var(--vj-border);
-    background: white;
-    transition: border-color 0.2s ease;
-  }
-  .bento-card:hover {
-    border-color: var(--vj-green);
-  }
+ /* ════════════════════════════════════════════
+ BENTO CARD — NOW FLAT CARD
+ ════════════════════════════════════════════ */
+ .bento-card {
+ position: relative;
+ border-radius: 0.75rem;
+ border: 1px solid var(--vj-border);
+ background: white;
+ transition: border-color 0.2s ease;
+ }
+ .bento-card:hover {
+ border-color: var(--vj-green);
+ }
 
-  /* ════════════════════════════════════════════
-     PREMIUM CARD — NOW FLAT CRM CARD
-  ════════════════════════════════════════════ */
-  .premium-card {
-    position: relative;
-    border-radius: 0.75rem;
-    border: 1px solid var(--vj-border);
-    background: white;
-    transition: border-color 0.2s ease;
-  }
-  .premium-card:hover {
-    border-color: var(--vj-green);
-  }
+ /* ════════════════════════════════════════════
+ PREMIUM CARD — NOW FLAT CRM CARD
+ ════════════════════════════════════════════ */
+ .premium-card {
+ position: relative;
+ border-radius: 0.75rem;
+ border: 1px solid var(--vj-border);
+ background: white;
+ transition: border-color 0.2s ease;
+ }
+ .premium-card:hover {
+ border-color: var(--vj-green);
+ }
 
-  /* ════════════════════════════════════════════
-     BENTO GRID — layout de cards auto-fill
-  ════════════════════════════════════════════ */
-  .bento-grid-premium {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 1rem;
-  }
+ /* ════════════════════════════════════════════
+ BENTO GRID — layout de cards auto-fill
+ ════════════════════════════════════════════ */
+ .bento-grid-premium {
+ display: grid;
+ grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+ gap: 1rem;
+ }
 
-  /* ════════════════════════════════════════════
-     KANBAN — board, colunas e cards
-  ════════════════════════════════════════════ */
-  .kanban-board {
-    @apply flex gap-4 overflow-x-auto overflow-y-hidden pb-4 px-1 w-full;
-    min-height: calc(100vh - 140px);
-  }
+ /* ════════════════════════════════════════════
+ KANBAN — board, colunas e cards
+ ════════════════════════════════════════════ */
+ .kanban-board {
+ @apply flex gap-4 overflow-x-auto overflow-y-hidden pb-4 px-1 w-full;
+ min-height: calc(100vh - 140px);
+ }
 
-  .kanban-column {
-    @apply flex flex-col w-[290px] shrink-0 bg-slate-50 border border-slate-200 rounded-xl;
-  }
+ .kanban-column {
+ @apply flex flex-col w-[290px] shrink-0 bg-slate-50 border border-slate-200 rounded-xl;
+ }
 
-  .kanban-column-header {
-    @apply flex items-center justify-between px-4 py-3 border-b border-slate-200 bg-white rounded-t-xl;
-  }
+ .kanban-column-header {
+ @apply flex items-center justify-between px-4 py-3 border-b border-slate-200 bg-white rounded-t-xl;
+ }
 
-  .kanban-column-title {
-    @apply text-xs font-bold text-slate-800 uppercase tracking-wider;
-  }
+ .kanban-column-title {
+ @apply text-xs font-bold text-slate-800 uppercase tracking-wider;
+ }
 
-  .kanban-column-count {
-    @apply h-5 min-w-[20px] px-1.5 flex items-center justify-center bg-slate-100 text-[10px] font-bold text-slate-500 rounded-md;
-  }
+ .kanban-column-count {
+ @apply h-5 min-w-[20px] px-1.5 flex items-center justify-center bg-slate-100 text-[10px] font-bold text-slate-500 rounded-md;
+ }
 
-  .kanban-cards {
-    @apply flex-1 p-3 overflow-y-auto space-y-2 min-h-[80px];
-  }
+ .kanban-cards {
+ @apply flex-1 p-3 overflow-y-auto space-y-2 min-h-[80px];
+ }
 
-  .kanban-quick-add {
-    padding: 0.5rem;
-    margin-top: auto;
-    border-top: 1px solid var(--vj-border);
-    border-bottom-left-radius: 0.75rem;
-    border-bottom-right-radius: 0.75rem;
-  }
+ .kanban-quick-add {
+ padding: 0.5rem;
+ margin-top: auto;
+ border-top: 1px solid var(--vj-border);
+ border-bottom-left-radius: 0.75rem;
+ border-bottom-right-radius: 0.75rem;
+ }
 
-  /* Card individual do Kanban (Flat) */
-  .kanban-card {
-    position: relative;
-    background: white;
-    border: 1px solid var(--vj-border);
-    border-radius: 0.5rem;
-    padding: 12px 12px 12px 24px;
-    cursor: pointer;
-    transition: border-color 0.2s ease;
-    min-height: 60px;
-  }
-  .kanban-card:hover {
-    border-color: var(--vj-green);
-  }
-  .kanban-card-dragging {
-    opacity: 0.9;
-    border-color: var(--vj-green);
-    z-index: 9999;
-  }
+ /* Card individual do Kanban (Flat) */
+ .kanban-card {
+ position: relative;
+ background: white;
+ border: 1px solid var(--vj-border);
+ border-radius: 0.5rem;
+ padding: 12px 12px 12px 24px;
+ cursor: pointer;
+ transition: border-color 0.2s ease;
+ min-height: 60px;
+ }
+ .kanban-card:hover {
+ border-color: var(--vj-green);
+ }
+ .kanban-card-dragging {
+ opacity: 0.9;
+ border-color: var(--vj-green);
+ z-index: 9999;
+ }
 
-  /* ════════════════════════════════════════════
-     ALERT BANNER — fonte de verdade para banners de aviso
-     Usar com: .alert-banner.warning | .danger | .info | .success
-  ════════════════════════════════════════════ */
-  .alert-banner {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-    padding: 1rem 1.25rem;
-    border-radius: var(--r-xl);
-    border: 1px solid var(--vj-border);
-    background: var(--vj-bg);
-  }
-  .alert-banner.warning {
-    background-color: var(--vj-orange-bg);
-    border-color: var(--vj-orange);
-  }
-  .alert-banner.danger {
-    background-color: var(--vj-red-bg);
-    border-color: var(--vj-red);
-  }
-  .alert-banner.info {
-    background-color: var(--vj-blue-bg);
-    border-color: var(--vj-blue);
-  }
-  .alert-banner.success {
-    background-color: var(--vj-green-bg);
-    border-color: var(--vj-green);
-  }
-  .alert-banner-title {
-    font-size: 0.875rem;
-    font-weight: 700;
-    color: var(--vj-txt);
-  }
-  .alert-banner-desc {
-    font-size: 0.75rem;
-    color: var(--vj-txt2);
-    margin-top: 0.125rem;
-  }
+ /* ════════════════════════════════════════════
+ ALERT BANNER — fonte de verdade para banners de aviso
+ Usar com: .alert-banner.warning | .danger | .info | .success
+ ════════════════════════════════════════════ */
+ .alert-banner {
+ display: flex;
+ align-items: center;
+ justify-content: space-between;
+ gap: 1rem;
+ padding: 1rem 1.25rem;
+ border-radius: var(--r-xl);
+ border: 1px solid var(--vj-border);
+ background: var(--vj-bg);
+ }
+ .alert-banner.warning {
+ background-color: var(--vj-orange-bg);
+ border-color: var(--vj-orange);
+ }
+ .alert-banner.danger {
+ background-color: var(--vj-red-bg);
+ border-color: var(--vj-red);
+ }
+ .alert-banner.info {
+ background-color: var(--vj-blue-bg);
+ border-color: var(--vj-blue);
+ }
+ .alert-banner.success {
+ background-color: var(--vj-green-bg);
+ border-color: var(--vj-green);
+ }
+ .alert-banner-title {
+ font-size: 0.875rem;
+ font-weight: 700;
+ color: var(--vj-txt);
+ }
+ .alert-banner-desc {
+ font-size: 0.75rem;
+ color: var(--vj-txt2);
+ margin-top: 0.125rem;
+ }
 }
 
 @layer utilities {
-  .no-scrollbar {
-    scrollbar-width: none !important;
-    -ms-overflow-style: none !important;
-  }
-  .no-scrollbar::-webkit-scrollbar { display: none !important; }
+ .no-scrollbar {
+ scrollbar-width: none !important;
+ -ms-overflow-style: none !important;
+ }
+ .no-scrollbar::-webkit-scrollbar { display: none !important; }
 
-  /* Tokens de cor para uso direto com Tailwind */
-  .text-vj-primary   { color: var(--vj-primary); }
-  .bg-vj-primary     { background-color: var(--vj-primary); }
-  .border-vj-primary { border-color: var(--vj-primary); }
+ /* Tokens de cor para uso direto com Tailwind */
+ .text-vj-primary { color: var(--vj-primary); }
+ .bg-vj-primary { background-color: var(--vj-primary); }
+ .border-vj-primary { border-color: var(--vj-primary); }
 }

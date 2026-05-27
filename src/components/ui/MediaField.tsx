@@ -135,7 +135,7 @@ export function MediaField({
   }) => {
     if (!organization?.id) return;
     try {
-      await (supabase as any).from('media_assets').insert({
+      await supabase.from('media_assets').insert({
         org_id: organization.id,
         owner_type: ownerType ?? null,
         owner_id: ownerId ?? null,

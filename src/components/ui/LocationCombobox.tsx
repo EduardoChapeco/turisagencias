@@ -42,10 +42,27 @@ export function LocationCombobox({
     queryKey: ['locations', search],
     queryFn: async () => {
       if (search.length < 2) return [];
-      const res = await fetch(`${PYTHON_ENGINE_URL}/api/v1/locations/search?q=${encodeURIComponent(search)}`);
-      if (!res.ok) return [];
-      const json = await res.json();
-      return json.results as LocationData[];
+      const { supabase } = await import('@/integrations/supabase/client');
+      
+      const { data, error } = await supabase
+        .from('global_iatas')
+        .select('*')
+        .or(`iata_code.ilike.%${search}%,city.ilike.%${search}%,airport_name.ilike.%${search}%,country.ilike.%${search}%`)
+        .limit(20);
+        
+      if (error) {
+        console.error('Error fetching locations:', error);
+        return [];
+      }
+      
+      return data.map((d: any) => ({
+        iata: d.iata_code,
+        icao: d.icao_code,
+        name: d.airport_name,
+        city: d.city,
+        state: '',
+        country: d.country,
+      })) as LocationData[];
     },
     enabled: search.length >= 2,
     staleTime: 60000,
@@ -53,7 +70,7 @@ export function LocationCombobox({
 
   // Helper to format string for the input
   const formatLocation = (loc: LocationData) => {
-    return `${loc.city}${loc.state ? `, ${loc.state}` : ''} - ${loc.name} (${loc.iata || loc.icao})`;
+    return `${loc.city}${loc.country ? `, ${loc.country}` : ''} - ${loc.name} (${loc.iata})`;
   }
 
   return (

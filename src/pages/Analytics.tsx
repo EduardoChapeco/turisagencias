@@ -16,366 +16,370 @@ import { supabase } from '@/integrations/supabase/client';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
 function useShadowFunnel(orgId?: string) {
-  const [data, setData] = useState<any[]>([]);
-  
-  React.useEffect(() => {
-    if (!orgId) return;
-    async function fetchFunnel() {
-      // Basic funnel stats
-      const { count: visits } = await supabase.from('b2c_tracking_events').select('*', { count: 'exact', head: true }).eq('org_id', orgId).eq('event_type', 'page_view');
-      const { count: chats } = await supabase.from('b2c_tracking_events').select('*', { count: 'exact', head: true }).eq('org_id', orgId).eq('event_type', 'chat_open');
-      const { count: conversions } = await supabase.from('b2c_shadow_profiles').select('*', { count: 'exact', head: true }).eq('org_id', orgId).not('converted_client_id', 'is', null);
+ const [data, setData] = useState<any[]>([]);
+ 
+ React.useEffect(() => {
+ if (!orgId) return;
+ async function fetchFunnel() {
+ // Basic funnel stats
+ const { count: visits } = await supabase.from('b2c_tracking_events').select('*', { count: 'exact', head: true }).eq('org_id', orgId).eq('event_type', 'page_view');
+ const { count: chats } = await supabase.from('b2c_tracking_events').select('*', { count: 'exact', head: true }).eq('org_id', orgId).eq('event_type', 'chat_open');
+ const { count: conversions } = await supabase.from('b2c__profiles').select('*', { count: 'exact', head: true }).eq('org_id', orgId).not('converted_client_id', 'is', null);
 
-      setData([
-        { name: 'Acessos B2C', value: visits || 0, color: '#3b82f6' }, // blue
-        { name: 'Engajamento IA', value: chats || 0, color: '#10b981' }, // emerald
-        { name: 'Leads Captados', value: conversions || 0, color: '#f59e0b' } // amber
-      ]);
-    }
-    fetchFunnel();
-  }, [orgId]);
+ setData([
+ { name: 'Acessos B2C', value: visits || 0, color: '#3b82f6' }, // blue
+ { name: 'Engajamento IA', value: chats || 0, color: '#10b981' }, // emerald
+ { name: 'Leads Captados', value: conversions || 0, color: '#f59e0b' } // amber
+ ]);
+ }
+ fetchFunnel();
+ }, [orgId]);
 
-  return data;
+ return data;
 }
 
 export default function Analytics() {
-  const [editingPlan, setEditingPlan] = useState<SubscriptionPlan | null>(null);
-  const [planForm, setPlanForm] = useState<Partial<SubscriptionPlan>>({});
-  const { data: plans, isLoading: plansLoading } = useSubscriptionPlans();
-  const updatePlan = useUpdatePlan();
-  const { profile } = useAuthStore();
-  const { data: aiTasks } = useAiTasks(profile?.org_id, 5);
-  const funnelData = useShadowFunnel(profile?.org_id);
+ const [editingPlan, setEditingPlan] = useState<SubscriptionPlan | null>(null);
+ const [planForm, setPlanForm] = useState<Partial<SubscriptionPlan>>({});
+ const { data: plans, isLoading: plansLoading } = useSubscriptionPlans();
+ const updatePlan = useUpdatePlan();
+ const { profile } = useAuthStore();
+ const { data: aiTasks } = useAiTasks(profile?.org_id, 5);
+ const funnelData = useShadowFunnel(profile?.org_id);
 
-  const openEdit = (plan: SubscriptionPlan) => {
-    setEditingPlan(plan);
-    setPlanForm({ ...plan });
-  };
+ const openEdit = (plan: SubscriptionPlan) => {
+ setEditingPlan(plan);
+ setPlanForm({ ...plan });
+ };
 
-  const handleSavePlan = async () => {
-    if (!editingPlan) return;
-    try {
-      await updatePlan.mutateAsync({ ...planForm, id: editingPlan.id } as SubscriptionPlan & { id: string });
-      toast.success('Plano atualizado com sucesso!');
-      setEditingPlan(null);
-    } catch (err: any) {
-      toast.error('Erro ao salvar plano: ' + err.message);
-    }
-  };
+ const handleSavePlan = async () => {
+ if (!editingPlan) return;
+ try {
+ await updatePlan.mutateAsync({ ...planForm, id: editingPlan.id } as SubscriptionPlan & { id: string });
+ toast.success('Plano atualizado com sucesso!');
+ setEditingPlan(null);
+ } catch (err: any) {
+ toast.error('Erro ao salvar plano: ' + err.message);
+ }
+ };
 
-  return (
-    <AppLayout>
-      <div className="w-full h-full min-h-screen bg-vj-bg flex flex-col">
-        <PageHeader 
-          title="Painel Master" 
-          description="Auditoria Global, Status do Motor Turis AI e Métricas de Uso"
-          icon={Activity}
-          className="bg-indigo-900 text-white border-b-0"
-        />
+ return (
+ <AppLayout>
+ <div className="w-full h-full min-h-screen bg-vj-bg flex flex-col">
+ <PageHeader 
+ title={profile?.role === 'super_admin' ? "Painel Master" : "Métricas da Agência"} 
+ description={profile?.role === 'super_admin' ? "Auditoria Global, Status do Motor Turis AI e Métricas de Uso" : "Acompanhe seus resultados."}
+ icon={Activity}
+ className="bg-indigo-900 text-white border-b-0"
+ />
 
-        <div className="flex-1 p-6 space-y-6 max-w-[1600px] mx-auto w-full">
-          {/* Header Stats Bento */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <Card className="bento-card bg-indigo-50 border-indigo-100">
-              <CardContent className="p-6">
-                <div className="flex justify-between items-start">
-                  <div className="space-y-1">
-                    <p className="text-sm font-bold text-indigo-600 uppercase tracking-wider">Agências Ativas</p>
-                    <p className="text-3xl font-black text-indigo-950">—</p>
-                  </div>
-                  <div className="h-10 w-10 bg-indigo-100 rounded-xl flex items-center justify-center">
-                    <Users className="w-5 h-5 text-indigo-600" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+ <div className="flex-1 p-6 space-y-6 max-w-[1600px] mx-auto w-full">
+ {/* Header Stats Bento */}
+ <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+ <Card className="bento-card bg-indigo-50 border-indigo-100">
+ <CardContent className="p-6">
+ <div className="flex justify-between items-start">
+ <div className="space-y-1">
+ <p className="text-sm font-bold text-indigo-600 uppercase tracking-wider">Agências Ativas</p>
+ <p className="text-3xl font-black text-indigo-950">—</p>
+ </div>
+ <div className="h-10 w-10 bg-indigo-100 rounded-xl flex items-center justify-center">
+ <Users className="w-5 h-5 text-indigo-600" />
+ </div>
+ </div>
+ </CardContent>
+ </Card>
 
-            <Card className="bento-card">
-              <CardContent className="p-6">
-                <div className="flex justify-between items-start">
-                  <div className="space-y-1">
-                    <p className="text-sm font-bold text-vj-txt3 uppercase tracking-wider">Passageiros no Mundo</p>
-                    <p className="text-3xl font-black text-vj-txt">—</p>
-                  </div>
-                  <div className="h-10 w-10 bg-zinc-100 rounded-xl flex items-center justify-center">
-                    <Globe2 className="w-5 h-5 text-vj-txt2" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+ <Card className="bento-card">
+ <CardContent className="p-6">
+ <div className="flex justify-between items-start">
+ <div className="space-y-1">
+ <p className="text-sm font-bold text-vj-txt3 uppercase tracking-wider">Passageiros no Mundo</p>
+ <p className="text-3xl font-black text-vj-txt">—</p>
+ </div>
+ <div className="h-10 w-10 bg-zinc-100 rounded-xl flex items-center justify-center">
+ <Globe2 className="w-5 h-5 text-vj-txt2" />
+ </div>
+ </div>
+ </CardContent>
+ </Card>
 
-            <Card className="bento-card bg-green-50 border-green-100">
-              <CardContent className="p-6">
-                <div className="flex justify-between items-start">
-                  <div className="space-y-1">
-                    <p className="text-sm font-bold text-green-700 uppercase tracking-wider">Uso do Motor Python</p>
-                    <p className="text-3xl font-black text-green-950">
-                      {aiTasks?.filter(t => t.status === 'completed').length ?? 0}
-                    </p>
-                  </div>
-                  <div className="h-10 w-10 bg-green-100 rounded-xl flex items-center justify-center">
-                    <Cpu className="w-5 h-5 text-green-600" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+ <Card className="bento-card bg-green-50 border-green-100">
+ <CardContent className="p-6">
+ <div className="flex justify-between items-start">
+ <div className="space-y-1">
+ <p className="text-sm font-bold text-green-700 uppercase tracking-wider">Uso do Motor Python</p>
+ <p className="text-3xl font-black text-green-950">
+ {aiTasks?.filter(t => t.status === 'completed').length ?? 0}
+ </p>
+ </div>
+ <div className="h-10 w-10 bg-green-100 rounded-xl flex items-center justify-center">
+ <Cpu className="w-5 h-5 text-green-600" />
+ </div>
+ </div>
+ </CardContent>
+ </Card>
 
-            <Card className="bento-card">
-              <CardContent className="p-6">
-                <div className="flex justify-between items-start">
-                  <div className="space-y-1">
-                    <p className="text-sm font-bold text-vj-txt3 uppercase tracking-wider">Aguardando Aprovação</p>
-                    <p className="text-3xl font-black text-amber-600">
-                      {aiTasks?.filter(t => t.status === 'awaiting_approval').length ?? 0}
-                    </p>
-                  </div>
-                  <div className="h-10 w-10 bg-amber-50 rounded-xl flex items-center justify-center">
-                    <ShieldAlert className="w-5 h-5 text-amber-500" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-          
-          {/* FUNIL DIGITAL B2C */}
-          <div className="grid grid-cols-1">
-            <Card className="bento-card bg-white border-zinc-200">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-zinc-800">
-                  <TrendingUp className="w-5 h-5 text-emerald-500" />
-                  Funil Digital B2C (Shadow Profiling)
-                </CardTitle>
-                <p className="text-xs text-zinc-500">Acompanhe a conversão de visitantes anônimos para Leads captados (Pixel/GA4 Automáticos).</p>
-              </CardHeader>
-              <CardContent>
-                <div className="h-[250px] w-full mt-4">
-                  {funnelData.length > 0 ? (
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={funnelData} layout="vertical" margin={{ top: 0, right: 30, left: 40, bottom: 0 }}>
-                        <XAxis type="number" hide />
-                        <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ fill: '#71717a', fontSize: 12, fontWeight: 600 }} />
-                        <Tooltip cursor={{ fill: '#f4f4f5' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
-                        <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={32}>
-                          {funnelData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.color} />
-                          ))}
-                        </Bar>
-                      </BarChart>
-                    </ResponsiveContainer>
-                  ) : (
-                     <div className="w-full h-full flex flex-col items-center justify-center text-zinc-400">
-                        <Activity className="w-8 h-8 mb-2 opacity-20" />
-                        <span className="text-sm font-medium">Aguardando primeiros dados de tráfego...</span>
-                     </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+ <Card className="bento-card">
+ <CardContent className="p-6">
+ <div className="flex justify-between items-start">
+ <div className="space-y-1">
+ <p className="text-sm font-bold text-vj-txt3 uppercase tracking-wider">Aguardando Aprovação</p>
+ <p className="text-3xl font-black text-amber-600">
+ {aiTasks?.filter(t => t.status === 'awaiting_approval').length ?? 0}
+ </p>
+ </div>
+ <div className="h-10 w-10 bg-amber-50 rounded-xl flex items-center justify-center">
+ <ShieldAlert className="w-5 h-5 text-amber-500" />
+ </div>
+ </div>
+ </CardContent>
+ </Card>
+ </div>
+ 
+ {/* FUNIL DIGITAL B2C - APENAS MASTER */}
+ {profile?.role === 'super_admin' && (
+ <div className="grid grid-cols-1">
+ <Card className="bento-card bg-white border-zinc-200">
+ <CardHeader>
+ <CardTitle className="flex items-center gap-2 text-zinc-800">
+ <TrendingUp className="w-5 h-5 text-emerald-500" />
+ Funil Digital B2C (Shadow Profiling)
+ </CardTitle>
+ <p className="text-xs text-zinc-500">Acompanhe a conversão de visitantes anônimos para Leads captados (Pixel/GA4 Automáticos).</p>
+ </CardHeader>
+ <CardContent>
+ <div className="h-[250px] w-full mt-4">
+ {funnelData.length > 0 ? (
+ <ResponsiveContainer width="100%" height="100%">
+ <BarChart data={funnelData} layout="vertical" margin={{ top: 0, right: 30, left: 40, bottom: 0 }}>
+ <XAxis type="number" hide />
+ <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ fill: '#71717a', fontSize: 12, fontWeight: 600 }} />
+ <Tooltip cursor={{ fill: '#f4f4f5' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
+ <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={32}>
+ {funnelData.map((entry, index) => (
+ <Cell key={`cell-${index}`} fill={entry.color} />
+ ))}
+ </Bar>
+ </BarChart>
+ </ResponsiveContainer>
+ ) : (
+ <div className="w-full h-full flex flex-col items-center justify-center text-zinc-400">
+ <Activity className="w-8 h-8 mb-2 opacity-20" />
+ <span className="text-sm font-medium">Aguardando primeiros dados de tráfego...</span>
+ </div>
+ )}
+ </div>
+ </CardContent>
+ </Card>
+ </div>
+ )}
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <Card className="bento-card lg:col-span-2">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Server className="w-5 h-5 text-vj-green" />
-                  Status dos Microsserviços
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {[
-                    { name: 'Python Engine (FastAPI)', status: 'Online', latency: '45ms' },
-                    { name: 'Supabase Edge Functions', status: 'Online', latency: '12ms' },
-                    { name: 'Boarding Auditor (Cron)', status: 'Online', latency: '-' },
-                    { name: 'PostgreSQL Realtime', status: 'Online', latency: '18ms' },
-                  ].map((service, i) => (
-                    <div key={i} className="flex items-center justify-between p-4 rounded-xl border border-vj-border/60 bg-zinc-50/50">
-                      <div className="flex items-center gap-3">
-                        <div className="w-2.5 h-2.5 rounded-full bg-vj-green animate-pulse" />
-                        <span className="font-bold text-sm text-vj-txt">{service.name}</span>
-                      </div>
-                      <div className="flex items-center gap-4 text-sm font-medium">
-                        <span className="text-vj-txt3">{service.latency}</span>
-                        <span className="text-vj-green bg-green-50 px-2 py-1 rounded-md">{service.status}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+ {profile?.role === 'super_admin' && (
+ <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+ <Card className="bento-card lg:col-span-2">
+ <CardHeader>
+ <CardTitle className="flex items-center gap-2">
+ <Server className="w-5 h-5 text-vj-green" />
+ Status dos Microsserviços
+ </CardTitle>
+ </CardHeader>
+ <CardContent>
+ <div className="space-y-4">
+ {[
+ { name: 'Python Engine (FastAPI)', status: 'Online', latency: '45ms' },
+ { name: 'Supabase Edge Functions', status: 'Online', latency: '12ms' },
+ { name: 'Boarding Auditor (Cron)', status: 'Online', latency: '-' },
+ { name: 'PostgreSQL Realtime', status: 'Online', latency: '18ms' },
+ ].map((service, i) => (
+ <div key={i} className="flex items-center justify-between p-4 rounded-xl border border-vj-border/60 bg-zinc-50/50">
+ <div className="flex items-center gap-3">
+ <div className="w-2.5 h-2.5 rounded-full bg-vj-green animate-pulse" />
+ <span className="font-bold text-sm text-vj-txt">{service.name}</span>
+ </div>
+ <div className="flex items-center gap-4 text-sm font-medium">
+ <span className="text-vj-txt3">{service.latency}</span>
+ <span className="text-vj-green bg-green-50 px-2 py-1 rounded-md">{service.status}</span>
+ </div>
+ </div>
+ ))}
+ </div>
+ </CardContent>
+ </Card>
 
-            <Card className="bento-card bg-zinc-950 text-white border-zinc-900">
-              <CardHeader>
-                <CardTitle className="text-zinc-100 flex items-center gap-2">
-                  <Zap className="w-5 h-5 text-yellow-400" />
-                  Ações Rápidas (Master)
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <button className="w-full text-left px-4 py-3 rounded-xl bg-zinc-900 hover:bg-zinc-800 transition-colors text-sm font-medium text-zinc-300 border border-zinc-800 flex items-center justify-between">
-                  Forçar Sincronia de Aeroportos
-                  <TrendingUp className="w-4 h-4 text-zinc-500" />
-                </button>
-                <button className="w-full text-left px-4 py-3 rounded-xl bg-zinc-900 hover:bg-zinc-800 transition-colors text-sm font-medium text-zinc-300 border border-zinc-800 flex items-center justify-between">
-                  Rodar Auditor de Embarque
-                  <TrendingUp className="w-4 h-4 text-zinc-500" />
-                </button>
-                <button className="w-full text-left px-4 py-3 rounded-xl bg-zinc-900 hover:bg-zinc-800 transition-colors text-sm font-medium text-zinc-300 border border-zinc-800 flex items-center justify-between">
-                  Limpar Cache Global
-                  <TrendingUp className="w-4 h-4 text-zinc-500" />
-                </button>
-              </CardContent>
-            </Card>
+ <Card className="bento-card bg-zinc-950 text-white border-zinc-900">
+ <CardHeader>
+ <CardTitle className="text-zinc-100 flex items-center gap-2">
+ <Zap className="w-5 h-5 text-yellow-400" />
+ Ações Rápidas (Master)
+ </CardTitle>
+ </CardHeader>
+ <CardContent className="space-y-3">
+ <button className="w-full text-left px-4 py-3 rounded-xl bg-zinc-900 hover:bg-zinc-800 transition-colors text-sm font-medium text-zinc-300 border border-zinc-800 flex items-center justify-between">
+ Forçar Sincronia de Aeroportos
+ <TrendingUp className="w-4 h-4 text-zinc-500" />
+ </button>
+ <button className="w-full text-left px-4 py-3 rounded-xl bg-zinc-900 hover:bg-zinc-800 transition-colors text-sm font-medium text-zinc-300 border border-zinc-800 flex items-center justify-between">
+ Rodar Auditor de Embarque
+ <TrendingUp className="w-4 h-4 text-zinc-500" />
+ </button>
+ <button className="w-full text-left px-4 py-3 rounded-xl bg-zinc-900 hover:bg-zinc-800 transition-colors text-sm font-medium text-zinc-300 border border-zinc-800 flex items-center justify-between">
+ Limpar Cache Global
+ <TrendingUp className="w-4 h-4 text-zinc-500" />
+ </button>
+ </CardContent>
+ </Card>
 
-            {/* Plan Editor Card */}
-            <Card className="bento-card bg-white lg:col-span-3">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Activity className="w-5 h-5 text-vj-green" />
-                  Gerenciar Planos (SaaS)
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-zinc-500 mb-4">
-                  Atualize preços e features de cada plano. As mudanças se refletem instantaneamente na Landing Page pública.
-                </p>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {plansLoading ? (
-                    [1, 2, 3].map(i => <Skeleton key={i} className="h-28 w-full rounded-xl" />)
-                  ) : plans?.length ? (
-                    plans.map(plan => (
-                      <div key={plan.id} className="border border-vj-border rounded-xl p-4 bg-zinc-50 flex flex-col gap-3">
-                        <div>
-                          <p className="font-black text-vj-txt">{plan.name}</p>
-                          <p className="text-2xl font-black text-vj-green">
-                            R$ {plan.price_monthly.toFixed(0)}
-                            <span className="text-xs font-normal text-zinc-400">/mês</span>
-                          </p>
-                        </div>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="mt-auto text-xs"
-                          onClick={() => openEdit(plan)}
-                        >
-                          Editar Plano <ChevronRight className="w-3 h-3 ml-1" />
-                        </Button>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="col-span-3 text-center py-8 text-zinc-400 text-sm">
-                      Nenhum plano cadastrado. Verifique a migration de subscription_plans.
-                    </div>
-                  )}
-                </div>
-                <button
-                  onClick={() => window.open('/pricing', '_blank')}
-                  className="mt-4 w-full text-left px-4 py-3 rounded-xl bg-zinc-50 hover:bg-zinc-100 transition-colors text-sm font-bold border border-zinc-200 flex items-center justify-between group"
-                >
-                  Visualizar Landing Page (Pricing)
-                  <ChevronRight className="w-4 h-4 text-zinc-400 group-hover:text-vj-green transition-colors" />
-                </button>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </div>
+ {/* Plan Editor Card */}
+ <Card className="bento-card bg-white lg:col-span-3">
+ <CardHeader>
+ <CardTitle className="flex items-center gap-2">
+ <Activity className="w-5 h-5 text-vj-green" />
+ Gerenciar Planos (SaaS)
+ </CardTitle>
+ </CardHeader>
+ <CardContent>
+ <p className="text-sm text-zinc-500 mb-4">
+ Atualize preços e features de cada plano. As mudanças se refletem instantaneamente na Landing Page pública.
+ </p>
+ <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+ {plansLoading ? (
+ [1, 2, 3].map(i => <Skeleton key={i} className="h-28 w-full rounded-xl" />)
+ ) : plans?.length ? (
+ plans.map(plan => (
+ <div key={plan.id} className="border border-vj-border rounded-xl p-4 bg-zinc-50 flex flex-col gap-3">
+ <div>
+ <p className="font-black text-vj-txt">{plan.name}</p>
+ <p className="text-2xl font-black text-vj-green">
+ R$ {plan.price_monthly.toFixed(0)}
+ <span className="text-xs font-normal text-zinc-400">/mês</span>
+ </p>
+ </div>
+ <Button
+ size="sm"
+ variant="outline"
+ className="mt-auto text-xs"
+ onClick={() => openEdit(plan)}
+ >
+ Editar Plano <ChevronRight className="w-3 h-3 ml-1" />
+ </Button>
+ </div>
+ ))
+ ) : (
+ <div className="col-span-3 text-center py-8 text-zinc-400 text-sm">
+ Nenhum plano cadastrado. Verifique a migration de subscription_plans.
+ </div>
+ )}
+ </div>
+ <button
+ onClick={() => window.open('/pricing', '_blank')}
+ className="mt-4 w-full text-left px-4 py-3 rounded-xl bg-zinc-50 hover:bg-zinc-100 transition-colors text-sm font-bold border border-zinc-200 flex items-center justify-between group"
+ >
+ Visualizar Landing Page (Pricing)
+ <ChevronRight className="w-4 h-4 text-zinc-400 group-hover:text-vj-green transition-colors" />
+ </button>
+ </CardContent>
+ </Card>
+ </div>
+ )}
+ </div>
+ </div>
 
-      {/* Plan Edit Sheet */}
-      <Sheet open={!!editingPlan} onOpenChange={(open) => !open && setEditingPlan(null)}>
-        <SheetContent className="w-[520px] sm:max-w-[520px] overflow-y-auto">
-          <SheetHeader className="mb-6">
-            <SheetTitle className="font-black">Editar Plano: {editingPlan?.name}</SheetTitle>
-            <SheetDescription>
-              Altere preço, nome e features. Salve para aplicar na Landing Page.
-            </SheetDescription>
-          </SheetHeader>
+ {/* Plan Edit Sheet */}
+ <Sheet open={!!editingPlan} onOpenChange={(open) => !open && setEditingPlan(null)}>
+ <SheetContent className="w-[520px] sm:max-w-[520px] overflow-y-auto">
+ <SheetHeader className="mb-6">
+ <SheetTitle className="font-black">Editar Plano: {editingPlan?.name}</SheetTitle>
+ <SheetDescription>
+ Altere preço, nome e features. Salve para aplicar na Landing Page.
+ </SheetDescription>
+ </SheetHeader>
 
-          <div className="space-y-4">
-            <div className="space-y-1">
-              <Label>Nome do Plano</Label>
-              <Input
-                value={planForm.name ?? ''}
-                onChange={e => setPlanForm(p => ({ ...p, name: e.target.value }))}
-                placeholder="Ex: Starter, Premium, Enterprise"
-              />
-            </div>
-            <div className="space-y-1">
-              <Label>Descrição</Label>
-              <Input
-                value={planForm.description ?? ''}
-                onChange={e => setPlanForm(p => ({ ...p, description: e.target.value }))}
-                placeholder="Descreva o plano em uma frase"
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <Label>Preço Mensal (R$)</Label>
-                <Input
-                  type="number"
-                  value={planForm.price_monthly ?? 0}
-                  onChange={e => setPlanForm(p => ({ ...p, price_monthly: Number(e.target.value) }))}
-                />
-              </div>
-              <div className="space-y-1">
-                <Label>Moeda</Label>
-                <Input
-                  value={planForm.currency ?? 'BRL'}
-                  onChange={e => setPlanForm(p => ({ ...p, currency: e.target.value }))}
-                  placeholder="BRL"
-                />
-              </div>
-            </div>
-            <div className="space-y-1">
-              <Label>Features Incluídas (uma por linha)</Label>
-              <textarea
-                rows={5}
-                className="w-full rounded-xl border border-zinc-200 bg-zinc-50 p-3 text-sm resize-none focus:outline-none focus:border-vj-green"
-                value={(planForm.features ?? []).join('\n')}
-                onChange={e => setPlanForm(p => ({ ...p, features: e.target.value.split('\n').filter(Boolean) }))}
-                placeholder="Cotações ilimitadas&#10;IA de Análise&#10;Portal do Viajante"
-              />
-            </div>
-            <div className="space-y-1">
-              <Label>Features Não Incluídas (uma por linha)</Label>
-              <textarea
-                rows={3}
-                className="w-full rounded-xl border border-zinc-200 bg-zinc-50 p-3 text-sm resize-none focus:outline-none focus:border-red-400"
-                value={(planForm.missing_features ?? []).join('\n')}
-                onChange={e => setPlanForm(p => ({ ...p, missing_features: e.target.value.split('\n').filter(Boolean) }))}
-                placeholder="Personalização Avançada&#10;Suporte Dedicado"
-              />
-            </div>
-            <div className="flex items-center gap-3 p-3 rounded-xl border border-zinc-200 bg-zinc-50">
-              <input
-                type="checkbox"
-                id="is_popular"
-                checked={!!planForm.is_popular}
-                onChange={e => setPlanForm(p => ({ ...p, is_popular: e.target.checked }))}
-                className="w-4 h-4 rounded accent-vj-green"
-              />
-              <Label htmlFor="is_popular" className="cursor-pointer">Destacar como "Mais Popular"</Label>
-            </div>
-          </div>
+ <div className="space-y-4">
+ <div className="space-y-1">
+ <Label>Nome do Plano</Label>
+ <Input
+ value={planForm.name ?? ''}
+ onChange={e => setPlanForm(p => ({ ...p, name: e.target.value }))}
+ placeholder="Ex: Starter, Premium, Enterprise"
+ />
+ </div>
+ <div className="space-y-1">
+ <Label>Descrição</Label>
+ <Input
+ value={planForm.description ?? ''}
+ onChange={e => setPlanForm(p => ({ ...p, description: e.target.value }))}
+ placeholder="Descreva o plano em uma frase"
+ />
+ </div>
+ <div className="grid grid-cols-2 gap-4">
+ <div className="space-y-1">
+ <Label>Preço Mensal (R$)</Label>
+ <Input
+ type="number"
+ value={planForm.price_monthly ?? 0}
+ onChange={e => setPlanForm(p => ({ ...p, price_monthly: Number(e.target.value) }))}
+ />
+ </div>
+ <div className="space-y-1">
+ <Label>Moeda</Label>
+ <Input
+ value={planForm.currency ?? 'BRL'}
+ onChange={e => setPlanForm(p => ({ ...p, currency: e.target.value }))}
+ placeholder="BRL"
+ />
+ </div>
+ </div>
+ <div className="space-y-1">
+ <Label>Features Incluídas (uma por linha)</Label>
+ <textarea
+ rows={5}
+ className="w-full rounded-xl border border-zinc-200 bg-zinc-50 p-3 text-sm resize-none focus:outline-none focus:border-vj-green"
+ value={(planForm.features ?? []).join('\n')}
+ onChange={e => setPlanForm(p => ({ ...p, features: e.target.value.split('\n').filter(Boolean) }))}
+ placeholder="Cotações ilimitadas&#10;IA de Análise&#10;Portal do Viajante"
+ />
+ </div>
+ <div className="space-y-1">
+ <Label>Features Não Incluídas (uma por linha)</Label>
+ <textarea
+ rows={3}
+ className="w-full rounded-xl border border-zinc-200 bg-zinc-50 p-3 text-sm resize-none focus:outline-none focus:border-red-400"
+ value={(planForm.missing_features ?? []).join('\n')}
+ onChange={e => setPlanForm(p => ({ ...p, missing_features: e.target.value.split('\n').filter(Boolean) }))}
+ placeholder="Personalização Avançada&#10;Suporte Dedicado"
+ />
+ </div>
+ <div className="flex items-center gap-3 p-3 rounded-xl border border-zinc-200 bg-zinc-50">
+ <input
+ type="checkbox"
+ id="is_popular"
+ checked={!!planForm.is_popular}
+ onChange={e => setPlanForm(p => ({ ...p, is_popular: e.target.checked }))}
+ className="w-4 h-4 rounded accent-vj-green"
+ />
+ <Label htmlFor="is_popular" className="cursor-pointer">Destacar como "Mais Popular"</Label>
+ </div>
+ </div>
 
-          <div className="flex gap-3 mt-8">
-            <Button
-              className="flex-1 premium-button gap-2"
-              onClick={handleSavePlan}
-              disabled={updatePlan.isPending}
-            >
-              {updatePlan.isPending ? 'Salvando...' : <><Save className="w-4 h-4" /> Salvar Plano</>}
-            </Button>
-            <Button
-              variant="outline"
-              className="gap-2"
-              onClick={() => setEditingPlan(null)}
-            >
-              <X className="w-4 h-4" /> Cancelar
-            </Button>
-          </div>
-        </SheetContent>
-      </Sheet>
-    </AppLayout>
-  );
+ <div className="flex gap-3 mt-8">
+ <Button
+ className="flex-1 premium-button gap-2"
+ onClick={handleSavePlan}
+ disabled={updatePlan.isPending}
+ >
+ {updatePlan.isPending ? 'Salvando...' : <><Save className="w-4 h-4" /> Salvar Plano</>}
+ </Button>
+ <Button
+ variant="outline"
+ className="gap-2"
+ onClick={() => setEditingPlan(null)}
+ >
+ <X className="w-4 h-4" /> Cancelar
+ </Button>
+ </div>
+ </SheetContent>
+ </Sheet>
+ </AppLayout>
+ );
 }

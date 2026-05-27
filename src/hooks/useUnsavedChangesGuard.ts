@@ -9,18 +9,18 @@ import { useEffect } from 'react';
  * @param message Mensagem personalizada opcional (suportada por navegadores antigos).
  */
 export function useUnsavedChangesGuard(isDirty: boolean, message = 'Você possui alterações não salvas. Tem certeza que deseja sair?') {
-  useEffect(() => {
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (isDirty) {
-        e.preventDefault();
-        e.returnValue = message;
-        return e.returnValue;
-      }
-    };
+ useEffect(() => {
+ const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+ if (isDirty) {
+ e.preventDefault();
+ e.returnValue = message;
+ return e.returnValue;
+ }
+ };
 
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-    };
-  }, [isDirty, message]);
+ window.addEventListener('beforeunload', handleBeforeUnload);
+ return () => {
+ window.removeEventListener('beforeunload', handleBeforeUnload);
+ };
+ }, [isDirty, message]);
 }

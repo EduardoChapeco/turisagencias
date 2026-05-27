@@ -58,9 +58,9 @@ const CommissionsPanel = lazy(() => import('./pages/finance/CommissionsPanel'));
 const MyCommissions = lazy(() => import('./pages/finance/MyCommissions'));
 const PendingCancellations = lazy(() => import('./pages/finance/PendingCancellations'));
 const ContractTemplates = lazy(() => import('./pages/legal/ContractTemplates'));
-const ContractRecords  = lazy(() => import('./pages/ContractRecords'));
+const ContractRecords = lazy(() => import('./pages/ContractRecords'));
 const SignatureCertificate = lazy(() => import('./pages/legal/SignatureCertificate'));
-const Vouchers         = lazy(() => import('./pages/Vouchers'));
+const Vouchers = lazy(() => import('./pages/Vouchers'));
 const Automations = lazy(() => import('./pages/automations/Automations'));
 const Team = lazy(() => import('./pages/admin/Team'));
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
@@ -88,212 +88,212 @@ const PublicChecklist = lazy(() => import('./pages/PublicChecklist'));
 const PublicGuide = lazy(() => import('./pages/PublicGuide'));
 const PublicTravelerInfo = lazy(() => import('./pages/PublicTravelerInfo'));
 
-const GroupTrips       = lazy(() => import('./pages/GroupTrips'));
-const GroupDashboard   = lazy(() => import('./pages/group-trips/GroupDashboard'));
-const PublicGroupTrip  = lazy(() => import('./pages/PublicGroupTrip'));
+const GroupTrips = lazy(() => import('./pages/GroupTrips'));
+const GroupDashboard = lazy(() => import('./pages/group-trips/GroupDashboard'));
+const PublicGroupTrip = lazy(() => import('./pages/PublicGroupTrip'));
 const PublicBookingVoucher = lazy(() => import('./pages/PublicBookingVoucher'));
-const TravelerPortal   = lazy(() => import('./pages/TravelerPortal'));
-const Destinations     = lazy(() => import('./pages/Destinations'));
-const PublicSiteView   = lazy(() => import('./pages/PublicSiteView'));
-const SiteBuilderPage  = lazy(() => import('./pages/SiteBuilderPage'));
+const TravelerPortal = lazy(() => import('./pages/TravelerPortal'));
+const Destinations = lazy(() => import('./pages/Destinations'));
+const PublicSiteView = lazy(() => import('./pages/PublicSiteView'));
+const SiteBuilderPage = lazy(() => import('./pages/SiteBuilderPage'));
 const PortalManagerPage = lazy(() => import('./pages/PortalManagerPage'));
 
 const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 2 * 60 * 1000,
-      gcTime: 30 * 60 * 1000,
-      retry: 1,
-      refetchOnWindowFocus: false,
-      refetchOnReconnect: true,
-      refetchOnMount: false,
-    },
-  },
+ defaultOptions: {
+ queries: {
+ staleTime: 2 * 60 * 1000,
+ gcTime: 30 * 60 * 1000,
+ retry: 1,
+ refetchOnWindowFocus: false,
+ refetchOnReconnect: true,
+ refetchOnMount: false,
+ },
+ },
 });
 
 function Loading() {
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <Loader2 className="h-8 w-8 animate-spin text-accent" />
-    </div>
-  );
+ return (
+ <div className="flex min-h-screen items-center justify-center bg-background">
+ <Loader2 className="h-8 w-8 animate-spin text-accent" />
+ </div>
+ );
 }
 
 function OnboardingGuard({ children }: { children: React.ReactNode }) {
-  const { organization, profile, roles, isLoading } = useAuthStore();
+ const { organization, profile, roles, isLoading } = useAuthStore();
 
-  if (isLoading) return <Loading />;
-  
-  // Super Admins (Master) podem pular o onboarding mesmo que a org não esteja carregada
-  const isMaster = roles.includes('super_admin');
-  
-  // O usuário não precisa de onboarding se:
-  // 1. A organização já foi carregada
-  // 2. O perfil já tem um org_id (a org pode estar falhando por RLS race condition)
-  // 3. For super admin
-  const hasOrg = !!organization || !!profile?.org_id || isMaster;
-  
-  if (!hasOrg) {
-    return <Navigate to="/onboarding" replace />;
-  }
-  
-  return <>{children}</>;
+ if (isLoading) return <Loading />;
+ 
+ // Super Admins (Master) podem pular o onboarding mesmo que a org não esteja carregada
+ const isMaster = roles.includes('super_admin');
+ 
+ // O usuário não precisa de onboarding se:
+ // 1. A organização já foi carregada
+ // 2. O perfil já tem um org_id (a org pode estar falhando por RLS race condition)
+ // 3. For super admin
+ const hasOrg = !!organization || !!profile?.org_id || isMaster;
+ 
+ if (!hasOrg) {
+ return <Navigate to="/onboarding" replace />;
+ }
+ 
+ return <>{children}</>;
 }
 
 function ProtectedWithOrg({ children }: { children: React.ReactNode }) {
-  return (
-    <ProtectedRoute>
-      <OnboardingGuard>{children}</OnboardingGuard>
-    </ProtectedRoute>
-  );
+ return (
+ <ProtectedRoute>
+ <OnboardingGuard>{children}</OnboardingGuard>
+ </ProtectedRoute>
+ );
 }
 
 function HomeOrApp() {
-  const { user, isLoading } = useAuthStore();
-  if (isLoading) return <Loading />;
-  if (user) return <ProtectedWithOrg><Dashboard /></ProtectedWithOrg>;
-  return <LandingPage />;
+ const { user, isLoading } = useAuthStore();
+ if (isLoading) return <Loading />;
+ if (user) return <ProtectedWithOrg><Dashboard /></ProtectedWithOrg>;
+ return <LandingPage />;
 }
 
 function TripsRole({ children }: { children: React.ReactNode }) {
-  return (
-    <RoleGuard allow={['org_admin', 'super_admin', 'agent', 'support']}>
-      {children}
-    </RoleGuard>
-  );
+ return (
+ <RoleGuard allow={['org_admin', 'super_admin', 'agent', 'support']}>
+ {children}
+ </RoleGuard>
+ );
 }
 
 function AdminRole({ children }: { children: React.ReactNode }) {
-  return (
-    <RoleGuard allow={['org_admin', 'super_admin', 'support']}>
-      {children}
-    </RoleGuard>
-  );
+ return (
+ <RoleGuard allow={['org_admin', 'super_admin', 'support']}>
+ {children}
+ </RoleGuard>
+ );
 }
 
 function SuperAdminRole({ children }: { children: React.ReactNode }) {
-  return (
-    <RoleGuard allow={['super_admin']}>
-      {children}
-    </RoleGuard>
-  );
+ return (
+ <RoleGuard allow={['super_admin']}>
+ {children}
+ </RoleGuard>
+ );
 }
 
 const App = () => (
-  <ErrorBoundary>
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <AuthProvider>
-          <Suspense fallback={<Loading />}>
-            <Routes>
-              <Route path="/login" element={<Login />} />
-              <Route path="/admin/login" element={<AdminLogin />} />
-              <Route path="/signup" element={<Signup />} />
-              <Route path="/pricing" element={<Pricing />} />
-              <Route path="/auth/chrome-extension" element={<ExtensionAuth />} />
-              <Route path="/f/:token" element={<PublicTravelerForm />} />
-              <Route path="/q/:token" element={<PublicQuotation />} />
-              <Route path="/c/:token" element={<PublicChecklist />} />
-              <Route path="/p/guide/:slug" element={<PublicGuide />} />
-              <Route path="/p/info/:slug" element={<PublicTravelerInfo />} />
-              <Route path="/g/:slug" element={<PublicGroupTrip />} />
-              <Route path="/voucher/:token" element={<PublicBookingVoucher />} />
-              <Route path="/minha-viagem/:token" element={<TravelerPortal />} />
-              <Route path="/portal/:org_slug" element={<PortalLogin />} />
-              <Route path="/portal/t/:token/checkin" element={<TravelerCheckinPortal />} />
-              <Route path="/noticias/:slug" element={<PublicNewsArticle />} />
-              <Route path="/:org_slug/ajuda" element={<HelpCenter />} />
-              <Route path="/:org_slug/blog" element={<BlogPublic />} />
-              <Route path="/p/:token" element={<PublicProposal />} />
-              <Route path="/certificate/:hash" element={<SignatureCertificate />} />
-              <Route path="/portal/:org_slug/home" element={<ProtectedRoute><PortalHome /></ProtectedRoute>} />
-              <Route path="/portal/:org_slug/trip/:id" element={<ProtectedRoute><PortalTripDetail /></ProtectedRoute>} />
-              <Route path="/portal/:org_slug/trip/:trip_id/ai-photos" element={<ProtectedRoute><PortalAiPhotos /></ProtectedRoute>} />
+ <ErrorBoundary>
+ <QueryClientProvider client={queryClient}>
+ <TooltipProvider>
+ <Toaster />
+ <Sonner />
+ <BrowserRouter>
+ <AuthProvider>
+ <Suspense fallback={<Loading />}>
+ <Routes>
+ <Route path="/login" element={<Login />} />
+ <Route path="/admin/login" element={<AdminLogin />} />
+ <Route path="/signup" element={<Signup />} />
+ <Route path="/pricing" element={<Pricing />} />
+ <Route path="/auth/chrome-extension" element={<ExtensionAuth />} />
+ <Route path="/f/:token" element={<PublicTravelerForm />} />
+ <Route path="/q/:token" element={<PublicQuotation />} />
+ <Route path="/c/:token" element={<PublicChecklist />} />
+ <Route path="/p/guide/:slug" element={<PublicGuide />} />
+ <Route path="/p/info/:slug" element={<PublicTravelerInfo />} />
+ <Route path="/g/:slug" element={<PublicGroupTrip />} />
+ <Route path="/voucher/:token" element={<PublicBookingVoucher />} />
+ <Route path="/minha-viagem/:token" element={<TravelerPortal />} />
+ <Route path="/portal/:org_slug" element={<PortalLogin />} />
+ <Route path="/portal/t/:token/checkin" element={<TravelerCheckinPortal />} />
+ <Route path="/noticias/:slug" element={<PublicNewsArticle />} />
+ <Route path="/:org_slug/ajuda" element={<HelpCenter />} />
+ <Route path="/:org_slug/blog" element={<BlogPublic />} />
+ <Route path="/p/:token" element={<PublicProposal />} />
+ <Route path="/certificate/:hash" element={<SignatureCertificate />} />
+ <Route path="/portal/:org_slug/home" element={<ProtectedRoute><PortalHome /></ProtectedRoute>} />
+ <Route path="/portal/:org_slug/trip/:id" element={<ProtectedRoute><PortalTripDetail /></ProtectedRoute>} />
+ <Route path="/portal/:org_slug/trip/:trip_id/ai-photos" element={<ProtectedRoute><PortalAiPhotos /></ProtectedRoute>} />
 
-              <Route path="/site/:slug" element={<PublicSiteView />} />
-              <Route path="/site/:slug/bio" element={<PublicSiteView />} />
-              <Route path="/site/:slug/blog" element={<PublicSiteView />} />
-              <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
+ <Route path="/site/:slug" element={<PublicSiteView />} />
+ <Route path="/site/:slug/bio" element={<PublicSiteView />} />
+ <Route path="/site/:slug/blog" element={<PublicSiteView />} />
+ <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
 
-              <Route path="/" element={<HomeOrApp />} />
-              <Route path="/radar" element={<ProtectedWithOrg><RadarPortal /></ProtectedWithOrg>} />
-              <Route path="/radar-global" element={<ProtectedWithOrg><GlobalRadarMap /></ProtectedWithOrg>} />
-              <Route path="/news-cms" element={<ProtectedWithOrg><TripsRole><NewsCMS /></TripsRole></ProtectedWithOrg>} />
-              <Route path="/proposals" element={<ProtectedWithOrg><TripsRole><Proposals /></TripsRole></ProtectedWithOrg>} />
-              <Route path="/proposals/:id/edit" element={<ProtectedWithOrg><TripsRole><ProposalEditor /></TripsRole></ProtectedWithOrg>} />
+ <Route path="/" element={<HomeOrApp />} />
+ <Route path="/radar" element={<ProtectedWithOrg><RadarPortal /></ProtectedWithOrg>} />
+ <Route path="/radar-global" element={<ProtectedWithOrg><GlobalRadarMap /></ProtectedWithOrg>} />
+ <Route path="/news-cms" element={<ProtectedWithOrg><TripsRole><NewsCMS /></TripsRole></ProtectedWithOrg>} />
+ <Route path="/proposals" element={<ProtectedWithOrg><TripsRole><Proposals /></TripsRole></ProtectedWithOrg>} />
+ <Route path="/proposals/:id/edit" element={<ProtectedWithOrg><TripsRole><ProposalEditor /></TripsRole></ProtectedWithOrg>} />
 
-              <Route path="/clients" element={<ProtectedWithOrg><Clients /></ProtectedWithOrg>} />
+ <Route path="/clients" element={<ProtectedWithOrg><Clients /></ProtectedWithOrg>} />
 
-              <Route path="/quotations" element={<ProtectedWithOrg><Quotations /></ProtectedWithOrg>} />
+ <Route path="/quotations" element={<ProtectedWithOrg><Quotations /></ProtectedWithOrg>} />
 
-              <Route path="/itineraries" element={<ProtectedWithOrg><Itineraries /></ProtectedWithOrg>} />
-              <Route path="/itineraries/:id/builder" element={<ProtectedWithOrg><ItineraryBuilder /></ProtectedWithOrg>} />
-              <Route path="/roteiro/:token" element={<PublicItinerary />} />
+ <Route path="/itineraries" element={<ProtectedWithOrg><Itineraries /></ProtectedWithOrg>} />
+ <Route path="/itineraries/:id/builder" element={<ProtectedWithOrg><ItineraryBuilder /></ProtectedWithOrg>} />
+ <Route path="/roteiro/:token" element={<PublicItinerary />} />
 
-              <Route path="/kanban/sales" element={<ProtectedWithOrg><TripsRole><KanbanBoard /></TripsRole></ProtectedWithOrg>} />
-              <Route path="/kanban/departures" element={<ProtectedWithOrg><TripsRole><DeparturesKanban /></TripsRole></ProtectedWithOrg>} />
-              <Route path="/kanban/tasks" element={<ProtectedWithOrg><TripsRole><TasksKanban /></TripsRole></ProtectedWithOrg>} />
-              <Route path="/ai-chat" element={<ProtectedWithOrg><TripsRole><AIChat /></TripsRole></ProtectedWithOrg>} />
-              <Route path="/ai-dashboard" element={<ProtectedWithOrg><AdminRole><AiDashboard /></AdminRole></ProtectedWithOrg>} />
-              <Route path="/settings" element={<ProtectedWithOrg><TripsRole><Settings /></TripsRole></ProtectedWithOrg>} />
-              <Route path="/site-builder" element={<ProtectedWithOrg><TripsRole><SiteBuilderPage /></TripsRole></ProtectedWithOrg>} />
-              <Route path="/app/group-trips" element={<ProtectedWithOrg><TripsRole><GroupTrips /></TripsRole></ProtectedWithOrg>} />
-              <Route path="/app/group-trips/:id" element={<ProtectedWithOrg><TripsRole><GroupDashboard /></TripsRole></ProtectedWithOrg>} />
+ <Route path="/kanban/sales" element={<ProtectedWithOrg><TripsRole><KanbanBoard /></TripsRole></ProtectedWithOrg>} />
+ <Route path="/kanban/departures" element={<ProtectedWithOrg><TripsRole><DeparturesKanban /></TripsRole></ProtectedWithOrg>} />
+ <Route path="/kanban/tasks" element={<ProtectedWithOrg><TripsRole><TasksKanban /></TripsRole></ProtectedWithOrg>} />
+ <Route path="/ai-chat" element={<ProtectedWithOrg><TripsRole><AIChat /></TripsRole></ProtectedWithOrg>} />
+ <Route path="/ai-dashboard" element={<ProtectedWithOrg><AdminRole><AiDashboard /></AdminRole></ProtectedWithOrg>} />
+ <Route path="/settings" element={<ProtectedWithOrg><TripsRole><Settings /></TripsRole></ProtectedWithOrg>} />
+ <Route path="/site-builder" element={<ProtectedWithOrg><TripsRole><SiteBuilderPage /></TripsRole></ProtectedWithOrg>} />
+ <Route path="/app/group-trips" element={<ProtectedWithOrg><TripsRole><GroupTrips /></TripsRole></ProtectedWithOrg>} />
+ <Route path="/app/group-trips/:id" element={<ProtectedWithOrg><TripsRole><GroupDashboard /></TripsRole></ProtectedWithOrg>} />
 
-              {/* Finance / Commissions */}
-              <Route path="/app/finance/payments" element={<ProtectedWithOrg><AdminRole><Payments /></AdminRole></ProtectedWithOrg>} />
-              <Route path="/app/finance/suppliers" element={<ProtectedWithOrg><AdminRole><Suppliers /></AdminRole></ProtectedWithOrg>} />
-              <Route path="/app/finance/transactions" element={<ProtectedWithOrg><AdminRole><Transactions /></AdminRole></ProtectedWithOrg>} />
-              <Route path="/app/finance/commissions" element={<ProtectedWithOrg><AdminRole><CommissionsPanel /></AdminRole></ProtectedWithOrg>} />
-              <Route path="/app/my-commissions" element={<ProtectedWithOrg><TripsRole><MyCommissions /></TripsRole></ProtectedWithOrg>} />
-              <Route path="/app/finance/pending-cancellations" element={<ProtectedWithOrg><AdminRole><PendingCancellations /></AdminRole></ProtectedWithOrg>} />
-              <Route path="/portal-manager" element={<ProtectedWithOrg><TripsRole><PortalManagerPage /></TripsRole></ProtectedWithOrg>} />
-              <Route path="/integrations" element={<Navigate to="/settings?tab=integrations" replace />} />
-              
-              {/* ERP v3 Financeiro & Jurídico */}
-              <Route path="/finance/payments" element={<ProtectedWithOrg><AdminRole><Payments /></AdminRole></ProtectedWithOrg>} />
-              <Route path="/finance/suppliers" element={<ProtectedWithOrg><AdminRole><Suppliers /></AdminRole></ProtectedWithOrg>} />
-              <Route path="/finance/transactions" element={<ProtectedWithOrg><AdminRole><Transactions /></AdminRole></ProtectedWithOrg>} />
-              <Route path="/finance/cancellations" element={<ProtectedWithOrg><AdminRole><PendingCancellations /></AdminRole></ProtectedWithOrg>} />
-              <Route path="/legal/contracts" element={<ProtectedWithOrg><AdminRole><ContractTemplates /></AdminRole></ProtectedWithOrg>} />
-              {/* Fusion: contratos gerados + vouchers */}
-              <Route path="/contracts" element={<ProtectedWithOrg><TripsRole><ContractRecords /></TripsRole></ProtectedWithOrg>} />
-              <Route path="/vouchers"  element={<ProtectedWithOrg><TripsRole><Vouchers /></TripsRole></ProtectedWithOrg>} />
-              <Route path="/automations" element={<ProtectedWithOrg><AdminRole><Automations /></AdminRole></ProtectedWithOrg>} />
-              <Route path="/team" element={<Navigate to="/settings?tab=agents" replace />} />
-              <Route path="/admin/dashboard" element={<AdminMasterLayout><AdminDashboard /></AdminMasterLayout>} />
-              <Route path="/admin/agencies/:id" element={<AdminMasterLayout><AdminAgencyDetail /></AdminMasterLayout>} />
-              <Route path="/admin/commissions" element={<ProtectedWithOrg><AdminRole><CommissionReports /></AdminRole></ProtectedWithOrg>} />
-              <Route path="/admin/support" element={<ProtectedWithOrg><TripsRole><SupportAdmin /></TripsRole></ProtectedWithOrg>} />
-              <Route path="/admin/blog" element={<ProtectedWithOrg><AdminRole><BlogAdmin /></AdminRole></ProtectedWithOrg>} />
+ {/* Finance / Commissions */}
+ <Route path="/app/finance/payments" element={<ProtectedWithOrg><AdminRole><Payments /></AdminRole></ProtectedWithOrg>} />
+ <Route path="/app/finance/suppliers" element={<ProtectedWithOrg><AdminRole><Suppliers /></AdminRole></ProtectedWithOrg>} />
+ <Route path="/app/finance/transactions" element={<ProtectedWithOrg><AdminRole><Transactions /></AdminRole></ProtectedWithOrg>} />
+ <Route path="/app/finance/commissions" element={<ProtectedWithOrg><AdminRole><CommissionsPanel /></AdminRole></ProtectedWithOrg>} />
+ <Route path="/app/my-commissions" element={<ProtectedWithOrg><TripsRole><MyCommissions /></TripsRole></ProtectedWithOrg>} />
+ <Route path="/app/finance/pending-cancellations" element={<ProtectedWithOrg><AdminRole><PendingCancellations /></AdminRole></ProtectedWithOrg>} />
+ <Route path="/portal-manager" element={<ProtectedWithOrg><TripsRole><PortalManagerPage /></TripsRole></ProtectedWithOrg>} />
+ <Route path="/integrations" element={<Navigate to="/settings?tab=integrations" replace />} />
+ 
+ {/* ERP v3 Financeiro & Jurídico */}
+ <Route path="/finance/payments" element={<ProtectedWithOrg><AdminRole><Payments /></AdminRole></ProtectedWithOrg>} />
+ <Route path="/finance/suppliers" element={<ProtectedWithOrg><AdminRole><Suppliers /></AdminRole></ProtectedWithOrg>} />
+ <Route path="/finance/transactions" element={<ProtectedWithOrg><AdminRole><Transactions /></AdminRole></ProtectedWithOrg>} />
+ <Route path="/finance/cancellations" element={<ProtectedWithOrg><AdminRole><PendingCancellations /></AdminRole></ProtectedWithOrg>} />
+ <Route path="/legal/contracts" element={<ProtectedWithOrg><AdminRole><ContractTemplates /></AdminRole></ProtectedWithOrg>} />
+ {/* Fusion: contratos gerados + vouchers */}
+ <Route path="/contracts" element={<ProtectedWithOrg><TripsRole><ContractRecords /></TripsRole></ProtectedWithOrg>} />
+ <Route path="/vouchers" element={<ProtectedWithOrg><TripsRole><Vouchers /></TripsRole></ProtectedWithOrg>} />
+ <Route path="/automations" element={<ProtectedWithOrg><AdminRole><Automations /></AdminRole></ProtectedWithOrg>} />
+ <Route path="/team" element={<Navigate to="/settings?tab=agents" replace />} />
+ <Route path="/admin/dashboard" element={<AdminMasterLayout><AdminDashboard /></AdminMasterLayout>} />
+ <Route path="/admin/agencies/:id" element={<AdminMasterLayout><AdminAgencyDetail /></AdminMasterLayout>} />
+ <Route path="/app/admin/commissions" element={<ProtectedWithOrg><AdminRole><CommissionReports /></AdminRole></ProtectedWithOrg>} />
+ <Route path="/app/admin/support" element={<ProtectedWithOrg><TripsRole><SupportAdmin /></TripsRole></ProtectedWithOrg>} />
+ <Route path="/app/admin/blog" element={<ProtectedWithOrg><AdminRole><BlogAdmin /></AdminRole></ProtectedWithOrg>} />
 
-              {/* CRM */}
-              <Route path="/guides" element={<Navigate to="/settings?tab=guides" replace />} />
+ {/* CRM */}
+ <Route path="/guides" element={<Navigate to="/settings?tab=guides" replace />} />
 
-              <Route path="/info" element={<ProtectedWithOrg><TripsRole><TravelerInfo /></TripsRole></ProtectedWithOrg>} />
+ <Route path="/info" element={<ProtectedWithOrg><TripsRole><TravelerInfo /></TripsRole></ProtectedWithOrg>} />
 
-              <Route path="/hotels" element={<Navigate to="/settings?tab=hotels" replace />} />
+ <Route path="/hotels" element={<Navigate to="/settings?tab=hotels" replace />} />
 
-              <Route path="/tickets" element={<ProtectedWithOrg><TripsRole><Tickets /></TripsRole></ProtectedWithOrg>} />
+ <Route path="/tickets" element={<ProtectedWithOrg><TripsRole><Tickets /></TripsRole></ProtectedWithOrg>} />
 
-              <Route path="/experiences" element={<ProtectedWithOrg><TripsRole><Experiences /></TripsRole></ProtectedWithOrg>} />
+ <Route path="/experiences" element={<ProtectedWithOrg><TripsRole><Experiences /></TripsRole></ProtectedWithOrg>} />
 
-              <Route path="/group-trips" element={<ProtectedWithOrg><TripsRole><GroupTrips /></TripsRole></ProtectedWithOrg>} />
-              <Route path="/group-trips/:id" element={<ProtectedWithOrg><TripsRole><GroupDashboard /></TripsRole></ProtectedWithOrg>} />
-              <Route path="/destinations" element={<Navigate to="/settings?tab=destinations" replace />} />
-              <Route path="/analytics" element={<ProtectedWithOrg><TripsRole><Analytics /></TripsRole></ProtectedWithOrg>} />
+ <Route path="/group-trips" element={<ProtectedWithOrg><TripsRole><GroupTrips /></TripsRole></ProtectedWithOrg>} />
+ <Route path="/group-trips/:id" element={<ProtectedWithOrg><TripsRole><GroupDashboard /></TripsRole></ProtectedWithOrg>} />
+ <Route path="/destinations" element={<Navigate to="/settings?tab=destinations" replace />} />
+ <Route path="/analytics" element={<ProtectedWithOrg><TripsRole><Analytics /></TripsRole></ProtectedWithOrg>} />
 
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </Suspense>
-        </AuthProvider>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-  </ErrorBoundary>
+ <Route path="*" element={<NotFound />} />
+ </Routes>
+ </Suspense>
+ </AuthProvider>
+ </BrowserRouter>
+ </TooltipProvider>
+ </QueryClientProvider>
+ </ErrorBoundary>
 );
 
 export default App;

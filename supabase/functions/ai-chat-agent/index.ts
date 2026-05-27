@@ -52,6 +52,7 @@ serve(async (req) => {
       .from('ai_knowledge_base')
       .select('title, content')
       .eq('org_id', orgId)
+      .eq('approved_for_public_ai', true)
       .limit(3)
     
     let knowledgeStr = ""
@@ -74,8 +75,13 @@ CONTEXTO DO CLIENTE:
 ${contextStr}
 ${knowledgeStr}
 `
-    // Call OpenAI API
-    const openAiKey = Deno.env.get('OPENAI_API_KEY')
+    // Fetch OpenAI API Key from global_keys or fallback to Deno.env
+    const { data: globalKeys } = await supabase
+      .from('global_keys')
+      .select('openai_api_key')
+      .single()
+      
+    const openAiKey = globalKeys?.openai_api_key || Deno.env.get('OPENAI_API_KEY')
     if (!openAiKey) {
       throw new Error("OpenAI API key missing")
     }

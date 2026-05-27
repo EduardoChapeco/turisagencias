@@ -264,6 +264,25 @@ CREATE TABLE IF NOT EXISTS destination_guides (
   CONSTRAINT destination_guides_slug_org_unique UNIQUE (org_id, slug)
 );
 
+DO $$ 
+BEGIN 
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='destination_guides' AND column_name='status') THEN
+    ALTER TABLE destination_guides ADD COLUMN status varchar DEFAULT 'draft';
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='support_articles' AND column_name='status') THEN
+    ALTER TABLE support_articles ADD COLUMN status varchar DEFAULT 'draft';
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='blog_posts' AND column_name='status') THEN
+    ALTER TABLE blog_posts ADD COLUMN status varchar DEFAULT 'draft';
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='blog_posts' AND column_name='approved_by') THEN
+    ALTER TABLE blog_posts ADD COLUMN approved_by uuid REFERENCES profiles(id);
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='blog_posts' AND column_name='published_at') THEN
+    ALTER TABLE blog_posts ADD COLUMN published_at timestamptz;
+  END IF;
+END $$;
+
 -- ==========================================
 -- BLOCO 4: RLS (ROW LEVEL SECURITY)
 -- ==========================================
@@ -282,25 +301,25 @@ CREATE POLICY "Public approved chunks" ON knowledge_chunks
   FOR SELECT USING (approved_for_public_ai = true AND pii_level = 'none' AND visibility = 'public');
 
 CREATE POLICY "Org chunks isolation" ON knowledge_chunks
-  FOR ALL USING (org_id = (select auth.user_org_id()));
+  FOR ALL USING (org_id = (select public.get_my_org_id()));
 
 CREATE POLICY "Org sources isolation" ON knowledge_sources
-  FOR ALL USING (org_id = (select auth.user_org_id()));
+  FOR ALL USING (org_id = (select public.get_my_org_id()));
 
 CREATE POLICY "Org embeddings isolation" ON knowledge_embeddings
-  FOR ALL USING (org_id = (select auth.user_org_id()));
+  FOR ALL USING (org_id = (select public.get_my_org_id()));
 
 CREATE POLICY "Org agents isolation" ON ai_agents
-  FOR ALL USING (org_id = (select auth.user_org_id()));
+  FOR ALL USING (org_id = (select public.get_my_org_id()));
 
 CREATE POLICY "Org agent runs isolation" ON ai_agent_runs
-  FOR ALL USING (org_id = (select auth.user_org_id()));
+  FOR ALL USING (org_id = (select public.get_my_org_id()));
 
 CREATE POLICY "Org tone isolation" ON agency_tone_profiles
-  FOR ALL USING (org_id = (select auth.user_org_id()));
+  FOR ALL USING (org_id = (select public.get_my_org_id()));
 
 CREATE POLICY "Org knowledge policy isolation" ON public_knowledge_policies
-  FOR ALL USING (org_id = (select auth.user_org_id()));
+  FOR ALL USING (org_id = (select public.get_my_org_id()));
 
 -- Support Center
 ALTER TABLE support_articles ENABLE ROW LEVEL SECURITY;
@@ -313,21 +332,21 @@ CREATE POLICY "Public published articles" ON support_articles
   FOR SELECT USING (status = 'published');
 
 CREATE POLICY "Org articles admin" ON support_articles
-  FOR ALL USING (org_id = (select auth.user_org_id()));
+  FOR ALL USING (org_id = (select public.get_my_org_id()));
 
 -- FAQs publicadas visíveis publicamente
 CREATE POLICY "Public published faqs" ON faq_items
   FOR SELECT USING (is_published = true);
 
 CREATE POLICY "Org faqs admin" ON faq_items
-  FOR ALL USING (org_id = (select auth.user_org_id()));
+  FOR ALL USING (org_id = (select public.get_my_org_id()));
 
 CREATE POLICY "Org tickets isolation" ON support_tickets
-  FOR ALL USING (org_id = (select auth.user_org_id()));
+  FOR ALL USING (org_id = (select public.get_my_org_id()));
 
 CREATE POLICY "Org ticket replies isolation" ON support_ticket_replies
   FOR ALL USING (
-    ticket_id IN (SELECT id FROM support_tickets WHERE org_id = (select auth.user_org_id()))
+    ticket_id IN (SELECT id FROM support_tickets WHERE org_id = (select public.get_my_org_id()))
   );
 
 -- Blog
@@ -340,11 +359,11 @@ CREATE POLICY "Public published posts" ON blog_posts
   FOR SELECT USING (status = 'published');
 
 CREATE POLICY "Org blog admin" ON blog_posts
-  FOR ALL USING (org_id = (select auth.user_org_id()));
+  FOR ALL USING (org_id = (select public.get_my_org_id()));
 
 CREATE POLICY "Org blog notes" ON blog_post_notes
   FOR ALL USING (
-    post_id IN (SELECT id FROM blog_posts WHERE org_id = (select auth.user_org_id()))
+    post_id IN (SELECT id FROM blog_posts WHERE org_id = (select public.get_my_org_id()))
   );
 
 -- Guias publicados visíveis publicamente
@@ -352,7 +371,7 @@ CREATE POLICY "Public published guides" ON destination_guides
   FOR SELECT USING (status = 'published');
 
 CREATE POLICY "Org guides admin" ON destination_guides
-  FOR ALL USING (org_id = (select auth.user_org_id()));
+  FOR ALL USING (org_id = (select public.get_my_org_id()));
 
 -- ==========================================
 -- BLOCO 5: TRIGGER DE PROTEÇÃO DE PUBLICAÇÃO

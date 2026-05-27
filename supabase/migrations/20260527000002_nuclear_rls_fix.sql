@@ -48,16 +48,10 @@ CREATE POLICY "Public can view quotation by token" ON public.quotations
 -- Note: A fully hardened approach would require a secure RPC for token reads, but we rely on the high-entropy UUID token.
 
 -- Builder Sites (Public Read via Domain/Slug)
-DROP POLICY IF EXISTS "Public can view sites by domain" ON public.builder_sites;
-CREATE POLICY "Public can view sites by domain" ON public.builder_sites 
-  FOR SELECT TO anon 
-  USING (is_published = true);
+-- Policy will be created in canonical schema after is_published column is added
 
 -- Builder Pages (Public Read via Slug)
-DROP POLICY IF EXISTS "Public can view published pages" ON public.builder_pages;
-CREATE POLICY "Public can view published pages" ON public.builder_pages 
-  FOR SELECT TO anon 
-  USING (status = 'published');
+-- Policy will be created in canonical schema after status column is added
 
 -- Proposals
 DROP POLICY IF EXISTS "proposals_public_read_policy" ON public.proposals;

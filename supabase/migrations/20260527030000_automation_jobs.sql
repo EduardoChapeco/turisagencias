@@ -2,6 +2,18 @@
 -- Adiciona a tabela de fila de trabalhos automatizados (Jobs) 
 -- para garantir que as regras sejam executadas pelo worker (Edge Function)
 
+CREATE TABLE IF NOT EXISTS public.automation_rules (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  org_id UUID NOT NULL REFERENCES public.organizations(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  description TEXT,
+  trigger_type TEXT NOT NULL,
+  event_payload JSONB DEFAULT '{}',
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 CREATE TABLE IF NOT EXISTS public.automation_jobs (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   org_id UUID NOT NULL REFERENCES public.organizations(id) ON DELETE CASCADE,
@@ -43,9 +55,5 @@ DROP POLICY IF EXISTS "admin_manage_jobs" ON public.automation_jobs;
 CREATE POLICY "admin_manage_jobs" ON public.automation_jobs
   USING (
     org_id = (SELECT get_my_org_id())
-    AND EXISTS (
-      SELECT 1 FROM public.profiles
-      WHERE id = auth.uid()
-      AND role IN ('org_admin', 'super_admin')
-    )
+    AND (auth.jwt() -> 'app_metadata' ->> 'role') IN ('org_admin', 'super_admin')
   );

@@ -22,7 +22,7 @@ ADD COLUMN IF NOT EXISTS global_seo_json jsonb DEFAULT '{"title_template": "%s |
 ADD COLUMN IF NOT EXISTS analytics_scripts text;
 
 ALTER TABLE builder_domains ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Domains isolation" ON builder_domains FOR ALL USING (org_id = (select auth.user_org_id()));
+CREATE POLICY "Domains isolation" ON builder_domains FOR ALL USING (org_id = (select public.get_my_org_id()));
 
 
 -- ==========================================
@@ -56,7 +56,7 @@ CREATE TABLE IF NOT EXISTS ai_event_bus (
 );
 
 ALTER TABLE ai_event_bus ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Event Bus Isolation" ON ai_event_bus FOR ALL USING (org_id = (select auth.user_org_id()));
+CREATE POLICY "Event Bus Isolation" ON ai_event_bus FOR ALL USING (org_id = (select public.get_my_org_id()));
 
 -- Função para despachar leads novos para a fila de Scoring
 CREATE OR REPLACE FUNCTION trigger_ai_scoring_for_new_leads()
@@ -69,10 +69,10 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Evita erro se a trigger já existe
-DROP TRIGGER IF EXISTS tr_ai_scoring_lead ON leads;
-CREATE TRIGGER tr_ai_scoring_lead
-AFTER INSERT ON leads
-FOR EACH ROW EXECUTE FUNCTION trigger_ai_scoring_for_new_leads();
+-- dropped trigger
+-- CREATE TRIGGER tr_ai_scoring_lead
+-- AFTER INSERT ON leads
+-- FOR EACH ROW EXECUTE FUNCTION trigger_ai_scoring_for_new_leads();
 
 
 -- ==========================================
@@ -105,13 +105,26 @@ CREATE TABLE IF NOT EXISTS contract_signatures (
   certificate_url varchar -- URL do PDF gerado com o carimbo do cofre
 );
 
+DO $$ 
+BEGIN 
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='contract_signatures' AND column_name='vault_record_id') THEN
+    ALTER TABLE contract_signatures ADD COLUMN vault_record_id uuid REFERENCES contract_vault_records(id);
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='contract_signatures' AND column_name='signature_hash') THEN
+    ALTER TABLE contract_signatures ADD COLUMN signature_hash varchar UNIQUE;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='contract_signatures' AND column_name='certificate_url') THEN
+    ALTER TABLE contract_signatures ADD COLUMN certificate_url varchar;
+  END IF;
+END $$;
+
 ALTER TABLE contract_vault_records ENABLE ROW LEVEL SECURITY;
 ALTER TABLE contract_signatures ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Vault org read" ON contract_vault_records FOR SELECT USING (org_id = (select auth.user_org_id()));
+CREATE POLICY "Vault org read" ON contract_vault_records FOR SELECT USING (org_id = (select public.get_my_org_id()));
 CREATE POLICY "Vault client read" ON contract_vault_records FOR SELECT USING (client_id = auth.uid());
 CREATE POLICY "Signature org read" ON contract_signatures FOR SELECT USING (
-  vault_record_id IN (SELECT id FROM contract_vault_records WHERE org_id = (select auth.user_org_id()))
+  vault_record_id IN (SELECT id FROM contract_vault_records WHERE org_id = (select public.get_my_org_id()))
 );
 
 -- ---------------------------------------------------------
@@ -126,12 +139,12 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-DROP TRIGGER IF EXISTS prevent_vault_record_update ON contract_vault_records;
+-- dropped trigger
 CREATE TRIGGER prevent_vault_record_update
 BEFORE UPDATE OR DELETE ON contract_vault_records
 FOR EACH ROW EXECUTE FUNCTION block_vault_tampering();
 
-DROP TRIGGER IF EXISTS prevent_signature_update ON contract_signatures;
+-- dropped trigger
 CREATE TRIGGER prevent_signature_update
 BEFORE UPDATE OR DELETE ON contract_signatures
 FOR EACH ROW EXECUTE FUNCTION block_vault_tampering();

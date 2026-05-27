@@ -49,6 +49,22 @@ CREATE TABLE IF NOT EXISTS public.agent_commission_periods (
   UNIQUE(org_id, agent_id, period_start, period_end)
 );
 
+DO $$ 
+BEGIN 
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='agent_commission_periods' AND column_name='agent_id') THEN
+    ALTER TABLE public.agent_commission_periods ADD COLUMN agent_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='agent_commission_periods' AND column_name='period_start') THEN
+    ALTER TABLE public.agent_commission_periods ADD COLUMN period_start DATE;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='agent_commission_periods' AND column_name='period_end') THEN
+    ALTER TABLE public.agent_commission_periods ADD COLUMN period_end DATE;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='agent_commission_entries' AND column_name='rule_id') THEN
+    ALTER TABLE public.agent_commission_entries ADD COLUMN rule_id UUID REFERENCES public.agent_commission_rules(id) ON DELETE SET NULL;
+  END IF;
+END $$;
+
 -- Entradas individuais de comissão
 CREATE TABLE IF NOT EXISTS public.agent_commission_entries (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -122,11 +138,7 @@ CREATE POLICY "agent_read_own_periods" ON public.agent_commission_periods
     org_id = (SELECT get_my_org_id())
     AND (
       agent_id = auth.uid()
-      OR EXISTS (
-        SELECT 1 FROM public.profiles
-        WHERE id = auth.uid()
-        AND role IN ('org_admin', 'super_admin', 'finance')
-      )
+      OR (auth.jwt() -> 'app_metadata' ->> 'role') IN ('org_admin', 'super_admin', 'finance')
     )
   );
 
@@ -137,11 +149,7 @@ CREATE POLICY "agent_read_own_entries" ON public.agent_commission_entries
     org_id = (SELECT get_my_org_id())
     AND (
       agent_id = auth.uid()
-      OR EXISTS (
-        SELECT 1 FROM public.profiles
-        WHERE id = auth.uid()
-        AND role IN ('org_admin', 'super_admin', 'finance')
-      )
+      OR (auth.jwt() -> 'app_metadata' ->> 'role') IN ('org_admin', 'super_admin', 'finance')
     )
   );
 

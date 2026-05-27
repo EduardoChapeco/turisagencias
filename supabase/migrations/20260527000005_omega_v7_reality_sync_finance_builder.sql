@@ -131,12 +131,12 @@ ALTER TABLE builder_sites ENABLE ROW LEVEL SECURITY;
 ALTER TABLE builder_pages ENABLE ROW LEVEL SECURITY;
 ALTER TABLE builder_page_versions ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Sites org isolation" ON builder_sites FOR ALL USING (org_id = (select auth.user_org_id()));
+CREATE POLICY "Sites org isolation" ON builder_sites FOR ALL USING (org_id = (select public.get_my_org_id()));
 -- Versões publicadas são visíveis para todos
 CREATE POLICY "Public published versions" ON builder_page_versions FOR SELECT USING (status = 'published');
 -- Resto isolado
-CREATE POLICY "Pages isolation" ON builder_pages FOR ALL USING (site_id IN (SELECT id FROM builder_sites WHERE org_id = (select auth.user_org_id())));
-CREATE POLICY "Page versions isolation" ON builder_page_versions FOR ALL USING (page_id IN (SELECT id FROM builder_pages WHERE site_id IN (SELECT id FROM builder_sites WHERE org_id = (select auth.user_org_id()))));
+CREATE POLICY "Pages isolation" ON builder_pages FOR ALL USING (site_id IN (SELECT id FROM builder_sites WHERE org_id = (select public.get_my_org_id())));
+CREATE POLICY "Page versions isolation" ON builder_page_versions FOR ALL USING (page_id IN (SELECT id FROM builder_pages WHERE site_id IN (SELECT id FROM builder_sites WHERE org_id = (select public.get_my_org_id()))));
 
 -- Commissions RLS
 ALTER TABLE agent_commission_periods ENABLE ROW LEVEL SECURITY;
@@ -144,15 +144,15 @@ ALTER TABLE agent_commission_rules ENABLE ROW LEVEL SECURITY;
 ALTER TABLE agent_commission_entries ENABLE ROW LEVEL SECURITY;
 ALTER TABLE agent_commission_audit_logs ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Periods isolation" ON agent_commission_periods FOR ALL USING (org_id = (select auth.user_org_id()));
-CREATE POLICY "Rules isolation" ON agent_commission_rules FOR ALL USING (org_id = (select auth.user_org_id()));
+CREATE POLICY "Periods isolation" ON agent_commission_periods FOR ALL USING (org_id = (select public.get_my_org_id()));
+CREATE POLICY "Rules isolation" ON agent_commission_rules FOR ALL USING (org_id = (select public.get_my_org_id()));
 
 -- Agentes só veem suas próprias comissões
-CREATE POLICY "Entries self select" ON agent_commission_entries FOR SELECT USING (agent_id = auth.uid() OR org_id = (select auth.user_org_id()));
-CREATE POLICY "Entries org admin" ON agent_commission_entries FOR ALL USING (org_id = (select auth.user_org_id()));
+CREATE POLICY "Entries self select" ON agent_commission_entries FOR SELECT USING (agent_id = auth.uid() OR org_id = (select public.get_my_org_id()));
+CREATE POLICY "Entries org admin" ON agent_commission_entries FOR ALL USING (org_id = (select public.get_my_org_id()));
 
 CREATE POLICY "Audit logs org admin" ON agent_commission_audit_logs FOR ALL USING (
-  entry_id IN (SELECT id FROM agent_commission_entries WHERE org_id = (select auth.user_org_id()))
+  entry_id IN (SELECT id FROM agent_commission_entries WHERE org_id = (select public.get_my_org_id()))
 );
 
 -- ==========================================

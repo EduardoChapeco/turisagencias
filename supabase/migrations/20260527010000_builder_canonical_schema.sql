@@ -52,6 +52,22 @@ CREATE TABLE IF NOT EXISTS public.builder_analytics_events (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+DO $$ 
+BEGIN 
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='builder_form_submissions' AND column_name='project_id') THEN
+    ALTER TABLE public.builder_form_submissions ADD COLUMN project_id UUID REFERENCES public.builder_projects(id) ON DELETE SET NULL;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='builder_analytics_events' AND column_name='project_id') THEN
+    ALTER TABLE public.builder_analytics_events ADD COLUMN project_id UUID REFERENCES public.builder_projects(id) ON DELETE SET NULL;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='builder_sites' AND column_name='is_published') THEN
+    ALTER TABLE public.builder_sites ADD COLUMN is_published BOOLEAN DEFAULT FALSE;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='builder_pages' AND column_name='status') THEN
+    ALTER TABLE public.builder_pages ADD COLUMN status TEXT DEFAULT 'draft';
+  END IF;
+END $$;
+
 -- Índices
 CREATE INDEX IF NOT EXISTS idx_builder_projects_org_id ON public.builder_projects(org_id);
 CREATE INDEX IF NOT EXISTS idx_builder_projects_slug ON public.builder_projects(slug) WHERE slug IS NOT NULL;
@@ -63,6 +79,21 @@ CREATE INDEX IF NOT EXISTS idx_builder_analytics_events_project_id ON public.bui
 -- RLS
 ALTER TABLE public.builder_form_submissions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.builder_analytics_events ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.builder_pages ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.builder_blocks_registry ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.builder_versions ENABLE ROW LEVEL SECURITY;
+
+-- SECURING PUBLIC READS (ANON)
+-- Ensure 'anon' role can only select published sites and pages
+DROP POLICY IF EXISTS "Public can view sites by domain" ON public.builder_sites;
+CREATE POLICY "Public can view sites by domain" ON public.builder_sites 
+  FOR SELECT TO anon 
+  USING (is_published = true);
+
+DROP POLICY IF EXISTS "Public can view published pages" ON public.builder_pages;
+CREATE POLICY "Public can view published pages" ON public.builder_pages 
+  FOR SELECT TO anon 
+  USING (status = 'published');
 
 -- Policies: builder_form_submissions
 DROP POLICY IF EXISTS "org_read_form_submissions" ON public.builder_form_submissions;

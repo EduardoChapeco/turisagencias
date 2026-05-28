@@ -34,13 +34,16 @@ CREATE TABLE IF NOT EXISTS public.builder_media (
 -- RLS for builder_media
 ALTER TABLE public.builder_media ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY IF NOT EXISTS "builder_media_org_select" ON public.builder_media
+DROP POLICY IF EXISTS "builder_media_org_select" ON public.builder_media;
+CREATE POLICY "builder_media_org_select" ON public.builder_media
   FOR SELECT USING (org_id = (SELECT org_id FROM public.profiles WHERE id = auth.uid()));
 
-CREATE POLICY IF NOT EXISTS "builder_media_org_insert" ON public.builder_media
+DROP POLICY IF EXISTS "builder_media_org_insert" ON public.builder_media;
+CREATE POLICY "builder_media_org_insert" ON public.builder_media
   FOR INSERT WITH CHECK (org_id = (SELECT org_id FROM public.profiles WHERE id = auth.uid()));
 
-CREATE POLICY IF NOT EXISTS "builder_media_org_delete" ON public.builder_media
+DROP POLICY IF EXISTS "builder_media_org_delete" ON public.builder_media;
+CREATE POLICY "builder_media_org_delete" ON public.builder_media
   FOR DELETE USING (org_id = (SELECT org_id FROM public.profiles WHERE id = auth.uid()));
 
 -- 3. Add bucket for builder media (separate from org-assets)
@@ -61,7 +64,8 @@ CREATE TABLE IF NOT EXISTS public.webmcp_config (
 
 ALTER TABLE public.webmcp_config ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY IF NOT EXISTS "webmcp_config_org_manage" ON public.webmcp_config
+DROP POLICY IF EXISTS "webmcp_config_org_manage" ON public.webmcp_config;
+CREATE POLICY "webmcp_config_org_manage" ON public.webmcp_config
   FOR ALL USING (org_id = (SELECT org_id FROM public.profiles WHERE id = auth.uid()));
 
 -- 5. Increment view count function

@@ -7,8 +7,8 @@ CREATE POLICY "Super admin can view all tracking events"
   TO authenticated 
   USING (
     EXISTS (
-      SELECT 1 FROM public.profiles p
-      WHERE p.id = auth.uid() AND p.role = 'super_admin'
+      SELECT 1 FROM public.user_roles ur
+      WHERE ur.user_id = auth.uid() AND ur.role = 'super_admin'
     )
   );
 

@@ -68,6 +68,70 @@ interface BuilderBlock {
  ctaUrl?: string;
 }
 
+function buildBlockStyle(styles: Record<string, any> = {}): React.CSSProperties {
+  const css: React.CSSProperties = {};
+  if (styles.backgroundColor) css.backgroundColor = styles.backgroundColor;
+  if (styles.paddingTop) css.paddingTop = styles.paddingTop;
+  if (styles.paddingBottom) css.paddingBottom = styles.paddingBottom;
+  if (styles.paddingHorizontal) {
+    css.paddingLeft = styles.paddingHorizontal;
+    css.paddingRight = styles.paddingHorizontal;
+  }
+  if (styles.borderRadius) css.borderRadius = styles.borderRadius;
+  if (styles.borderWidth && styles.borderWidth !== '0') {
+    css.borderWidth = styles.borderWidth;
+    css.borderStyle = 'solid';
+    if (styles.borderColor) css.borderColor = styles.borderColor;
+  }
+  if (styles.backgroundImage) {
+    const overlay =
+      styles.overlay === 'dark-30' ? 'rgba(0,0,0,0.3)' :
+      styles.overlay === 'dark-50' ? 'rgba(0,0,0,0.5)' :
+      styles.overlay === 'gradient' ? 'linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.7) 100%)' :
+      null;
+    css.backgroundImage = overlay
+      ? `${overlay}, url(${styles.backgroundImage})`
+      : `url(${styles.backgroundImage})`;
+    css.backgroundSize = 'cover';
+    css.backgroundPosition = 'center';
+  }
+  return css;
+}
+
+function PublicSiteBlock({ node }: { node: any }) {
+  const blockDef = BlockRegistry.get(node.type);
+  if (!blockDef) return null;
+  const RenderComponent = blockDef.renderComponent;
+  const blockStyle = buildBlockStyle(node.styles);
+  const aosAnimation = node.props?.aosAnimation && node.props.aosAnimation !== 'none'
+    ? node.props.aosAnimation
+    : undefined;
+
+  return (
+    <div
+      id={node.props?.customId || node.id}
+      className={cn("relative w-full", node.props?.customClasses)}
+      style={blockStyle}
+      data-aos={aosAnimation}
+      data-aos-duration={aosAnimation ? (node.props?.aosDuration || '500') : undefined}
+      data-aos-delay={aosAnimation ? (node.props?.aosDelay || '0') : undefined}
+    >
+      {node.styles?.customCss && (
+        <style>{`#${node.props?.customId || node.id} { ${node.styles.customCss} }`}</style>
+      )}
+      <RenderComponent node={node}>
+        {node.children && node.children.length > 0 && (
+          <div className="w-full h-full min-h-[10px]">
+            {node.children.map((child: any) => (
+              <PublicSiteBlock key={child.id} node={child} />
+            ))}
+          </div>
+        )}
+      </RenderComponent>
+    </div>
+  );
+}
+
 export default function PublicSiteView() {
  const { slug } = useParams<{ slug: string }>();
  const location = useLocation();
@@ -228,7 +292,7 @@ export default function PublicSiteView() {
 
  // 3. Fallback to legacy project type (Old Builder)
  const { data: projectData, error: projectError } = await supabase
- .from('builder_projects')
+ .from('builder_sites')
  .select('*')
  .eq('org_id', orgData.id)
  .eq('project_type', projectType)
@@ -246,7 +310,7 @@ export default function PublicSiteView() {
  if (projectData && projectData.current_version_id) {
  // 4. Fetch legacy version snapshot
  const { data: versionData, error: versionError } = await supabase
- .from('builder_versions')
+ .from('builder_pages')
  .select('*')
  .eq('id', projectData.current_version_id)
  .maybeSingle();
@@ -478,13 +542,10 @@ export default function PublicSiteView() {
  <main className="max-w-4xl mx-auto px-6 py-12 space-y-20 relative z-10">
  
  {blocks.map((block: any) => {
+ if (!block) return null;
  // NEW ARCHITECTURE: Render block via BlockRegistry if it has a valid 'type'
  if (block.type && BlockRegistry.get(block.type)) {
- const blockDef = BlockRegistry.get(block.type);
- if (blockDef) {
- const RenderComponent = blockDef.renderComponent;
- return <RenderComponent key={block.id} node={block} />;
- }
+ return <PublicSiteBlock key={block.id} node={block} />;
  }
 
  // Fallback defensivo para blocos desconhecidos ou inválidos (Legacy)

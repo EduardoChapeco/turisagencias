@@ -70,7 +70,7 @@ export default function VisualBuilder({
 
    if (projectId) {
      const { data } = await db
-       .from('builder_projects')
+       .from('builder_sites')
        .select('id, slug, seo_title, seo_description, published_version_id')
        .eq('id', projectId)
        .maybeSingle();
@@ -83,12 +83,12 @@ export default function VisualBuilder({
      // Load the latest version
      const versionQuery = projectData.published_version_id
        ? db
-         .from('builder_versions')
+         .from('builder_pages')
          .select('*')
          .eq('id', projectData.published_version_id)
          .maybeSingle()
        : db
-         .from('builder_versions')
+         .from('builder_pages')
          .select('*')
          .eq('project_id', currentProjectId)
          .order('version_number', { ascending: false })
@@ -152,7 +152,7 @@ export default function VisualBuilder({
  const db = supabase;
  // 1. Get latest version to see if we update or insert draft
  const { data: lastVersion } = await db
- .from('builder_versions')
+ .from('builder_pages')
  .select('id, version_number, status')
  .eq('project_id', siteId)
  .order('version_number', { ascending: false })
@@ -177,10 +177,10 @@ export default function VisualBuilder({
 
  if (lastVersion && lastVersion.status === 'draft') {
  // Update existing draft
- await db.from('builder_versions').update(payload).eq('id', lastVersion.id);
+ await db.from('builder_pages').update(payload).eq('id', lastVersion.id);
  } else {
  // Insert new draft
- await db.from('builder_versions').insert(payload);
+ await db.from('builder_pages').insert(payload);
  }
 
  setLastSavedAt(new Date().toISOString());
@@ -206,7 +206,7 @@ export default function VisualBuilder({
  // 1. Ensure Project exists
  if (!currentProjectId) {
  const { data: newProject, error: projectErr } = await db
- .from('builder_projects')
+ .from('builder_sites')
  .insert({
  org_id: organization.id,
  type: projectType,
@@ -229,7 +229,7 @@ export default function VisualBuilder({
  // 3. Get the latest version
  const db3 = supabase;
  const { data: lastVersion } = await db3
- .from('builder_versions')
+ .from('builder_pages')
  .select('id, version_number, status')
  .eq('project_id', currentProjectId)
  .order('version_number', { ascending: false })
@@ -242,7 +242,7 @@ export default function VisualBuilder({
  // 4. Update draft to published, or insert new published version
  if (lastVersion?.status === 'draft') {
  const { data: updatedVersion, error: versionErr } = await db3
- .from('builder_versions')
+ .from('builder_pages')
  .update({
  content_json: nodes as any,
  seo_json: { metaTitle, metaDescription } as any,
@@ -260,7 +260,7 @@ export default function VisualBuilder({
  } else {
  nextVersionNumber = (lastVersion?.version_number ?? 0) + 1;
  const { data: newVersion, error: versionErr } = await db3
- .from('builder_versions')
+ .from('builder_pages')
  .insert({
  org_id: organization.id,
  project_id: currentProjectId,
@@ -281,7 +281,7 @@ export default function VisualBuilder({
 
  // 5. Update the project's published_version_id
   const { error: updateErr } = await supabase
-  .from('builder_projects')
+  .from('builder_sites')
   .update({
   published_version_id: newVersionId,
   is_published: true,

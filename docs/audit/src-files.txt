@@ -1,5 +1,9 @@
-﻿src/App.css
+src/App.css
 src/App.tsx
+src/app/guards/routePermissions.ts
+src/app/layouts/AdminMasterLayout.tsx
+src/app/router/routeRegistry.ts
+src/components/AccessDenied.tsx
 src/components/AppLayout.tsx
 src/components/AppSidebar.tsx
 src/components/AuthProvider.tsx
@@ -21,6 +25,8 @@ src/components/SquadRationale.tsx
 src/components/TicketDetailSheet.tsx
 src/components/ai/AIAgentsDashboard.tsx
 src/components/ai/AIStatusIndicator.tsx
+src/components/ai/PublicB2CChat.tsx
+src/components/analytics/GlobalAnalytics.tsx
 src/components/builder/MediaPicker.tsx
 src/components/builder/VisualBuilder.tsx
 src/components/builder/blocks/AccordionBlock.tsx
@@ -126,6 +132,7 @@ src/components/builder/blocks/TravelPackageGridBlock.tsx
 src/components/builder/blocks/TravelRoomingPreviewBlock.tsx
 src/components/builder/blocks/VideoPlayerBlock.tsx
 src/components/builder/blocks/index.ts
+src/components/builder/core/ArrayField.tsx
 src/components/builder/core/BuilderCanvas.tsx
 src/components/builder/core/BuilderRightPanel.tsx
 src/components/builder/core/BuilderSidebar.tsx
@@ -134,6 +141,8 @@ src/components/builder/core/TemplateModal.tsx
 src/components/builder/core/registry.ts
 src/components/builder/core/types.ts
 src/components/builder/core/useBuilderStore.ts
+src/components/builder/hooks/useSubmitForm.ts
+src/components/crm/B2CDigitalJourney.tsx
 src/components/crm/FichaClienteMaster.tsx
 src/components/crm/VoucherMasterPipeline.tsx
 src/components/group-trips/BookingCreditsPanel.tsx
@@ -161,6 +170,7 @@ src/components/onboarding/BrandSquadLive.tsx
 src/components/public-quotation/ConfirmationModal.tsx
 src/components/public-quotation/PriceDetails.tsx
 src/components/public-quotation/QuotationPdfLayouts.tsx
+src/components/public/PublicAiChat.tsx
 src/components/quotation-builder/useQuotationForm.ts
 src/components/ui/AvatarUploader.tsx
 src/components/ui/BentoGrid.tsx
@@ -233,6 +243,8 @@ src/config/api.ts
 src/contexts/PageInfoContext.tsx
 src/domains/builder/core/blockContracts.ts
 src/domains/builder/core/blockRegistry.ts
+src/domains/builder/hooks/useBuilderProject.ts
+src/domains/builder/repositories/builderRepository.ts
 src/hooks/use-mobile.tsx
 src/hooks/use-toast.ts
 src/hooks/useAIAgents.ts
@@ -241,6 +253,7 @@ src/hooks/useAiKeys.ts
 src/hooks/useAiRadar.ts
 src/hooks/useAiTasks.ts
 src/hooks/useAutomations.ts
+src/hooks/useB2CTracker.ts
 src/hooks/useB2bCredentials.ts
 src/hooks/useBookingCancellations.ts
 src/hooks/useBookingCredits.ts
@@ -290,6 +303,7 @@ src/hooks/useVouchers.ts
 src/hooks/useWaExtension.ts
 src/index.css
 src/integrations/supabase/client.ts
+src/integrations/supabase/extendedTypes.ts
 src/integrations/supabase/types.ts
 src/lib/ocr.ts
 src/lib/utils.ts
@@ -298,6 +312,7 @@ src/pages/AIChat.tsx
 src/pages/AdminLogin.tsx
 src/pages/AiDashboard.tsx
 src/pages/Analytics.tsx
+src/pages/BlogPublic.tsx
 src/pages/Clients.tsx
 src/pages/ContractRecords.tsx
 src/pages/DeparturesKanban.tsx
@@ -308,6 +323,7 @@ src/pages/GlobalRadarMap.tsx
 src/pages/GroupTrips.tsx
 src/pages/GuideEdit.tsx
 src/pages/Guides.tsx
+src/pages/HelpCenter.tsx
 src/pages/HotelEdit.tsx
 src/pages/Hotels.tsx
 src/pages/Index.tsx
@@ -351,17 +367,24 @@ src/pages/Tickets.tsx
 src/pages/TravelerInfo.tsx
 src/pages/TravelerInfoEdit.tsx
 src/pages/TravelerPortal.tsx
+src/pages/TurisYouDashboard.tsx
 src/pages/Vouchers.tsx
 src/pages/admin/AdminAgencyDetail.tsx
 src/pages/admin/AdminDashboard.tsx
+src/pages/admin/BlogAdmin.tsx
+src/pages/admin/CommissionReports.tsx
+src/pages/admin/SupportAdmin.tsx
 src/pages/admin/Team.tsx
 src/pages/automations/Automations.tsx
+src/pages/finance/CommissionsPanel.tsx
+src/pages/finance/MyCommissions.tsx
 src/pages/finance/Payments.tsx
 src/pages/finance/PendingCancellations.tsx
 src/pages/finance/Suppliers.tsx
 src/pages/finance/Transactions.tsx
 src/pages/group-trips/GroupDashboard.tsx
 src/pages/legal/ContractTemplates.tsx
+src/pages/legal/SignatureCertificate.tsx
 src/pages/portal/TravelerCheckinPortal.tsx
 src/pages/settings/AgentesTab.tsx
 src/pages/settings/AiLogsTab.tsx
@@ -377,6 +400,7 @@ src/shared/design-system/tokens/colors.ts
 src/shared/design-system/tokens/radius.ts
 src/shared/design-system/tokens/shadows.ts
 src/shared/design-system/tokens/typography.ts
+src/shared/lib/logger.ts
 src/stores/authStore.ts
 src/styles/premium-design.css
 src/styles/viaja-public.css
@@ -399,6 +423,7 @@ src/test/sheetpage-layout.test.tsx
 src/test/tickets.test.tsx
 src/test/utils.test.ts
 src/types/index.ts
+src/utils/formatters.ts
 src/utils/geocoder.ts
 src/utils/logger.ts
 src/vite-env.d.ts

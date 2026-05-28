@@ -51,127 +51,7 @@ import {
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
 import { Button } from '@/components/ui/button';
 
-type SubItem = { title: string; url: string };
-
-type NavItem = {
- title: string;
- url?: string;
- icon: React.ComponentType<{ className?: string }>;
- items?: SubItem[];
-};
-
-type NavGroup = {
- title: string;
- items: NavItem[];
-};
-
-const navGroups: NavGroup[] = [
- {
- title: 'Principal',
- items: [
- { title: 'Painel Inicial', url: '/', icon: LayoutDashboard },
- {
- title: 'Radar & CMS',
- icon: Newspaper,
- items: [
- { title: 'Mapa de Viajantes', url: '/radar-global' },
- { title: 'Radar do Mercado', url: '/radar' },
- { title: 'CMS de Notícias', url: '/news-cms' },
- ]
- },
- { title: 'Analytics', url: '/analytics', icon: BarChart2 },
- ]
- },
- {
- title: 'Presença Digital & Canais',
- items: [
-  { title: 'TurisYou Hub', url: '/turisyou', icon: Globe2 },
-  { title: 'Portal do Viajante', url: '/portal-manager', icon: Shield },
- ]
- },
- {
- title: 'CRM & Fluxos',
- items: [
- {
- title: 'Vendas',
- icon: KanbanSquare,
- items: [
- { title: 'Funil de Vendas', url: '/kanban/sales' },
- { title: 'Cotações', url: '/quotations' },
- { title: 'Propostas Comerciais', url: '/proposals' },
- { title: 'Base de Clientes', url: '/clients' },
- ]
- },
- {
- title: 'Operação',
- icon: Zap,
- items: [
- { title: 'Minhas Tarefas', url: '/kanban/tasks' },
- { title: 'Gestão de Embarque', url: '/kanban/departures' },
- { title: 'Roteiros Digitais', url: '/itineraries' },
- { title: 'Experiências', url: '/experiences' },
- { title: 'Atendimento', url: '/tickets' },
- { title: 'Pacotes & Grupos', url: '/group-trips' },
- ]
- }
- ]
- },
- {
- title: 'Administração',
- items: [
- {
- title: 'Financeiro',
- icon: CreditCard,
- items: [
- { title: 'Gestão de Parcelas', url: '/finance/payments' },
- { title: 'Transações', url: '/finance/transactions' },
- { title: 'Comissões', url: '/app/admin/commissions' },
- { title: 'Fornecedores', url: '/finance/suppliers' },
- ]
- },
- {
- title: 'Jurídico & Voucher',
- icon: FileSignature,
- items: [
- { title: 'Modelos de Contrato', url: '/legal/contracts' },
- { title: 'Contratos Emitidos', url: '/contracts' },
- { title: 'Vouchers & Boarding', url: '/vouchers' },
- ]
- }
- ]
- },
- {
- title: 'Inteligência Artificial',
- items: [
- {
- title: 'IA & Automações',
- icon: Sparkles,
- items: [
- { title: 'Assistente IA', url: '/ai-chat' },
- { title: 'Central de IA', url: '/ai-dashboard' },
- { title: 'Automações IA', url: '/automations' },
- ]
- }
- ]
- },
- {
- title: 'Sistema',
- items: [
- {
- title: 'Configurações',
- icon: SettingsIcon,
- items: [
- { title: 'Especialistas', url: '/settings?tab=guides' },
- { title: 'Hotéis e Resorts', url: '/settings?tab=hotels' },
- { title: 'Destinos', url: '/settings?tab=destinations' },
- { title: 'Integrações', url: '/settings?tab=integrations' },
- { title: 'Equipe', url: '/settings?tab=agents' },
- { title: 'Geral', url: '/settings' },
- ]
- }
- ]
- }
-];
+import { getFilteredNavigation } from '@/app/navigation/navigationRegistry';
 
 export function AppSidebar() {
  const { state } = useSidebar();
@@ -183,12 +63,7 @@ export function AppSidebar() {
  const isOrgAdmin = roles.includes('org_admin') || roles.includes('super_admin');
 
  // Filtra os grupos de navegação com base no papel
- const filteredNavGroups = navGroups.map(group => {
- if (group.title === 'Administração' || group.title === 'Sistema') {
- return isOrgAdmin ? group : null;
- }
- return group;
- }).filter(Boolean) as typeof navGroups;
+ const filteredNavGroups = getFilteredNavigation(roles);
 
  const checkActive = (url: string) => {
  const [path, query] = url.split('?');

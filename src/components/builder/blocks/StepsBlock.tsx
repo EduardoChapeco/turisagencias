@@ -19,9 +19,9 @@ export const StepsBlock: BlockDef = {
  padding: '4rem 2rem',
  backgroundColor: '#ffffff',
  },
- renderComponent: ({ props, styles }) => {
+ renderComponent: ({ node }) => {
  return (
- <div style={styles} className="w-full">
+ <div style={node.styles} className="w-full">
  <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
  {props.steps.map((step: any, index: number) => (
  <div key={step.id} className="flex flex-col items-center text-center p-6 border border-gray-100 rounded-2xl hover: transition-shadow bg-white relative overflow-hidden">

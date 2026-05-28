@@ -4,7 +4,7 @@ import { Database } from '@/integrations/supabase/types';
 import { logError } from '@/shared/lib/logger';
 import { toast } from '@/hooks/use-toast';
 
-type BuilderProjectInsert = Database['public']['Tables']['builder_projects']['Insert'];
+type BuilderProjectInsert = Database['public']['Tables']['builder_sites']['Insert'];
 
 const QUERY_KEY = 'builder-projects';
 

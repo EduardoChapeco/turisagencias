@@ -164,7 +164,7 @@ export default function TurisYouDashboard() {
     queryFn: async () => {
       if (!organization?.id) return [];
       const { data, error } = await supabase
-        .from('builder_projects')
+        .from('builder_sites')
         .select('*')
         .eq('org_id', organization.id)
         .order('created_at', { ascending: false });
@@ -220,7 +220,7 @@ export default function TurisYouDashboard() {
     setDeleting(true);
     try {
       const { error } = await supabase
-        .from('builder_projects')
+        .from('builder_sites')
         .delete()
         .eq('id', id);
       if (error) throw error;
@@ -262,7 +262,7 @@ export default function TurisYouDashboard() {
                   key={`${card.type}-${card.template_category ?? 'default'}`}
                   id={`turisyou-create-${card.type}-${card.template_category ?? 'default'}`}
                   onClick={() => handleOpenCreate(card)}
-                  className="turisyou-creation-card group relative overflow-hidden rounded-2xl p-6 flex flex-col gap-4 text-left transition-all duration-300 cursor-pointer hover:scale-[1.02] hover:shadow-xl"
+                  className="turisyou-creation-card group relative overflow-hidden rounded-2xl p-6 flex flex-col gap-4 text-left transition-all duration-300 cursor-pointer hover:scale-[1.02]"
                   style={{ background: card.gradient }}
                 >
                   {/* Icon */}

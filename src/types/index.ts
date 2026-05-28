@@ -32,7 +32,7 @@ export interface QuotationExcursion {
  order_position?: number;
 }
 
-export type AppRole = 'super_admin' | 'org_admin' | 'agent' | 'support' | 'client';
+export type AppRole = 'super_admin' | 'org_admin' | 'agent' | 'finance' | 'support' | 'client' | 'public';
 
 export interface InstallmentOption {
  type: string;

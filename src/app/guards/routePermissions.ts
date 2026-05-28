@@ -1,41 +1,37 @@
-import { APP_ROUTES } from '../router/routeRegistry';
+import { AppRouteContract } from '../router/routeRegistry';
 
-export const ROLE_HIERARCHY = {
- super_admin: 100,
- org_admin: 80,
- finance: 60,
- supervisor: 55,
- support: 50,
- agent: 40,
- client: 20,
- public: 0,
-} as const;
+/**
+ * Checks if a user with given roles can access the specific route.
+ * @param userRoles Array of roles the user possesses (e.g., ['super_admin', 'agent'])
+ * @param route The target route configuration
+ * @returns boolean
+ */
+export const canAccessRoute = (userRoles: string[], route: AppRouteContract): boolean => {
+  // If no required roles are specified, route is accessible to all
+  if (!route.requiredRoles || route.requiredRoles.length === 0) {
+    return true;
+  }
 
-export type AppRole = keyof typeof ROLE_HIERARCHY;
+  // Super admins have access to everything unless specifically restricted (which is rare, but possible)
+  if (userRoles.includes('super_admin')) {
+    return true;
+  }
 
-export function canAccessRoute(routeId: string, userRoles: string[]): boolean {
- const route = APP_ROUTES.find(r => r.id === routeId);
- if (!route) return false;
- if (route.requiredRoles.length === 0) return true;
- return userRoles.some(role => route.requiredRoles.includes(role));
-}
+  // Check if user has at least one of the required roles
+  return route.requiredRoles.some(role => userRoles.includes(role));
+};
 
-export function hasMinimumRole(userRoles: string[], minimumRole: AppRole): boolean {
- const minLevel = ROLE_HIERARCHY[minimumRole];
- return userRoles.some(role => {
- const level = ROLE_HIERARCHY[role as AppRole] ?? 0;
- return level >= minLevel;
- });
-}
-
-export function isSuperAdmin(roles: string[]): boolean {
- return roles.includes('super_admin');
-}
-
-export function isOrgAdmin(roles: string[]): boolean {
- return roles.includes('org_admin') || roles.includes('super_admin');
-}
-
-export function isAgent(roles: string[]): boolean {
- return roles.includes('agent') || roles.includes('org_admin') || roles.includes('super_admin');
-}
+/**
+ * Validates if the current environment/session has the required data dependencies
+ * to render the route without crashing.
+ * 
+ * Note: This is a placeholder for a future hook implementation that will cross-reference
+ * against active TanStack queries or Stores.
+ */
+export const validateDataDependencies = (route: AppRouteContract, activeStores: string[]): boolean => {
+  if (!route.dataDependencies || route.dataDependencies.length === 0) {
+    return true;
+  }
+  
+  return route.dataDependencies.every(dep => activeStores.includes(dep));
+};

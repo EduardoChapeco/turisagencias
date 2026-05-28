@@ -150,12 +150,16 @@ const SortableBlock = React.memo(function SortableBlock({ node }: { node: Builde
 
       {/* Block content — styles applied to this wrapper */}
       <div
-        className="pointer-events-none relative z-0"
+        id={node.props?.customId || node.id}
+        className={cn("pointer-events-none relative z-0", node.props?.customClasses)}
         style={blockStyle}
         data-aos={aosAnimation}
         data-aos-duration={aosAnimation ? (node.props?.aosDuration || '500') : undefined}
         data-aos-delay={aosAnimation ? (node.props?.aosDelay || '0') : undefined}
       >
+        {node.styles?.customCss && (
+          <style>{`#${node.props?.customId || node.id} { ${node.styles.customCss} }`}</style>
+        )}
         <RenderComponent node={node}>
           {node.children && node.children.length > 0 && (
             <div className="w-full h-full min-h-[50px]">

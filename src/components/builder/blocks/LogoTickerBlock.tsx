@@ -24,9 +24,9 @@ export const LogoTickerBlock: BlockDef = {
  padding: '2rem 0',
  backgroundColor: '#ffffff',
  },
- renderComponent: ({ props, styles }) => {
+ renderComponent: ({ node }) => {
  return (
- <div style={styles} className="w-full overflow-hidden flex flex-col items-center">
+ <div style={node.styles} className="w-full overflow-hidden flex flex-col items-center">
  <style>{`
  @keyframes ticker {
  0% { transform: translateX(0); }
@@ -35,7 +35,7 @@ export const LogoTickerBlock: BlockDef = {
  .ticker-track {
  display: flex;
  width: max-content;
- animation: ticker ${props.speed}s linear infinite;
+ animation: ticker ${node.props.speed}s linear infinite;
  }
  .ticker-track:hover {
  animation-play-state: paused;
@@ -43,7 +43,7 @@ export const LogoTickerBlock: BlockDef = {
  `}</style>
  <div className="relative w-full max-w-full overflow-hidden flex items-center bg-gray-50/50 py-8 border-y border-gray-100">
  <div className="ticker-track flex items-center space-x-16 px-8">
- {[...props.logos, ...props.logos].map((logo, idx) => (
+ {[...node.props.logos, ...node.props.logos].map((logo, idx) => (
  <img 
  key={idx} 
  src={logo} 
@@ -56,14 +56,14 @@ export const LogoTickerBlock: BlockDef = {
  </div>
  );
  },
- settingsComponent: ({ props, updateProps }) => (
+ settingsComponent: ({ node, onChange }) => (
  <div className="space-y-4">
  <div className="space-y-2">
  <Label>Animation Speed (seconds)</Label>
  <Input 
  type="number"
- value={props.speed} 
- onChange={(e) => updateProps({ speed: Number(e.target.value) })} 
+ value={node.props.speed} 
+ onChange={(e) => onChange({ props: { ...node.props,  speed: Number(e.target.value) } })} 
  min="1"
  />
  </div>

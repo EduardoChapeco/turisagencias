@@ -11,20 +11,20 @@ export const GridProductListBlock = {
  {[1, 2, 3].map((item) => (
  <div key={item} className="p-4 border rounded flex flex-col gap-2 bg-white">
  <div className="h-40 bg-gray-100 rounded w-full"></div>
- <h3 className="font-semibold text-lg">{data?.titlePrefix || 'Product'} {item}</h3>
- <p className="text-gray-600">{data?.pricePrefix || '$'}{(item * 29.99).toFixed(2)}</p>
+ <h3 className="font-semibold text-lg">{node.props.titlePrefix || 'Product'} {item}</h3>
+ <p className="text-gray-600">{node.props.pricePrefix || '$'}{(item * 29.99).toFixed(2)}</p>
  <button className="bg-black text-white px-4 py-2 rounded mt-2">View</button>
  </div>
  ))}
  </div>
  ),
- settingsComponent: ({ data, onChange }: any) => (
+ settingsComponent: ({ node, onChange }) => (
  <div className="flex flex-col gap-2">
  <label className="text-sm font-medium">Columns (Desktop)</label>
  <select 
  className="border rounded p-2 text-sm"
- value={data?.columns || '3'} 
- onChange={(e) => onChange({ ...data, columns: e.target.value })}
+ value={node.props.columns || '3'} 
+ onChange={(e) => onChange({ props: { ...node.props,  columns: e.target.value } })}
  >
  <option value="2">2 Columns</option>
  <option value="3">3 Columns</option>

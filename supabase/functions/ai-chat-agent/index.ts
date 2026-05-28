@@ -11,6 +11,10 @@ serve(async (req) => {
     return new Response('ok', { headers: corsHeaders })
   }
 
+  const startTime = Date.now();
+  let aiLogId = null;
+  let supabaseClient = null;
+
   try {
     const { orgId, shadowToken, message, history } = await req.json()
 
@@ -21,6 +25,7 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     const supabase = createClient(supabaseUrl, supabaseKey)
+    supabaseClient = supabase;
 
     // 1. Fetch organization name
     const { data: orgData } = await supabase
@@ -46,21 +51,35 @@ serve(async (req) => {
       }
     }
 
-    // 3. Fetch RAG Knowledge Base (Mocking vector search for now)
-    // Normally we would use OpenAI embeddings and pgvector here
+    // 3. Fetch RAG Knowledge Base (from knowledge_chunks)
+    // Normally we would use OpenAI embeddings and pgvector here, falling back to basic text query
     const { data: knowledge } = await supabase
-      .from('ai_knowledge_base')
-      .select('title, content')
+      .from('knowledge_chunks')
+      .select('source_type, content')
       .eq('org_id', orgId)
       .eq('approved_for_public_ai', true)
-      .limit(3)
+      .eq('visibility', 'public')
+      .limit(5)
     
     let knowledgeStr = ""
+    let usedChunks = []
     if (knowledge && knowledge.length > 0) {
-      knowledgeStr = `\nBase de Conhecimento da Agência:\n${knowledge.map(k => `${k.title}: ${k.content}`).join('\n')}`
+      knowledgeStr = `\nBase de Conhecimento da Agência:\n${knowledge.map(k => `[${k.source_type}]: ${k.content}`).join('\n')}`
+      usedChunks = knowledge;
     }
 
-    // 4. Construct System Prompt with strict B2C boundaries
+    // 4. Fetch Tone Profile and Public AI Policies
+    const { data: toneProfile } = await supabase
+      .from('agency_tone_profiles')
+      .select('tone_description, forbidden_topics, custom_instructions')
+      .eq('org_id', orgId)
+      .maybeSingle();
+
+    const customTone = toneProfile?.tone_description ? `Tom de voz: ${toneProfile.tone_description}` : "Responda de forma curta, prestativa e calorosa. Use emojis moderadamente.";
+    const forbidden = toneProfile?.forbidden_topics?.length ? `Você NUNCA deve falar sobre: ${toneProfile.forbidden_topics.join(', ')}.` : "";
+    const customInst = toneProfile?.custom_instructions ? `Instruções adicionais da agência: ${toneProfile.custom_instructions}` : "";
+
+    // 5. Construct System Prompt with strict B2C boundaries
     const systemPrompt = `Você é o Assistente Virtual Oficial da agência de viagens "${orgName}".
 SEU OBJETIVO: Ajudar clientes a planejar viagens, responder dúvidas sobre destinos e guiar até a conversão.
 
@@ -68,8 +87,10 @@ INSTRUÇÕES CRÍTICAS E DE SEGURANÇA:
 1. Você está falando com um Lead (potencial cliente) da agência, NÃO com o dono da agência.
 2. NUNCA mencione que você tem acesso a um sistema de CRM, Kanban, Faturamento, Comissões ou Marcação de Lucro (Markup).
 3. Se perguntarem sobre margem de lucro, fornecedores B2B (como consolidadoras) ou dados de outros clientes, você DEVE negar educadamente e dizer que essas informações são internas.
-4. Responda de forma curta, prestativa e calorosa. Use emojis moderadamente.
+4. ${customTone}
 5. Se não souber a resposta, direcione o cliente para entrar em contato com um agente humano pelo WhatsApp ou formulário.
+${forbidden}
+${customInst}
 
 CONTEXTO DO CLIENTE:
 ${contextStr}
@@ -112,6 +133,26 @@ ${knowledgeStr}
     }
 
     const reply = aiData.choices[0].message.content
+    const inputTokens = aiData.usage?.prompt_tokens || 0;
+    const outputTokens = aiData.usage?.completion_tokens || 0;
+    const latencyMs = Date.now() - startTime;
+
+    // 6. Log the agent run
+    const { error: logError } = await supabase.from('ai_agent_runs').insert({
+      org_id: orgId,
+      agent_key: 'public_chat',
+      session_id: shadowToken || 'anonymous',
+      user_message: message,
+      assistant_response: reply,
+      source_chunks: usedChunks,
+      input_tokens: inputTokens,
+      output_tokens: outputTokens,
+      latency_ms: latencyMs
+    });
+
+    if (logError) {
+      console.warn("Failed to log AI run:", logError);
+    }
 
     return new Response(JSON.stringify({ reply }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -120,6 +161,26 @@ ${knowledgeStr}
   } catch (error) {
     const err = error instanceof Error ? error.message : String(error)
     console.error("AI Chat Agent Error:", err)
+    
+    if (supabaseClient) {
+      // Attempt to log the error
+      try {
+        const { orgId, shadowToken, message } = await req.json().catch(() => ({}));
+        if (orgId && message) {
+          await supabaseClient.from('ai_agent_runs').insert({
+            org_id: orgId,
+            agent_key: 'public_chat',
+            session_id: shadowToken || 'anonymous',
+            user_message: message,
+            error_message: err,
+            latency_ms: Date.now() - startTime
+          });
+        }
+      } catch (e) {
+        // ignore
+      }
+    }
+
     return new Response(JSON.stringify({ error: err }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 400

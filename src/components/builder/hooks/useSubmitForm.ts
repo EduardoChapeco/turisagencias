@@ -29,11 +29,11 @@ export function useSubmitForm({ blockId, source = 'website_form', onSuccess, onE
  const formData = new FormData(form);
  const data = Object.fromEntries(formData.entries());
 
-  // Precisamos do org_id para a Edge Function. Vamos buscar do builder_projects.
+  // Precisamos do org_id para a Edge Function. Vamos buscar do builder_sites.
   let orgId = null;
   if (siteId) {
   const { data: projectData } = await supabase
-  .from('builder_projects')
+  .from('builder_sites')
   .select('org_id')
   .eq('id', siteId)
   .single();

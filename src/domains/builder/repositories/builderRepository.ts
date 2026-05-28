@@ -2,10 +2,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { Database } from '@/integrations/supabase/types';
 import { logError } from '@/shared/lib/logger';
 
-type BuilderProject = Database['public']['Tables']['builder_projects']['Row'];
-type BuilderProjectInsert = Database['public']['Tables']['builder_projects']['Insert'];
-type BuilderVersion = Database['public']['Tables']['builder_versions']['Row'];
-type BuilderVersionInsert = Database['public']['Tables']['builder_versions']['Insert'];
+type BuilderProject = Database['public']['Tables']['builder_sites']['Row'];
+type BuilderProjectInsert = Database['public']['Tables']['builder_sites']['Insert'];
+type BuilderVersion = Database['public']['Tables']['builder_pages']['Row'];
+type BuilderVersionInsert = Database['public']['Tables']['builder_pages']['Insert'];
 
 export const builderRepository = {
  /**
@@ -14,7 +14,7 @@ export const builderRepository = {
  */
  async listProjects(): Promise<BuilderProject[]> {
  const { data, error } = await supabase
- .from('builder_projects')
+ .from('builder_sites')
  .select('*')
  .is('deleted_at', null)
  .order('updated_at', { ascending: false });
@@ -32,7 +32,7 @@ export const builderRepository = {
  */
  async getProject(id: string): Promise<BuilderProject | null> {
  const { data, error } = await supabase
- .from('builder_projects')
+ .from('builder_sites')
  .select('*')
  .eq('id', id)
  .single();
@@ -63,7 +63,7 @@ export const builderRepository = {
  if (!profile?.org_id) throw new Error('Organização não encontrada');
 
  const { data, error } = await supabase
- .from('builder_projects')
+ .from('builder_sites')
  .insert({ ...input, org_id: profile.org_id })
  .select()
  .single();
@@ -81,7 +81,7 @@ export const builderRepository = {
  */
  async updateProject(id: string, updates: Partial<BuilderProjectInsert>): Promise<BuilderProject> {
  const { data, error } = await supabase
- .from('builder_projects')
+ .from('builder_sites')
  .update({ ...updates, updated_at: new Date().toISOString() })
  .eq('id', id)
  .select()
@@ -100,7 +100,7 @@ export const builderRepository = {
  */
  async saveVersion(input: Omit<BuilderVersionInsert, 'id' | 'created_at'>): Promise<BuilderVersion> {
  const { data, error } = await supabase
- .from('builder_versions')
+ .from('builder_pages')
  .insert(input)
  .select()
  .single();
@@ -118,7 +118,7 @@ export const builderRepository = {
  */
  async listVersions(projectId: string): Promise<BuilderVersion[]> {
  const { data, error } = await supabase
- .from('builder_versions')
+ .from('builder_pages')
  .select('*')
  .eq('project_id', projectId)
  .order('version_number', { ascending: false });
@@ -136,7 +136,7 @@ export const builderRepository = {
  */
  async getPublishedVersion(projectId: string): Promise<BuilderVersion | null> {
  const { data, error } = await supabase
- .from('builder_versions')
+ .from('builder_pages')
  .select('*')
  .eq('project_id', projectId)
  .eq('status', 'published')

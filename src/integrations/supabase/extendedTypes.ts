@@ -191,6 +191,42 @@ export type ExtendedDatabase = GenDatabase & {
  Insert: Omit<ExtendedDatabase['public']['Tables']['automation_jobs']['Row'], 'id' | 'created_at' | 'updated_at'> & { id?: string; created_at?: string; updated_at?: string };
  Update: Partial<ExtendedDatabase['public']['Tables']['automation_jobs']['Insert']>;
  };
+ 
+ traveler_info_pages: {
+ Row: {
+ id: string;
+ org_id: string;
+ title: string;
+ description: string | null;
+ slug: string;
+ cover_image_url: string | null;
+ content_blocks: any;
+ is_published: boolean;
+ created_at: string;
+ updated_at: string;
+ };
+ Insert: {
+ id?: string;
+ org_id: string;
+ title: string;
+ description?: string | null;
+ slug: string;
+ cover_image_url?: string | null;
+ content_blocks?: any;
+ is_published?: boolean;
+ created_at?: string;
+ updated_at?: string;
+ };
+ Update: Partial<{
+ org_id: string;
+ title: string;
+ description: string | null;
+ slug: string;
+ cover_image_url: string | null;
+ content_blocks: any;
+ is_published: boolean;
+ }>;
+ };
  };
  };
 };

@@ -19,9 +19,9 @@ export const TeamBlock: BlockDef = {
  padding: '4rem 2rem',
  backgroundColor: '#f8fafc',
  },
- renderComponent: ({ props, styles }) => {
+ renderComponent: ({ node }) => {
  return (
- <div style={styles} className="w-full">
+ <div style={node.styles} className="w-full">
  <div className="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
  {props.members.map((member: any, index: number) => (
  <div key={member.id} className="flex flex-col items-center bg-white p-6 rounded-2xl hover: transition-all duration-300">

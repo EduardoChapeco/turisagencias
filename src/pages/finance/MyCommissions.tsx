@@ -14,11 +14,11 @@ export default function MyCommissions() {
  queryKey: ['my-commissions', user?.id],
  queryFn: async () => {
  const db = supabase;
- const { data } = await db
- .from('agent_commission_entries')
- .select('*')
- .eq('agent_id', user?.id)
- .order('created_at', { ascending: false });
+      const { data } = await db
+        .from('agent_commission_entries')
+        .select('id, created_at, sale_reference, sale_gross_amount, commission_total, status')
+        .eq('agent_id', user?.id)
+        .order('created_at', { ascending: false });
  return data || [];
  },
  enabled: !!user?.id,

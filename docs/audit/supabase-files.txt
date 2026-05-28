@@ -1,4 +1,4 @@
-﻿supabase/.temp/cli-latest
+supabase/.temp/cli-latest
 supabase/.temp/gotrue-version
 supabase/.temp/linked-project.json
 supabase/.temp/pooler-url
@@ -26,10 +26,13 @@ supabase/functions/extension-sync/index.ts
 supabase/functions/extract-quotation-feedback/index.ts
 supabase/functions/extract-quotation/index.ts
 supabase/functions/generate-embedding/index.ts
+supabase/functions/generate-itinerary/index.ts
+supabase/functions/geocode-address/index.ts
 supabase/functions/interpret-request/index.ts
 supabase/functions/invite-agent/index.ts
 supabase/functions/ocr-extractor/index.ts
 supabase/functions/process-automations/index.ts
+supabase/functions/public-ai-chat/index.ts
 supabase/functions/radar-crawler-squad/index.ts
 supabase/functions/score-quotation/index.ts
 supabase/functions/send-quotation/index.ts
@@ -38,6 +41,7 @@ supabase/functions/sign-group-booking-contract/index.ts
 supabase/functions/track-email-open/index.ts
 supabase/functions/trigger-brand-squad/index.ts
 supabase/functions/trigger-python-engine/index.ts
+supabase/functions/webmcp-server/index.ts
 supabase/migrations/20260409170724_fe945a8e-dab0-4ac8-ad5a-fb7474dcd12b.sql
 supabase/migrations/20260409170737_5c90baa1-9f2e-4c42-a568-ad66a02ec2ea.sql
 supabase/migrations/20260409171529_91e7b0c8-a8de-48ca-be25-500f8a7f5a7e.sql
@@ -157,4 +161,17 @@ supabase/migrations/20260526000001_create_news_article_versions.sql
 supabase/migrations/20260526000002_omega_v7_builder_schema.sql
 supabase/migrations/20260527000000_boarding_kanban_schema.sql
 supabase/migrations/20260527000001_fix_checkin_status_constraint.sql
+supabase/migrations/20260527000002_nuclear_rls_fix.sql
+supabase/migrations/20260527000003_shadow_profiles_tracking.sql
+supabase/migrations/20260527000005_omega_v7_reality_sync_finance_builder.sql
+supabase/migrations/20260527000006_omega_v8_deep_phases.sql
+supabase/migrations/20260527000007_omega_v8_rag_knowledge.sql
+supabase/migrations/20260527000008_omega_v8_media_testimonials.sql
+supabase/migrations/20260527000009_omega_v8_vault_immutability.sql
+supabase/migrations/20260527010000_builder_canonical_schema.sql
+supabase/migrations/20260527020000_commission_core.sql
+supabase/migrations/20260527030000_automation_jobs.sql
+supabase/migrations/20260527140000_global_iatas.sql
+supabase/migrations/20260527140001_b2c_tracking_rls.sql
+supabase/migrations/20260528000000_turisyou_multisite.sql
 supabase/seed_viaja.sql

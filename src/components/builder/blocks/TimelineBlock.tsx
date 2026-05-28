@@ -19,9 +19,9 @@ export const TimelineBlock: BlockDef = {
  padding: '4rem 2rem',
  backgroundColor: '#ffffff',
  },
- renderComponent: ({ props, styles }) => {
+ renderComponent: ({ node }) => {
  return (
- <div style={styles} className="w-full">
+ <div style={node.styles} className="w-full">
  <div className="max-w-3xl mx-auto relative border-l-2 border-primary/20 pl-6 ml-4 md:ml-auto space-y-12">
  {props.items.map((item: any, index: number) => (
  <div key={item.id} className="relative">

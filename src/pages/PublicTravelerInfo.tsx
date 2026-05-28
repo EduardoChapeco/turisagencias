@@ -11,7 +11,7 @@ export default function PublicTravelerInfo() {
  queryKey: ['public-traveler-info', slug],
  queryFn: async () => {
  if (!slug) throw new Error('Slug is required');
- const { data, error } = await (supabase as unknown as any)
+ const { data, error } = await supabase
  .from('traveler_info_pages')
  .select('*')
  .eq('slug', slug)

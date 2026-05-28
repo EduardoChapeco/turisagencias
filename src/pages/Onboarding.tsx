@@ -279,7 +279,7 @@ export default function Onboarding() {
 
  // 2. Criar Builder Project (Website)
  const projectId = crypto.randomUUID();
- await supabase.from('builder_projects').insert({
+ await supabase.from('builder_sites').insert({
  id: projectId,
  org_id: orgId,
  site_id: siteId,
@@ -313,7 +313,7 @@ export default function Onboarding() {
  }
  ];
 
- await supabase.from('builder_versions').insert({
+ await supabase.from('builder_pages').insert({
  id: versionId,
  project_id: projectId,
  version_number: 1,
@@ -325,8 +325,8 @@ export default function Onboarding() {
  created_by: user.id
  });
 
- // 4. Atualizar o current_version_id no builder_projects
- await supabase.from('builder_projects')
+ // 4. Atualizar o current_version_id no builder_sites
+ await supabase.from('builder_sites')
  .update({ current_version_id: versionId })
  .eq('id', projectId);
 

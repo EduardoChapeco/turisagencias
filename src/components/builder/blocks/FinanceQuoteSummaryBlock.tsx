@@ -8,7 +8,7 @@ export const FinanceQuoteSummaryBlock = {
  icon: FileSpreadsheet,
  renderComponent: ({ data }: any) => (
  <div className="border rounded-lg p-6 bg-white ">
- <h3 className="font-bold text-xl mb-4 border-b pb-2">{data?.title || 'Quote Summary'}</h3>
+ <h3 className="font-bold text-xl mb-4 border-b pb-2">{node.props.title || 'Quote Summary'}</h3>
  <table className="w-full text-sm text-left">
  <thead className="text-xs text-gray-700 uppercase bg-gray-50">
  <tr>
@@ -43,13 +43,13 @@ export const FinanceQuoteSummaryBlock = {
  </table>
  </div>
  ),
- settingsComponent: ({ data, onChange }: any) => (
+ settingsComponent: ({ node, onChange }) => (
  <div className="flex flex-col gap-2">
  <label className="text-sm font-medium">Table Title</label>
  <input 
  className="border rounded p-2 text-sm"
- value={data?.title || ''} 
- onChange={(e) => onChange({ ...data, title: e.target.value })} 
+ value={node.props.title || ''} 
+ onChange={(e) => onChange({ props: { ...node.props,  title: e.target.value } })} 
  />
  </div>
  )

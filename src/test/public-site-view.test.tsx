@@ -8,12 +8,37 @@ import PublicSiteView from '@/pages/PublicSiteView';
 const mockFrom = vi.fn();
 const mockRpc = vi.fn().mockResolvedValue({ data: null, error: null });
 
-vi.mock('@/integrations/supabase/client', () => ({
- supabase: {
- from: (table: string) => mockFrom(table),
- rpc: (name: string, args: any) => mockRpc(name, args),
- },
-}));
+vi.mock('@/integrations/supabase/client', () => {
+  const createMockBuilder = () => {
+    const builder: any = {
+      select: vi.fn().mockImplementation(() => builder),
+      insert: vi.fn().mockImplementation(() => builder),
+      update: vi.fn().mockImplementation(() => builder),
+      eq: vi.fn().mockImplementation(() => builder),
+      order: vi.fn().mockImplementation(() => builder),
+      limit: vi.fn().mockImplementation(() => builder),
+      maybeSingle: vi.fn().mockImplementation(() => Promise.resolve({ data: null, error: null })),
+      single: vi.fn().mockImplementation(() => Promise.resolve({ data: null, error: null })),
+      then: vi.fn().mockImplementation((onfulfilled) => {
+        if (onfulfilled) onfulfilled({ data: null, error: null });
+        return Promise.resolve({ data: null, error: null });
+      }),
+    };
+    return builder;
+  };
+
+  return {
+    supabase: {
+      from: (table: string) => {
+        if (table === 'b2c__profiles' || table === 'b2c_tracking_events') {
+          return createMockBuilder();
+        }
+        return mockFrom(table);
+      },
+      rpc: (name: string, args: any) => mockRpc(name, args),
+    },
+  };
+});
 
 function renderPublicSiteView(route: string, path = '/site/:slug') {
  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -83,7 +108,7 @@ describe('PublicSiteView - Dynamic Renderer OM-001', () => {
  maybeSingle: vi.fn().mockResolvedValue({ data: mockOrg, error: null }),
  };
  }
- // Return null for builder_projects (meaning no custom site is configured yet)
+ // Return null for builder_sites (meaning no custom site is configured yet)
  return {
  select: vi.fn().mockReturnThis(),
  eq: vi.fn().mockReturnThis(),
@@ -151,7 +176,7 @@ describe('PublicSiteView - Dynamic Renderer OM-001', () => {
  maybeSingle: vi.fn().mockResolvedValue({ data: mockOrg, error: null }),
  };
  }
- if (table === 'builder_projects') {
+ if (table === 'builder_sites') {
  return {
  select: vi.fn().mockReturnThis(),
  eq: vi.fn().mockReturnThis(),
@@ -159,7 +184,7 @@ describe('PublicSiteView - Dynamic Renderer OM-001', () => {
  maybeSingle: vi.fn().mockResolvedValue({ data: mockProject, error: null }),
  };
  }
- if (table === 'builder_versions') {
+ if (table === 'builder_pages') {
  return {
  select: vi.fn().mockReturnThis(),
  eq: vi.fn().mockReturnThis(),
@@ -223,7 +248,7 @@ describe('PublicSiteView - Dynamic Renderer OM-001', () => {
  maybeSingle: vi.fn().mockResolvedValue({ data: mockOrg, error: null }),
  };
  }
- if (table === 'builder_projects') {
+ if (table === 'builder_sites') {
  return {
  select: vi.fn().mockReturnThis(),
  eq: vi.fn().mockReturnThis(),
@@ -231,7 +256,7 @@ describe('PublicSiteView - Dynamic Renderer OM-001', () => {
  maybeSingle: vi.fn().mockResolvedValue({ data: mockProject, error: null }),
  };
  }
- if (table === 'builder_versions') {
+ if (table === 'builder_pages') {
  return {
  select: vi.fn().mockReturnThis(),
  eq: vi.fn().mockReturnThis(),
@@ -296,7 +321,7 @@ describe('PublicSiteView - Dynamic Renderer OM-001', () => {
  maybeSingle: vi.fn().mockResolvedValue({ data: mockOrg, error: null }),
  };
  }
- if (table === 'builder_projects') {
+ if (table === 'builder_sites') {
  return {
  select: vi.fn().mockReturnThis(),
  eq: vi.fn().mockReturnThis(),
@@ -304,7 +329,7 @@ describe('PublicSiteView - Dynamic Renderer OM-001', () => {
  maybeSingle: vi.fn().mockResolvedValue({ data: mockProject, error: null }),
  };
  }
- if (table === 'builder_versions') {
+ if (table === 'builder_pages') {
  return {
  select: vi.fn().mockReturnThis(),
  eq: vi.fn().mockReturnThis(),
@@ -370,7 +395,7 @@ describe('PublicSiteView - Dynamic Renderer OM-001', () => {
  maybeSingle: vi.fn().mockResolvedValue({ data: mockOrg, error: null }),
  };
  }
- if (table === 'builder_projects') {
+ if (table === 'builder_sites') {
  return {
  select: vi.fn().mockReturnThis(),
  eq: vi.fn().mockReturnThis(),
@@ -378,7 +403,7 @@ describe('PublicSiteView - Dynamic Renderer OM-001', () => {
  maybeSingle: vi.fn().mockResolvedValue({ data: mockProject, error: null }),
  };
  }
- if (table === 'builder_versions') {
+ if (table === 'builder_pages') {
  return {
  select: vi.fn().mockReturnThis(),
  eq: vi.fn().mockReturnThis(),
@@ -463,7 +488,7 @@ describe('PublicSiteView - Dynamic Renderer OM-001', () => {
  maybeSingle: vi.fn().mockResolvedValue({ data: mockOrg, error: null }),
  };
  }
- if (table === 'builder_projects') {
+ if (table === 'builder_sites') {
  return {
  select: vi.fn().mockReturnThis(),
  eq: vi.fn().mockReturnThis(),
@@ -471,7 +496,7 @@ describe('PublicSiteView - Dynamic Renderer OM-001', () => {
  maybeSingle: vi.fn().mockResolvedValue({ data: mockProject, error: null }),
  };
  }
- if (table === 'builder_versions') {
+ if (table === 'builder_pages') {
  return {
  select: vi.fn().mockReturnThis(),
  eq: vi.fn().mockReturnThis(),

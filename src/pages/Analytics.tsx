@@ -312,7 +312,7 @@ export default function Analytics() {
           {/* ── Funil Digital B2C — apenas super_admin ── */}
           {profile?.role === 'super_admin' && (
             <div className="grid grid-cols-1">
-              <Card className="bento-card bg-white border-zinc-200">
+              <Card className="bento-card bg-[var(--vj-surface)] border-[var(--vj-border)]">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-zinc-800">
                     <TrendingUp className="w-5 h-5 text-emerald-500" />

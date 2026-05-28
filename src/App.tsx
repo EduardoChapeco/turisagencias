@@ -165,11 +165,19 @@ function TripsRole({ children }: { children: React.ReactNode }) {
 }
 
 function AdminRole({ children }: { children: React.ReactNode }) {
- return (
- <RoleGuard allow={['org_admin', 'super_admin', 'support']}>
- {children}
- </RoleGuard>
- );
+  return (
+    <RoleGuard allow={['org_admin', 'super_admin', 'support']}>
+      {children}
+    </RoleGuard>
+  );
+}
+
+function FinanceRole({ children }: { children: React.ReactNode }) {
+  return (
+    <RoleGuard allow={['org_admin', 'super_admin', 'finance']}>
+      {children}
+    </RoleGuard>
+  );
 }
 
 function SuperAdminRole({ children }: { children: React.ReactNode }) {
@@ -246,20 +254,20 @@ const App = () => (
  <Route path="/app/group-trips/:id" element={<ProtectedWithOrg><TripsRole><GroupDashboard /></TripsRole></ProtectedWithOrg>} />
 
  {/* Finance / Commissions */}
- <Route path="/app/finance/payments" element={<ProtectedWithOrg><AdminRole><Payments /></AdminRole></ProtectedWithOrg>} />
- <Route path="/app/finance/suppliers" element={<ProtectedWithOrg><AdminRole><Suppliers /></AdminRole></ProtectedWithOrg>} />
- <Route path="/app/finance/transactions" element={<ProtectedWithOrg><AdminRole><Transactions /></AdminRole></ProtectedWithOrg>} />
- <Route path="/app/finance/commissions" element={<ProtectedWithOrg><AdminRole><CommissionsPanel /></AdminRole></ProtectedWithOrg>} />
+ <Route path="/app/finance/payments" element={<ProtectedWithOrg><FinanceRole><Payments /></FinanceRole></ProtectedWithOrg>} />
+ <Route path="/app/finance/suppliers" element={<ProtectedWithOrg><FinanceRole><Suppliers /></FinanceRole></ProtectedWithOrg>} />
+ <Route path="/app/finance/transactions" element={<ProtectedWithOrg><FinanceRole><Transactions /></FinanceRole></ProtectedWithOrg>} />
+ <Route path="/app/finance/commissions" element={<ProtectedWithOrg><FinanceRole><CommissionsPanel /></FinanceRole></ProtectedWithOrg>} />
  <Route path="/app/my-commissions" element={<ProtectedWithOrg><TripsRole><MyCommissions /></TripsRole></ProtectedWithOrg>} />
- <Route path="/app/finance/pending-cancellations" element={<ProtectedWithOrg><AdminRole><PendingCancellations /></AdminRole></ProtectedWithOrg>} />
+ <Route path="/app/finance/pending-cancellations" element={<ProtectedWithOrg><FinanceRole><PendingCancellations /></FinanceRole></ProtectedWithOrg>} />
  <Route path="/portal-manager" element={<ProtectedWithOrg><TripsRole><PortalManagerPage /></TripsRole></ProtectedWithOrg>} />
  <Route path="/integrations" element={<Navigate to="/settings?tab=integrations" replace />} />
  
  {/* ERP v3 Financeiro & Jurídico */}
- <Route path="/finance/payments" element={<ProtectedWithOrg><AdminRole><Payments /></AdminRole></ProtectedWithOrg>} />
- <Route path="/finance/suppliers" element={<ProtectedWithOrg><AdminRole><Suppliers /></AdminRole></ProtectedWithOrg>} />
- <Route path="/finance/transactions" element={<ProtectedWithOrg><AdminRole><Transactions /></AdminRole></ProtectedWithOrg>} />
- <Route path="/finance/cancellations" element={<ProtectedWithOrg><AdminRole><PendingCancellations /></AdminRole></ProtectedWithOrg>} />
+ <Route path="/finance/payments" element={<ProtectedWithOrg><FinanceRole><Payments /></FinanceRole></ProtectedWithOrg>} />
+ <Route path="/finance/suppliers" element={<ProtectedWithOrg><FinanceRole><Suppliers /></FinanceRole></ProtectedWithOrg>} />
+ <Route path="/finance/transactions" element={<ProtectedWithOrg><FinanceRole><Transactions /></FinanceRole></ProtectedWithOrg>} />
+ <Route path="/finance/cancellations" element={<ProtectedWithOrg><FinanceRole><PendingCancellations /></FinanceRole></ProtectedWithOrg>} />
  <Route path="/legal/contracts" element={<ProtectedWithOrg><AdminRole><ContractTemplates /></AdminRole></ProtectedWithOrg>} />
  {/* Fusion: contratos gerados + vouchers */}
  <Route path="/contracts" element={<ProtectedWithOrg><TripsRole><ContractRecords /></TripsRole></ProtectedWithOrg>} />

@@ -1,0 +1,676 @@
+src/components/AuthProvider.tsx:15: supabase.from('profiles').select('*').eq('user_id', userId).maybeSingle(),
+src/components/AuthProvider.tsx:16: supabase.from('user_roles').select('role').eq('user_id', userId),
+src/components/AuthProvider.tsx:39: .from('organizations')
+src/components/ProposalAiImportSheet.tsx:107: const { error: uploadErr } = await supabase.storage.from('media').upload(path, file);
+src/components/ProposalAiImportSheet.tsx:109: const { data: { publicUrl } } = supabase.storage.from('media').getPublicUrl(path);
+src/components/ProposalAiImportSheet.tsx:117: bytes.forEach(b => binary += String.fromCharCode(b));
+src/components/ProposalAiImportSheet.tsx:211: from: f.from_airport || 'Origem',
+src/components/QuotationAiImportSheet.tsx:151: const { error: uploadErr } = await supabase.storage.from('media').upload(path, file);
+src/components/QuotationAiImportSheet.tsx:153: const { data: { publicUrl } } = supabase.storage.from('media').getPublicUrl(path);
+src/components/QuotationAiImportSheet.tsx:161: bytes.forEach(b => binary += String.fromCharCode(b));
+src/components/QuotationAiImportSheet.tsx:201: .from('quotations')
+src/components/QuotationBuilderSheet.tsx:297: <LocationCombobox value={t.from} onChange={(v) => updateTransport(t.id, { from: v })} placeholder="Origem (ex: GRU)" />
+src/components/ai/PublicB2CChat.tsx:32: supabase.from('b2c_tracking_events').insert({
+src/components/builder/MediaPicker.tsx:167: .from('org-assets')
+src/components/builder/MediaPicker.tsx:176: const { data: { publicUrl } } = supabase.storage.from('org-assets').getPublicUrl(fileName);
+src/components/builder/VisualBuilder.tsx:73:       .from('builder_projects')
+src/components/builder/VisualBuilder.tsx:86:         .from('builder_versions')
+src/components/builder/VisualBuilder.tsx:91:         .from('builder_versions')
+src/components/builder/VisualBuilder.tsx:155: .from('builder_versions')
+src/components/builder/VisualBuilder.tsx:180: await db.from('builder_versions').update(payload).eq('id', lastVersion.id);
+src/components/builder/VisualBuilder.tsx:183: await db.from('builder_versions').insert(payload);
+src/components/builder/VisualBuilder.tsx:209: .from('builder_projects')
+src/components/builder/VisualBuilder.tsx:232: .from('builder_versions')
+src/components/builder/VisualBuilder.tsx:245: .from('builder_versions')
+src/components/builder/VisualBuilder.tsx:263: .from('builder_versions')
+src/components/builder/VisualBuilder.tsx:284:  .from('builder_projects')
+src/components/builder/blocks/BlogPostGridBlock.tsx:34: .from('news_article_versions')
+src/components/builder/blocks/CarouselTestimonialsBlock.tsx:35: .from('agency_testimonials')
+src/components/builder/blocks/CarouselTestimonialsBlock.tsx:70: {Array.from({ length: test.rating || 5 }).map((_, i) => (
+src/components/builder/blocks/CmsGridBlock.tsx:24: .from(tableName as any)
+src/components/builder/blocks/ColumnGridBlock.tsx:23: const colsArray = Array.from({ length: columns });
+src/components/builder/blocks/FormContainerBlock.tsx:40: .from(supabaseTable as any)
+src/components/builder/core/BuilderSidebar.tsx:24: const categories = Array.from(new Set(blocks.map(b => b.category)));
+src/components/builder/core/registry.ts:18: return Array.from(this.blocks.values());
+src/components/builder/hooks/useSubmitForm.ts:30: const data = Object.fromEntries(formData.entries());
+src/components/builder/hooks/useSubmitForm.ts:36:  .from('builder_projects')
+src/components/crm/B2CDigitalJourney.tsx:16: .from('b2c__profiles')
+src/components/crm/B2CDigitalJourney.tsx:28: .from('b2c_tracking_events')
+src/components/crm/FichaClienteMaster.tsx:91: Array.from(files).forEach((f) => formData.append('files', f));
+src/components/crm/FichaClienteMaster.tsx:143: .from('kanban_boards')
+src/components/crm/FichaClienteMaster.tsx:159: .from('clients')
+src/components/crm/FichaClienteMaster.tsx:169: .from('clients')
+src/components/crm/FichaClienteMaster.tsx:196: .from('travelers')
+src/components/crm/FichaClienteMaster.tsx:217: await supabase.from('kanban_cards').insert({
+src/components/crm/VoucherMasterPipeline.tsx:95: const selectedFiles = Array.from(e.target.files);
+src/components/group-trips/BusSeatMap.tsx:90: {Array.from({ length: rows }).map((_, rowIdx) =>
+src/components/group-trips/BusSeatMap.tsx:91: Array.from({ length: cols }).map((_, colIdx) => {
+src/components/group-trips/ContractSignatureFlow.tsx:96: const { data, error } = await supabase.storage.from('client-media').upload(path, blob, {
+src/components/group-trips/ContractSignatureFlow.tsx:100: const { data: pub } = supabase.storage.from('client-media').getPublicUrl(data.path);
+src/components/kanban/DepartureCardSheet.tsx:196: .from('boarding_pass_documents')
+src/components/kanban/DepartureCardSheet.tsx:220: .from('client-media')
+src/components/kanban/DepartureCardSheet.tsx:232: .from('boarding_pass_documents')
+src/components/kanban/DepartureCardSheet.tsx:259: .from(pass.storage_bucket)
+src/components/kanban/DepartureCardSheet.tsx:272: await supabase.storage.from(pass.storage_bucket).remove([pass.storage_path]);
+src/components/kanban/DepartureCardSheet.tsx:276: .from('boarding_pass_documents')
+src/components/onboarding/BrandSquadLive.tsx:22: .from('ai_tasks')
+src/components/ui/DataTable.tsx:65:      {Array.from({ length: cols }).map((_, i) => (
+src/components/ui/DataTable.tsx:147:              ? Array.from({ length: 6 }).map((_, i) => (
+src/components/ui/EmailTrackingBadge.tsx:36:        .from('email_tracking_logs')
+src/components/ui/EmptyState.tsx:88:        {Array.from({ length: 6 }).map((_, i) => (
+src/components/ui/ImageCropperModal.tsx:108:        .from(bucket)
+src/components/ui/ImageCropperModal.tsx:112:      const { data: { publicUrl } } = supabase.storage.from(bucket).getPublicUrl(filePath);
+src/components/ui/LocationCombobox.tsx:48:        .from('global_iatas')
+src/components/ui/MediaField.tsx:138:      await supabase.from('media_assets').insert({
+src/components/ui/MediaField.tsx:161:    const { error } = await supabase.storage.from(bucket).upload(filePath, file, {
+src/components/ui/MediaField.tsx:167:    const { data: { publicUrl } } = supabase.storage.from(bucket).getPublicUrl(filePath);
+src/components/ui/MediaField.tsx:200:    const files = Array.from(event.target.files ?? []);
+src/domains/builder/repositories/builderRepository.ts:17: .from('builder_projects')
+src/domains/builder/repositories/builderRepository.ts:35: .from('builder_projects')
+src/domains/builder/repositories/builderRepository.ts:58: .from('profiles')
+src/domains/builder/repositories/builderRepository.ts:66: .from('builder_projects')
+src/domains/builder/repositories/builderRepository.ts:84: .from('builder_projects')
+src/domains/builder/repositories/builderRepository.ts:103: .from('builder_versions')
+src/domains/builder/repositories/builderRepository.ts:121: .from('builder_versions')
+src/domains/builder/repositories/builderRepository.ts:139: .from('builder_versions')
+src/hooks/useAIAgents.ts:81: .from('ai_agents')
+src/hooks/useAIAgents.ts:96: .from('ai_dashboard_summary')
+src/hooks/useAIAgents.ts:112: .from('ai_tasks')
+src/hooks/useAIAgents.ts:133: .from('ai_tasks')
+src/hooks/useAIAgents.ts:213: .from('ai_tasks')
+src/hooks/useAIInsights.ts:29: .from('ai_decision_logs')
+src/hooks/useAiKeys.ts:15: .from('ai_keys_pool')
+src/hooks/useAiKeys.ts:37: .from('ai_keys_pool')
+src/hooks/useAiKeys.ts:74: const { error } = await supabase.from('ai_keys_pool').delete().eq('id', id);
+src/hooks/useAiRadar.ts:75: .from('news_articles')
+src/hooks/useAiRadar.ts:107: .from('news_articles')
+src/hooks/useAiRadar.ts:130: .from('news_articles')
+src/hooks/useAiRadar.ts:149: .from('news_articles')
+src/hooks/useAiRadar.ts:174: .from('feeds_master')
+src/hooks/useAiRadar.ts:185: .from('feeds_user')
+src/hooks/useAiRadar.ts:208: .from('feeds_user')
+src/hooks/useAiRadar.ts:237: .from(table)
+src/hooks/useAiRadar.ts:265: .from(table)
+src/hooks/useAiRadar.ts:285: .from('news_sync_runs')
+src/hooks/useAiTasks.ts:55: .from('ai_tasks')
+src/hooks/useAiTasks.ts:77: .from('ai_agents')
+src/hooks/useAiTasks.ts:94: .from('ai_tasks')
+src/hooks/useAiTasks.ts:119: .from('ai_tasks')
+src/hooks/useAutomations.ts:20: .from('communication_rules')
+src/hooks/useAutomations.ts:35: const { data, error } = await supabase.from('communication_rules').update(payload).eq('id', id).select().single();
+src/hooks/useB2CTracker.ts:41: await supabase.from('b2c__profiles').insert({
+src/hooks/useB2CTracker.ts:51: supabase.from('b2c__profiles').update({
+src/hooks/useB2CTracker.ts:80: await supabase.from('b2c_tracking_events').insert(dbEvents);
+src/hooks/useB2bCredentials.ts:18: .from('b2b_credentials')
+src/hooks/useB2bCredentials.ts:38: .from('b2b_credentials')
+src/hooks/useB2bCredentials.ts:67: .from('email_inbound')
+src/hooks/useBookingCancellations.ts:78: .from('booking_cancellations')
+src/hooks/useBookingCancellations.ts:99: .from('booking_cancellations')
+src/hooks/useBookingCancellations.ts:135: .from('booking_cancellations')
+src/hooks/useBookingCancellations.ts:157: .from('group_bookings')
+src/hooks/useBookingCancellations.ts:206: .from('booking_cancellations')
+src/hooks/useBookingCancellations.ts:219: .from('group_bookings')
+src/hooks/useBookingCancellations.ts:226: .from('booking_installments')
+src/hooks/useBookingCancellations.ts:235: .from('client_travel_credits')
+src/hooks/useBookingCancellations.ts:248: .from('booking_cancellations')
+src/hooks/useBookingCancellations.ts:255: await bookingDb.from('financial_transactions').insert({
+src/hooks/useBookingCancellations.ts:268: await bookingDb.from('group_trip_ledger').insert({
+src/hooks/useBookingCancellations.ts:281: .from('booking_cancellations')
+src/hooks/useBookingCancellations.ts:306: .from('client_travel_credits')
+src/hooks/useBookingCredits.ts:30: .from('booking_credits')
+src/hooks/useBookingCredits.ts:49: .from('booking_credits')
+src/hooks/useBookingCredits.ts:69: .from('booking_credits')
+src/hooks/useBookingMessages.ts:23: .from('booking_messages')
+src/hooks/useBookingMessages.ts:49: .from('booking_messages')
+src/hooks/useBookingMessages.ts:74: .from('booking_messages')
+src/hooks/useBookingPaymentProofs.ts:29: .from('booking_payment_proofs')
+src/hooks/useBookingPaymentProofs.ts:47: .from('booking_payment_proofs')
+src/hooks/useBookingPaymentProofs.ts:85: .from('booking_payment_proofs')
+src/hooks/useBookingPaymentProofs.ts:97: .from('booking_installments')
+src/hooks/useBookingPaymentProofs.ts:104: .from('booking_installments')
+src/hooks/useBookingPaymentProofs.ts:115: .from('group_bookings')
+src/hooks/useBookingPaymentProofs.ts:122: await supabase.from('financial_transactions').insert({
+src/hooks/useBookingPaymentProofs.ts:136: await supabase.from('group_trip_ledger').insert({
+src/hooks/useBookingPaymentProofs.ts:154: .from('booking_installments')
+src/hooks/useBookingPaymentProofs.ts:162: .from('group_bookings')
+src/hooks/useBookingPaymentProofs.ts:204: .from('client-media')
+src/hooks/useBookingPaymentProofs.ts:208: const { data: pub } = supabase.storage.from('client-media').getPublicUrl(upload.path);
+src/hooks/useBookingPaymentProofs.ts:212: .from('booking_payment_proofs')
+src/hooks/useBookingsPayments.ts:81: .from('bookings')
+src/hooks/useBookingsPayments.ts:100: .from('bookings')
+src/hooks/useBookingsPayments.ts:118: .from('bookings')
+src/hooks/useBookingsPayments.ts:139: .from('payments')
+src/hooks/useBookingsPayments.ts:155: .from('payments')
+src/hooks/useBookingsPayments.ts:183: .from('payment-proofs')
+src/hooks/useBookingsPayments.ts:188: .from('payment-proofs')
+src/hooks/useBookingsPayments.ts:192: .from('payments')
+src/hooks/useBookingsPayments.ts:275: .from('payments')
+src/hooks/useBusLayouts.ts:29: .from('bus_layouts')
+src/hooks/useBusLayouts.ts:55: .from('bus_layouts')
+src/hooks/useBusLayouts.ts:102: .from('bus_layouts')
+src/hooks/useBusLayouts.ts:132: const { error } = await supabase.from('bus_layouts').delete().eq('id', id);
+src/hooks/useChatSessions.ts:34: .from('chat_sessions')
+src/hooks/useChatSessions.ts:54: .from('chat_sessions')
+src/hooks/useChatSessions.ts:74: .from('chat_sessions')
+src/hooks/useChatSessions.ts:108: .from('chat_sessions')
+src/hooks/useChatSessions.ts:130: .from('chat_sessions')
+src/hooks/useChecklists.ts:13: .from('checklists')
+src/hooks/useChecklists.ts:41: .from('checklists')
+src/hooks/useChecklists.ts:69: .from('checklist_items')
+src/hooks/useClients.ts:15: .from('clients')
+src/hooks/useClients.ts:40: .from('clients')
+src/hooks/useClients.ts:81: .from('clients')
+src/hooks/useClients.ts:129: .from('clients')
+src/hooks/useClients.ts:158: .from('clients')
+src/hooks/useContractRecords.ts:62: .from('contracts')
+src/hooks/useContractRecords.ts:87: .from('contracts')
+src/hooks/useContractRecords.ts:111: .from('contracts')
+src/hooks/useContractRecords.ts:123: .from('contracts')
+src/hooks/useContractRecords.ts:149: .from('contracts')
+src/hooks/useContractRecords.ts:161: .from('contracts')
+src/hooks/useContracts.ts:18: .from('contract_templates')
+src/hooks/useContracts.ts:33: const { data, error } = await supabase.from('contract_templates').insert(payload).select().single();
+src/hooks/useContracts.ts:48: const { data, error } = await supabase.from('contract_templates').update(payload).eq('id', id).select().single();
+src/hooks/useContracts.ts:63: const { error, data } = await supabase.from('contract_templates').delete().eq('id', id).select('org_id').single();
+src/hooks/useDestinations.ts:37: .from('destinations')
+src/hooks/useDestinations.ts:71: .from('destinations')
+src/hooks/useDestinations.ts:80: .from('destinations')
+src/hooks/useDestinations.ts:102: const { error } = await supabase.from('destinations').delete().eq('id', id);
+src/hooks/useEmailTracking.ts:13: .from('email_tracking_logs')
+src/hooks/useEmailTracking.ts:37: .from('email_tracking_logs')
+src/hooks/useFinance.ts:32: .from('financial_suppliers')
+src/hooks/useFinance.ts:47: const { data, error } = await financeDb.from('financial_suppliers').insert(payload).select().single();
+src/hooks/useFinance.ts:66: const { data, error } = await financeDb.from('financial_suppliers').update(payload).eq('id', id).select().single();
+src/hooks/useFinance.ts:81: const { error, data } = await supabase.from('financial_suppliers').delete().eq('id', id).select('org_id').single();
+src/hooks/useFinance.ts:124: .from('financial_transactions')
+src/hooks/useFinance.ts:149: const { data, error } = await financeDb.from('financial_transactions').insert(payload).select().single();
+src/hooks/useFinance.ts:166: const { data, error } = await supabase.from('financial_transactions').update(dbPayload).eq('id', id).select().single();
+src/hooks/useFinance.ts:223: .from('payments')
+src/hooks/useFinance.ts:251: const { data, error } = await supabase.from('payments').update(dbPayload).eq('id', id).select().single();
+src/hooks/useGroupClients.ts:75: .from('group_clients')
+src/hooks/useGroupClients.ts:95: .from('group_clients')
+src/hooks/useGroupClients.ts:118: .from('group_clients')
+src/hooks/useGroupClients.ts:141: const { error } = await supabase.from('group_clients' as any).delete().eq('id', id);
+src/hooks/useGroupInstallments.ts:51: .from('group_installments')
+src/hooks/useGroupInstallments.ts:68: .from('group_installments')
+src/hooks/useGroupInstallments.ts:88: .from('group_installments')
+src/hooks/useGroupInstallments.ts:111: .from('group_installments')
+src/hooks/useGroupInstallments.ts:135: const { error } = await supabase.from('group_installments' as any).delete().eq('id', id);
+src/hooks/useGroupPricing.ts:156: .from('group_pricing')
+src/hooks/useGroupPricing.ts:193: .from('group_pricing')
+src/hooks/useGroupTripFinance.ts:98: .from('group_bookings')
+src/hooks/useGroupTripFinance.ts:136: .from('group_trip_ledger')
+src/hooks/useGroupTripFinance.ts:153: .from('group_trip_ledger')
+src/hooks/useGroupTripFinance.ts:186: const { data: currentInst } = await supabase.from('booking_installments').select('status, amount, due_date, booking_id').eq('id', installmentId).single();
+src/hooks/useGroupTripFinance.ts:195: .from('booking_installments')
+src/hooks/useGroupTripFinance.ts:202: const { data: booking } = await supabase.from('group_bookings').select('group_trip_id, org_id, lead_name').eq('id', currentInst.booking_id).single();
+src/hooks/useGroupTripFinance.ts:205: await supabase.from('financial_transactions').insert({
+src/hooks/useGroupTripFinance.ts:219: await supabase.from('group_trip_ledger').insert({
+src/hooks/useGroupTripFinance.ts:251: .from('group_bookings')
+src/hooks/useGroupTripFinance.ts:259: .from('group_bookings')
+src/hooks/useGroupTripFinance.ts:266: .from('bus_seat_assignments')
+src/hooks/useGroupTripFinance.ts:280: .from('bus_seat_assignments')
+src/hooks/useGroupTripFinance.ts:299: .from('group_trips')
+src/hooks/useGroupTrips.ts:59: .from('group_trips')
+src/hooks/useGroupTrips.ts:79: .from('group_trips')
+src/hooks/useGroupTrips.ts:96: .from('group_trips')
+src/hooks/useGroupTrips.ts:117: .from('group_trips')
+src/hooks/useGroupTrips.ts:145: .from('group_trips')
+src/hooks/useGroupTrips.ts:170: .from('group_trips')
+src/hooks/useGroupTrips.ts:192: const { error } = await supabase.from('group_trips').delete().eq('id', id);
+src/hooks/useGroupTrips.ts:221: .from('group_trip_days')
+src/hooks/useGroupTrips.ts:240: .from('group_trip_days').update(rest).eq('id', id).select().single();
+src/hooks/useGroupTrips.ts:245: .from('group_trip_days').insert(rest).select().single();
+src/hooks/useGroupTrips.ts:260: const { error } = await supabase.from('group_trip_days').delete().eq('id', id);
+src/hooks/useGroupTrips.ts:284: .from('group_bookings')
+src/hooks/useGroupTrips.ts:306: .from('group_bookings')
+src/hooks/useGroupTrips.ts:321: .from('booking_installments')
+src/hooks/useGroupTrips.ts:387: .from('group_trip_days')
+src/hooks/useGuides.ts:15: .from('destination_guides')
+src/hooks/useGuides.ts:37: .from('destination_guides')
+src/hooks/useGuides.ts:78: .from('destination_guides')
+src/hooks/useGuides.ts:88: .from('destination_guides')
+src/hooks/useGuides.ts:123: .from('destination_guides')
+src/hooks/useHotels.ts:14: .from('hotels_bank')
+src/hooks/useHotels.ts:36: .from('hotels_bank')
+src/hooks/useHotels.ts:60: .from('hotels_bank')
+src/hooks/useHotels.ts:104: .from('hotels_bank')
+src/hooks/useHotels.ts:133: .from('hotels_bank')
+src/hooks/useItineraries.ts:81: .from('itineraries')
+src/hooks/useItineraries.ts:95: .from('itineraries')
+src/hooks/useItineraries.ts:120: .from('itineraries')
+src/hooks/useItineraries.ts:140: .from('itinerary_stops')
+src/hooks/useItineraries.ts:155: .from('itinerary_stops')
+src/hooks/useItineraries.ts:219: const { error: insErr } = await itineraryDb.from('itinerary_stops').insert(stopsToInsert);
+src/hooks/useKanbanBoards.ts:58: .from('kanban_boards')
+src/hooks/useKanbanBoards.ts:76: .from('kanban_boards')
+src/hooks/useKanbanBoards.ts:91: .from('kanban_boards')
+src/hooks/useKanbanBoards.ts:105: .from('kanban_boards')
+src/hooks/useKanbanBoards.ts:144: .from('kanban_columns')
+src/hooks/useKanbanBoards.ts:154: supabase.from('kanban_columns').select('*').eq('board_id', board.id).order('position'),
+src/hooks/useKanbanBoards.ts:156: .from('kanban_cards')
+src/hooks/useKanbanBoards.ts:192: .from('kanban_cards')
+src/hooks/useKanbanBoards.ts:209: .from('kanban_columns')
+src/hooks/useKanbanBoards.ts:237: .from('kanban_cards')
+src/hooks/useKanbanBoards.ts:293: .from('kanban_cards')
+src/hooks/useKanbanBoards.ts:335: const { error } = await supabase.from('kanban_cards').delete().eq('id', id);
+src/hooks/useKanbanBoards.ts:357: .from('kanban_notes')
+src/hooks/useKanbanBoards.ts:377: .from('profiles')
+src/hooks/useKanbanBoards.ts:383: .from('kanban_notes')
+src/hooks/useKanbanBoards.ts:406: .from('kanban_notes')
+src/hooks/useKanbanBoards.ts:429: const { error } = await supabase.from('kanban_notes').delete().eq('id', id);
+src/hooks/useKanbanBoards.ts:451: .from('kanban_checklists')
+src/hooks/useKanbanBoards.ts:470: .from('kanban_checklists')
+src/hooks/useKanbanBoards.ts:500: .from('kanban_checklist_items')
+src/hooks/useKanbanBoards.ts:529: .from('kanban_checklist_items')
+src/hooks/useKanbanBoards.ts:550: const { error } = await supabase.from('kanban_checklist_items').delete().eq('id', item_id);
+src/hooks/useKanbanBoards.ts:571: .from('kanban_tags')
+src/hooks/useKanbanBoards.ts:599: .from('kanban_tags')
+src/hooks/useKnowledgeBase.ts:23: .from('ai_knowledge_base')
+src/hooks/useKnowledgeBase.ts:45: .from('ai_knowledge_base')
+src/hooks/useKnowledgeBase.ts:90: const { error } = await supabase.from('ai_knowledge_base').delete().eq('id', id);
+src/hooks/useNotifications.ts:12: .from('notifications')
+src/hooks/useNotifications.ts:31: .from('notifications')
+src/hooks/usePoliciesAndExperiences.ts:14: .from('policy_cache')
+src/hooks/usePoliciesAndExperiences.ts:36: const { data, error } = await supabase.from('policy_cache').insert({
+src/hooks/usePoliciesAndExperiences.ts:61: const { error } = await supabase.from('policy_cache').delete().eq('id', id);
+src/hooks/usePoliciesAndExperiences.ts:80: .from('experiences')
+src/hooks/usePoliciesAndExperiences.ts:101: const { data, error } = await supabase.from('experiences').insert({
+src/hooks/usePoliciesAndExperiences.ts:121: const { data, error } = await supabase.from('experiences').update(payload).eq('id', id).select().single();
+src/hooks/usePoliciesAndExperiences.ts:138: const { error } = await supabase.from('experiences').update({ is_active: false }).eq('id', id);
+src/hooks/usePortal.ts:27: .from('group_trips')
+src/hooks/usePortal.ts:50: .from('group_trips')
+src/hooks/useProposals.ts:94: .from('proposals')
+src/hooks/useProposals.ts:116: .from('proposals')
+src/hooks/useProposals.ts:139: .from('proposals')
+src/hooks/useProposals.ts:166: .from('proposals')
+src/hooks/useProposals.ts:203: .from('proposals')
+src/hooks/useProposals.ts:227: .from('proposal_versions')
+src/hooks/useProposals.ts:236: .from('proposal_versions')
+src/hooks/useProposals.ts:264: .from('proposals')
+src/hooks/useProposals.ts:286: .from('quote_templates')
+src/hooks/useProposals.ts:311: .from('quote_design_elements')
+src/hooks/useProposals.ts:335: .from('proposal_versions')
+src/hooks/useQuotationScenarios.ts:49: .from('quotation_scenarios')
+src/hooks/useQuotationScenarios.ts:81: .from('quotations')
+src/hooks/useQuotationScenarios.ts:116: await scenariosDb.from('quotation_scenarios').upsert({
+src/hooks/useQuotationScenarios.ts:156: .from('ai_decision_logs')
+src/hooks/useQuotations.ts:36: .from('quotations')
+src/hooks/useQuotations.ts:56: .from('quotations')
+src/hooks/useQuotations.ts:100: .from('quotations')
+src/hooks/useQuotations.ts:126: .from('itinerary_days')
+src/hooks/useQuotations.ts:145: const { error: itemsError } = await supabase.from('itinerary_items').insert(itemsPayload);
+src/hooks/useQuotations.ts:169: departure_airport_code: t.from,
+src/hooks/useQuotations.ts:170: departure_airport_city: t.from, // Simplificação
+src/hooks/useQuotations.ts:182: nome: `Transfer (${t.from} → ${t.to})`,
+src/hooks/useQuotations.ts:193: const { error: transfersError } = await supabase.from('quote_transfers').insert(transfersPayload);
+src/hooks/useQuotations.ts:204: const { data: nFlight, error: flightError } = await supabase.from('flights').insert(f).select('id').single();
+src/hooks/useQuotations.ts:208: const { error: segmentsError } = await supabase.from('flight_segments').insert(segments);
+src/hooks/useQuotations.ts:226: const { error: experiencesError } = await supabase.from('quote_experiences').insert(excPayload);
+src/hooks/useQuotations.ts:293: .from('quotations')
+src/hooks/useQuotations.ts:310: const { data: oldDays, error: oldDaysError } = await supabase.from('itinerary_days').select('id').eq('quote_id', id);
+src/hooks/useQuotations.ts:313: const { error: deleteDaysError } = await supabase.from('itinerary_days').delete().in('id', oldDays.map(d => d.id));
+src/hooks/useQuotations.ts:325: const { data: insertedDays, error: daysError } = await supabase.from('itinerary_days').insert(daysPayload).select('id, day_number');
+src/hooks/useQuotations.ts:335: const { error: itemsError } = await supabase.from('itinerary_items').insert(itemsPayload);
+src/hooks/useQuotations.ts:345: const { data: oldTransfers, error: oldTransfersError } = await supabase.from('quote_transfers').select('id').eq('quote_id', id);
+src/hooks/useQuotations.ts:348: const { error: deleteTransfersError } = await supabase.from('quote_transfers').delete().in('id', oldTransfers.map(d => d.id));
+src/hooks/useQuotations.ts:351: const { data: oldFlights, error: oldFlightsError } = await supabase.from('flights').select('id').eq('quote_id', id);
+src/hooks/useQuotations.ts:354: const { error: deleteFlightsError } = await supabase.from('flights').delete().in('id', oldFlights.map(f => f.id));
+src/hooks/useQuotations.ts:367: transfersPayload.push({ quote_id: id, tipo: t.type, nome: `Transfer (${t.from} → ${t.to})`, fornecedor: t.operator, data_inicio: t.departure?.slice(0, 10) || null, instrucoes: t.notes, order_position: tOrder++ });
+src/hooks/useQuotations.ts:371: const { error: transfersError } = await supabase.from('quote_transfers').insert(transfersPayload);
+src/hooks/useQuotations.ts:377: const { data: nf, error: flightError } = await supabase.from('flights').insert(f).select('id').single();
+src/hooks/useQuotations.ts:380: const { error: segmentError } = await supabase.from('flight_segments').insert([{ flight_id: nf.id, segment_order: 1, departure_airport_code: t.from, departure_airport_city: t.from, arrival_airport_code: t.to, arrival_airport_city: t.to, departure_datetime: t.departure || null, arrival_datetime: t.arrival || null, connection_info: t.notes }]);
+src/hooks/useQuotations.ts:391: const { data: oldExc, error: oldExperiencesError } = await supabase.from('quote_experiences').select('id').eq('quote_id', id);
+src/hooks/useQuotations.ts:394: const { error: deleteExperiencesError } = await supabase.from('quote_experiences').delete().in('id', oldExc.map(e => e.id));
+src/hooks/useQuotations.ts:399: const { error: experiencesError } = await supabase.from('quote_experiences').insert(excPayload);
+src/hooks/useQuotations.ts:426: const { error } = await supabase.from('quotations').delete().eq('id', id);
+src/hooks/useSeatBlocks.ts:77: .from('seat_blocks')
+src/hooks/useSeatBlocks.ts:111: .from('seat_blocks')
+src/hooks/useSeatBlocks.ts:137: .from('seat_blocks')
+src/hooks/useSeatBlocks.ts:161: const { error } = await supabase.from('seat_blocks' as any).delete().eq('id', id);
+src/hooks/useSettings.ts:18: .from('profiles')
+src/hooks/useSettings.ts:28: .from('user_roles')
+src/hooks/useSettings.ts:73: const { error: delError } = await supabase.from('user_roles').delete().eq('user_id', userId);
+src/hooks/useSettings.ts:76: const { error: insError } = await supabase.from('user_roles').insert({ user_id: userId, role });
+src/hooks/useSettings.ts:81: const { error } = await settingsDb.from('profiles').update({ is_active }).eq('id', profileId);
+src/hooks/useSettings.ts:106: .from('kanban_boards')
+src/hooks/useSettings.ts:115: .from('kanban_columns')
+src/hooks/useSettings.ts:145: .from('kanban_columns')
+src/hooks/useSettings.ts:179: const { error } = await supabase.from('kanban_columns').update({ name, color, position }).eq('id', id);
+src/hooks/useSettings.ts:198: const { error } = await supabase.from('kanban_columns').delete().eq('id', id);
+src/hooks/useSignedUrl.ts:28: .from(bucketMatch)
+src/hooks/useSubscriptionPlans.ts:21: .from('subscription_plans')
+src/hooks/useSubscriptionPlans.ts:41: .from('subscription_plans')
+src/hooks/useTeam.ts:24: .from('team_members')
+src/hooks/useTeam.ts:39: const { data, error } = await supabase.from('team_members').insert(payload).select().single();
+src/hooks/useTeam.ts:58: const { data, error } = await supabase.from('team_members').update(payload).eq('id', id).select().single();
+src/hooks/useTeam.ts:73: const { error, data } = await supabase.from('team_members').delete().eq('id', id).select('org_id').single();
+src/hooks/useTickets.ts:89: .from('tickets')
+src/hooks/useTickets.ts:127: .from('tickets')
+src/hooks/useTickets.ts:182: .from('tickets')
+src/hooks/useTickets.ts:228: .from('tickets')
+src/hooks/useTickets.ts:262: .from('ticket_messages')
+src/hooks/useTickets.ts:297: .from('tickets')
+src/hooks/useTravelerInfo.ts:47:const travelerInfoPages = () => supabase.from('traveler_info_pages');
+src/hooks/useTravelers.ts:13: .from('travelers')
+src/hooks/useTravelers.ts:34: .from('travelers')
+src/hooks/useTravelers.ts:65: .from('travelers')
+src/hooks/useTravelers.ts:94: .from('travelers')
+src/hooks/useTravelers.ts:123: .from('travelers')
+src/hooks/useVouchers.ts:47: .from('vouchers')
+src/hooks/useVouchers.ts:64: .from('vouchers')
+src/hooks/useVouchers.ts:86: .from('vouchers')
+src/hooks/useVouchers.ts:108: const { error } = await db.from('vouchers').delete().eq('id', id);
+src/hooks/useWaExtension.ts:11: .from('wa_session_metrics')
+src/hooks/useWaExtension.ts:27: .from('wa_session_metrics')
+src/hooks/useWaExtension.ts:51: .from('wa_conversation_logs')
+src/pages/Analytics.tsx:35:        .from('b2c_tracking_events')
+src/pages/Analytics.tsx:40:        .from('b2c_tracking_events')
+src/pages/Analytics.tsx:45:        .from('b2c__profiles')
+src/pages/Analytics.tsx:79:        const { error } = await supabase.from('subscription_plans').select('id').limit(1);
+src/pages/Analytics.tsx:130:        const { error } = await supabase.from('subscription_plans').select('id').limit(1);
+src/pages/BlogPublic.tsx:28: const { data } = await db.from('organizations').select('id, name, logo_url').eq('slug', orgSlug).maybeSingle();
+src/pages/BlogPublic.tsx:37: let query = db.from('blog_posts')
+src/pages/BlogPublic.tsx:56: const { data } = await db.from('blog_posts')
+src/pages/BlogPublic.tsx:62: await db.from('blog_posts').update({ views: (data?.views ?? 0) + 1 }).eq('id', post.id);
+src/pages/ContractRecords.tsx:59: const files = Array.from(e.target.files ?? []);
+src/pages/ExtensionAuth.tsx:27: binary += String.fromCharCode(byte);
+src/pages/GuideEdit.tsx:46: .from('destination_guides')
+src/pages/HelpCenter.tsx:44: const { data } = await db.from('organizations').select('id, name, logo_url').eq('slug', org_slug).maybeSingle();
+src/pages/HelpCenter.tsx:54: let query = db.from('support_articles')
+src/pages/HelpCenter.tsx:74: const { data } = await db.from('faq_items')
+src/pages/HelpCenter.tsx:87: const { data } = await db.from('support_articles')
+src/pages/HelpCenter.tsx:94: await db.from('support_articles').update({ views: (data?.views ?? 0) + 1 }).eq('id', article.id);
+src/pages/HelpCenter.tsx:101: await db.from('support_articles').update({ [field]: current + 1 }).eq('id', articleId);
+src/pages/HelpCenter.tsx:110: const { data, error } = await db.from('support_tickets').insert({
+src/pages/HotelEdit.tsx:50: .from('hotels_bank')
+src/pages/Hotels.tsx:17: {Array.from({ length: 5 }).map((_, i) => (
+src/pages/Hotels.tsx:147: {Array.from({ length: 8 }).map((_, i) => (
+src/pages/Index.tsx:48: .from('organizations')
+src/pages/Index.tsx:74: .from('profiles')
+src/pages/Index.tsx:107: supabase.from('group_trips').select('id,title,destination,current_pax,status,departure_date,return_date').eq('org_id', id),
+src/pages/Index.tsx:108: supabase.from('quotations').select('id,total_value,status,created_at').eq('org_id', id),
+src/pages/Index.tsx:109: supabase.from('tickets').select('id,status').eq('org_id', id),
+src/pages/Index.tsx:110: supabase.from('clients').select('id,created_at').eq('org_id', id),
+src/pages/Integrations.tsx:205: .from('b2b_credentials')
+src/pages/Integrations.tsx:231: .from('b2b_credentials')
+src/pages/Login.tsx:30: binary += String.fromCharCode(byte);
+src/pages/NewsCMS.tsx:43: .from('news_article_versions')
+src/pages/NewsCMS.tsx:198: .from('news_article_versions')
+src/pages/NewsCMS.tsx:211: .from('news_article_versions')
+src/pages/NewsCMS.tsx:275: .from('news_article_versions')
+src/pages/NewsCMS.tsx:283: .from('news_article_versions')
+src/pages/Onboarding.tsx:169: .from('org-assets')
+src/pages/Onboarding.tsx:179: const { data: { publicUrl } } = supabase.storage.from('org-assets').getPublicUrl(fileName);
+src/pages/Onboarding.tsx:188: const { error } = await supabase.from('organizations').insert({
+src/pages/Onboarding.tsx:240: .from('profiles')
+src/pages/Onboarding.tsx:257: .from('profiles')
+src/pages/Onboarding.tsx:272: await supabase.from('public_sites').insert({
+src/pages/Onboarding.tsx:282: await supabase.from('builder_projects').insert({
+src/pages/Onboarding.tsx:316: await supabase.from('builder_versions').insert({
+src/pages/Onboarding.tsx:329: await supabase.from('builder_projects')
+src/pages/Onboarding.tsx:334: supabase.from('organizations').select('*').eq('id', orgId).maybeSingle(),
+src/pages/Onboarding.tsx:335: supabase.from('user_roles').select('role').eq('user_id', user.id),
+src/pages/PortalAiPhotos.tsx:61: .from('client-photos')
+src/pages/PortalAiPhotos.tsx:67: .from('client-photos')
+src/pages/PortalAiPhotos.tsx:72: .from('portal_ai_photos')
+src/pages/PortalAiPhotos.tsx:107: .from('portal_ai_photos')
+src/pages/PortalManagerPage.tsx:79: .from('group_bookings')
+src/pages/PortalManagerPage.tsx:141: .from('organizations')
+src/pages/ProposalEditor.tsx:63: .from('clients')
+src/pages/PublicGuide.tsx:36: .from('destination_guides')
+src/pages/PublicItinerary.tsx:29: .from('itineraries')
+src/pages/PublicItinerary.tsx:40: .from('itinerary_stops')
+src/pages/PublicItinerary.tsx:48: .from('organizations')
+src/pages/PublicItinerary.tsx:125: const { error } = await publicItineraryDb.from('itinerary_leads').insert({
+src/pages/PublicProposal.tsx:26: .from('organizations')
+src/pages/PublicProposal.tsx:42: .from('proposals')
+src/pages/PublicProposal.tsx:258: <p className="font-bold text-zinc-800">{f.from}</p>
+src/pages/PublicSiteView.tsx:158: .from('organizations')
+src/pages/PublicSiteView.tsx:173: .from('group_trips')
+src/pages/PublicSiteView.tsx:191: .from('builder_sites')
+src/pages/PublicSiteView.tsx:199: .from('builder_pages')
+src/pages/PublicSiteView.tsx:207: .from('builder_page_versions')
+src/pages/PublicSiteView.tsx:231: .from('builder_projects')
+src/pages/PublicSiteView.tsx:249: .from('builder_versions')
+src/pages/PublicTravelerInfo.tsx:15: .from('traveler_info_pages')
+src/pages/RadarPortal.tsx:52: const categories = Array.from(new Set(news?.map(n => n.ai_category || 'geral') || []));
+src/pages/TurisYouDashboard.tsx:167:        .from('builder_projects')
+src/pages/TurisYouDashboard.tsx:223:        .from('builder_projects')
+src/pages/admin/AdminAgencyDetail.tsx:37: .from('organizations')
+src/pages/admin/AdminAgencyDetail.tsx:65: .from('organizations')
+src/pages/admin/AdminDashboard.tsx:50: supabase.from('organizations').select('id', { count: 'exact', head: true }),
+src/pages/admin/AdminDashboard.tsx:51: supabase.from('profiles').select('id', { count: 'exact', head: true }),
+src/pages/admin/AdminDashboard.tsx:52: supabase.from('ai_tasks').select('id', { count: 'exact', head: true }).eq('status', 'running'),
+src/pages/admin/AdminDashboard.tsx:67: .from('organizations')
+src/pages/admin/AdminDashboard.tsx:78: .from('profiles')
+src/pages/admin/AdminDashboard.tsx:90: .from('global_keys')
+src/pages/admin/AdminDashboard.tsx:103: .from('ai_decision_logs')
+src/pages/admin/AdminDashboard.tsx:127: .from('organizations')
+src/pages/admin/AdminDashboard.tsx:150: .from('global_keys')
+src/pages/admin/AdminDashboard.tsx:168: .from('global_keys')
+src/pages/admin/BlogAdmin.tsx:28: .from('blog_posts')
+src/pages/admin/BlogAdmin.tsx:41: const { error } = await supabase.from('blog_posts').delete().eq('id', id);
+src/pages/admin/BlogAdmin.tsx:52: const { error } = await supabase.from('blog_posts').update({
+src/pages/admin/CommissionReports.tsx:40: .from('agent_commission_entries')
+src/pages/admin/CommissionReports.tsx:63: .gte('created_at', dateRange.from.toISOString())
+src/pages/admin/CommissionReports.tsx:121: return Array.from(map.values()).sort((a, b) => b.totalCommission - a.totalCommission);
+src/pages/admin/SupportAdmin.tsx:26: const { data, error } = await db.from('support_tickets')
+src/pages/admin/SupportAdmin.tsx:40: const { data, error } = await db.from('support_articles')
+src/pages/automations/Automations.tsx:55: .from('communication_rules')
+src/pages/finance/CommissionsPanel.tsx:28: .from('agent_commission_entries')
+src/pages/finance/MyCommissions.tsx:18: .from('agent_commission_entries')
+src/pages/legal/SignatureCertificate.tsx:18: .from('contract_signatures')
+src/pages/settings/AgentesTab.tsx:24: .from('profiles')
+src/pages/settings/B2BTab.tsx:32: .from('b2b_credentials')
+src/pages/settings/B2BTab.tsx:41: const { error } = await supabase.from('b2b_credentials').delete().eq('id', id);
+src/pages/settings/BusLayoutTab.tsx:61: seat: editor.seat_map[rowIndex]?.[colIndex]?.label || `${rowIndex + 1}${String.fromCharCode(65 + colIndex)}`,
+src/services/storage.service.ts:12: .from(bucket)
+src/services/storage.service.ts:29: const { data } = supabase.storage.from(bucket).getPublicUrl(path);
+src/services/storage.service.ts:39: .from(bucket)
+src/services/storage.service.ts:53: const { error } = await supabase.storage.from(bucket).remove([path]);
+src/shared/lib/logger.ts:59: // Implementação futura: supabase.from('system_logs').insert(entry)
+supabase/functions/_shared/b2b-vault.ts:14:  return btoa(String.fromCharCode(...bytes));
+supabase/functions/_shared/b2b-vault.ts:18:  return Uint8Array.from(atob(value), (char) => char.charCodeAt(0));
+supabase/functions/_shared/b2b-vault.ts:55:    .from('b2b_credentials')
+supabase/functions/_shared/b2b-vault.ts:70:    .from('b2b_credentials')
+supabase/functions/_shared/extension.ts:91:    binary += String.fromCharCode(...bytes.slice(index, index + chunkSize));
+supabase/functions/_shared/extension.ts:105:  const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
+supabase/functions/_shared/extension.ts:181:    .from('profiles')
+supabase/functions/_shared/extension.ts:201:    .from('user_roles')
+supabase/functions/_shared/extension.ts:430:    .from('kanban_boards')
+supabase/functions/_shared/extension.ts:441:      .from('kanban_boards')
+supabase/functions/_shared/extension.ts:456:    .from('kanban_columns')
+supabase/functions/_shared/extension.ts:473:      .from('kanban_columns')
+supabase/functions/_shared/extension.ts:501:    .from('ai_keys_pool')
+supabase/functions/_shared/extension.ts:530:    .from('clients')
+supabase/functions/_shared/extension.ts:554:      .from('client_identities')
+supabase/functions/_shared/extension.ts:584:      .from('clients')
+supabase/functions/_shared/extension.ts:632:      .from('client_identities')
+supabase/functions/_shared/extension.ts:645:      .from('client_identities')
+supabase/functions/_shared/extension.ts:674:      .from('client_identities')
+supabase/functions/_shared/extension.ts:685:    .from('client_identities')
+supabase/functions/_shared/extension.ts:711:    .from('clients')
+supabase/functions/_shared/extension.ts:910:        .from('trips')
+supabase/functions/_shared/extension.ts:917:        .from('tickets')
+supabase/functions/_shared/extension.ts:925:            .from('kanban_cards')
+supabase/functions/_shared/extension.ts:933:        .from('email_messages')
+supabase/functions/_shared/extension.ts:940:        .from('travelers')
+supabase/functions/_shared/extension.ts:947:        .from('financial_transactions')
+supabase/functions/admin-auth/index.ts:62:      .from('user_roles')
+supabase/functions/admin-auth/index.ts:77:      .from('admin_pins')
+supabase/functions/admin-auth/index.ts:133:        .from('admin_pins')
+supabase/functions/admin-auth/index.ts:145:      .from('admin_pins')
+supabase/functions/ai-chat-agent/index.ts:27:      .from('organizations')
+supabase/functions/ai-chat-agent/index.ts:38:        .from('b2c_tracking_events')
+supabase/functions/ai-chat-agent/index.ts:52:      .from('ai_knowledge_base')
+supabase/functions/ai-chat-agent/index.ts:80:      .from('global_keys')
+supabase/functions/airline-build-action-link/index.ts:70:        .from('passenger_tickets')
+supabase/functions/airline-build-action-link/index.ts:90:          .from('kanban_cards')
+supabase/functions/airline-build-action-link/index.ts:111:      .from('airline_link_registry')
+supabase/functions/airline-build-action-link/index.ts:152:    await supabaseService.from('trip_airline_action_links').insert({
+supabase/functions/airline-build-action-link/index.ts:171:    await supabaseService.from('trip_checkin_status').upsert({
+supabase/functions/airline-build-deep-link/index.ts:33:      .from('airline_link_registry')
+supabase/functions/airline-build-deep-link/index.ts:91:      .from('trip_airline_links')
+supabase/functions/boarding-create-client-portal-link/index.ts:47:    const magicToken = btoa(String.fromCharCode(...tokenBytes)).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+supabase/functions/boarding-create-client-portal-link/index.ts:56:    await supabaseService.from('boarding_operation_logs').insert({
+supabase/functions/boarding-get-portal-data/index.ts:49:      .from('kanban_cards')
+supabase/functions/boarding-get-portal-data/index.ts:64:        .from('clients')
+supabase/functions/boarding-get-portal-data/index.ts:77:      .from('trip_checkin_status')
+supabase/functions/boarding-get-portal-data/index.ts:87:      .from('boarding_pass_documents')
+supabase/functions/boarding-get-portal-data/index.ts:100:            .from(pass.storage_bucket)
+supabase/functions/build-proposal/index.ts:75:      .from("quotations")
+supabase/functions/build-proposal/index.ts:85:        .from("quotation_scenarios")
+supabase/functions/build-proposal/index.ts:93:        .from("quotation_scenarios")
+supabase/functions/build-proposal/index.ts:103:      .from("ai_keys_pool")
+supabase/functions/build-proposal/index.ts:202:      .from("quotations")
+supabase/functions/build-proposal/index.ts:211:    await supabaseClient.from("ai_decision_logs").insert({
+supabase/functions/builder-publish-page/index.ts:40:      .from('builder_page_versions')
+supabase/functions/builder-publish-page/index.ts:51:      .from('builder_page_versions')
+supabase/functions/builder-publish-page/index.ts:68:      .from('builder_pages')
+supabase/functions/builder-publish-page/index.ts:81:      .from('builder_publish_events')
+supabase/functions/builder-submit-form/index.ts:33:      .from('builder_form_submissions')
+supabase/functions/builder-submit-form/index.ts:57:        .from('clients')
+supabase/functions/builder-submit-form/index.ts:73:          .from('builder_form_submissions')
+supabase/functions/builder-submit-form/index.ts:82:            .from('b2c_shadow_profiles')
+supabase/functions/email-webhook-ingest/index.ts:26:    const from_email = body.from_email || body.from;
+supabase/functions/email-webhook-ingest/index.ts:36:      .from('email_messages')
+supabase/functions/email-webhook-ingest/index.ts:106:                 const tck = await supabase.from('tickets').insert({
+supabase/functions/email-webhook-ingest/index.ts:119:                 const kard = await supabase.from('kanban_cards').insert({
+supabase/functions/email-webhook-ingest/index.ts:128:              await supabase.from('email_messages').update(updatePayload).eq('id', emailData.id);
+supabase/functions/extension-sync/index.ts:234:    .from('clients')
+supabase/functions/extension-sync/index.ts:327:    .from('wa_session_metrics')
+supabase/functions/extension-sync/index.ts:360:      .from('wa_session_metrics')
+supabase/functions/extension-sync/index.ts:371:    .from('wa_session_metrics')
+supabase/functions/extension-sync/index.ts:480:      .from('wa_conversation_logs')
+supabase/functions/extension-sync/index.ts:487:    .from('wa_conversation_logs')
+supabase/functions/extension-sync/index.ts:510:    .from('wa_session_metrics')
+supabase/functions/extension-sync/index.ts:544:    .from('trips')
+supabase/functions/extension-sync/index.ts:596:    .from('external_entities')
+supabase/functions/extension-sync/index.ts:609:      .from('trips')
+supabase/functions/extension-sync/index.ts:650:    const { error } = await context.supabase.from('trips').update(tripPayload).eq('id', tripId);
+supabase/functions/extension-sync/index.ts:654:      .from('trips')
+supabase/functions/extension-sync/index.ts:686:    const { error } = await context.supabase.from('external_entities').update(entityPayload).eq('id', externalEntityId);
+supabase/functions/extension-sync/index.ts:690:      .from('external_entities')
+supabase/functions/extension-sync/index.ts:701:    .from('operator_snapshots')
+supabase/functions/extension-sync/index.ts:729:    const { error } = await context.supabase.from('operator_snapshots').update(snapshotPayload).eq('id', snapshotId);
+supabase/functions/extension-sync/index.ts:733:      .from('operator_snapshots')
+supabase/functions/extension-sync/index.ts:756:      .from('clients')
+supabase/functions/extension-sync/index.ts:772:    .from('clients')
+supabase/functions/extension-sync/index.ts:802:      .from('clients')
+supabase/functions/extension-sync/index.ts:830:    .from('clients')
+supabase/functions/extension-sync/index.ts:860:    .from('trips')
+supabase/functions/extension-sync/index.ts:879:        .from('trips')
+supabase/functions/extension-sync/index.ts:916:      const { error } = await context.supabase.from('trips').update(payload).eq('id', existing.id);
+supabase/functions/extension-sync/index.ts:921:    const { error } = await context.supabase.from('trips').insert(payload);
+supabase/functions/extension-sync/index.ts:936:        .from('tickets')
+supabase/functions/extension-sync/index.ts:947:        .from('tickets')
+supabase/functions/extension-sync/index.ts:958:        .from('tickets')
+supabase/functions/extension-sync/index.ts:984:      const { error } = await context.supabase.from('tickets').update(payload).eq('id', existing.id);
+supabase/functions/extension-sync/index.ts:989:    const { error } = await context.supabase.from('tickets').insert(payload);
+supabase/functions/extension-sync/index.ts:1002:        .from('travelers')
+supabase/functions/extension-sync/index.ts:1013:        .from('travelers')
+supabase/functions/extension-sync/index.ts:1025:        .from('travelers')
+supabase/functions/extension-sync/index.ts:1054:      const { error } = await context.supabase.from('travelers').update(payload).eq('id', travelerId);
+supabase/functions/extension-sync/index.ts:1057:      const { data, error } = await context.supabase.from('travelers').insert(payload).select('id').single();
+supabase/functions/extension-sync/index.ts:1081:        .from('traveler_documents')
+supabase/functions/extension-sync/index.ts:1101:        const { error } = await context.supabase.from('traveler_documents').update(docPayload).eq('id', existingDoc.id);
+supabase/functions/extension-sync/index.ts:1104:        const { error } = await context.supabase.from('traveler_documents').insert(docPayload);
+supabase/functions/extension-sync/index.ts:1122:        .from('financial_transactions')
+supabase/functions/extension-sync/index.ts:1133:        .from('financial_transactions')
+supabase/functions/extension-sync/index.ts:1144:        .from('financial_transactions')
+supabase/functions/extension-sync/index.ts:1172:      const { error } = await context.supabase.from('financial_transactions').update(payload).eq('id', existing.id);
+supabase/functions/extension-sync/index.ts:1177:    const { error } = await context.supabase.from('financial_transactions').insert(payload);
+supabase/functions/extension-sync/index.ts:1196:        .from('kanban_cards')
+supabase/functions/extension-sync/index.ts:1207:        .from('kanban_cards')
+supabase/functions/extension-sync/index.ts:1239:      const { error } = await context.supabase.from('kanban_cards').update(payload).eq('id', existing.id);
+supabase/functions/extension-sync/index.ts:1244:    const { error } = await context.supabase.from('kanban_cards').insert(payload);
+supabase/functions/extension-sync/index.ts:1262:    from_email: firstText(email.sender, email.from, email.from_email) || null,
+supabase/functions/extension-sync/index.ts:1263:    from_name: firstText(email.from_name) || null,
+supabase/functions/extension-sync/index.ts:1274:    .from('email_messages')
+supabase/functions/extension-sync/index.ts:1278:    .eq('from_email', payload.from_email)
+supabase/functions/extension-sync/index.ts:1283:        .from('email_messages')
+supabase/functions/extension-sync/index.ts:1290:          .from('email_messages')
+supabase/functions/extension-sync/index.ts:1301:    const { error } = await context.supabase.from('email_messages').update(payload).eq('id', existing.id);
+supabase/functions/extension-sync/index.ts:1306:  const { data: inserted, error } = await context.supabase.from('email_messages').insert(payload).select('id').single();
+supabase/functions/extension-sync/index.ts:1335:    .from('proactive_alerts')
+supabase/functions/extension-sync/index.ts:1344:    .from('proactive_alerts')
+supabase/functions/extension-sync/index.ts:1374:    .from('memory_contexts')
+supabase/functions/extension-sync/index.ts:1384:    .from('trips')
+supabase/functions/extension-sync/index.ts:1402:      .from('clients')
+supabase/functions/extract-quotation-feedback/index.ts:48:      .from("quotations")
+supabase/functions/extract-quotation-feedback/index.ts:73:      .from("ai_keys_pool")
+supabase/functions/extract-quotation-feedback/index.ts:158:      .from('ai_knowledge_base')
+supabase/functions/extract-quotation-feedback/index.ts:168:        .from("ai_knowledge_base")
+supabase/functions/extract-quotation-feedback/index.ts:213:    await supabase.from("ai_decision_logs").insert({
+supabase/functions/extract-quotation/index.ts:104:      .from('ai_keys_pool')
+supabase/functions/extract-quotation/index.ts:139:      .from('global_keys')
+supabase/functions/extract-quotation/index.ts:446:        .from('quotations')
+supabase/functions/extract-quotation/index.ts:494:            .from('flights')
+supabase/functions/extract-quotation/index.ts:517:             await supabaseClient.from('flight_segments').insert(segments);
+supabase/functions/extract-quotation/index.ts:526:            .from('itinerary_days')
+supabase/functions/extract-quotation/index.ts:537:            await supabaseClient.from('itinerary_items').insert({
+supabase/functions/extract-quotation/index.ts:562:         await supabaseClient.from('quote_transfers').insert(transfers);
+supabase/functions/generate-embedding/index.ts:31:      .from("ai_keys_pool")
+supabase/functions/generate-embedding/index.ts:112:        .from("ai_knowledge_base")
+supabase/functions/generate-itinerary/index.ts:62:      .from("ai_keys_pool")
+supabase/functions/generate-itinerary/index.ts:131:    await supabaseClient.from("ai_decision_logs").insert({
+supabase/functions/interpret-request/index.ts:79:      .from("ai_keys_pool")
+supabase/functions/interpret-request/index.ts:152:    await supabaseClient.from("ai_decision_logs").insert({
+supabase/functions/interpret-request/index.ts:166:        .from("quotations")
+supabase/functions/invite-agent/index.ts:60:      adminClient.from("profiles").select("id, org_id").eq("user_id", user.id).maybeSingle(),
+supabase/functions/invite-agent/index.ts:61:      adminClient.from("user_roles").select("role").eq("user_id", user.id),
+supabase/functions/invite-agent/index.ts:77:      .from("profiles")
+supabase/functions/invite-agent/index.ts:104:    const { error: profileUpsertError } = await adminClient.from("profiles").upsert(
+supabase/functions/invite-agent/index.ts:115:    const { error: deleteRolesError } = await adminClient.from("user_roles").delete().eq("user_id", invitedUserId);
+supabase/functions/invite-agent/index.ts:118:    const { error: insertRoleError } = await adminClient.from("user_roles").insert({ user_id: invitedUserId, role });
+supabase/functions/ocr-extractor/index.ts:43:      .from('ai_keys_pool')
+supabase/functions/ocr-extractor/index.ts:68:      .from('global_keys')
+supabase/functions/ocr-extractor/index.ts:159:      .from('profiles')
+supabase/functions/ocr-extractor/index.ts:186:      const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+supabase/functions/ocr-extractor/index.ts:239:          Object.fromEntries(Object.entries(obj).map(([k, v]) => [k, sanitizeStr(v)]));
+supabase/functions/process-automations/index.ts:68:      .from("communication_rules")
+supabase/functions/process-automations/index.ts:103:          .from("trips")
+supabase/functions/process-automations/index.ts:112:          .from("trips")
+supabase/functions/process-automations/index.ts:128:        .from('organizations')
+supabase/functions/process-automations/index.ts:142:          .from("ai_decision_logs")
+supabase/functions/process-automations/index.ts:190:             await supabase.from('email_tracking_logs').insert({
+supabase/functions/process-automations/index.ts:225:      await supabase.from("ai_decision_logs").insert(logsToInsert);
+supabase/functions/public-ai-chat/index.ts:29:      .from('agency_tone_profiles')
+supabase/functions/public-ai-chat/index.ts:36:      .from('public_knowledge_policies')
+supabase/functions/public-ai-chat/index.ts:74:        supabase.from('faq_items')
+supabase/functions/public-ai-chat/index.ts:80:        supabase.from('support_articles')
+supabase/functions/public-ai-chat/index.ts:133:    await supabase.from('ai_agent_runs').insert({
+supabase/functions/radar-crawler-squad/index.ts:58:      .from('news_sync_runs')
+supabase/functions/radar-crawler-squad/index.ts:83:      .from('feeds_master')
+supabase/functions/radar-crawler-squad/index.ts:96:        .from('feeds_user')
+supabase/functions/radar-crawler-squad/index.ts:133:          .from(targetTable)
+supabase/functions/radar-crawler-squad/index.ts:170:          .from(targetTable)
+supabase/functions/radar-crawler-squad/index.ts:184:          .from('news_articles')
+supabase/functions/radar-crawler-squad/index.ts:290:          .from('news_articles')
+supabase/functions/radar-crawler-squad/index.ts:330:        .from('news_sync_runs')
+supabase/functions/radar-crawler-squad/index.ts:362:        .from('news_sync_runs')
+supabase/functions/score-quotation/index.ts:77:      .from("quotations")
+supabase/functions/score-quotation/index.ts:87:        .from("destinations")
+supabase/functions/score-quotation/index.ts:100:        .from("policy_cache")
+supabase/functions/score-quotation/index.ts:111:      .from("ai_keys_pool")
+supabase/functions/score-quotation/index.ts:203:        .from("quotation_scenarios")
+supabase/functions/score-quotation/index.ts:226:    await supabaseClient.from("ai_decision_logs").insert({
+supabase/functions/send-quotation/index.ts:33:      .from("quotations")
+supabase/functions/send-quotation/index.ts:44:      .from("quotations")
+supabase/functions/send-quotation/index.ts:60:    await sc.from("notifications").insert({
+supabase/functions/send-quotation/index.ts:75:    await sc.from("ai_decision_logs").insert({
+supabase/functions/send-ticket-email/index.ts:57:      .from('tickets')
+supabase/functions/send-ticket-email/index.ts:83:      .from('organizations')
+supabase/functions/send-ticket-email/index.ts:93:      .from('email_tracking_logs')
+supabase/functions/send-ticket-email/index.ts:133:    await supabase.from('ticket_messages').insert({
+supabase/functions/send-ticket-email/index.ts:145:    await supabase.from('ticket_events').insert({
+supabase/functions/sign-group-booking-contract/index.ts:79:  return Array.from(new Uint8Array(digest))
+supabase/functions/sign-group-booking-contract/index.ts:122:      .from("group_bookings")
+supabase/functions/sign-group-booking-contract/index.ts:134:      .from("group_trips")
+supabase/functions/sign-group-booking-contract/index.ts:145:        .from("contract_templates")
+supabase/functions/track-email-open/index.ts:57:          .from('email_tracking_logs')
+supabase/functions/webmcp-server/index.ts:53:          .from('ai_knowledge_chunks')
+supabase/functions/webmcp-server/index.ts:62:        const orgQuery = supabase.from('organizations').select('id').eq('slug', args.org_slug).single();
+supabase/functions/webmcp-server/index.ts:67:          .from('group_trips')
+supabase/functions/webmcp-server/index.ts:76:        const query = supabase.from('global_iatas').select('iata_code, city, country, airport_name').limit(50);

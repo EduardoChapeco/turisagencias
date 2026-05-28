@@ -7,7 +7,7 @@ export const FinanceInvoiceStatusBlock = {
  label: 'Invoice Status',
  icon: CheckCircle,
  renderComponent: ({ data }: any) => {
- const isPaid = data?.status === 'paid';
+ const isPaid = node.props.status === 'paid';
  
  return (
  <div className={`flex items-center gap-3 p-4 rounded-lg border ${
@@ -23,13 +23,13 @@ export const FinanceInvoiceStatusBlock = {
  </div>
  );
  },
- settingsComponent: ({ data, onChange }: any) => (
+ settingsComponent: ({ node, onChange }) => (
  <div className="flex flex-col gap-2">
  <label className="text-sm font-medium">Status</label>
  <select 
  className="border rounded p-2 text-sm"
- value={data?.status || 'pending'} 
- onChange={(e) => onChange({ ...data, status: e.target.value })}
+ value={node.props.status || 'pending'} 
+ onChange={(e) => onChange({ props: { ...node.props,  status: e.target.value } })}
  >
  <option value="pending">Pending</option>
  <option value="paid">Paid</option>

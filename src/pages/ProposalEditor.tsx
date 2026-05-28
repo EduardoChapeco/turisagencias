@@ -16,6 +16,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useUnsavedChangesGuard } from '@/hooks/useUnsavedChangesGuard';
 import { supabase } from '@/integrations/supabase/client';
+import { MediaPicker } from '@/components/builder/MediaPicker';
 
 export default function ProposalEditor() {
  const { id } = useParams<{ id: string }>();
@@ -574,12 +575,11 @@ export default function ProposalEditor() {
  />
  </div>
  <div className="space-y-1">
- <span className="text-[10px] font-black uppercase tracking-wider text-zinc-500">Imagem de Fundo URL</span>
- <Input 
+ <MediaPicker 
+ label="Imagem de Fundo"
  value={selectedBlock.settings.image_url || ''}
- onChange={(e) => updateBlockSettings(selectedBlock.id, 'image_url', e.target.value)}
- placeholder="https://images.unsplash.com/..."
- className="h-9 text-xs font-mono"
+ onChange={(val) => updateBlockSettings(selectedBlock.id, 'image_url', val)}
+ blockKind="hero"
  />
  </div>
  </div>

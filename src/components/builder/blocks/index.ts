@@ -207,6 +207,7 @@ export function registerAllBlocks() {
  BlockRegistry.register(FormSupportTicketBlock);
  BlockRegistry.register(FormNpsBlock);
  BlockRegistry.register(FormLeadQuizBlock);
+ BlockRegistry.register(CtaStickyBottomBlock);
  BlockRegistry.register(CtaFloatingWhatsappBlock);
 
  // Layout & Sections

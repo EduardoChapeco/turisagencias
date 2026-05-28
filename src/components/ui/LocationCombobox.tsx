@@ -95,7 +95,7 @@ export function LocationCombobox({
           />
           <CommandList>
             <CommandEmpty>
-              {isLoading ? "Buscando no Motor Turis AI..." : search.length < 2 ? "Digite pelo menos 2 caracteres." : "Nenhum local encontrado."}
+              {isLoading ? "Buscando IATA na base global..." : search.length < 2 ? "Digite pelo menos 2 caracteres." : "Nenhum local encontrado."}
             </CommandEmpty>
             <CommandGroup>
               {results?.map((loc) => {

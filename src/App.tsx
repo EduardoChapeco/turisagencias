@@ -97,6 +97,7 @@ const Destinations = lazy(() => import('./pages/Destinations'));
 const PublicSiteView = lazy(() => import('./pages/PublicSiteView'));
 const SiteBuilderPage = lazy(() => import('./pages/SiteBuilderPage'));
 const PortalManagerPage = lazy(() => import('./pages/PortalManagerPage'));
+const TurisYouDashboard = lazy(() => import('./pages/TurisYouDashboard'));
 
 const queryClient = new QueryClient({
  defaultOptions: {
@@ -240,6 +241,7 @@ const App = () => (
  <Route path="/ai-dashboard" element={<ProtectedWithOrg><AdminRole><AiDashboard /></AdminRole></ProtectedWithOrg>} />
  <Route path="/settings" element={<ProtectedWithOrg><TripsRole><Settings /></TripsRole></ProtectedWithOrg>} />
  <Route path="/site-builder" element={<ProtectedWithOrg><TripsRole><SiteBuilderPage /></TripsRole></ProtectedWithOrg>} />
+ <Route path="/turisyou" element={<ProtectedWithOrg><TripsRole><TurisYouDashboard /></TripsRole></ProtectedWithOrg>} />
  <Route path="/app/group-trips" element={<ProtectedWithOrg><TripsRole><GroupTrips /></TripsRole></ProtectedWithOrg>} />
  <Route path="/app/group-trips/:id" element={<ProtectedWithOrg><TripsRole><GroupDashboard /></TripsRole></ProtectedWithOrg>} />
 

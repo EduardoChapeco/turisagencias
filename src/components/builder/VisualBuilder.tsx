@@ -24,12 +24,14 @@ interface VisualBuilderProps {
  onBack?: () => void;
  projectName?: string;
  initialProjectType?: 'website' | 'linkbio' | 'blog';
+ projectId?: string | null;
 }
 
 export default function VisualBuilder({
  onBack,
  projectName = 'Website Principal',
  initialProjectType,
+ projectId,
 }: VisualBuilderProps) {
  const { organization, user } = useAuthStore();
  const { toast } = useToast();
@@ -64,55 +66,58 @@ export default function VisualBuilder({
  setLoading(true);
  const db = supabase;
 
- // 1. Find existing Project for this org + type
- const { data: projectData } = await db
- .from('builder_projects')
- .select('id, slug, seo_title, seo_description, published_version_id')
- .eq('org_id', organization.id)
- .eq('type', projectType)
- .maybeSingle();
+   let projectData = null;
 
- let currentProjectId = projectData?.id || null;
+   if (projectId) {
+     const { data } = await db
+       .from('builder_projects')
+       .select('id, slug, seo_title, seo_description, published_version_id')
+       .eq('id', projectId)
+       .maybeSingle();
+     projectData = data;
+   }
 
- if (currentProjectId) {
- // Load the latest version
- const versionQuery = projectData.published_version_id
- ? db
- .from('builder_versions')
- .select('*')
- .eq('id', projectData.published_version_id)
- .maybeSingle()
- : db
- .from('builder_versions')
- .select('*')
- .eq('project_id', currentProjectId)
- .order('version_number', { ascending: false })
- .limit(1)
- .maybeSingle();
+   let currentProjectId = projectData?.id || null;
 
- const { data: versionData } = await versionQuery;
+   if (currentProjectId && projectData) {
+     // Load the latest version
+     const versionQuery = projectData.published_version_id
+       ? db
+         .from('builder_versions')
+         .select('*')
+         .eq('id', projectData.published_version_id)
+         .maybeSingle()
+       : db
+         .from('builder_versions')
+         .select('*')
+         .eq('project_id', currentProjectId)
+         .order('version_number', { ascending: false })
+         .limit(1)
+         .maybeSingle();
 
- if (versionData) {
- const contentJson = typeof versionData.content_json === 'string'
- ? JSON.parse(versionData.content_json)
- : versionData.content_json;
+     const { data: versionData } = await versionQuery;
 
- if (Array.isArray(contentJson) && contentJson.length > 0) {
- setNodes(contentJson as any);
- }
+     if (versionData) {
+       const contentJson = typeof versionData.content_json === 'string'
+         ? JSON.parse(versionData.content_json)
+         : versionData.content_json;
 
- const seoJson = (versionData.seo_json as any) || {};
- setProjectMeta({
- siteId: currentProjectId,
- pageId: currentProjectId,
- slug: projectData.slug || 'home',
- metaTitle: seoJson.metaTitle || projectData.seo_title || organization.name,
- metaDescription: seoJson.metaDescription || projectData.seo_description || '',
- });
- } else {
- setProjectMeta({ siteId: currentProjectId, pageId: currentProjectId });
- setNodes([]);
- }
+       if (Array.isArray(contentJson) && contentJson.length > 0) {
+         setNodes(contentJson as any);
+       }
+
+       const seoJson = (versionData.seo_json as any) || {};
+       setProjectMeta({
+         siteId: currentProjectId,
+         pageId: currentProjectId,
+         slug: projectData.slug || 'home',
+         metaTitle: seoJson.metaTitle || projectData.seo_title || organization.name,
+         metaDescription: seoJson.metaDescription || projectData.seo_description || '',
+       });
+     } else {
+       setProjectMeta({ siteId: currentProjectId, pageId: currentProjectId });
+       setNodes([]);
+     }
  } else {
  // No site exists yet
  setProjectMeta({

@@ -85,10 +85,8 @@ const navGroups: NavGroup[] = [
  {
  title: 'Presença Digital & Canais',
  items: [
- { title: 'Site da Agência', url: '/site-builder?type=website', icon: Globe2 },
- { title: 'Blog de Viagens', url: '/site-builder?type=blog', icon: Book },
- { title: 'Link na Bio (Biolink)', url: '/site-builder?type=linkbio', icon: Smartphone },
- { title: 'Portal do Viajante', url: '/portal-manager', icon: Shield },
+  { title: 'TurisYou Hub', url: '/turisyou', icon: Globe2 },
+  { title: 'Portal do Viajante', url: '/portal-manager', icon: Shield },
  ]
  },
  {

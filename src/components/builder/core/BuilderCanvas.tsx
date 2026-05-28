@@ -76,6 +76,7 @@ const SortableBlock = React.memo(function SortableBlock({ node }: { node: Builde
   const isSelected = useBuilderStore(state => state.selectedNodeId === node.id);
   const setSelectedNodeId = useBuilderStore(state => state.setSelectedNodeId);
   const removeNode = useBuilderStore(state => state.removeNode);
+  const updateNode = useBuilderStore(state => state.updateNode);
 
   const blockDef = BlockRegistry.get(node.type);
 
@@ -101,6 +102,27 @@ const SortableBlock = React.memo(function SortableBlock({ node }: { node: Builde
   const aosAnimation = node.props?.aosAnimation && node.props.aosAnimation !== 'none'
     ? node.props.aosAnimation
     : undefined;
+
+  const adapterProps = {
+    node,
+    block: node,
+    props: node.props || {},
+    styles: node.styles || {},
+    data: node.props || {},
+    updateBlock: (id: string, updates: any) => {
+      updateNode(id, updates);
+    },
+    updateProps: (updates: any) => {
+      updateNode(node.id, { props: { ...node.props, ...updates } });
+    },
+    onChange: (updates: any) => {
+      if (updates && (updates.props || updates.styles || updates.children)) {
+        updateNode(node.id, updates);
+      } else {
+        updateNode(node.id, { props: { ...node.props, ...updates } });
+      }
+    }
+  };
 
   return (
     <div
@@ -160,7 +182,7 @@ const SortableBlock = React.memo(function SortableBlock({ node }: { node: Builde
         {node.styles?.customCss && (
           <style>{`#${node.props?.customId || node.id} { ${node.styles.customCss} }`}</style>
         )}
-        <RenderComponent node={node}>
+        <RenderComponent {...adapterProps}>
           {node.children && node.children.length > 0 && (
             <div className="w-full h-full min-h-[50px]">
               {node.children.map(childNode => (

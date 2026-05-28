@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { AppLayout } from '@/components/AppLayout';
 import { useQuotations } from '@/hooks/useQuotations';
 import { Button } from '@/components/ui/button';
@@ -15,6 +15,7 @@ import {
 import { getClientName } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PageHeader } from '@/components/ui/PageHeader';
+import { useToast } from '@/hooks/use-toast';
 
 const STATUS_STYLES: Record<string, { color: string; label: string }> = {
  draft: { color: 'bg-zinc-100 text-zinc-600 border-zinc-200', label: 'Rascunho' },

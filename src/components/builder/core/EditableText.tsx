@@ -3,14 +3,15 @@ import { useBuilderStore } from './useBuilderStore';
 import { BuilderNode } from './types';
 
 interface EditableTextProps {
- nodeId: string;
- propKey: string;
- value: string;
+ nodeId?: string;
+ propKey?: string;
+ value?: string;
  as?: React.ElementType;
  className?: string;
  placeholder?: string;
  onChange?: (val: any) => void;
  multiline?: boolean;
+ text?: string; // legacy support
 }
 
 export function EditableText({ 
@@ -21,47 +22,55 @@ export function EditableText({
  className,
  placeholder = 'Digite aqui...',
  onChange,
- multiline
+ multiline,
+ text
 }: EditableTextProps) {
  const updateNode = useBuilderStore(state => state.updateNode);
  const isPreview = useBuilderStore(state => state.isPreview);
- const isSelected = useBuilderStore(state => state.selectedNodeId === nodeId);
+ const isSelected = useBuilderStore(state => nodeId ? state.selectedNodeId === nodeId : false);
  const nodes = useBuilderStore(state => state.nodes);
 
  const [isEditing, setIsEditing] = useState(false);
  const elementRef = useRef<HTMLElement>(null);
  
- const content = value || placeholder;
+ const actualValue = value !== undefined ? value : (text || '');
+ const content = actualValue || placeholder;
 
  // Find current node props for merging (prevents overwriting sibling props)
  const findNodeProps = useCallback(() => {
- const findInTree = (list: BuilderNode[]): Record<string, any> | null => {
- for (const n of list) {
- if (n.id === nodeId) return n.props;
- if (n.children) {
- const found = findInTree(n.children);
- if (found) return found;
- }
- }
- return null;
- };
- return findInTree(nodes) ?? {};
+   if (!nodeId) return {};
+   const findInTree = (list: BuilderNode[]): Record<string, any> | null => {
+     for (const n of list) {
+       if (n.id === nodeId) return n.props;
+       if (n.children) {
+         const found = findInTree(n.children);
+         if (found) return found;
+       }
+     }
+     return null;
+   };
+   return findInTree(nodes) ?? {};
  }, [nodes, nodeId]);
 
  useEffect(() => {
  // Sync external value changes if not actively editing
- if (!isEditing && elementRef.current && elementRef.current.innerText !== value) {
- elementRef.current.innerText = value || '';
+ if (!isEditing && elementRef.current && elementRef.current.innerText !== actualValue) {
+   elementRef.current.innerText = actualValue || '';
  }
- }, [value, isEditing]);
+ }, [actualValue, isEditing]);
 
  const handleBlur = (e: React.FocusEvent<HTMLElement>) => {
- setIsEditing(false);
- const newValue = e.target.innerText;
- if (newValue !== value) {
- const currentProps = findNodeProps();
- updateNode(nodeId, { props: { ...currentProps, [propKey]: newValue } });
- }
+   setIsEditing(false);
+   const newValue = e.target.innerText;
+   if (newValue !== actualValue) {
+     if (onChange) {
+       onChange(newValue);
+     }
+     if (nodeId && propKey) {
+       const currentProps = findNodeProps();
+       updateNode(nodeId, { props: { ...currentProps, [propKey]: newValue } });
+     }
+   }
  };
 
  const handleDoubleClick = (e: React.MouseEvent) => {

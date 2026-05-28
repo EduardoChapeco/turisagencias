@@ -393,7 +393,19 @@ export function BuilderRightPanel() {
       <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
         {activeTab === 'content' && (
           Inspector ? (
-            <Inspector node={selectedNode} onChange={handleChange} />
+            (() => {
+              const adapterProps = {
+                node: selectedNode,
+                block: selectedNode,
+                props: selectedNode.props || {},
+                styles: selectedNode.styles || {},
+                data: selectedNode.props || {},
+                updateBlock: (id: string, updates: any) => updateNode(id, updates),
+                updateProps: (updates: any) => updateNode(selectedNode.id, { props: { ...selectedNode.props, ...updates } }),
+                onChange: handleChange
+              };
+              return <Inspector {...adapterProps} />;
+            })()
           ) : (
             <div className="text-sm text-zinc-500 border border-white/10 border-dashed rounded p-4 text-center">
               Este bloco não possui inspetor configurado.

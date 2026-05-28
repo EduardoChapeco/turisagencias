@@ -41,13 +41,11 @@ export interface BlockDef<P = Record<string, any>> {
  defaultStyles?: BlockStyles;
  
  // Renders the actual block on the canvas
- renderComponent: React.FC<{ node: BuilderNode<P>, children?: React.ReactNode }>;
+ // Using `any` or flexible types to allow legacy blocks that use {data} or {props} alongside modern {node} blocks.
+ renderComponent: React.ComponentType<any>;
  
  // Renders the specific configuration form in the sidebar
- settingsComponent: React.FC<{ 
- node: BuilderNode<P>; 
- onChange: (updates: Partial<BuilderNode<P>>) => void 
- }>;
+ settingsComponent: React.ComponentType<any>;
  
  // Whether this block can accept children (like a grid or section)
  acceptsChildren?: boolean;

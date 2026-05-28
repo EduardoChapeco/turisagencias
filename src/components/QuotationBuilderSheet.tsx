@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import {
  Save, Loader2, Plus, X, MapPin, Hotel,
- Plane, Tent, CheckCircle2, Calendar, DollarSign, Image as ImageIcon, Users
+ Plane, Tent, CheckCircle2, Calendar, DollarSign, Image as ImageIcon, Users, Video, Link2
 } from 'lucide-react';
 import { SheetPage } from '@/components/ui/SheetPage';
 import { Button } from '@/components/ui/button';
@@ -246,6 +246,19 @@ export function QuotationBuilderSheet({ open, onClose, clientId, onCreated }: Qu
  </Select>
  </div>
  </div>
+ <div className="space-y-1.5">
+ <Label className="text-xs">Galeria de Fotos (Hotel/Destino)</Label>
+ <MediaUploader
+ multiple={true}
+ existingUrls={form.media_urls || []}
+ onUploadComplete={(urls) => updateForm('media_urls', urls)}
+ folder="quotations/gallery"
+ aspectRatio={16 / 9}
+ ownerType="quotation"
+ ownerId={null}
+ fieldName="media_urls"
+ />
+ </div>
  </div>
  </div>
  </div>
@@ -273,6 +286,16 @@ export function QuotationBuilderSheet({ open, onClose, clientId, onCreated }: Qu
  <LocationCombobox value={day.location} onChange={(v) => updateDay(day.id, { location: v })} placeholder="Local/Cidade" />
  </div>
  <Textarea value={day.description} onChange={(e) => updateDay(day.id, { description: e.target.value })} rows={2} placeholder="O que vai acontecer neste dia..." className="bg-zinc-50 rounded-xl border-zinc-200 resize-none text-sm"/>
+ <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+   <div className="space-y-1.5">
+     <Label className="text-xs text-zinc-500 flex items-center gap-1"><Video className="w-3.5 h-3.5" /> URL do Vídeo (YouTube / Vimeo)</Label>
+     <Input value={(day as any).video_url || ''} onChange={(e) => updateDay(day.id, { video_url: e.target.value } as any)} placeholder="https://youtube.com/embed/..." className="bg-zinc-50 rounded-xl border-zinc-200 h-9 text-xs" />
+   </div>
+   <div className="space-y-1.5">
+     <Label className="text-xs text-zinc-500 flex items-center gap-1"><Link2 className="w-3.5 h-3.5" /> Foto do Dia (URL)</Label>
+     <Input value={(day as any).image_url || ''} onChange={(e) => updateDay(day.id, { image_url: e.target.value } as any)} placeholder="https://..." className="bg-zinc-50 rounded-xl border-zinc-200 h-9 text-xs" />
+   </div>
+ </div>
  </div>
  </div>
  </div>

@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AppLayout } from '@/components/AppLayout';
-import { useRadarNews, useTriggerRadarSync } from '@/hooks/useAiRadar';
+import { useRadarNews, useTriggerRadarSync, useUpdateNewsArticle } from '@/hooks/useAiRadar';
 import { 
  Radar, RefreshCw, AlertTriangle, Newspaper, ExternalLink, 
- ArrowRight, BookOpen, Settings, Lightbulb, CheckSquare 
+ ArrowRight, BookOpen, Settings, Lightbulb, CheckSquare, Globe, GlobeLock
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -28,7 +28,30 @@ export default function RadarPortal() {
  const { toast } = useToast();
  const { data: news, isLoading, refetch } = useRadarNews();
  const { mutate: triggerSync, isPending: isSyncing } = useTriggerRadarSync();
+ const { mutate: updateArticle, isPending: isUpdating } = useUpdateNewsArticle();
  const [activeCategory, setActiveCategory] = useState<string | null>(null);
+ const [publishingId, setPublishingId] = useState<string | null>(null);
+
+ const handleTogglePublish = (item: any) => {
+    const newStatus = item.status === 'published' ? 'curated' : 'published';
+    setPublishingId(item.id);
+    updateArticle({ id: item.id, updates: { status: newStatus, safe_to_publish: newStatus === 'published' } }, {
+      onSuccess: () => {
+        toast({
+          title: newStatus === 'published' ? '✅ Publicado no Blog!' : 'Removido do Blog',
+          description: newStatus === 'published'
+            ? 'A notícia agora aparece no portal público da agência.'
+            : 'Notícia despublicada com sucesso.',
+        });
+        refetch();
+        setPublishingId(null);
+      },
+      onError: () => {
+        toast({ title: 'Erro ao publicar', variant: 'destructive' });
+        setPublishingId(null);
+      }
+    });
+  };
 
  const handleSync = () => {
  triggerSync(undefined, {
@@ -215,6 +238,23 @@ export default function RadarPortal() {
  </div>
 
  <div className="flex items-center gap-3">
+ {/* Botão Publicar no Blog */}
+ <Button
+ size="sm"
+ variant="ghost"
+ disabled={publishingId === item.id}
+ onClick={(e) => { e.stopPropagation(); handleTogglePublish(item); }}
+ className={`h-8 gap-1.5 text-xs font-bold ${
+ item.status === 'published'
+ ? 'text-vj-green hover:text-red-500'
+ : isFeatured ? 'text-zinc-400 hover:text-vj-green' : 'text-zinc-400 hover:text-vj-green'
+ }`}
+ title={item.status === 'published' ? 'Despublicar do Blog' : 'Publicar no Blog'}
+ >
+ {item.status === 'published'
+ ? <><GlobeLock className="w-3.5 h-3.5" /> Publicado</>  
+ : <><Globe className="w-3.5 h-3.5" /> Publicar</>}
+ </Button>
  <a 
  href={item.original_url} 
  target="_blank" 

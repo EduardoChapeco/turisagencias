@@ -134,7 +134,11 @@ export function SheetPage({
                   <button
                     key={section.id}
                     type="button"
-                    onClick={() => setActiveSection(section.id)}
+                    onClick={() => {
+                      setActiveSection(section.id);
+                      const el = document.getElementById(`section-${section.id}`);
+                      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }}
                     className={cn(
                       'flex items-center gap-2.5 w-max md:w-full px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 text-left shrink-0',
                       isActive

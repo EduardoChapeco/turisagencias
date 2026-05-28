@@ -125,6 +125,24 @@ export function LocationCombobox({
                   </CommandItem>
                 )
               })}
+              {search.length > 0 && (
+                <CommandItem
+                  value={search}
+                  onSelect={() => {
+                    onChange(search);
+                    setOpen(false);
+                  }}
+                  className="flex flex-col items-start gap-1 py-2 cursor-pointer border-t border-zinc-100"
+                >
+                  <div className="flex items-center w-full">
+                    <Check className="mr-2 h-4 w-4 shrink-0 text-vj-green" />
+                    <span className="font-bold text-vj-green">Usar "{search}"</span>
+                  </div>
+                  <div className="text-xs text-vj-txt2 pl-6 line-clamp-1">
+                    Digitar texto livre
+                  </div>
+                </CommandItem>
+              )}
             </CommandGroup>
           </CommandList>
         </Command>

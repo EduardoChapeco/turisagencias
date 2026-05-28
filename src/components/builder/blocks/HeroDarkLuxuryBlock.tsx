@@ -1,4 +1,5 @@
 import React from 'react';
+import { MediaPicker } from '../MediaPicker';
 import { BlockDef } from '../core/types';
 import { LayoutTemplate, Star } from 'lucide-react';
 import { Label } from '@/components/ui/label';
@@ -117,12 +118,7 @@ export const HeroDarkLuxuryBlock: BlockDef = {
  />
  </div>
  <div className="space-y-2">
- <Label className="text-[10px] uppercase text-zinc-500 font-bold">Imagem de Fundo (URL)</Label>
- <Input 
- value={node.props.backgroundImage || ''} 
- onChange={e => onChange({ props: { ...node.props, backgroundImage: e.target.value } })}
- className="bg-zinc-900 border-zinc-800 text-white text-sm h-9"
- />
+ <MediaPicker label="Imagem de Fundo (URL)" value={node.props.backgroundImage || ''} onChange={url => onChange({ props: { ...node.props, backgroundImage: url } })} />
  </div>
  </div>
  );

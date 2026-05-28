@@ -6,10 +6,10 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { 
- Copy, ExternalLink, Send, MapPin, Hotel, 
- Sparkles, TrendingDown, 
- ChevronDown, ChevronUp,
- Zap, BrainCircuit, Activity, Users, MessageCircle, Terminal, Calendar
+  Copy, ExternalLink, Send, MapPin, Hotel, 
+  Sparkles, TrendingDown, 
+  ChevronDown, ChevronUp,
+  Zap, BrainCircuit, Activity, Users, MessageCircle, Terminal, Calendar, FileText
 } from 'lucide-react';
 import { parseInstallments, cn } from '@/lib/utils';
 import { useBuildProposal } from '@/hooks/useBuildProposal';
@@ -139,6 +139,41 @@ export function QuotationDetailSheet({ id, open, onClose }: { id: string | null;
  const installments = parseInstallments(quotation?.installments);
  const bestScenarioIdx = scenarios?.reduce((bestIdx, s, i) => (s.score ?? 0) > (scenarios[bestIdx].score ?? 0) ? i : bestIdx, 0) ?? -1;
 
+  const handleEditClick = () => {
+    onClose();
+    // Dispatch a custom event to open the editor in Quotations.tsx
+    window.dispatchEvent(new CustomEvent('open-quotation-editor', { detail: { id: quotation?.id } }));
+  };
+
+  const openPublicLink = () => {
+    if (quotation?.public_token) {
+      window.open(`/q/${quotation.public_token}`, '_blank');
+    }
+  };
+
+  const handleGerarPDF = async () => {
+    try {
+      const element = document.getElementById('quotation-print-area');
+      if (!element) return;
+      toast({ title: 'Gerando PDF', description: 'Por favor, aguarde...' });
+      const html2canvas = (await import('html2canvas')).default;
+      const jsPDF = (await import('jspdf')).default;
+      
+      const canvas = await html2canvas(element, { scale: 2, useCORS: true });
+      const imgData = canvas.toDataURL('image/jpeg', 0.8);
+      
+      const pdf = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+      
+      pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+      pdf.save(`cotacao-${quotation?.code || 'export'}.pdf`);
+      toast({ title: 'PDF gerado com sucesso!' });
+    } catch (err: any) {
+      toast({ title: 'Erro ao gerar PDF', description: err.message, variant: 'destructive' });
+    }
+  };
+
  if (!open) return null;
 
  return (
@@ -174,7 +209,7 @@ export function QuotationDetailSheet({ id, open, onClose }: { id: string | null;
  return (
  <div className="animate-in fade-in slide-in-from-right-2 duration-300 no-scrollbar">
  {activeSection === 'resumo' && (
- <div className="space-y-8">
+ <div className="space-y-8" id="quotation-print-area">
  <div className="flex items-center gap-2">
  <div className="text-[10px] font-mono font-bold text-zinc-600 bg-zinc-100 px-2 py-1 rounded border">
  {quotation.code || 'COT-PENDENTE'}
@@ -219,14 +254,23 @@ export function QuotationDetailSheet({ id, open, onClose }: { id: string | null;
  </div>
  </div>
 
- <div className="pt-4 border-t border-vj-border flex flex-wrap gap-2">
- <Button variant="outline" size="sm" onClick={copyPublicLink} className="rounded-lg border-vj-border hover:bg-zinc-50 gap-2 h-9 font-bold text-xs">
- <ExternalLink className="w-3.5 h-3.5 text-vj-green" /> Link Público
- </Button>
- <Button variant="outline" size="sm" onClick={copyWhatsApp} className="rounded-lg border-vj-border hover:bg-zinc-50 gap-2 h-9 font-bold text-xs">
- <Copy className="w-3.5 h-3.5 text-blue-500" /> WhatsApp
- </Button>
- </div>
+      <div className="pt-4 border-t border-vj-border flex flex-wrap gap-2">
+        <Button variant="outline" size="sm" onClick={openPublicLink} className="rounded-lg border-vj-border hover:bg-zinc-50 gap-2 h-9 font-bold text-xs">
+          <ExternalLink className="w-3.5 h-3.5 text-vj-green" /> Ver Web View
+        </Button>
+        <Button variant="outline" size="sm" onClick={copyPublicLink} className="rounded-lg border-vj-border hover:bg-zinc-50 gap-2 h-9 font-bold text-xs">
+          <Copy className="w-3.5 h-3.5 text-zinc-500" /> Copiar Link
+        </Button>
+        <Button variant="outline" size="sm" onClick={copyWhatsApp} className="rounded-lg border-vj-border hover:bg-zinc-50 gap-2 h-9 font-bold text-xs">
+          <MessageCircle className="w-3.5 h-3.5 text-blue-500" /> WhatsApp
+        </Button>
+        <Button variant="outline" size="sm" onClick={handleGerarPDF} className="rounded-lg border-vj-border hover:bg-zinc-50 gap-2 h-9 font-bold text-xs text-rose-600">
+          <FileText className="w-3.5 h-3.5" /> PDF A4
+        </Button>
+        <Button variant="outline" size="sm" onClick={handleEditClick} className="rounded-lg border-vj-green text-vj-green hover:bg-vj-green/10 gap-2 h-9 font-bold text-xs ml-auto">
+          Editar Cotação
+        </Button>
+      </div>
  </div>
  )}
 

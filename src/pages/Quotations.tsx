@@ -31,6 +31,16 @@ export default function Quotations() {
  const [aiImportOpen, setAiImportOpen] = useState(false);
  const [detailSheet, setDetailSheet] = useState<{ open: boolean; id: string | null }>({ open: false, id: null });
  const { data: allQuotations, isLoading } = useQuotations();
+ const { toast } = useToast();
+
+ useEffect(() => {
+   const handleEdit = (e: any) => {
+     setBuilderOpen(true);
+     toast({ title: 'Carregando cotação para edição...' });
+   };
+   window.addEventListener('open-quotation-editor', handleEdit);
+   return () => window.removeEventListener('open-quotation-editor', handleEdit);
+ }, []);
 
  const fmtCurrency = (value: number | null, currency = 'BRL') => {
  if (!value) return '0,00';

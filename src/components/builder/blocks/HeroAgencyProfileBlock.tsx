@@ -1,4 +1,5 @@
 import React from 'react';
+import { MediaPicker } from '../MediaPicker';
 import { BlockDef } from '../core/types';
 import { LayoutTemplate, MessageCircle } from 'lucide-react';
 import { Label } from '@/components/ui/label';
@@ -101,12 +102,7 @@ export const HeroAgencyProfileBlock: BlockDef = {
  />
  </div>
  <div className="space-y-2">
- <Label className="text-[10px] uppercase text-zinc-500 font-bold">Imagem de Capa (URL)</Label>
- <Input 
- value={node.props.coverImage || ''} 
- onChange={e => onChange({ props: { ...node.props, coverImage: e.target.value } })}
- className="bg-zinc-900 border-zinc-800 text-white text-sm h-9"
- />
+ <MediaPicker label="Imagem de Capa (URL)" value={node.props.coverImage || ''} onChange={url => onChange({ props: { ...node.props, coverImage: url } })} />
  </div>
  <div className="space-y-2">
  <Label className="text-[10px] uppercase text-zinc-500 font-bold">Logo (URL)</Label>

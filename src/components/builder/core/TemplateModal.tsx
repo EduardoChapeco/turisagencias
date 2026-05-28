@@ -2,7 +2,7 @@ import React from 'react';
 import { useBuilderStore } from './useBuilderStore';
 import { Button } from '@/components/ui/button';
 import { BuilderNode } from './types';
-import { Layout, Palette, Blocks } from 'lucide-react';
+import { Layout, Palette, Blocks, X } from 'lucide-react';
 
 const templates = [
  {
@@ -59,17 +59,23 @@ const templates = [
  }
 ];
 
-export function TemplateModal() {
+export function TemplateModal({ onClose }: { onClose?: () => void }) {
  const { setNodes, setViewport } = useBuilderStore();
 
  const handleApplyTemplate = (nodes: BuilderNode[], isBioLink = false) => {
  setNodes(nodes);
  if (isBioLink) setViewport('mobile');
+ if (onClose) onClose();
  };
 
  return (
- <div className="absolute inset-0 bg-white/95 z-50 flex items-center justify-center p-8 backdrop-blur-sm animate-in fade-in zoom-in-95">
- <div className="max-w-4xl w-full bg-white rounded-[2rem] border border-zinc-200 p-10">
+ <div className="fixed inset-0 bg-white/95 z-50 flex items-center justify-center p-8 backdrop-blur-sm animate-in fade-in zoom-in-95">
+ <div className="relative max-w-4xl w-full bg-white rounded-[2rem] border border-zinc-200 p-10 shadow-2xl">
+ {onClose && (
+ <button onClick={onClose} className="absolute top-6 right-6 w-10 h-10 bg-zinc-100 hover:bg-zinc-200 rounded-full flex items-center justify-center text-zinc-600 transition-colors">
+ <X size={20} />
+ </button>
+ )}
  <div className="text-center mb-10">
  <div className="w-16 h-16 bg-vj-green/20 text-vj-green rounded-2xl flex items-center justify-center mx-auto mb-6">
  <Blocks size={32} />

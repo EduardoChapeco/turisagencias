@@ -21,23 +21,23 @@ export const FinanceQuoteSummaryBlock = {
  <tr className="border-b">
  <td className="px-4 py-3 font-medium">Flight Tickets (Round Trip)</td>
  <td className="px-4 py-3">2</td>
- <td className="px-4 py-3 text-right">$1,200.00</td>
+ <td className="px-4 py-3 text-right">R$ 1.200,00</td>
  </tr>
  <tr className="border-b">
  <td className="px-4 py-3 font-medium">Hotel Accommodation (5 nights)</td>
  <td className="px-4 py-3">1</td>
- <td className="px-4 py-3 text-right">$850.00</td>
+ <td className="px-4 py-3 text-right">R$ 850,00</td>
  </tr>
  <tr>
  <td className="px-4 py-3 font-medium">Travel Insurance</td>
  <td className="px-4 py-3">2</td>
- <td className="px-4 py-3 text-right">$120.00</td>
+ <td className="px-4 py-3 text-right">R$ 120,00</td>
  </tr>
  </tbody>
  <tfoot>
  <tr className="font-bold text-base bg-gray-50">
  <td colSpan={2} className="px-4 py-3 text-right">Total:</td>
- <td className="px-4 py-3 text-right">$2,170.00</td>
+ <td className="px-4 py-3 text-right">R$ 2.170,00</td>
  </tr>
  </tfoot>
  </table>

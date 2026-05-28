@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { MediaPicker } from '../MediaPicker';
 import { LayoutTemplate, Search, Calendar, MapPin } from 'lucide-react';
 import { BlockDef } from '../core/types';
 import { EditableText } from '../core/EditableText';
@@ -109,12 +110,7 @@ export const HeroSearchBookingBlock: BlockDef = {
  return (
  <div className="space-y-4">
  <div className="space-y-2">
- <Label className="text-xs uppercase text-zinc-500 font-bold">Imagem de Fundo (URL)</Label>
- <Input 
- value={node.props.backgroundImage || ''} 
- onChange={e => onChange({ props: { ...node.props, backgroundImage: e.target.value } })}
- className="bg-zinc-900 border-zinc-800 text-white text-sm"
- />
+ <MediaPicker label="Imagem de Fundo (URL)" value={node.props.backgroundImage || ''} onChange={url => onChange({ props: { ...node.props, backgroundImage: url } })} />
  </div>
  <div className="space-y-2">
  <Label className="text-xs uppercase text-zinc-500 font-bold">WhatsApp Agência</Label>

@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { MediaPicker } from '../MediaPicker';
 import { ArrowLeftRight } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -92,11 +93,7 @@ export const GalleryBeforeAfterBlock = {
  return (
  <div className="p-4 space-y-4">
  <div className="space-y-2">
- <Label>URL da Imagem Esquerda (Antes)</Label>
- <Input 
- value={node.props?.imageBefore || ''}
- onChange={(e) => onChange({ props: { ...node.props, imageBefore: e.target.value } })}
- />
+ <MediaPicker label="URL da Imagem Esquerda (Antes)" value={node.props?.imageBefore || ''} onChange={url => onChange({ props: { ...node.props, imageBefore: url } })} />
  </div>
  <div className="space-y-2">
  <Label>Rótulo Esquerda</Label>
@@ -107,11 +104,7 @@ export const GalleryBeforeAfterBlock = {
  </div>
  <div className="h-px bg-gray-200 my-4" />
  <div className="space-y-2">
- <Label>URL da Imagem Direita (Depois)</Label>
- <Input 
- value={node.props?.imageAfter || ''}
- onChange={(e) => onChange({ props: { ...node.props, imageAfter: e.target.value } })}
- />
+ <MediaPicker label="URL da Imagem Direita (Depois)" value={node.props?.imageAfter || ''} onChange={url => onChange({ props: { ...node.props, imageAfter: url } })} />
  </div>
  <div className="space-y-2">
  <Label>Rótulo Direita</Label>

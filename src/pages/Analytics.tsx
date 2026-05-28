@@ -12,8 +12,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { useAiTasks } from '@/hooks/useAiTasks';
 import { useAuthStore } from '@/stores/authStore';
-import { supabase } from '@/integrations/supabase/client';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { AgencyAnalyticsDashboard } from '@/components/AgencyAnalyticsDashboard';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -232,17 +232,22 @@ export default function Analytics() {
       <div className="w-full h-full min-h-screen bg-vj-bg flex flex-col">
         {/* ── PageHeader: no colored bg, uses standard design ── */}
         <PageHeader
-          title={profile?.role === 'super_admin' ? 'Painel Master' : 'Métricas da Agência'}
+          title={profile?.role === 'super_admin' ? 'Painel Master' : 'Performance e Vendas'}
           description={
             profile?.role === 'super_admin'
               ? 'Auditoria Global, Status do Motor Turis AI e Métricas de Uso'
-              : 'Acompanhe seus resultados.'
+              : 'Indicadores de crescimento, conversões e funil comercial.'
           }
           icon={Activity}
         />
 
         <div className="flex-1 p-6 space-y-6 max-w-[1600px] mx-auto w-full">
-          {/* ── Header Stats Bento ── */}
+          {profile?.role !== 'super_admin' ? (
+            <AgencyAnalyticsDashboard />
+          ) : (
+            <>
+              {/* ── Header Stats Bento (Master) ── */}
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* Agências Ativas */}
             <Card className="bento-card">
@@ -477,6 +482,8 @@ export default function Analytics() {
                 </CardContent>
               </Card>
             </div>
+          )}
+            </>
           )}
         </div>
       </div>

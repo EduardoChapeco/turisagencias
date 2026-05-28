@@ -179,19 +179,20 @@ const SortableBlock = React.memo(function SortableBlock({ node }: { node: Builde
 // ---------------------------------------------------------------------------
 function EmptyCanvas() {
   const addNode = useBuilderStore(state => state.addNode);
+  const [showTemplates, setShowTemplates] = React.useState(true);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-8 gap-6">
-      <div className="w-24 h-24 rounded-3xl bg-zinc-800/80 border border-white/10 flex items-center justify-center mb-2 shadow-xl">
+      <div className="w-24 h-24 rounded-3xl bg-zinc-800/80 border border-white/10 flex items-center justify-center mb-2 shadow-xl cursor-pointer hover:bg-zinc-800 transition-colors" onClick={() => setShowTemplates(true)}>
         <Plus className="w-10 h-10 text-zinc-400" />
       </div>
       <div>
         <h3 className="text-lg font-bold text-white mb-1">Página em branco</h3>
         <p className="text-sm text-zinc-500 max-w-xs">
-          Arraste blocos da barra lateral ou clique abaixo para escolher um template.
+          Arraste blocos da barra lateral ou clique no + para ver os templates.
         </p>
       </div>
-      <TemplateModal />
+      {showTemplates && <TemplateModal onClose={() => setShowTemplates(false)} />}
     </div>
   );
 }

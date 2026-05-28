@@ -10,7 +10,7 @@ export const CardProductBlock = {
  <div className="p-4 border rounded flex flex-col gap-2">
  <div className="h-40 bg-gray-200 rounded w-full flex items-center justify-center text-gray-400">Image</div>
  <h3 className="font-semibold text-lg">{node.props.title || 'Product Title'}</h3>
- <p className="text-gray-600">{node.props.price || '$99.00'}</p>
+ <p className="text-gray-600">{node.props.price || 'R$ 99,00'}</p>
  <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors">
  {node.props.buttonText || 'Buy'}
  </button>
